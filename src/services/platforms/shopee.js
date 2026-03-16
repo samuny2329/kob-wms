@@ -21,13 +21,13 @@ class ShopeeAdapter extends BasePlatformAdapter {
             { key: 'partnerId', label: 'Partner ID', type: 'text', required: true, placeholder: '10xxxxx' },
             { key: 'partnerKey', label: 'Partner Key (Secret)', type: 'password', required: true, placeholder: 'Your app secret key' },
             { key: 'shopId', label: 'Shop ID', type: 'text', required: true, placeholder: '12345678' },
-            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'test' },
+            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'live' },
             { key: 'redirectUrl', label: 'Redirect URL (OAuth)', type: 'text', required: false, placeholder: 'https://yoursite.com/callback' },
         ];
     }
 
     get _host() {
-        return SHOPEE_HOSTS[this._config.env || 'test'];
+        return SHOPEE_HOSTS[this._config.env || 'live'];
     }
 
     // ── Signature: HMAC-SHA256(partnerKey, path + timestamp + access_token + shop_id) ──

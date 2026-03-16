@@ -21,12 +21,12 @@ class FlashExpressAdapter extends BasePlatformAdapter {
             { key: 'mchId', label: 'Merchant ID (mchId)', type: 'text', required: true, placeholder: 'Your Flash merchant ID' },
             { key: 'secretKey', label: 'Secret Key', type: 'password', required: true, placeholder: 'Your Flash secret key' },
             { key: 'storeCode', label: 'Store Code', type: 'text', required: false, placeholder: 'Store/warehouse code' },
-            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'test' },
+            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'live' },
         ];
     }
 
     get _host() {
-        return FLASH_HOSTS[this._config.env || 'test'];
+        return FLASH_HOSTS[this._config.env || 'live'];
     }
 
     // ── Flash Signature (Algorithm 2): SHA256(secret + sortedParams + jsonBody + secret) ──

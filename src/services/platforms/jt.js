@@ -24,12 +24,12 @@ class JTExpressAdapter extends BasePlatformAdapter {
             { key: 'apiAccount', label: 'API Account', type: 'text', required: true, placeholder: 'Your API username' },
             { key: 'apiKey', label: 'API Key (Private Key)', type: 'password', required: true, placeholder: 'MD5 signing key' },
             { key: 'customerCode', label: 'Customer Code', type: 'text', required: false, placeholder: 'Assigned by J&T' },
-            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'test' },
+            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'live' },
         ];
     }
 
     get _host() {
-        return JT_HOSTS[this._config.env || 'test'];
+        return JT_HOSTS[this._config.env || 'live'];
     }
 
     // ── J&T Signature: Base64(MD5(data_param + apiKey)) ──

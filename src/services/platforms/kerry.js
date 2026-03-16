@@ -27,7 +27,7 @@ class KerryExpressAdapter extends BasePlatformAdapter {
             { key: 'password', label: 'Password (Smart-Edi)', type: 'password', required: false, placeholder: 'Smart-Edi password' },
             // AfterShip fields
             { key: 'aftershipKey', label: 'AfterShip API Key', type: 'password', required: false, placeholder: 'For tracking via AfterShip' },
-            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'test' },
+            { key: 'env', label: 'Environment', type: 'select', options: ['live', 'test'], default: 'live' },
         ];
     }
 
@@ -38,7 +38,7 @@ class KerryExpressAdapter extends BasePlatformAdapter {
     }
 
     get _host() {
-        return KERRY_HOSTS[this._config.env || 'test'];
+        return KERRY_HOSTS[this._config.env || 'live'];
     }
 
     // ── Smart-Edi Auth ─────────────────────────────────────────

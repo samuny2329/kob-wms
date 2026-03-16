@@ -21,9 +21,9 @@ const HandheldLayout = ({
     const [showSetup, setShowSetup] = useState(false);
 
     // Odoo quick-setup state (read from current apiConfigs or defaults)
-    const [odooUrl, setOdooUrl] = useState(() => apiConfigs?.odoo?.url || 'http://localhost:8070');
-    const [odooDB, setOdooDB] = useState(() => apiConfigs?.odoo?.db || 'odoo18');
-    const [odooUser, setOdooUser] = useState(() => apiConfigs?.odoo?.username || 'admin');
+    const [odooUrl, setOdooUrl] = useState(() => apiConfigs?.odoo?.url || import.meta.env.VITE_ODOO_URL || '');
+    const [odooDB, setOdooDB] = useState(() => apiConfigs?.odoo?.db || '');
+    const [odooUser, setOdooUser] = useState(() => apiConfigs?.odoo?.username || '');
     const [odooPass, setOdooPass] = useState(() => apiConfigs?.odoo?.password || '');
     const [setupStatus, setSetupStatus] = useState(null); // null | 'testing' | 'ok' | 'error'
 
@@ -72,9 +72,9 @@ const HandheldLayout = ({
                     prev.forEach(l => { if (!merged.find(m => m.id === l.id)) merged.push(l); });
                     return merged;
                 });
-                addToast('โหลดออเดอร์สำเร็จ');
+                addToast('Orders loaded successfully');
             } else {
-                addToast('ไม่มีออเดอร์ใหม่จาก Odoo');
+                addToast('No new orders from Odoo');
             }
         } catch (err) {
             addToast('Sync failed: ' + err.message, 'error');
@@ -97,7 +97,7 @@ const HandheldLayout = ({
             }
             setSetupStatus('ok');
             setShowSetup(false);
-            addToast('เชื่อมต่อ Odoo สำเร็จ');
+            addToast('Connected to Odoo successfully');
             // Sync orders immediately
             setTimeout(handleSyncOrders, 500);
         } catch (err) {
@@ -152,14 +152,14 @@ const HandheldLayout = ({
             {screen === 'home' && (
                 <div className="flex-1 flex flex-col p-4 gap-4 overflow-y-auto">
                     <div className="flex items-center justify-between pt-2 pb-2">
-                        <p className="text-zinc-400 text-xs uppercase tracking-widest font-bold">เลือกงาน</p>
+                        <p className="text-zinc-400 text-xs uppercase tracking-widest font-bold">Select task</p>
                         <button
                             onClick={handleSyncOrders}
                             disabled={isSyncingOrders}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-xs font-semibold text-zinc-300 active:bg-zinc-700 disabled:opacity-50"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${isSyncingOrders ? 'animate-spin' : ''}`} />
-                            {isSyncingOrders ? 'กำลัง Sync...' : 'Sync Orders'}
+                            {isSyncingOrders ? 'Syncing...' : 'Sync Orders'}
                         </button>
                     </div>
 
@@ -168,14 +168,14 @@ const HandheldLayout = ({
                         <div className="bg-amber-900/30 border border-amber-700 rounded-xl px-4 py-3 flex items-center gap-3">
                             <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-amber-300 text-xs font-bold">ยังไม่ได้เชื่อมต่อ Odoo</p>
-                                <p className="text-amber-400/70 text-[10px] mt-0.5">กด ⚙ ตั้งค่าก่อนเพื่อโหลดออเดอร์</p>
+                                <p className="text-amber-300 text-xs font-bold">Not connected to Odoo</p>
+                                <p className="text-amber-400/70 text-[10px] mt-0.5">Press ⚙ Settings to load orders</p>
                             </div>
                             <button
                                 onClick={() => setShowSetup(true)}
                                 className="shrink-0 bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg active:bg-amber-700"
                             >
-                                ตั้งค่า
+                                Settings
                             </button>
                         </div>
                     )}
@@ -192,8 +192,8 @@ const HandheldLayout = ({
                             <p className="font-black text-xl text-white">PICK</p>
                             <p className="text-xs mt-0.5">
                                 {pendingPick > 0
-                                    ? <span className="text-amber-400 font-bold">{pendingPick} orders รอ Pick</span>
-                                    : <span className="text-zinc-500">ไม่มีงาน</span>
+                                    ? <span className="text-amber-400 font-bold">{pendingPick} orders pending Pick</span>
+                                    : <span className="text-zinc-500">No tasks</span>
                                 }
                             </p>
                         </div>
@@ -211,8 +211,8 @@ const HandheldLayout = ({
                             <p className="font-black text-xl text-white">PACK</p>
                             <p className="text-xs mt-0.5">
                                 {readyPack > 0
-                                    ? <span className="text-emerald-400 font-bold">{readyPack} orders รอ Pack</span>
-                                    : <span className="text-zinc-500">ไม่มีงาน</span>
+                                    ? <span className="text-emerald-400 font-bold">{readyPack} orders pending Pack</span>
+                                    : <span className="text-zinc-500">No tasks</span>
                                 }
                             </p>
                         </div>
@@ -308,10 +308,10 @@ const HandheldLayout = ({
                             />
                         </div>
                         {setupStatus === 'error' && (
-                            <p className="text-red-400 text-xs mt-3 font-semibold">❌ เชื่อมต่อไม่ได้ ตรวจสอบ URL/Password</p>
+                            <p className="text-red-400 text-xs mt-3 font-semibold">❌ Connection failed — check URL/Password</p>
                         )}
                         {setupStatus === 'ok' && (
-                            <p className="text-emerald-400 text-xs mt-3 font-semibold">✓ เชื่อมต่อสำเร็จ!</p>
+                            <p className="text-emerald-400 text-xs mt-3 font-semibold">✓ Connected successfully!</p>
                         )}
                         <button
                             onClick={handleQuickSetup}
@@ -320,8 +320,8 @@ const HandheldLayout = ({
                             style={{ backgroundColor: '#714B67' }}
                         >
                             {setupStatus === 'testing'
-                                ? <><RefreshCw className="w-5 h-5 animate-spin" /> กำลังเชื่อมต่อ...</>
-                                : <><Check className="w-5 h-5" /> เชื่อมต่อ &amp; โหลดออเดอร์</>
+                                ? <><RefreshCw className="w-5 h-5 animate-spin" /> Connecting...</>
+                                : <><Check className="w-5 h-5" /> Connect &amp; Load Orders</>
                             }
                         </button>
                     </div>

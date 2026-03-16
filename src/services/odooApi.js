@@ -24,17 +24,17 @@ const fetchWithTimeout = async (url, options = {}, timeout = API_TIMEOUT) => {
 
 // ============ AUTH & TRANSPORT ============
 
-const isMock = (odooConfig) => odooConfig?.useMock !== false;
+const isMock = (odooConfig) => odooConfig?.useMock === true;
 
 // Use Vite proxy: requests to /wms/* are forwarded to Odoo by the dev server
 // No CORS issues, no credentials needed
-const getOdooBase = () => ''; // always relative (proxied by Vite)
+const getOdooBase = (odooConfig) => odooConfig?.url || import.meta.env.VITE_ODOO_URL || '';
 
 export const authenticateOdoo = async (odooConfig) => {
     if (isMock(odooConfig)) return { status: 'success', uid: 1 };
     try {
         // Use Odoo's standard JSONRPC auth endpoint (proxied via Vite /web/session/*)
-        const response = await fetchWithTimeout(`/web/session/authenticate`, {
+        const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/web/session/authenticate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -64,7 +64,7 @@ const odooPost = async (odooConfig, endpoint, params = {}) => {
         await authenticateOdoo(odooConfig);
     }
 
-    const url = `${getOdooBase()}${endpoint}`; // relative URL, proxied by Vite
+    const url = `${getOdooBase(odooConfig)}${endpoint}`;
     const response = await fetchWithTimeout(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -261,7 +261,7 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
         if (found.length > 0) {
             pickingId = found[0].id;
         } else {
-            throw new Error(`ไม่พบ Picking ใน Odoo สำหรับ: ${orderId} — กรุณา Sync Orders ก่อน`);
+            throw new Error(`Picking not found in Odoo for: ${orderId} — please Sync Orders first`);
         }
     }
 
@@ -356,7 +356,7 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
     const finalState = pickingCheck?.[0]?.state;
     if (finalState && finalState !== 'done') {
         const reason = validateError?.message || `state = ${finalState}`;
-        throw new Error(`ตัด Stock ไม่สำเร็จ: ${pickingCheck[0]?.name} — ${reason}`);
+        throw new Error(`Stock deduction failed: ${pickingCheck[0]?.name} — ${reason}`);
     }
 
     // 3. Find sale order linked to this picking, then create + post invoice
@@ -420,7 +420,7 @@ export const PICKFACE_LOCATION_NAME = 'PICKFACE';
 
 // Call Odoo model method via JSON-RPC call_kw
 const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => {
-    const url = `${getOdooBase()}/web/dataset/call_kw`;
+    const url = `${getOdooBase(odooConfig)}/web/dataset/call_kw`;
     if (!_sessionAuthenticated) await authenticateOdoo(odooConfig);
     const response = await fetchWithTimeout(url, {
         method: 'POST',
@@ -454,7 +454,7 @@ export const ensurePickfaceLocation = async (odooConfig) => {
         { fields: ['id', 'name', 'complete_name'], limit: 1 }
     );
     const parentId = parents[0]?.id;
-    if (!parentId) throw new Error('ไม่พบ WH/Stock location ใน Odoo');
+    if (!parentId) throw new Error('WH/Stock location not found in Odoo');
 
     // Create PICKFACE
     const newId = await odooCallKw(odooConfig, 'stock.location', 'create',
@@ -505,7 +505,7 @@ export const createSalesOrder = async (odooConfig, orderData) => {
 
     // 1. Find product IDs by default_code
     const skus = items.map(i => i.sku).filter(Boolean);
-    if (skus.length === 0) throw new Error('ไม่มีสินค้า');
+    if (skus.length === 0) throw new Error('No products specified');
 
     const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
         [[['default_code', 'in', skus], ['active', '=', true]]],
@@ -513,7 +513,7 @@ export const createSalesOrder = async (odooConfig, orderData) => {
     );
     const productMap = Object.fromEntries(products.map(p => [p.default_code, p]));
     const missing = skus.filter(s => !productMap[s]);
-    if (missing.length > 0) throw new Error(`ไม่พบสินค้าใน Odoo: ${missing.join(', ')}`);
+    if (missing.length > 0) throw new Error(`Products not found in Odoo: ${missing.join(', ')}`);
 
     // 2. Find or create platform customer (partner)
     const customerName = PLATFORM_CUSTOMER_MAP[platform] || 'ECOMMERCE : WMS';
@@ -814,13 +814,13 @@ export const fetchPlatformOrders = async (odooConfig, platform) => {
         await delay(400);
         const mockPlatformOrders = {
             'shopee': [
-                { id: Date.now() + 1, ref: 'SHP-' + Math.floor(Math.random() * 90000 + 10000), customer: 'ลูกค้า Shopee', platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad', expected: 2, picked: 0, packed: 0, unitPrice: 299 }] }
+                { id: Date.now() + 1, ref: 'SHP-' + Math.floor(Math.random() * 90000 + 10000), customer: 'Shopee Customer', platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad', expected: 2, picked: 0, packed: 0, unitPrice: 299 }] }
             ],
             'lazada': [
-                { id: Date.now() + 2, ref: 'LZD-' + Math.floor(Math.random() * 90000 + 10000), customer: 'ลูกค้า Lazada', platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad (Bright)', expected: 1, picked: 0, packed: 0, unitPrice: 329 }] }
+                { id: Date.now() + 2, ref: 'LZD-' + Math.floor(Math.random() * 90000 + 10000), customer: 'Lazada Customer', platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad (Bright)', expected: 1, picked: 0, packed: 0, unitPrice: 329 }] }
             ],
             'tiktok': [
-                { id: Date.now() + 3, ref: 'TKT-' + Math.floor(Math.random() * 90000 + 10000), customer: 'ลูกค้า TikTok', platform: 'TikTok Shop', courier: 'J&T Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'SWB700', name: 'SKINOXY Body Wash (Bright)', expected: 1, picked: 0, packed: 0, unitPrice: 399 }] }
+                { id: Date.now() + 3, ref: 'TKT-' + Math.floor(Math.random() * 90000 + 10000), customer: 'TikTok Customer', platform: 'TikTok Shop', courier: 'J&T Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'SWB700', name: 'SKINOXY Body Wash (Bright)', expected: 1, picked: 0, packed: 0, unitPrice: 399 }] }
             ]
         };
         return mockPlatformOrders[platform] || [];
@@ -860,11 +860,11 @@ export const fetchAiSuggestion = async (odooConfig, pickingId, question) => {
 export const testConnection = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(500);
-        return { status: 'success', version: 'Odoo 18.0 (Mock)', database: odooConfig.db || 'wms_demo' };
+        return { status: 'success', version: 'Odoo 18.0 (Mock)', database: odooConfig.db || 'Demo Mode — no live database' };
     }
     try {
         // All requests go through Vite proxy → no CORS issues
-        const response = await fetchWithTimeout(`/wms/connection/test`, {
+        const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/wms/connection/test`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

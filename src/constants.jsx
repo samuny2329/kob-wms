@@ -43,10 +43,10 @@ export const tabInfo = {
 
 // Wave templates
 export const WAVE_TEMPLATES = [
-    { id: 'morning', name: 'Morning Wave', nameTh: 'รอบเช้า', timeRange: '08:00-12:00', icon: '🌅' },
-    { id: 'afternoon', name: 'Afternoon Wave', nameTh: 'รอบบ่าย', timeRange: '12:00-17:00', icon: '☀️' },
-    { id: 'evening', name: 'Evening Wave', nameTh: 'รอบค่ำ', timeRange: '17:00-21:00', icon: '🌙' },
-    { id: 'custom', name: 'Custom Wave', nameTh: 'รอบพิเศษ', timeRange: 'Custom', icon: '⚡' },
+    { id: 'morning', name: 'Morning Wave', timeRange: '08:00-12:00', icon: '🌅' },
+    { id: 'afternoon', name: 'Afternoon Wave', timeRange: '12:00-17:00', icon: '☀️' },
+    { id: 'evening', name: 'Evening Wave', timeRange: '17:00-21:00', icon: '🌙' },
+    { id: 'custom', name: 'Custom Wave', timeRange: 'Custom', icon: '⚡' },
 ];
 
 // Product catalog with images
@@ -212,41 +212,12 @@ const _K = {
 const _i = (p, q) => ({ ...p, expected: q, picked: 0, packed: 0 });
 
 // Real Odoo SO format:
-//   ref      = WH/OUT/XXXXX  (delivery picking ref — ใช้ใน WMS)
+//   ref      = WH/OUT/XXXXX  (delivery picking ref — used in WMS)
 //   soRef    = platform order number
 //              Shopee:  alphanumeric  e.g. "2603145CM763UM"
 //              TikTok:  18-digit num  e.g. "583073436999124085"
 //              Lazada:  16-digit num  e.g. "1090229548148582"
 //   customer = "ECOMMERCE : {PLATFORM}" (as stored in Odoo)
 //   source   = "{Platform}_{Shop}"  e.g. "Shopee_KissMyBody", "Lazada_Skinoxy"
-export const INITIAL_SALES_ORDERS = [
-    // ── Shopee / KissMyBody ────────────────────────────────────────────────────
-    { id: 1,  ref: 'WH/OUT/00050', soRef: '2603145CM763UM',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_KissMyBody', platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: _D(3600000), scheduledDate: _today, items: [_i(_K.klmh,1), _i(_K.kwap,1)] },
-    { id: 2,  ref: 'WH/OUT/00051', soRef: '2603212AX441MN',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_KissMyBody', platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: _D(3300000), scheduledDate: _today, items: [_i(_K.kla,2), _i(_K.kma,1)] },
-    // ── Shopee / SkinOxy ──────────────────────────────────────────────────────
-    { id: 3,  ref: 'WH/OUT/00052', soRef: '2603098BQ887RP',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_Skinoxy',    platform: 'Shopee Express', courier: 'Flash Express',  status: 'pending', createdAt: _D(3000000), scheduledDate: _today, items: [_i(_P.refill,2), _i(_P.toner,1)] },
-    { id: 4,  ref: 'WH/OUT/00053', soRef: '2603302FV219KL',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_Skinoxy',    platform: 'Shopee Express', courier: 'Flash Express',  status: 'pending', createdAt: _D(2700000), scheduledDate: _today, items: [_i(_P.washB,1), _i(_P.washH,1)] },
-    // ── TikTok / KissMyBody ────────────────────────────────────────────────────
-    { id: 5,  ref: 'WH/OUT/00060', soRef: '583073436999124085',   customer: 'ECOMMERCE : TIKTOK', source: 'TikTok_KissMyBody', platform: 'TikTok Shop',    courier: 'J&T Express',    status: 'pending', createdAt: _D(2400000), scheduledDate: _today, items: [_i(_K.kla,1), _i(_K.kma,1)] },
-    { id: 6,  ref: 'WH/OUT/00061', soRef: '583073298471053022',   customer: 'ECOMMERCE : TIKTOK', source: 'TikTok_KissMyBody', platform: 'TikTok Shop',    courier: 'J&T Express',    status: 'pending', createdAt: _D(2100000), scheduledDate: _today, items: [_i(_K.klmh,1), _i(_K.kma,2)] },
-    // ── TikTok / SkinOxy ──────────────────────────────────────────────────────
-    { id: 7,  ref: 'WH/OUT/00062', soRef: '583073115862490017',   customer: 'ECOMMERCE : TIKTOK', source: 'TikTok_Skinoxy',    platform: 'TikTok Shop',    courier: 'Kerry Express',  status: 'pending', createdAt: _D(1800000), scheduledDate: _today, items: [_i(_P.toner,1), _i(_P.washB,1)] },
-    // ── Lazada / SkinOxy ──────────────────────────────────────────────────────
-    { id: 8,  ref: 'WH/OUT/00065', soRef: '1090229548148582',     customer: 'ECOMMERCE : LAZADA', source: 'Lazada_Skinoxy',    platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: _D(1500000), scheduledDate: _today, items: [_i(_P.maskG,2), _i(_P.maskL,2)] },
-    { id: 9,  ref: 'WH/OUT/00066', soRef: '1090334712809043',     customer: 'ECOMMERCE : LAZADA', source: 'Lazada_Skinoxy',    platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: _D(1200000), scheduledDate: _today, items: [_i(_P.refill,1), _i(_P.toner,1), _i(_P.washB,1)] },
-    // ── Lazada / KissMyBody ────────────────────────────────────────────────────
-    { id: 10, ref: 'WH/OUT/00067', soRef: '1090441928370115',     customer: 'ECOMMERCE : LAZADA', source: 'Lazada_KissMyBody', platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: _D(900000),  scheduledDate: _today, items: [_i(_K.kwap,1), _i(_K.kma,1)] },
-    // ── RTS sample ────────────────────────────────────────────────────────────
-    { id: 11, ref: 'WH/OUT/00069', soRef: '2603145CM763UM',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_KissMyBody', platform: 'Shopee Express', courier: 'Shopee Express', status: 'rts', awb: 'SPXTH26031234567890', createdAt: _D(600000), scheduledDate: _today, items: [_i(_K.klmh,1), _i(_K.kwap,1)] },
-    // ── New Pickface SOs ─────────────────────────────────────────────────────
-    { id: 2001, ref: 'WH/OUT/00200', soRef: '2603178DK502QW',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_Skinoxy',    platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: _D(540000),  scheduledDate: _today, items: [_i(_P.refill,3), _i(_P.maskG,2)] },
-    { id: 2002, ref: 'WH/OUT/00201', soRef: '2603221HN839VX',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_KissMyBody', platform: 'Shopee Express', courier: 'Flash Express',  status: 'pending', createdAt: _D(480000),  scheduledDate: _today, items: [_i(_K.kla,1), _i(_K.klmh,2), _i(_K.kma,1)] },
-    { id: 2003, ref: 'WH/OUT/00202', soRef: '583073552148830091',   customer: 'ECOMMERCE : TIKTOK', source: 'TikTok_Skinoxy',    platform: 'TikTok Shop',    courier: 'J&T Express',    status: 'pending', createdAt: _D(420000),  scheduledDate: _today, items: [_i(_P.washB,2), _i(_P.washH,1)] },
-    { id: 2004, ref: 'WH/OUT/00203', soRef: '583073661205947033',   customer: 'ECOMMERCE : TIKTOK', source: 'TikTok_KissMyBody', platform: 'TikTok Shop',    courier: 'Kerry Express',  status: 'pending', createdAt: _D(360000),  scheduledDate: _today, items: [_i(_K.kwap,2), _i(_K.kma,3)] },
-    { id: 2005, ref: 'WH/OUT/00204', soRef: '1090558293017284',     customer: 'ECOMMERCE : LAZADA', source: 'Lazada_Skinoxy',    platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: _D(300000),  scheduledDate: _today, items: [_i(_P.toner,2), _i(_P.maskL,3)] },
-    { id: 2006, ref: 'WH/OUT/00205', soRef: '1090662847130558',     customer: 'ECOMMERCE : LAZADA', source: 'Lazada_KissMyBody', platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: _D(240000),  scheduledDate: _today, items: [_i(_K.kla,2), _i(_K.kwap,1), _i(_K.klmh,1)] },
-    { id: 2007, ref: 'WH/OUT/00206', soRef: '2603305JP917BM',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_Skinoxy',    platform: 'Shopee Express', courier: 'Flash Express',  status: 'pending', createdAt: _D(180000),  scheduledDate: _today, items: [_i(_P.refill,1), _i(_P.toner,1), _i(_P.maskG,1), _i(_P.maskL,1)] },
-    { id: 2008, ref: 'WH/OUT/00207', soRef: '583073774038261058',   customer: 'ECOMMERCE : TIKTOK', source: 'TikTok_Skinoxy',    platform: 'TikTok Shop',    courier: 'J&T Express',    status: 'pending', createdAt: _D(120000),  scheduledDate: _today, items: [_i(_P.washH,3), _i(_P.refill,1)] },
-    { id: 2009, ref: 'WH/OUT/00208', soRef: '2603418QR284TN',       customer: 'ECOMMERCE : SHOPEE', source: 'Shopee_KissMyBody', platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: _D(60000),   scheduledDate: _today, items: [_i(_K.kma,2), _i(_K.klmh,1)] },
-    { id: 2010, ref: 'WH/OUT/00209', soRef: '1090773918240671',     customer: 'ECOMMERCE : LAZADA', source: 'Lazada_Skinoxy',    platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: _D(30000),   scheduledDate: _today, items: [_i(_P.washB,1), _i(_P.toner,2), _i(_P.washH,1)] },
-];
+// Production: starts empty. Use Settings > Create Test Orders for demo data.
+export const INITIAL_SALES_ORDERS = [];
