@@ -1,0 +1,18 @@
+{
+  "name": "KOB WMS Pro",
+  "short_name": "WMS Pro",
+  "description": "Enterprise Warehouse Management System — Kiss of Beauty",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e40af",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}

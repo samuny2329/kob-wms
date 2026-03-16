@@ -1,0 +1,3 @@
+# KOB WMS Pro — Private enterprise system, do not index
+User-agent: *
+Disallow: /

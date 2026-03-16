@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#1e40af"/>
+  <text x="32" y="24" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="14" fill="#fff">WMS</text>
+  <rect x="12" y="30" width="40" height="4" rx="2" fill="#60a5fa"/>
+  <rect x="12" y="38" width="28" height="4" rx="2" fill="#93c5fd"/>
+  <rect x="12" y="46" width="34" height="4" rx="2" fill="#93c5fd"/>
+  <path d="M44 38l4 4 8-8" stroke="#34d399" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
