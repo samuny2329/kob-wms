@@ -43,7 +43,7 @@ const Users = ({ t, userRole, newUserName, setNewUserName, newUserUsername, setN
                         </button>
                     </div>
                     <p style={{ fontSize: '11px', color: '#6c757d', marginTop: '12px', borderLeft: '2px solid #ffac00', paddingLeft: '8px', backgroundColor: '#fffbf0', paddingTop: '4px', paddingBottom: '4px' }}>
-                        * รหัสผ่านเริ่มต้นสำหรับพนักงานใหม่คือ <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#856404', backgroundColor: '#ffffff', padding: '1px 6px', border: '1px solid #dee2e6', borderRadius: '3px', margin: '0 4px' }}>123456</span> ระบบจะบังคับเปลี่ยนรหัสผ่านทันทีเมื่อล็อคอินครั้งแรก
+                        * Default password for new staff is <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#856404', backgroundColor: '#ffffff', padding: '1px 6px', border: '1px solid #dee2e6', borderRadius: '3px', margin: '0 4px' }}>123456</span> System will force a password change on first login.
                     </p>
                 </div>
 

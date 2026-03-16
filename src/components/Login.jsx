@@ -74,7 +74,7 @@ const Login = ({ t, username, setUsername, password, setPassword, isLoading, err
                                 style={{ color: '#6c757d' }}
                             >
                                 <option value="en">English (US)</option>
-                                <option value="th">ภาษาไทย (TH)</option>
+                                <option value="th">Thai (TH)</option>
                             </select>
                         </div>
                     </div>

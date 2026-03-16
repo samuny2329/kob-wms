@@ -139,9 +139,9 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
   <table>
     <thead><tr>
       <th>#</th>
-      <th>สินค้า</th>
+      <th>Product</th>
       <th style="text-align:center">Loc</th>
-      <th style="text-align:center">จำนวน</th>
+      <th style="text-align:center">Qty</th>
       <th style="text-align:center">✓</th>
     </tr></thead>
     <tbody>
@@ -235,7 +235,7 @@ window.onload=function(){
                     {isSyncingOrders && (
                         <div className="px-5 py-2 flex items-center gap-2" style={{ backgroundColor: '#e8f4fd', borderBottom: '1px solid #b8daff' }}>
                             <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" style={{ color: '#17a2b8' }} />
-                            <p className="text-xs font-medium" style={{ color: '#17a2b8' }}>กำลังโหลดออเดอร์จาก Odoo...</p>
+                            <p className="text-xs font-medium" style={{ color: '#17a2b8' }}>Loading orders from Odoo...</p>
                         </div>
                     )}
 
@@ -260,7 +260,7 @@ window.onload=function(){
                                     }
                                 }}
                                 onBlur={() => setTimeout(() => focusScanInput(listScanRef), 300)}
-                                placeholder="แตะที่นี่ แล้วสแกนบาร์โค้ดใบ Pick..."
+                                placeholder="Tap here, then scan Pick list barcode..."
                                 className="w-full pl-9 pr-4 py-2 text-sm font-mono outline-none transition-all"
                                 style={{
                                     border: `1px solid ${scanFlash === 'notfound' ? '#dc3545' : '#dee2e6'}`,
@@ -273,12 +273,12 @@ window.onload=function(){
                         </div>
                         {scanFlash === 'notfound' && debugScan && (
                             <div className="mt-2 p-2 rounded" style={{ backgroundColor: '#fff5f5', border: '1px solid #f5c6cb' }}>
-                                <p className="text-xs font-semibold" style={{ color: '#dc3545' }}>ไม่พบใบงาน ({debugScan.count} orders)</p>
-                                <p className="text-[10px] font-mono mt-0.5" style={{ color: '#dc3545' }}>สแกน: <span className="font-bold">"{debugScan.val}"</span></p>
-                                <p className="text-[10px] font-mono" style={{ color: '#adb5bd' }}>Ref แรก: "{debugScan.firstRef}"</p>
+                                <p className="text-xs font-semibold" style={{ color: '#dc3545' }}>Work order not found ({debugScan.count} orders)</p>
+                                <p className="text-[10px] font-mono mt-0.5" style={{ color: '#dc3545' }}>Scanned: <span className="font-bold">"{debugScan.val}"</span></p>
+                                <p className="text-[10px] font-mono" style={{ color: '#adb5bd' }}>First ref: "{debugScan.firstRef}"</p>
                                 {onSyncOrders && (
                                     <button onClick={onSyncOrders} className="mt-1.5 text-[10px] underline" style={{ color: '#17a2b8' }}>
-                                        Sync Orders อีกครั้ง
+                                        Sync Orders again
                                     </button>
                                 )}
                             </div>
@@ -458,7 +458,7 @@ window.onload=function(){
                                             <div className="font-bold text-sm" style={{ color: '#212529' }}>[Picking List] {pl?.name || order.platform}_KissMyBody</div>
                                             <div className="text-xs mt-0.5" style={{ color: '#6c757d' }}>Set_NO No.{idx+1} / Total {total}</div>
                                             <div className="mt-2 px-3 py-1.5 rounded inline-block text-xs tracking-widest font-mono" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#212529' }}>{order.ref}</div>
-                                            <div className="text-xs mt-1 mb-3" style={{ color: '#6c757d' }}>{order.customer && `ลูกค้า: ${order.customer}`}</div>
+                                            <div className="text-xs mt-1 mb-3" style={{ color: '#6c757d' }}>{order.customer && `Customer: ${order.customer}`}</div>
                                             <div className="space-y-1 mb-3">
                                                 {order.items.map((item, i) => {
                                                     const loc = getLocation(item.sku);

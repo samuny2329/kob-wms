@@ -244,7 +244,7 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast }) => {
                                             </button>
                                         )}
                                         {inv.status === 'posted' && (
-                                            <span className="shrink-0 flex items-center gap-1 text-xs px-2 py-1 rounded cursor-not-allowed select-none" style={{ backgroundColor: '#e9ecef', color: '#adb5bd', border: '1px solid #dee2e6' }} title="ยืนยันการชำระเงินใน Odoo">
+                                            <span className="shrink-0 flex items-center gap-1 text-xs px-2 py-1 rounded cursor-not-allowed select-none" style={{ backgroundColor: '#e9ecef', color: '#adb5bd', border: '1px solid #dee2e6' }} title="Confirm payment in Odoo">
                                                 <DollarSign className="w-3 h-3" /> Paid
                                             </span>
                                         )}

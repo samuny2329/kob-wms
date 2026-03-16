@@ -157,7 +157,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
             confirmAwbLock(input);
         } else {
             playSound('error');
-            setLastScanStatus({ type: 'error', message: `AWB ไม่ตรง: สแกนได้ "${input}" แต่ระบบรอ "${orderAwb}"` });
+            setLastScanStatus({ type: 'error', message: `AWB mismatch: scanned "${input}" but expected "${orderAwb}"` });
         }
         setAwbInput('');
     };
@@ -264,7 +264,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                         <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
                             <div className="text-center max-w-sm w-full px-8" style={{ color: '#adb5bd' }}>
                                 <ScanLine className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#212529', marginBottom: '4px' }}>สแกนใบงานเพื่อเริ่ม Pack</p>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#212529', marginBottom: '4px' }}>Scan work order to start packing</p>
                                 <p style={{ fontSize: '12px', marginBottom: '20px' }}>Scan work order ref (e.g. WH/OUT/00050)</p>
                                 <div className="relative">
                                     <input
@@ -316,7 +316,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                             <Lock className="w-10 h-10" style={{ color: '#dc3545' }} />
                                         </div>
                                         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#212529', marginBottom: '4px' }}>Order Locked</h2>
-                                        <p style={{ fontSize: '13px', color: '#6c757d', marginBottom: '4px' }}>{selectedOrder.ref} • AWB ยืนยันแล้ว</p>
+                                        <p style={{ fontSize: '13px', color: '#6c757d', marginBottom: '4px' }}>{selectedOrder.ref} • AWB confirmed</p>
                                         <p style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '13px', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px', padding: '4px 12px', display: 'inline-block', marginBottom: '6px', color: '#212529' }}>{selectedOrder.awb}</p>
                                         <p style={{ fontSize: '12px', color: '#adb5bd', marginBottom: '20px' }}>{selectedOrder.boxType} • {selectedOrder.courier}</p>
                                         <button onClick={() => { setSelectedOrder(null); setLastScanStatus(null); }} className="odoo-btn odoo-btn-secondary">
@@ -332,7 +332,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                         {hasAwb ? (
                                             <div className="w-full max-w-xl text-center space-y-5">
                                                 <div className="inline-flex items-center gap-2" style={{ padding: '6px 14px', backgroundColor: '#e0f5f5', color: '#017E84', borderRadius: '4px', fontSize: '12px', fontWeight: 700, border: '1px solid #00A09D' }}>
-                                                    <PackageCheck className="w-4 h-4" /> AWB พร้อมแล้ว — สแกน Label เพื่อยืนยัน
+                                                    <PackageCheck className="w-4 h-4" /> AWB ready — scan label to confirm
                                                 </div>
                                                 <div style={{ border: '2px dashed #dee2e6', borderRadius: '4px', padding: '16px 32px', display: 'inline-block' }}>
                                                     <Barcode className="w-6 h-6 mx-auto mb-1" style={{ color: '#adb5bd' }} />
@@ -352,13 +352,13 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                     />
                                                     <Lock className="w-6 h-6 absolute right-4 top-1/2 -translate-y-1/2 text-red-300" />
                                                 </div>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">สแกน AWB ให้ตรง → ระบบล็อคออเดอร์ทันที</p>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Scan matching AWB → system locks order immediately</p>
                                                 {printAwbLabel && (
                                                     <button
                                                         onClick={() => printAwbLabel(selectedOrder, selectedOrder.awb)}
                                                         className="odoo-btn odoo-btn-secondary"
                                                     >
-                                                        <Printer className="w-4 h-4" /> พิมพ์ใบ AWB ใหม่
+                                                        <Printer className="w-4 h-4" /> Reprint AWB
                                                     </button>
                                                 )}
                                             </div>
@@ -368,12 +368,12 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                 <div className="inline-flex items-center gap-2 mb-5" style={{ padding: '6px 14px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', fontSize: '12px', fontWeight: 700, border: '1px solid #c3e6cb' }}>
                                                     <PackageCheck className="w-4 h-4" /> ALL ITEMS VERIFIED
                                                 </div>
-                                                <h4 style={{ fontSize: '12px', fontWeight: 700, color: '#6c757d', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>เลือกประเภทกล่อง</h4>
-                                                <p style={{ fontSize: '12px', color: '#adb5bd', marginBottom: '20px' }}>ระบบจะออก AWB อัตโนมัติหลังเลือกกล่อง</p>
+                                                <h4 style={{ fontSize: '12px', fontWeight: 700, color: '#6c757d', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Select box type</h4>
+                                                <p style={{ fontSize: '12px', color: '#adb5bd', marginBottom: '20px' }}>System will generate AWB automatically after selecting box</p>
                                                 {isProcessingAPI ? (
                                                     <div className="flex flex-col items-center gap-3 py-4" style={{ color: '#6c757d' }}>
                                                         <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#017E84' }} />
-                                                        <p style={{ fontSize: '13px', fontWeight: 600 }}>กำลังออก AWB...</p>
+                                                        <p style={{ fontSize: '13px', fontWeight: 600 }}>Generating AWB...</p>
                                                     </div>
                                                 ) : (
                                                     <div className="flex gap-3 justify-center flex-wrap">

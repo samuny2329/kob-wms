@@ -48,7 +48,7 @@ const Scan = ({ currentBatchId, totalScanned, totalExpected, progressPercent, in
                     {pending.length > 0 && (
                         <div>
                             <div className="flex items-center gap-2 px-1 mb-3" style={{ fontSize: '10px', fontWeight: 700, color: '#ffac00', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                                <Clock className="w-3.5 h-3.5" /> รอสแกน ({pending.length})
+                                <Clock className="w-3.5 h-3.5" /> Awaiting Scan ({pending.length})
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 {pending.map((item, i) => (
@@ -57,7 +57,7 @@ const Scan = ({ currentBatchId, totalScanned, totalExpected, progressPercent, in
                                             <p style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '13px', color: '#212529' }}>{item.barcode}</p>
                                             <p style={{ fontSize: '11px', color: '#6c757d', marginTop: '2px' }}>{item.orderNumber} • {item.courier}</p>
                                         </div>
-                                        <span className="odoo-badge" style={{ backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffc107' }}>ยังไม่สแกน</span>
+                                        <span className="odoo-badge" style={{ backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffc107' }}>Not Scanned</span>
                                     </div>
                                 ))}
                             </div>
@@ -67,7 +67,7 @@ const Scan = ({ currentBatchId, totalScanned, totalExpected, progressPercent, in
                     {done.length > 0 && (
                         <div>
                             <div className="flex items-center gap-2 px-1 mb-3" style={{ fontSize: '10px', fontWeight: 700, color: '#28a745', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                                <CheckCircle2 className="w-3.5 h-3.5" /> สแกนแล้ว ({done.length})
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Scanned ({done.length})
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 {done.map((item, i) => (

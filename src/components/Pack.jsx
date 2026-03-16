@@ -103,7 +103,7 @@ const Pack = ({
                             <Lock className="w-10 h-10" style={{ color: '#dc3545' }} />
                         </div>
                         <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#212529' }}>Order Locked</h2>
-                        <p style={{ fontSize: '13px', color: '#6c757d' }}>AWB ยืนยันแล้ว — ออเดอร์นี้ปิดการแก้ไข</p>
+                        <p style={{ fontSize: '13px', color: '#6c757d' }}>AWB confirmed — this order is locked for editing</p>
                         <div style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px', padding: '16px 24px', textAlign: 'left', width: '100%', maxWidth: '320px', marginTop: '8px' }}>
                             {[['AWB', selectedPackOrder.awb, true], ['Box', selectedPackOrder.boxType || '-', false], ['Courier', selectedPackOrder.courier, false], ['Items', `${selectedPackOrder.items.reduce((s, i) => s + (i.picked || i.expected || 0), 0)} pcs`, false]].map(([label, val, mono]) => (
                                 <div key={label} className="flex justify-between" style={{ fontSize: '13px', marginBottom: '8px' }}>
@@ -113,7 +113,7 @@ const Pack = ({
                             ))}
                         </div>
                         <button onClick={() => setSelectedPackOrder(null)} style={{ fontSize: '13px', color: '#6c757d', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', marginTop: '8px' }}>
-                            กลับไปที่รายการ
+                            Back to list
                         </button>
                     </div>
                 )}
@@ -122,7 +122,7 @@ const Pack = ({
                 {!isLocked && hasAwb && (
                     <div className="p-8 flex flex-col items-center" style={{ gap: '20px' }}>
                         <div className="text-center">
-                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#adb5bd', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '12px' }}>AWB พิมพ์แล้ว — สแกน Label เพื่อยืนยัน</p>
+                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#adb5bd', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '12px' }}>AWB printed — scan label to confirm</p>
                             <div style={{ backgroundColor: '#ffffff', border: '2px dashed #dee2e6', borderRadius: '4px', padding: '20px 40px', display: 'inline-block' }}>
                                 <Barcode className="w-8 h-8 mx-auto mb-2" style={{ color: '#adb5bd' }} />
                                 <div style={{ fontSize: '22px', fontWeight: 800, fontFamily: 'monospace', color: '#212529', letterSpacing: '0.1em' }}>{selectedPackOrder.awb}</div>
@@ -137,19 +137,19 @@ const Pack = ({
                                 value={packAwbInput}
                                 onChange={e => setPackAwbInput(e.target.value)}
                                 onKeyDown={handleAwbConfirmScan}
-                                placeholder="สแกน AWB Label เพื่อล็อคออเดอร์..."
+                                placeholder="Scan AWB label to lock order..."
                                 style={{ width: '100%', border: '2px solid #dee2e6', borderRadius: '4px', fontSize: '16px', fontFamily: 'monospace', fontWeight: 700, textAlign: 'center', padding: '12px 16px', outline: 'none', boxSizing: 'border-box' }}
                                 onFocus={e => e.target.style.borderColor = '#714B67'}
                                 onBlur={e => e.target.style.borderColor = '#dee2e6'}
                             />
                         </div>
-                        <p style={{ fontSize: '12px', color: '#adb5bd' }}>สแกน AWB ให้ตรงกับที่แสดง → ระบบจะล็อคออเดอร์ทันที</p>
+                        <p style={{ fontSize: '12px', color: '#adb5bd' }}>Scan AWB to match display → system will lock order immediately</p>
                         {printAwbLabel && (
                             <button
                                 onClick={() => printAwbLabel(selectedPackOrder, selectedPackOrder.awb)}
                                 className="odoo-btn odoo-btn-secondary"
                             >
-                                <Printer className="w-4 h-4" /> พิมพ์ใบ AWB ใหม่
+                                <Printer className="w-4 h-4" /> Reprint AWB
                             </button>
                         )}
                     </div>
@@ -159,13 +159,13 @@ const Pack = ({
                 {!isLocked && !hasAwb && allPacked && (
                     <div className="p-8">
                         <div className="text-center mb-6">
-                            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>เลือกประเภทกล่อง</h3>
-                            <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>ระบบจะออก AWB อัตโนมัติหลังเลือกกล่อง</p>
+                            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>Select box type</h3>
+                            <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>System will generate AWB automatically after selecting box</p>
                         </div>
                         {isProcessingAPI ? (
                             <div className="flex flex-col items-center py-10" style={{ gap: '12px', color: '#6c757d' }}>
                                 <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#714B67' }} />
-                                <p style={{ fontSize: '13px', fontWeight: 500 }}>กำลังออก AWB...</p>
+                                <p style={{ fontSize: '13px', fontWeight: 500 }}>Generating AWB...</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

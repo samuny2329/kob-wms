@@ -352,7 +352,7 @@ const App = () => {
             o.odooPickingId ||
             o.items?.some(i => REAL_SKUS.includes(i.sku))
         ));
-        addToast('ลบออเดอร์ Dummy แล้ว');
+        addToast('Dummy orders removed');
     };
 
     // Create SO directly in Odoo, then sync back
@@ -361,12 +361,12 @@ const App = () => {
         setIsCreatingSO(true);
         try {
             const result = await createSalesOrder(apiConfigs.odoo, orderData);
-            addToast(`สร้าง SO ใน Odoo แล้ว: ${result.soName} → ${result.pickingRef}`);
+            addToast(`SO created in Odoo: ${result.soName} → ${result.pickingRef}`);
             logActivity('create-so-odoo', { soName: result.soName, picking: result.pickingRef, platform: orderData.platform });
             // Trigger sync to pull the new picking into WMS
             if (typeof syncNow === 'function') syncNow();
         } catch (err) {
-            addToast('สร้าง SO ล้มเหลว: ' + err.message, 'error');
+            addToast('SO creation failed: ' + err.message, 'error');
         } finally {
             setIsCreatingSO(false);
         }
@@ -399,7 +399,7 @@ const App = () => {
                 playSound('success');
                 logActivity('pick', { order: selectedPickOrder.ref, sku: item.sku });
                 if (isFinished) {
-                    addToast(`✓ Pick เสร็จแล้ว: ${selectedPickOrder.ref}`, 'success');
+                    addToast(`✓ Pick completed: ${selectedPickOrder.ref}`, 'success');
                     setTimeout(() => setSelectedPickOrder(null), 800);
                 }
             } else {
@@ -467,7 +467,7 @@ const App = () => {
         const today = new Date().toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const totalQty = order.items ? order.items.reduce((s, i) => s + (i.picked || i.expected || 0), 0) : '-';
         const courierRaw = (order.courier || order.platform || '').toLowerCase();
-        const recipient = order.customer || 'ลูกค้า';
+        const recipient = order.customer || 'Customer';
         const sender = 'SKINOXY / KOB';
         const ref = order.ref || '';
         const box = order.boxType || '-';
@@ -479,7 +479,7 @@ const App = () => {
         const isJT = courierRaw.includes('j&t') || courierRaw.includes('jt');
         const isKerry = courierRaw.includes('kerry');
         const isSCG = courierRaw.includes('scg') || courierRaw.includes('skootar');
-        const isThaiPost = courierRaw.includes('ไปรษณีย์') || courierRaw.includes('thailand post') || courierRaw.includes('ems') || courierRaw.includes('thai post');
+        const isThaiPost = courierRaw.includes('thailand post') || courierRaw.includes('ems') || courierRaw.includes('thai post');
 
         // Platform theme config
         let theme = { bg: '#fff', headerBg: '#333', headerColor: '#fff', logo: '📦', name: order.courier || order.platform || 'COURIER', accentColor: '#333', borderColor: '#ccc' };
@@ -489,7 +489,7 @@ const App = () => {
         if (isJT)       theme = { bg:'#fff0f0', headerBg:'#E30613', headerColor:'#fff', logo:'J&T', name:'J&T Express', accentColor:'#E30613', borderColor:'#E30613', isText:true };
         if (isKerry)    theme = { bg:'#fff8f0', headerBg:'#D0021B', headerColor:'#fff', logo:'KERRY', name:'Kerry Express', accentColor:'#D0021B', borderColor:'#D0021B', isText:true };
         if (isSCG)      theme = { bg:'#f0f8ff', headerBg:'#003087', headerColor:'#fff', logo:'SCG', name:'SCG Express', accentColor:'#003087', borderColor:'#003087', isText:true };
-        if (isThaiPost) theme = { bg:'#f0fff4', headerBg:'#7B2D8B', headerColor:'#fff', logo:'🇹🇭 ไปรษณีย์', name:'Thailand Post EMS', accentColor:'#7B2D8B', borderColor:'#7B2D8B', isText:true };
+        if (isThaiPost) theme = { bg:'#f0fff4', headerBg:'#7B2D8B', headerColor:'#fff', logo:'🇹🇭 THP', name:'Thailand Post EMS', accentColor:'#7B2D8B', borderColor:'#7B2D8B', isText:true };
 
         const win = window.open('', '_blank', 'width=500,height=750');
         win.document.write(`<!DOCTYPE html>
@@ -563,11 +563,11 @@ const App = () => {
     <div class="awb-num">${awbCode}</div>
     <hr class="divider">
     <div class="addr-block">
-      <div class="addr-label">▼ จัดส่งถึง (TO)</div>
+      <div class="addr-label">▼ SHIP TO</div>
       <div class="addr-name">${recipient}</div>
     </div>
     <div class="addr-block">
-      <div class="addr-label">▲ ผู้ส่ง (FROM)</div>
+      <div class="addr-label">▲ FROM</div>
       <div class="addr-sub">${sender}</div>
     </div>
     <hr class="divider-dash">
@@ -600,7 +600,7 @@ window.onload=function(){
             const updatedOrder = { ...order, status: 'rts', awb: awbCode };
             const updatedOrders = salesOrders.map(o => o.id === order.id ? updatedOrder : o);
             setSalesOrders(updatedOrders);
-            addToast('AWB พร้อมแล้ว: ' + awbCode);
+            addToast('AWB ready: ' + awbCode);
             if (selectedPackOrder && selectedPackOrder.id === order.id) {
                 setSelectedPackOrder(updatedOrder);
             }
@@ -616,7 +616,7 @@ window.onload=function(){
             const updatedOrder = { ...order, status: 'rts', awb: awbCode };
             const updatedOrders = salesOrders.map(o => o.id === order.id ? updatedOrder : o);
             setSalesOrders(updatedOrders);
-            addToast('AWB พร้อมแล้ว: ' + awbCode);
+            addToast('AWB ready: ' + awbCode);
             if (selectedPackOrder && selectedPackOrder.id === order.id) {
                 setSelectedPackOrder(updatedOrder);
             }

@@ -231,7 +231,7 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                 className="odoo-input w-full md:w-1/2"
                             >
                                 <option value="en">English (US)</option>
-                                <option value="th">ภาษาไทย (Thai)</option>
+                                <option value="th">Thai (TH)</option>
                             </select>
                             <p className="text-xs mt-1.5" style={{ color: '#6c757d' }}>{t('langDesc')}</p>
                         </div>
@@ -341,10 +341,10 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
 
                                                         {/* Create Test SO */}
                                                         <div className="pt-2" style={{ borderTop: '1px solid #dee2e6' }}>
-                                                            <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#6c757d' }}>สร้าง Test Sales Orders (SKINOXY)</p>
+                                                            <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#6c757d' }}>Create Test Sales Orders (SKINOXY)</p>
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
-                                                                    <span className="text-xs" style={{ color: '#6c757d' }}>จำนวน SO:</span>
+                                                                    <span className="text-xs" style={{ color: '#6c757d' }}>SO Count:</span>
                                                                     <input
                                                                         type="number" min="1" max="20" value={soCount}
                                                                         onChange={e => setSoCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
@@ -357,7 +357,7 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                                                         setIsCreatingSO(true); setCreateSOResult(null);
                                                                         try {
                                                                             const result = await createTestSalesOrders(apiConfigs.odoo, soCount);
-                                                                            setCreateSOResult({ success: true, message: `สร้าง ${result.created} SO สำเร็จ → WH/OUT พร้อม Pick` });
+                                                                            setCreateSOResult({ success: true, message: `Created ${result.created} SOs → WH/OUT ready for Pick` });
                                                                         } catch (err) {
                                                                             setCreateSOResult({ success: false, message: err.message });
                                                                         } finally { setIsCreatingSO(false); }
@@ -366,7 +366,7 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                                                     className="odoo-btn odoo-btn-primary disabled:opacity-50 flex items-center gap-1.5 text-xs"
                                                                 >
                                                                     {isCreatingSO ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Store className="w-3.5 h-3.5" />}
-                                                                    {isCreatingSO ? 'กำลังสร้าง...' : 'Create Test SOs'}
+                                                                    {isCreatingSO ? 'Creating...' : 'Create Test SOs'}
                                                                 </button>
                                                                 {createSOResult && (
                                                                     <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: createSOResult.success ? '#28a745' : '#dc3545' }}>
@@ -375,7 +375,7 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <p className="text-[11px] mt-1" style={{ color: '#adb5bd' }}>สินค้า: STDH080-REFILL, STBG080, SWB700, SWH700 — random qty 1-3</p>
+                                                            <p className="text-[11px] mt-1" style={{ color: '#adb5bd' }}>Products: STDH080-REFILL, STBG080, SWB700, SWH700 — random qty 1-3</p>
                                                         </div>
                                                     </div>
                                                 )}
