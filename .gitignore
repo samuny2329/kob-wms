@@ -39,3 +39,9 @@ yarn-error.log*
 docker-data/
 postgres-data/
 odoo-data/
+
+# Claude Code config (local only)
+.claude/
+setup-github.bat
+setup-github.ps1
+rename-repo.bat
