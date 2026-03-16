@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WMS Pro - User Guide Infographic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+    background: #0a0a1a;
+    color: #e0e0e0;
+    overflow-x: hidden;
+  }
+
+  /* === HERO SECTION === */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0a0a2e 0%, #1a0a3e 30%, #0a1a3e 60%, #0a0a2e 100%);
+    overflow: hidden;
+    padding: 40px 20px;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+    animation: nebula 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes nebula {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(3deg) scale(1.05); }
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 900px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #a5b4fc;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .hero-badge .dot {
+    width: 8px; height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  }
+
+  .hero-title {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 50%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-subtitle {
+    font-size: 22px;
+    font-weight: 300;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .hero-brand {
+    font-size: 15px;
+    color: #64748b;
+    margin-bottom: 50px;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat-num {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-stat-label {
+    font-size: 13px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  .scroll-indicator svg {
+    width: 20px;
+    height: 20px;
+    stroke: #475569;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* === ORDER FLOW SECTION === */
+  .flow-section {
+    padding: 80px 20px;
+    background: linear-gradient(180deg, #0a0a1a 0%, #0d1025 100%);
+    text-align: center;
+  }
+
+  .section-label {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #818cf8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 50px;
+  }
+
+  .flow-pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 16px;
+    min-width: 120px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    transition: all 0.3s;
+  }
+
+  .flow-step:hover {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-4px);
+  }
+
+  .flow-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .flow-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+
+  .flow-desc {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .flow-arrow {
+    font-size: 20px;
+    color: #334155;
+  }
+
+  /* === MAIN CONTENT === */
+  .main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Category Headers */
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 70px 0 30px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .category-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .category-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+
+  .category-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .category-count {
+    margin-left: auto;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    color: #94a3b8;
+  }
+
+  /* Card Grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  /* Cards */
+  .card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 28px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .card-number {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.3;
+  }
+
+  .card-title-th {
+    font-size: 13px;
+    font-weight: 400;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .card-shortcut {
+    margin-left: auto;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+
+  .card-features {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .card-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+
+  .card-feature-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+  }
+
+  .card-tag {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.04);
+    color: #64748b;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Color Themes */
+  .theme-blue .card-icon { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+  .theme-blue .card::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .theme-blue .card-feature-icon { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+
+  .theme-purple .card-icon { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+  .theme-purple .card::before { background: linear-gradient(90deg, #a855f7, #c084fc); }
+  .theme-purple .card-feature-icon { background: rgba(168, 85, 247, 0.1); color: #c084fc; }
+
+  .theme-green .card-icon { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+  .theme-green .card::before { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .theme-green .card-feature-icon { background: rgba(34, 197, 94, 0.1); color: #4ade80; }
+
+  .theme-orange .card-icon { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+  .theme-orange .card::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+  .theme-orange .card-feature-icon { background: rgba(249, 115, 22, 0.1); color: #fb923c; }
+
+  .theme-cyan .card-icon { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+  .theme-cyan .card::before { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+  .theme-cyan .card-feature-icon { background: rgba(6, 182, 212, 0.1); color: #22d3ee; }
+
+  .theme-rose .card-icon { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+  .theme-rose .card::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+  .theme-rose .card-feature-icon { background: rgba(244, 63, 94, 0.1); color: #fb7185; }
+
+  .theme-amber .card-icon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+  .theme-amber .card::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .theme-amber .card-feature-icon { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+
+  .theme-indigo .card-icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+  .theme-indigo .card::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+  .theme-indigo .card-feature-icon { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
+
+  /* Category icon colors */
+  .cat-ops { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+  .cat-inv { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+  .cat-log { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+  .cat-fin { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+  .cat-sys { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+  /* === ROLES SECTION === */
+  .roles-section {
+    padding: 80px 20px;
+    background: linear-gradient(180deg, #0d1025 0%, #0a0a1a 100%);
+  }
+
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .role-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .role-card:hover {
+    background: rgba(255,255,255,0.04);
+    transform: translateY(-4px);
+  }
+
+  .role-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 14px;
+  }
+
+  .role-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+
+  .role-name-th {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 12px;
+  }
+
+  .role-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .role-tab {
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    font-size: 10px;
+    color: #94a3b8;
+  }
+
+  /* === PLATFORMS SECTION === */
+  .platforms-section {
+    padding: 60px 20px;
+    background: #0a0a1a;
+  }
+
+  .platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .platform-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    transition: all 0.3s;
+  }
+
+  .platform-card:hover {
+    background: rgba(255,255,255,0.05);
+    transform: translateY(-3px);
+  }
+
+  .platform-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .platform-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    text-align: center;
+  }
+
+  .platform-prefix {
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #64748b;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+  }
+
+  /* === SHORTCUTS === */
+  .shortcuts-section {
+    padding: 60px 20px;
+    background: linear-gradient(180deg, #0a0a1a 0%, #0d1025 100%);
+  }
+
+  .shortcuts-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    transition: all 0.3s;
+  }
+
+  .shortcut-item:hover {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .shortcut-key {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #e2e8f0;
+    box-shadow: 0 2px 0 rgba(255,255,255,0.06);
+  }
+
+  .shortcut-label {
+    font-size: 14px;
+    color: #94a3b8;
+  }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 60px 20px;
+    background: #060612;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .footer-logo {
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+
+  .footer-text {
+    font-size: 13px;
+    color: #475569;
+  }
+
+  /* === WIDE CARD (span 2) === */
+  .card-wide {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title { font-size: 42px; }
+    .hero-stats { gap: 24px; }
+    .hero-stat-num { font-size: 36px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .card-wide { grid-column: span 1; }
+    .section-title { font-size: 28px; }
+    .roles-grid { grid-template-columns: repeat(2, 1fr); }
+    .platforms-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: #fff; color: #111; }
+    .card { border: 1px solid #ddd; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="dot"></span> Version 4.0.0 &mdash; Active</div>
+    <h1 class="hero-title">WMS Pro</h1>
+    <p class="hero-subtitle">Enterprise Warehouse Management System</p>
+    <p class="hero-brand">Kiss of Beauty / SKINOXY Brand &bull; User Guide Infographic</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">23</div>
+        <div class="hero-stat-label">Features</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">5</div>
+        <div class="hero-stat-label">User Roles</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">7</div>
+        <div class="hero-stat-label">Platforms</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">10</div>
+        <div class="hero-stat-label">Product SKUs</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+  </div>
+</section>
+
+<!-- ============ ORDER FLOW ============ -->
+<section class="flow-section">
+  <div class="section-label">Order Lifecycle</div>
+  <h2 class="section-title">Order Status Flow</h2>
+  <div class="flow-pipeline">
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(148,163,184,0.12);color:#94a3b8;">&#x23F3;</div>
+      <div class="flow-name">Pending</div>
+      <div class="flow-desc">รอจัดเตรียม</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(59,130,246,0.12);color:#60a5fa;">&#x1F6D2;</div>
+      <div class="flow-name">Picking</div>
+      <div class="flow-desc">กำลังหยิบ</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(34,197,94,0.12);color:#4ade80;">&#x2705;</div>
+      <div class="flow-name">Picked</div>
+      <div class="flow-desc">หยิบครบ</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(249,115,22,0.12);color:#fb923c;">&#x1F4E6;</div>
+      <div class="flow-name">Packing</div>
+      <div class="flow-desc">กำลังบรรจุ</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(168,85,247,0.12);color:#c084fc;">&#x1F381;</div>
+      <div class="flow-name">Packed</div>
+      <div class="flow-desc">บรรจุเรียบร้อย</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(6,182,212,0.12);color:#22d3ee;">&#x1F69A;</div>
+      <div class="flow-name">RTS</div>
+      <div class="flow-desc">พร้อมส่ง</div>
+    </div>
+    <div class="flow-arrow">&#x2192;</div>
+    <div class="flow-step">
+      <div class="flow-icon" style="background:rgba(244,63,94,0.12);color:#fb7185;">&#x1F512;</div>
+      <div class="flow-name">Locked</div>
+      <div class="flow-desc">ล็อคแล้ว</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROLES ============ -->
+<section class="roles-section">
+  <div style="text-align:center;margin-bottom:40px;">
+    <div class="section-label">Access Control</div>
+    <h2 class="section-title">5 User Roles</h2>
+  </div>
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="role-avatar" style="background:rgba(244,63,94,0.12);">&#x1F451;</div>
+      <div class="role-name">Administrator</div>
+      <div class="role-name-th">ผู้ดูแลระบบ</div>
+      <div class="role-tabs">
+        <span class="role-tab">All Access</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-avatar" style="background:rgba(59,130,246,0.12);">&#x1F3AF;</div>
+      <div class="role-name">Picker Specialist</div>
+      <div class="role-name-th">เจ้าหน้าที่หยิบสินค้า</div>
+      <div class="role-tabs">
+        <span class="role-tab">Pick List</span>
+        <span class="role-tab">Wave Sort</span>
+        <span class="role-tab">Manual</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-avatar" style="background:rgba(168,85,247,0.12);">&#x1F4E6;</div>
+      <div class="role-name">Packer & QC</div>
+      <div class="role-name-th">เจ้าหน้าที่บรรจุภัณฑ์</div>
+      <div class="role-tabs">
+        <span class="role-tab">Pack</span>
+        <span class="role-tab">Handheld</span>
+        <span class="role-tab">POS</span>
+        <span class="role-tab">Fulfill</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-avatar" style="background:rgba(6,182,212,0.12);">&#x1F69A;</div>
+      <div class="role-name">Outbound Ops</div>
+      <div class="role-name-th">เจ้าหน้าที่นำจ่าย</div>
+      <div class="role-tabs">
+        <span class="role-tab">Scan</span>
+        <span class="role-tab">Manifest</span>
+        <span class="role-tab">Dispatch</span>
+        <span class="role-tab">Reports</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-avatar" style="background:rgba(245,158,11,0.12);">&#x1F4B0;</div>
+      <div class="role-name">Accounting</div>
+      <div class="role-name-th">เจ้าหน้าที่บัญชี</div>
+      <div class="role-tabs">
+        <span class="role-tab">Dashboard</span>
+        <span class="role-tab">Invoices</span>
+        <span class="role-tab">Reports</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ALL 23 FEATURES ============ -->
+<div class="main-content">
+
+  <!-- ===== CATEGORY: CORE ===== -->
+  <div class="category-header">
+    <div class="category-icon cat-sys">&#x1F3E0;</div>
+    <div>
+      <div class="category-title">Core System</div>
+      <div class="category-subtitle">ระบบพื้นฐานและการเข้าใช้งาน</div>
+    </div>
+    <span class="category-count">3 Features</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- #1 System Overview -->
+    <div class="card theme-indigo">
+      <div class="card-header">
+        <div class="card-icon">&#x1F30D;</div>
+        <div>
+          <div class="card-number">#01</div>
+          <div class="card-title">System Overview</div>
+          <div class="card-title-th">ภาพรวมระบบ</div>
+        </div>
+      </div>
+      <div class="card-desc">ระบบจัดการคลังสินค้าอัจฉริยะ รองรับ Multi-Platform, Real-time Sync, Firebase Cloud, Barcode Scanner</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x26A1;</div>Odoo ERP Sync ทุก 10 วินาที</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F310;</div>Thai / English bilingual</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F319;</div>Dark Mode รองรับ</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">React</span><span class="card-tag">Vite</span><span class="card-tag">Tailwind</span><span class="card-tag">Firebase</span></div>
+    </div>
+
+    <!-- #2 Login -->
+    <div class="card theme-purple">
+      <div class="card-header">
+        <div class="card-icon">&#x1F512;</div>
+        <div>
+          <div class="card-number">#02</div>
+          <div class="card-title">Login & Authentication</div>
+          <div class="card-title-th">การเข้าสู่ระบบ</div>
+        </div>
+      </div>
+      <div class="card-desc">Firebase Authentication พร้อมบังคับเปลี่ยนรหัสผ่านครั้งแรก</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F511;</div>Default password: 123456</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F6E1;</div>Force password change on first login</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F30E;</div>เลือกภาษาได้ตั้งแต่หน้า Login</div>
+      </div>
+    </div>
+
+    <!-- #3 Role-Based Access -->
+    <div class="card theme-rose">
+      <div class="card-header">
+        <div class="card-icon">&#x1F465;</div>
+        <div>
+          <div class="card-number">#03</div>
+          <div class="card-title">Role-Based Access</div>
+          <div class="card-title-th">สิทธิ์ผู้ใช้งาน 5 ระดับ</div>
+        </div>
+      </div>
+      <div class="card-desc">Segregation of Duties - แต่ละบทบาทเข้าถึงเฉพาะเมนูที่เกี่ยวข้อง</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F451;</div>Admin = Full Access</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F464;</div>Picker / Packer / Outbound / Accounting</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F504;</div>Auto tab restriction per role</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CATEGORY: OPERATIONS ===== -->
+  <div class="category-header">
+    <div class="category-icon cat-ops">&#x2699;&#xFE0F;</div>
+    <div>
+      <div class="category-title">Operations</div>
+      <div class="category-subtitle">Pick &bull; Pack &bull; Verify</div>
+    </div>
+    <span class="category-count">5 Features</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- #4 Dashboard -->
+    <div class="card theme-blue">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4CA;</div>
+        <div>
+          <div class="card-number">#04</div>
+          <div class="card-title">Dashboard</div>
+          <div class="card-title-th">แดชบอร์ด</div>
+        </div>
+      </div>
+      <div class="card-desc">ภาพรวม KPI ทั้งหมด: Order Pipeline, Inventory, Outbound, Team Performance</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4C8;</div>Order Pipeline (Pending/Picked/Packed/RTS)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4B0;</div>Stock Value + Low Stock Alert</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CA;</div>Courier Distribution Pie Chart</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F3C6;</div>Team Performance UPH Table</div>
+      </div>
+    </div>
+
+    <!-- #5 Pick List -->
+    <div class="card theme-blue">
+      <div class="card-header">
+        <div class="card-icon">&#x1F3AF;</div>
+        <div>
+          <div class="card-number">#05</div>
+          <div class="card-title">Pick List</div>
+          <div class="card-title-th">รายการจัดเตรียมสินค้า</div>
+        </div>
+        <span class="card-shortcut">F1</span>
+      </div>
+      <div class="card-desc">จัดเตรียมสินค้าตาม Optimized Pick Path พร้อม Barcode Scan ทีละรายการ</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CD;</div>Pick Path: A-01-01 &rarr; B-02-02</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4F1;</div>Barcode scan (SKU/EAN)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F5A8;</div>Print picking list (A6)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x2705;</div>Auto status &rarr; "Picked"</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Picker</span><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #6 Pack & Verify -->
+    <div class="card theme-purple">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4E6;</div>
+        <div>
+          <div class="card-number">#06</div>
+          <div class="card-title">Pack & Verify</div>
+          <div class="card-title-th">บรรจุภัณฑ์และทวนสอบ</div>
+        </div>
+        <span class="card-shortcut">F2</span>
+      </div>
+      <div class="card-desc">Double Verification + Cartonization Algorithm + AWB Generation</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">1</div>Item Scan &mdash; ทวนสอบสินค้า</div>
+        <div class="card-feature"><div class="card-feature-icon">2</div>Box Select &mdash; เลือกกล่อง (S/M/L/XL)</div>
+        <div class="card-feature"><div class="card-feature-icon">3</div>AWB Confirm &mdash; สแกนใบปะหน้า</div>
+        <div class="card-feature"><div class="card-feature-icon">4</div>Locked &mdash; ล็อค Order</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Packer</span><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #7 Handheld Pack -->
+    <div class="card theme-purple">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4F1;</div>
+        <div>
+          <div class="card-number">#07</div>
+          <div class="card-title">Handheld Pack</div>
+          <div class="card-title-th">แพ็คผ่านมือถือ</div>
+        </div>
+      </div>
+      <div class="card-desc">Mobile-optimized interface สำหรับ Handheld Scanner พร้อม AI Brain</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F916;</div>AI Smart Suggestion (Odoo API)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F5BC;</div>Product images for visual check</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CA;</div>Progress bar + % completion</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Packer</span><span class="card-tag">Mobile</span></div>
+    </div>
+
+    <!-- #8 POS Pack -->
+    <div class="card theme-purple">
+      <div class="card-header">
+        <div class="card-icon">&#x1F5A5;</div>
+        <div>
+          <div class="card-number">#08</div>
+          <div class="card-title">POS Pack</div>
+          <div class="card-title-th">แพ็คแบบสถานี Desktop</div>
+        </div>
+      </div>
+      <div class="card-desc">Dual-panel interface: แผงซ้ายเลือก Order + แผงขวาแพ็คสินค้า</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F50D;</div>Search & filter orders</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x2795;</div>Manual qty adjustment (+/-)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4E4;</div>Bulk RTS (Ready to Ship)</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Packer</span><span class="card-tag">Desktop</span></div>
+    </div>
+  </div>
+
+  <!-- ===== CATEGORY: INVENTORY ===== -->
+  <div class="category-header">
+    <div class="category-icon cat-inv">&#x1F4E6;</div>
+    <div>
+      <div class="category-title">Inventory</div>
+      <div class="category-subtitle">Stock &bull; Lot &bull; Wave</div>
+    </div>
+    <span class="category-count">2 Features</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- #9 Inventory -->
+    <div class="card theme-green">
+      <div class="card-header">
+        <div class="card-icon">&#x1F3ED;</div>
+        <div>
+          <div class="card-number">#09</div>
+          <div class="card-title">Inventory Management</div>
+          <div class="card-title-th">จัดการคลังสินค้า</div>
+        </div>
+      </div>
+      <div class="card-desc">Real-time stock tracking, Lot management, Replenishment, Low-stock alerts</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CD;</div>Warehouse location tracking (A-01-01)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4C3;</div>Lot number + Expiry date</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F504;</div>Replenishment + Stock adjustment</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x26A0;&#xFE0F;</div>Low stock alert (below reorder point)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4C8;</div>Stock history audit trail</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #10 Wave Sorting -->
+    <div class="card theme-green">
+      <div class="card-header">
+        <div class="card-icon">&#x1F30A;</div>
+        <div>
+          <div class="card-number">#10</div>
+          <div class="card-title">Wave Sorting</div>
+          <div class="card-title-th">จัดกลุ่มคำสั่งซื้อเป็น Wave</div>
+        </div>
+      </div>
+      <div class="card-desc">Batch picking organization - จัดกลุ่มรอบเช้า/บ่าย/ค่ำ หรือ Custom</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F305;</div>Morning 08:00-12:00</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x2600;&#xFE0F;</div>Afternoon 12:00-17:00</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F319;</div>Evening 17:00-21:00</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CA;</div>Pick/Pack progress bars per wave</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Admin</span><span class="card-tag">Picker</span></div>
+    </div>
+  </div>
+
+  <!-- ===== CATEGORY: LOGISTICS ===== -->
+  <div class="category-header">
+    <div class="category-icon cat-log">&#x1F69A;</div>
+    <div>
+      <div class="category-title">Logistics & Shipping</div>
+      <div class="category-subtitle">Fulfillment &bull; Scan &bull; Dispatch</div>
+    </div>
+    <span class="category-count">5 Features</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- #11 Fulfillment -->
+    <div class="card theme-cyan">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4CB;</div>
+        <div>
+          <div class="card-number">#11</div>
+          <div class="card-title">Fulfillment</div>
+          <div class="card-title-th">ติดตามสถานะคำสั่งซื้อ</div>
+        </div>
+      </div>
+      <div class="card-desc">ศูนย์กลางติดตาม Order lifecycle + Bulk RTS + Timeline visualization</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CA;</div>Stats: Total/Pending/Packed/Shipped/Rate%</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4E4;</div>Bulk RTS (select & ship multiple)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x23F3;</div>Timeline: Confirmed &rarr; Picked &rarr; Packed &rarr; Shipped</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Packer</span><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #12 Platform Monitor -->
+    <div class="card theme-cyan">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4F1;</div>
+        <div>
+          <div class="card-number">#12</div>
+          <div class="card-title">Platform Monitor</div>
+          <div class="card-title-th">เฝ้าระวัง SLA แพลตฟอร์ม</div>
+        </div>
+      </div>
+      <div class="card-desc">Real-time SLA compliance monitoring ทุก E-Commerce platform</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F6D2;</div>Shopee SLA 24h / Cancel 48h</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F3EA;</div>Lazada SLA 24h / Cancel 72h</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x23F0;</div>Cutoff time alerts (Morning/Afternoon)</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #13 Outbound Scan -->
+    <div class="card theme-cyan">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4E1;</div>
+        <div>
+          <div class="card-number">#13</div>
+          <div class="card-title">Outbound Scan</div>
+          <div class="card-title-th">สแกนนำจ่ายพัสดุ</div>
+        </div>
+        <span class="card-shortcut">F3</span>
+      </div>
+      <div class="card-desc">Automated parcel sorting ด้วย Color-coded BIN system</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon" style="background:rgba(234,179,8,0.2);color:#eab308;">1</div>BIN 1: Flash Express (&#x1F7E1;)</div>
+        <div class="card-feature"><div class="card-feature-icon" style="background:rgba(249,115,22,0.2);color:#f97316;">2</div>BIN 2: Shopee/Kerry (&#x1F7E0;)</div>
+        <div class="card-feature"><div class="card-feature-icon" style="background:rgba(239,68,68,0.2);color:#ef4444;">3</div>BIN 3: J&T Express (&#x1F534;)</div>
+        <div class="card-feature"><div class="card-feature-icon" style="background:rgba(236,72,153,0.2);color:#ec4899;">4</div>BIN 4: Thai Post (&#x1F7E3;)</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Outbound</span><span class="card-tag">Spacebar = Exception</span></div>
+    </div>
+
+    <!-- #14 Manifest -->
+    <div class="card theme-cyan">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4C4;</div>
+        <div>
+          <div class="card-number">#14</div>
+          <div class="card-title">Manifest</div>
+          <div class="card-title-th">รายการจัดส่ง</div>
+        </div>
+      </div>
+      <div class="card-desc">ตารางรายการพัสดุทั้งหมดที่สแกนแล้ว พร้อม Tracking URL</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F50D;</div>Search by tracking # / order ref</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F517;</div>Click tracking &rarr; carrier website</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4C4;</div>Paginated (25/page)</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Outbound</span><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #15 Dispatch -->
+    <div class="card theme-cyan">
+      <div class="card-header">
+        <div class="card-icon">&#x270D;&#xFE0F;</div>
+        <div>
+          <div class="card-number">#15</div>
+          <div class="card-title">Dispatch</div>
+          <div class="card-title-th">ส่งมอบพัสดุ + ลายเซ็นดิจิทัล</div>
+        </div>
+        <span class="card-shortcut">F4</span>
+      </div>
+      <div class="card-desc">ส่งมอบพัสดุแก่คนขับขนส่ง พร้อม Digital Signature บน Canvas</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F69A;</div>Select courier + package count</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x270D;&#xFE0F;</div>Digital signature canvas (touch/mouse)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x2705;</div>Confirm dispatch + receipt</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Outbound</span><span class="card-tag">Admin</span></div>
+    </div>
+  </div>
+
+  <!-- ===== CATEGORY: FINANCIAL ===== -->
+  <div class="category-header">
+    <div class="category-icon cat-fin">&#x1F4B0;</div>
+    <div>
+      <div class="category-title">Financial</div>
+      <div class="category-subtitle">Invoices &bull; Reports</div>
+    </div>
+    <span class="category-count">2 Features</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- #16 Invoices -->
+    <div class="card theme-amber">
+      <div class="card-header">
+        <div class="card-icon">&#x1F9FE;</div>
+        <div>
+          <div class="card-number">#16</div>
+          <div class="card-title">Invoices</div>
+          <div class="card-title-th">ใบแจ้งหนี้ + VAT 7%</div>
+        </div>
+      </div>
+      <div class="card-desc">Auto-generate invoices จาก RTS orders, Post ไป Odoo Accounting</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4DD;</div>Draft &rarr; Posted &rarr; Paid</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4B5;</div>Revenue KPI (Total + Today)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4E4;</div>Bulk post invoices to Odoo</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CA;</div>VAT 7% auto-calculated</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Accounting</span><span class="card-tag">Admin</span></div>
+    </div>
+
+    <!-- #17 Reports -->
+    <div class="card theme-amber">
+      <div class="card-header">
+        <div class="card-icon">&#x1F4C4;</div>
+        <div>
+          <div class="card-number">#17</div>
+          <div class="card-title">Reports</div>
+          <div class="card-title-th">รายงาน + Export PDF</div>
+        </div>
+      </div>
+      <div class="card-desc">สร้าง Manifest report (A4) + ประวัติ Batch + ช่องลงนาม</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4C4;</div>Current session / History batch</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F5A8;</div>Export PDF (A4 printable)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x270D;&#xFE0F;</div>Signature lines (Sender/Receiver)</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Outbound</span><span class="card-tag">Accounting</span><span class="card-tag">Admin</span></div>
+    </div>
+  </div>
+
+  <!-- ===== CATEGORY: SYSTEM ===== -->
+  <div class="category-header">
+    <div class="category-icon cat-sys">&#x2699;&#xFE0F;</div>
+    <div>
+      <div class="category-title">System Administration</div>
+      <div class="category-subtitle">Users &bull; Settings &bull; Platforms &bull; Products</div>
+    </div>
+    <span class="category-count">6 Features</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- #18 User Management -->
+    <div class="card theme-indigo">
+      <div class="card-header">
+        <div class="card-icon">&#x1F465;</div>
+        <div>
+          <div class="card-number">#18</div>
+          <div class="card-title">User Management</div>
+          <div class="card-title-th">จัดการผู้ใช้งาน</div>
+        </div>
+      </div>
+      <div class="card-desc">สร้างบัญชี, กำหนด Role, Reset Password, ลบผู้ใช้</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x2795;</div>Add Employee (Name + Username + Role)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F504;</div>Reset password &rarr; 123456</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F6E1;</div>Security status tracking</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Admin Only</span></div>
+    </div>
+
+    <!-- #19 Settings -->
+    <div class="card theme-indigo">
+      <div class="card-header">
+        <div class="card-icon">&#x2699;&#xFE0F;</div>
+        <div>
+          <div class="card-number">#19</div>
+          <div class="card-title">Settings</div>
+          <div class="card-title-th">ตั้งค่าระบบ</div>
+        </div>
+      </div>
+      <div class="card-desc">API Integration, Mock/Live mode, Test Connection, Danger Zone</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F517;</div>Odoo / Shopee / Lazada / TikTok API</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F9EA;</div>Mock Mode (offline demo data)</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x26A0;&#xFE0F;</div>Danger Zone: Purge / Reset All</div>
+      </div>
+      <div class="card-tags"><span class="card-tag">Admin Only</span></div>
+    </div>
+
+    <!-- #20 Keyboard Shortcuts -->
+    <div class="card theme-orange">
+      <div class="card-header">
+        <div class="card-icon">&#x2328;&#xFE0F;</div>
+        <div>
+          <div class="card-number">#20</div>
+          <div class="card-title">Keyboard Shortcuts</div>
+          <div class="card-title-th">คีย์ลัด</div>
+        </div>
+      </div>
+      <div class="card-desc">เข้าถึงเมนูหลักอย่างรวดเร็วด้วยปุ่ม Function Keys</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">F1</div>Pick List</div>
+        <div class="card-feature"><div class="card-feature-icon">F2</div>Pack & Verify</div>
+        <div class="card-feature"><div class="card-feature-icon">F3</div>Outbound Scan</div>
+        <div class="card-feature"><div class="card-feature-icon">F4</div>Dispatch</div>
+      </div>
+    </div>
+
+    <!-- #21 Supported Platforms -->
+    <div class="card theme-orange">
+      <div class="card-header">
+        <div class="card-icon">&#x1F6D2;</div>
+        <div>
+          <div class="card-number">#21</div>
+          <div class="card-title">Supported Platforms</div>
+          <div class="card-title-th">แพลตฟอร์มที่รองรับ</div>
+        </div>
+      </div>
+      <div class="card-desc">เชื่อมต่อ 7 แพลตฟอร์ม E-Commerce + Courier ชั้นนำ</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon" style="background:#EE4D2D22;color:#EE4D2D;">S</div>Shopee Express (SPXTH)</div>
+        <div class="card-feature"><div class="card-feature-icon" style="background:#0F146D22;color:#6366f1;">L</div>Lazada Express (LZTH)</div>
+        <div class="card-feature"><div class="card-feature-icon" style="background:#01010122;color:#94a3b8;">T</div>TikTok Shop (TTTH)</div>
+        <div class="card-feature"><div class="card-feature-icon" style="background:#FFCD0022;color:#eab308;">F</div>Flash / Kerry / J&T / Thai Post</div>
+      </div>
+    </div>
+
+    <!-- #22 Product Catalog -->
+    <div class="card theme-green">
+      <div class="card-header">
+        <div class="card-icon">&#x1F9F4;</div>
+        <div>
+          <div class="card-number">#22</div>
+          <div class="card-title">Product Catalog</div>
+          <div class="card-title-th">รายการสินค้า Pickface</div>
+        </div>
+      </div>
+      <div class="card-desc">สินค้า 2 แบรนด์: SKINOXY (6 SKU) + KISS-MY-BODY (4 SKU)</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F9F4;</div>SKINOXY: Toner Pad, Body Wash, Mask</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F48B;</div>KISS-MY-BODY: Lotion, Mist, Aroma</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4CD;</div>Location: A-01 / B-02 / C-01 / C-02</div>
+      </div>
+    </div>
+
+    <!-- #23 Troubleshooting -->
+    <div class="card theme-rose">
+      <div class="card-header">
+        <div class="card-icon">&#x1F527;</div>
+        <div>
+          <div class="card-number">#23</div>
+          <div class="card-title">Troubleshooting</div>
+          <div class="card-title-th">การแก้ไขปัญหาเบื้องต้น</div>
+        </div>
+      </div>
+      <div class="card-desc">วิธีแก้ปัญหาที่พบบ่อย: Scan ไม่ขึ้น, Offline, Connection fail</div>
+      <div class="card-features">
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4F1;</div>Scan ไม่ขึ้น &rarr; ตรวจสอบ Order</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F4F6;</div>Offline &rarr; ตรวจสอบ WiFi/LAN</div>
+        <div class="card-feature"><div class="card-feature-icon">&#x1F504;</div>ค้าง &rarr; Settings > Reset/Purge</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PLATFORMS DETAIL ============ -->
+<section class="platforms-section">
+  <div style="text-align:center;margin-bottom:40px;">
+    <div class="section-label">Integrations</div>
+    <h2 class="section-title">7 Supported Platforms</h2>
+  </div>
+  <div class="platforms-grid">
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#EE4D2D;">S</div>
+      <div class="platform-name">Shopee Express</div>
+      <div class="platform-prefix">SPXTH</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#0F146D;">L</div>
+      <div class="platform-name">Lazada Express</div>
+      <div class="platform-prefix">LZTH</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#010101;">T</div>
+      <div class="platform-name">TikTok Shop</div>
+      <div class="platform-prefix">TTTH</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#FFCD00;color:#333;">F</div>
+      <div class="platform-name">Flash Express</div>
+      <div class="platform-prefix">FLTH</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#D32011;">J</div>
+      <div class="platform-name">J&T Express</div>
+      <div class="platform-prefix">JTTH</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#FF6600;">K</div>
+      <div class="platform-name">Kerry Express</div>
+      <div class="platform-prefix">KETH</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-dot" style="background:#ED1C24;">P</div>
+      <div class="platform-name">Thai Post</div>
+      <div class="platform-prefix">TPTH</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHORTCUTS ============ -->
+<section class="shortcuts-section">
+  <div style="text-align:center;margin-bottom:40px;">
+    <div class="section-label">Quick Access</div>
+    <h2 class="section-title">Keyboard Shortcuts</h2>
+  </div>
+  <div class="shortcuts-grid">
+    <div class="shortcut-item">
+      <div class="shortcut-key">F1</div>
+      <div class="shortcut-label">Pick List</div>
+    </div>
+    <div class="shortcut-item">
+      <div class="shortcut-key">F2</div>
+      <div class="shortcut-label">Pack & Verify</div>
+    </div>
+    <div class="shortcut-item">
+      <div class="shortcut-key">F3</div>
+      <div class="shortcut-label">Outbound Scan</div>
+    </div>
+    <div class="shortcut-item">
+      <div class="shortcut-key">F4</div>
+      <div class="shortcut-label">Dispatch</div>
+    </div>
+    <div class="shortcut-item">
+      <div class="shortcut-key">Space</div>
+      <div class="shortcut-label">Log Exception</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-logo">WMS Pro v4.0.0</div>
+  <p class="footer-text">Enterprise Warehouse Management System &bull; Kiss of Beauty / SKINOXY Brand</p>
+  <p class="footer-text" style="margin-top:8px;color:#334155;">User Guide Infographic &bull; Generated 2026-03-16</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Test Sheet - SKINOXY WMS</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; }
+
+        .header { text-align: center; margin-bottom: 30px; padding: 20px; background: #714B67; color: white; border-radius: 12px; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.8; font-size: 14px; }
+
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 18px; font-weight: 700; color: #714B67; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #714B67; display: flex; align-items: center; gap: 8px; }
+        .section-title .badge { background: #714B67; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+        .barcode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+        .barcode-card { background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 16px; text-align: center; transition: box-shadow 0.2s; }
+        .barcode-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .barcode-card .sku { font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 2px; }
+        .barcode-card .name { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+        .barcode-card .location { font-size: 11px; font-weight: 700; color: #d97706; background: #fef3c7; display: inline-block; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; }
+        .barcode-card svg { display: block; margin: 0 auto; }
+        .barcode-card .barcode-text { font-size: 13px; color: #374151; font-family: monospace; margin-top: 6px; letter-spacing: 2px; }
+        .barcode-card .type-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 8px; margin-top: 6px; font-weight: 600; }
+        .type-ean { background: #dbeafe; color: #1e40af; }
+        .type-code128 { background: #fef3c7; color: #92400e; }
+        .type-order { background: #d1fae5; color: #065f46; }
+
+        .order-card { background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 16px; }
+        .order-card .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .order-card .order-ref { font-size: 16px; font-weight: 700; color: #1f2937; font-family: monospace; }
+        .order-card .platform { font-size: 12px; padding: 3px 10px; border-radius: 8px; font-weight: 600; }
+        .platform-shopee { background: #FEE2E2; color: #EE4D2D; }
+        .platform-lazada { background: #E0E7FF; color: #0F146D; }
+        .platform-flash { background: #FEF3C7; color: #F59E0B; }
+        .platform-jt { background: #FFEDD5; color: #EA580C; }
+        .platform-tiktok { background: #F3E8FF; color: #7C3AED; }
+        .platform-kerry { background: #FFF0E6; color: #FF6600; }
+        .order-card .customer { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
+        .order-card .items-list { font-size: 12px; color: #374151; margin-bottom: 12px; padding: 8px; background: #f9fafb; border-radius: 6px; }
+        .order-card .items-list div { padding: 2px 0; }
+        .order-card .barcode-area { text-align: center; padding-top: 8px; border-top: 1px dashed #d1d5db; }
+
+        .print-btn { position: fixed; bottom: 20px; right: 20px; background: #714B67; color: white; border: none; padding: 14px 28px; border-radius: 10px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(113,75,103,0.4); z-index: 100; display: flex; align-items: center; gap: 8px; }
+        .print-btn:hover { background: #5d3d55; }
+
+        .box-card { background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 16px; text-align: center; }
+        .box-card .box-icon { font-size: 32px; margin-bottom: 4px; }
+        .box-card .box-name { font-size: 14px; font-weight: 700; color: #1f2937; }
+        .box-card .box-size { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+
+        .awb-card { background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 16px; text-align: center; }
+        .awb-card .courier { font-size: 13px; font-weight: 700; color: #714B67; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .awb-card .awb-num { font-size: 12px; font-family: monospace; color: #6b7280; margin-top: 6px; letter-spacing: 2px; }
+
+        @media print {
+            body { background: white; padding: 10px; }
+            .print-btn { display: none; }
+            .barcode-card, .order-card, .box-card, .awb-card { break-inside: avoid; border: 1px solid #ccc; }
+            .header { background: #714B67 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>📦 BARCODE TEST SHEET</h1>
+    <p>SKINOXY (Kiss of Beauty) — WMS Pro · Updated March 2026</p>
+</div>
+
+<!-- SECTION 1: Product Barcodes (EAN-13) -->
+<div class="section">
+    <div class="section-title">🏷️ Product Barcodes <span class="badge">EAN-13 · สแกนสินค้า</span></div>
+    <div class="barcode-grid">
+
+        <div class="barcode-card">
+            <div class="sku">STDH080-REFILL</div>
+            <div class="name">Refill Toner Pad 150ml (Dewy &amp; Hydrating)</div>
+            <div class="location">📍 A-01-01</div>
+            <svg id="bc-prod-1"></svg>
+            <div class="barcode-text">8859139111901</div>
+            <div class="type-badge type-ean">EAN-13</div>
+        </div>
+
+        <div class="barcode-card">
+            <div class="sku">STBG080-REFILL</div>
+            <div class="name">Toner Pad Refill 150ml (Bright &amp; Glow)</div>
+            <div class="location">📍 A-01-02</div>
+            <svg id="bc-prod-2"></svg>
+            <div class="barcode-text">8859139111925</div>
+            <div class="type-badge type-ean">EAN-13</div>
+        </div>
+
+        <div class="barcode-card">
+            <div class="sku">SWB700</div>
+            <div class="name">Body Wash 700ml (pH 5.5 Brightening)</div>
+            <div class="location">📍 B-02-01</div>
+            <svg id="bc-prod-3"></svg>
+            <div class="barcode-text">8859139111703</div>
+            <div class="type-badge type-ean">EAN-13</div>
+        </div>
+
+        <div class="barcode-card">
+            <div class="sku">SWH700</div>
+            <div class="name">Body Wash 700ml (pH 5.5 Hydrating)</div>
+            <div class="location">📍 B-02-02</div>
+            <svg id="bc-prod-4"></svg>
+            <div class="barcode-text">8859139111680</div>
+            <div class="type-badge type-ean">EAN-13</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SECTION 2: SKU Barcodes (Code128) -->
+<div class="section">
+    <div class="section-title">🔤 SKU Barcodes <span class="badge">CODE128 · คีย์ SKU</span></div>
+    <div class="barcode-grid">
+
+        <div class="barcode-card">
+            <div class="sku">STDH080-REFILL</div>
+            <div class="name">Refill Toner Pad (Dewy) · A-01-01</div>
+            <svg id="bc-sku-1"></svg>
+            <div class="type-badge type-code128">CODE128</div>
+        </div>
+
+        <div class="barcode-card">
+            <div class="sku">STBG080-REFILL</div>
+            <div class="name">Toner Pad Refill (Bright) · A-01-02</div>
+            <svg id="bc-sku-2"></svg>
+            <div class="type-badge type-code128">CODE128</div>
+        </div>
+
+        <div class="barcode-card">
+            <div class="sku">SWB700</div>
+            <div class="name">Body Wash (Bright) · B-02-01</div>
+            <svg id="bc-sku-3"></svg>
+            <div class="type-badge type-code128">CODE128</div>
+        </div>
+
+        <div class="barcode-card">
+            <div class="sku">SWH700</div>
+            <div class="name">Body Wash (Hydra) · B-02-02</div>
+            <svg id="bc-sku-4"></svg>
+            <div class="type-badge type-code128">CODE128</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SECTION 3: Order / Work Order Barcodes (สแกนใบงาน POS Pack) -->
+<div class="section">
+    <div class="section-title">📋 Work Order Barcodes <span class="badge">CODE128 · สแกนใบงาน POS Pack</span></div>
+    <div class="barcode-grid">
+
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-ref">WH/OUT/00050</div>
+                <div class="platform platform-shopee">Shopee Express</div>
+            </div>
+            <div class="customer">👤 SKINOXY Customer #1</div>
+            <div class="items-list">
+                <div>• STDH080-REFILL × 2 (A-01-01)</div>
+                <div>• SWB700 × 1 (B-02-01)</div>
+            </div>
+            <div class="barcode-area">
+                <svg id="bc-order-1"></svg>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-ref">WH/OUT/00055</div>
+                <div class="platform platform-lazada">Lazada Express</div>
+            </div>
+            <div class="customer">👤 SKINOXY Customer #2</div>
+            <div class="items-list">
+                <div>• STBG080-REFILL × 2 (A-01-02)</div>
+            </div>
+            <div class="barcode-area">
+                <svg id="bc-order-2"></svg>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-ref">WH/OUT/00060</div>
+                <div class="platform platform-flash">Flash Express</div>
+            </div>
+            <div class="customer">👤 SKINOXY Customer #3</div>
+            <div class="items-list">
+                <div>• SWH700 × 1 (B-02-02)</div>
+                <div>• SWB700 × 1 (B-02-01)</div>
+            </div>
+            <div class="barcode-area">
+                <svg id="bc-order-3"></svg>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-ref">WH/OUT/00065</div>
+                <div class="platform platform-jt">J&amp;T Express</div>
+            </div>
+            <div class="customer">👤 SKINOXY Customer #4</div>
+            <div class="items-list">
+                <div>• STDH080-REFILL × 1 (A-01-01)</div>
+                <div>• STBG080-REFILL × 1 (A-01-02)</div>
+            </div>
+            <div class="barcode-area">
+                <svg id="bc-order-4"></svg>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-ref">WH/OUT/00069</div>
+                <div class="platform platform-kerry">Kerry Express</div>
+            </div>
+            <div class="customer">👤 SKINOXY Customer #5</div>
+            <div class="items-list">
+                <div>• SWB700 × 1 (B-02-01)</div>
+                <div>• SWH700 × 1 (B-02-02)</div>
+            </div>
+            <div class="barcode-area">
+                <svg id="bc-order-5"></svg>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SECTION 4: Box Barcodes (IDs ตรงกับ BOX_TYPES ใน constants.jsx) -->
+<div class="section">
+    <div class="section-title">📦 Box / Packaging Barcodes <span class="badge">CODE128 · เลือกกล่อง</span></div>
+    <div class="barcode-grid">
+
+        <div class="box-card">
+            <div class="box-icon">📦</div>
+            <div class="box-name">Box S</div>
+            <div class="box-size">15×20×10 cm · ≤0.5 kg</div>
+            <svg id="bc-box-1"></svg>
+            <div class="barcode-text" style="font-size:11px;margin-top:4px;">BOX-S</div>
+        </div>
+
+        <div class="box-card">
+            <div class="box-icon">📦</div>
+            <div class="box-name">Box M</div>
+            <div class="box-size">25×30×15 cm · ≤1.5 kg</div>
+            <svg id="bc-box-2"></svg>
+            <div class="barcode-text" style="font-size:11px;margin-top:4px;">BOX-M</div>
+        </div>
+
+        <div class="box-card">
+            <div class="box-icon">📦</div>
+            <div class="box-name">Box L</div>
+            <div class="box-size">35×40×20 cm · ≤3.0 kg</div>
+            <svg id="bc-box-3"></svg>
+            <div class="barcode-text" style="font-size:11px;margin-top:4px;">BOX-L</div>
+        </div>
+
+        <div class="box-card">
+            <div class="box-icon">📦</div>
+            <div class="box-name">Box XL</div>
+            <div class="box-size">45×50×30 cm · ≤5.0 kg</div>
+            <svg id="bc-box-4"></svg>
+            <div class="barcode-text" style="font-size:11px;margin-top:4px;">BOX-XL</div>
+        </div>
+
+        <div class="box-card">
+            <div class="box-icon">✉️</div>
+            <div class="box-name">Envelope A4</div>
+            <div class="box-size">24×33 cm · ≤0.3 kg</div>
+            <svg id="bc-box-5"></svg>
+            <div class="barcode-text" style="font-size:11px;margin-top:4px;">ENV-A4</div>
+        </div>
+
+        <div class="box-card">
+            <div class="box-icon">🫧</div>
+            <div class="box-name">Bubble Mailer</div>
+            <div class="box-size">20×28 cm · ≤0.4 kg</div>
+            <svg id="bc-box-6"></svg>
+            <div class="barcode-text" style="font-size:11px;margin-top:4px;">BUBBLE</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SECTION 5: Mock AWB Barcodes (ทดสอบ AWB Confirm Scan) -->
+<div class="section">
+    <div class="section-title">🚚 Mock AWB Labels <span class="badge">CODE128 · ทดสอบ AWB Scan Lock</span></div>
+    <div class="barcode-grid">
+
+        <div class="awb-card">
+            <div class="courier">Shopee Express (SPXTH)</div>
+            <svg id="bc-awb-1"></svg>
+            <div class="awb-num">SPXTH10000001</div>
+        </div>
+
+        <div class="awb-card">
+            <div class="courier">Lazada Express (LZTH)</div>
+            <svg id="bc-awb-2"></svg>
+            <div class="awb-num">LZTH20000002</div>
+        </div>
+
+        <div class="awb-card">
+            <div class="courier">Flash Express (FLTH)</div>
+            <svg id="bc-awb-3"></svg>
+            <div class="awb-num">FLTH30000003</div>
+        </div>
+
+        <div class="awb-card">
+            <div class="courier">J&amp;T Express (JTTH)</div>
+            <svg id="bc-awb-4"></svg>
+            <div class="awb-num">JTTH40000004</div>
+        </div>
+
+        <div class="awb-card">
+            <div class="courier">Kerry Express (KETH)</div>
+            <svg id="bc-awb-5"></svg>
+            <div class="awb-num">KETH50000005</div>
+        </div>
+
+        <div class="awb-card">
+            <div class="courier">Thai Post (TPTH)</div>
+            <svg id="bc-awb-6"></svg>
+            <div class="awb-num">TPTH60000006</div>
+        </div>
+
+    </div>
+</div>
+
+<button class="print-btn" onclick="window.print()">
+    🖨️ Print Test Sheet
+</button>
+
+<script>
+    // ─── SECTION 1: Product EAN-13 Barcodes ───────────────────────────────────
+    // Source: PRODUCT_CATALOG in src/constants.jsx
+    JsBarcode("#bc-prod-1", "8859139111901", { format: "EAN13", width: 2, height: 60, fontSize: 14 }); // STDH080-REFILL (Dewy)
+    JsBarcode("#bc-prod-2", "8859139111925", { format: "EAN13", width: 2, height: 60, fontSize: 14 }); // STBG080-REFILL (Bright)
+    JsBarcode("#bc-prod-3", "8859139111703", { format: "EAN13", width: 2, height: 60, fontSize: 14 }); // SWB700 (Body Wash Bright)
+    JsBarcode("#bc-prod-4", "8859139111680", { format: "EAN13", width: 2, height: 60, fontSize: 14 }); // SWH700 (Body Wash Hydra)
+
+    // ─── SECTION 2: SKU Code128 Barcodes ──────────────────────────────────────
+    JsBarcode("#bc-sku-1", "STDH080-REFILL", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-sku-2", "STBG080-REFILL", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-sku-3", "SWB700",         { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-sku-4", "SWH700",         { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+
+    // ─── SECTION 3: Work Order Barcodes (Odoo picking refs) ───────────────────
+    JsBarcode("#bc-order-1", "WH/OUT/00050", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-order-2", "WH/OUT/00055", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-order-3", "WH/OUT/00060", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-order-4", "WH/OUT/00065", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+    JsBarcode("#bc-order-5", "WH/OUT/00069", { format: "CODE128", width: 1.5, height: 50, fontSize: 13 });
+
+    // ─── SECTION 4: Box Barcodes (IDs match BOX_TYPES in constants.jsx) ───────
+    JsBarcode("#bc-box-1", "BOX-S",  { format: "CODE128", width: 1.5, height: 45, fontSize: 12 });
+    JsBarcode("#bc-box-2", "BOX-M",  { format: "CODE128", width: 1.5, height: 45, fontSize: 12 });
+    JsBarcode("#bc-box-3", "BOX-L",  { format: "CODE128", width: 1.5, height: 45, fontSize: 12 });
+    JsBarcode("#bc-box-4", "BOX-XL", { format: "CODE128", width: 1.5, height: 45, fontSize: 12 });
+    JsBarcode("#bc-box-5", "ENV-A4", { format: "CODE128", width: 1.5, height: 45, fontSize: 12 });
+    JsBarcode("#bc-box-6", "BUBBLE", { format: "CODE128", width: 1.5, height: 45, fontSize: 12 });
+
+    // ─── SECTION 5: Mock AWB Barcodes ─────────────────────────────────────────
+    JsBarcode("#bc-awb-1", "SPXTH10000001", { format: "CODE128", width: 2, height: 60, fontSize: 13 });
+    JsBarcode("#bc-awb-2", "LZTH20000002",  { format: "CODE128", width: 2, height: 60, fontSize: 13 });
+    JsBarcode("#bc-awb-3", "FLTH30000003",  { format: "CODE128", width: 2, height: 60, fontSize: 13 });
+    JsBarcode("#bc-awb-4", "JTTH40000004",  { format: "CODE128", width: 2, height: 60, fontSize: 13 });
+    JsBarcode("#bc-awb-5", "KETH50000005",  { format: "CODE128", width: 2, height: 60, fontSize: 13 });
+    JsBarcode("#bc-awb-6", "TPTH60000006",  { format: "CODE128", width: 2, height: 60, fontSize: 13 });
+</script>
+
+</body>
+</html>

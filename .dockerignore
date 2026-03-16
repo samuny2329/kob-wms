@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+.git
+.gitignore
+.env
+.env.local
+*.md
+.vscode
+.idea
+docker-data
+postgres-data
+odoo-data
+*.log

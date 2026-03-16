@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Label Studio Pro - KOB / SKINOXY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --o-purple: #714B67;
+            --o-teal: #00A09D;
+            --o-bg: #F0F2F5;
+            --o-border: #D1D5DB;
+            --o-label-scale: 1.0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--o-bg);
+            color: #212529;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .o_navbar {
+            background: #714B67;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: white;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+
+        .o_navbar_apps {
+            width: 46px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: -16px;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .o_navbar_apps:hover {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .o_breadcrumb {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .o_breadcrumb_item {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .o_breadcrumb_item:hover {
+            color: white;
+        }
+
+        .o_breadcrumb_separator {
+            margin: 0 8px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: normal;
+        }
+
+        .o_navbar_user {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .o_navbar_user:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .o_main {
+            display: flex;
+            height: calc(100vh - 46px);
+        }
+
+        .o_sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid var(--o-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .o_canvas {
+            flex-grow: 1;
+            background: #E9ECEF;
+            padding: 40px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .o_settings {
+            width: 320px;
+            background: white;
+            border-left: 1px solid var(--o-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .btn_primary {
+            background: var(--o-purple);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .btn_primary:hover {
+            background: #5a3c52;
+        }
+
+        .btn_secondary:hover {
+            background: #f8f9fa;
+        }
+
+        /* AI Tutor Styles */
+        .ai_tutor_bubble {
+            position: absolute;
+            background: #00A09D;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 250px;
+        }
+
+        .ai_tutor_bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 20px;
+            width: 12px;
+            height: 12px;
+            background: #00A09D;
+            transform: rotate(45deg);
+        }
+
+        .ai_tutor_bubble.is_bottom::after {
+            bottom: auto;
+            top: -6px;
+        }
+
+        .highlight_step {
+            outline: 3px solid #00A09D !important;
+            outline-offset: 4px;
+            position: relative;
+            z-index: 50;
+            animation: pulse-guide 2s infinite;
+        }
+
+        @keyframes pulse-guide {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .o_label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .o_input {
+            width: 100%;
+            border: 1px solid var(--o-border);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+            color: #212529;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-item-active {
+            background: #f8f9fa;
+            border-left: 4px solid var(--o-purple);
+        }
+
+        /* Label Design CSS */
+        .label_template {
+            background: white;
+            border: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            width: var(--label-w-px, 378px);
+            height: var(--label-h-px, 567px);
+        }
+
+        .preview_scale {
+            transform-origin: top center;
+            margin-bottom: 20px;
+        }
+
+        .label_title {
+            color: #714B67;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            text-transform: uppercase;
+            text-decoration: underline;
+            line-height: 1.2;
+        }
+
+        .label_subtitle {
+            color: #6c757d;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .sku_section {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .grid_table {
+            border: 1.5px solid #000;
+            display: grid;
+            grid-template-columns: 1.8fr 1.5fr 1fr;
+        }
+
+        .borderless_table {
+            border: none !important;
+        }
+
+        .grid_cell {
+            border-right: 1.5px solid #000;
+            padding: 6px;
+            overflow: hidden;
+        }
+
+        .compact_cell {
+            padding: 3px 6px !important;
+            border-right: none !important;
+        }
+
+        .grid_cell:last-child {
+            border-right: none;
+        }
+
+        .cell_label {
+            font-size: 9px;
+            font-weight: 800;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .cell_value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #714B67;
+        }
+
+        .storage_section {
+            border: 1.5px solid #000;
+            border-top: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .bottom_grid {
+            border: 1.5px solid #000;
+            border-top: none;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+        }
+
+        .label_header {
+            border-bottom: 2px solid #000;
+            padding: 4px 10px 2px 10px;
+            margin-bottom: 4px;
+        }
+
+        @media screen {
+            .o_canvas {
+                background: #e2e8f0;
+                padding: 40px !important;
+            }
+
+            .preview_wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+                width: 100%;
+            }
+
+            .label_template {
+                background: white;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .o_canvas,
+            .preview_wrapper {
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                transform: none !important;
+            }
+
+            .preview_scale {
+                page-break-after: always !important;
+                transform: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+                position: relative !important;
+                overflow: hidden !important;
+                border: none !important;
+                width: var(--label-w-mm) !important;
+                height: var(--label-h-mm) !important;
+            }
+
+            .label_template {
+                width: 100% !important;
+                height: 100% !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                border: 2px solid black !important;
+                display: flex !important;
+                position: relative !important;
+                transform: none !important;
+                transform-origin: top left !important;
+            }
+
+            html,
+            body {
+                width: auto !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Connection Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-box {
+            background: white; border-radius: 12px; padding: 32px; max-width: 420px; width: 90%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+
+<body x-data="app()" x-init="init()" x-cloak :class="layout">
+
+    <!-- Connection Modal -->
+    <div x-show="showConnectModal" x-cloak class="modal-overlay no-print" @click.self="showConnectModal = false">
+        <div class="modal-box" @click.stop>
+            <h3 class="text-lg font-black text-slate-800 mb-1">Connect to Odoo</h3>
+            <p class="text-xs text-slate-400 mb-4">Fetch live product data from Odoo ERP</p>
+            <label class="o_label">Odoo Server URL</label>
+            <input type="text" x-model="odooUrl" class="o_input" placeholder="http://localhost:8019">
+            <label class="o_label">Model</label>
+            <select x-model="odooModel" class="o_input">
+                <option value="stock.picking">Stock Picking (WH/IN)</option>
+                <option value="purchase.order">Purchase Order</option>
+            </select>
+            <label class="o_label">Record ID(s)</label>
+            <input type="text" x-model="odooRecordId" class="o_input" placeholder="1 or 1,2,3">
+            <div class="flex gap-2 mt-2">
+                <button @click="connectOdoo()" class="btn_primary flex-1">Connect & Fetch</button>
+                <button @click="showConnectModal = false" class="flex-1 px-4 py-2 text-sm font-bold text-slate-500 border border-slate-200 rounded hover:bg-slate-50">Cancel</button>
+            </div>
+            <div x-show="connectError" class="mt-3 text-xs text-red-500 font-bold" x-text="connectError"></div>
+        </div>
+    </div>
+
+    <nav class="o_navbar no-print">
+        <div class="flex items-center">
+            <div class="o_navbar_apps" @click="goBack()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </div>
+
+            <div class="o_breadcrumb">
+                <a href="/" class="o_breadcrumb_item">WMS Pro</a>
+                <span class="o_breadcrumb_separator">/</span>
+                <span class="text-white font-bold" x-text="orderName"></span>
+                <span class="o_breadcrumb_separator">/</span>
+                <span class="text-white">Label Studio</span>
+            </div>
+
+            <button @click="startTutor()"
+                class="ml-6 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-2 border border-white/10 transition-all shadow-inner">
+                <div class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></div>
+                Smart Tutor
+            </button>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button @click="showConnectModal = true"
+                class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-[11px] font-bold transition border border-white/10"
+                :class="isLive ? 'text-green-300' : 'text-white/70'">
+                <span x-text="isLive ? 'Odoo Connected' : 'Connect Odoo'"></span>
+            </button>
+            <div class="text-[10px] text-white/40 font-bold" x-text="dataSource"></div>
+            <div class="o_navbar_user" x-text="userName ? userName[0] : 'A'"></div>
+        </div>
+    </nav>
+
+    <!-- AI Tutor Component -->
+    <div x-show="tutorActive" x-cloak class="ai_tutor_bubble no-print"
+        :class="tutorPosition === 'bottom' ? 'is_bottom' : ''" :style="tutorStyle">
+        <div class="flex items-start gap-2">
+            <div class="bg-white/20 p-1.5 rounded-lg text-lg">&#x1F916;</div>
+            <div class="flex-1">
+                <div class="flex items-center justify-between">
+                    <div class="text-[13px] leading-snug" x-text="tutorMessage"></div>
+                    <div class="text-[9px] font-black opacity-50 ml-2" x-text="tutorStep + '/10'"></div>
+                </div>
+                <div class="mt-3 flex items-center gap-2">
+                    <button x-show="tutorStep > 1" @click="prevStep()"
+                        class="bg-white/20 text-white px-3 py-1 rounded-md text-[10px] font-black uppercase hover:bg-white/30 transition">
+                        Back
+                    </button>
+                    <button @click="nextStep()"
+                        class="bg-white text-teal-800 px-3 py-1 rounded-md text-[10px] font-black uppercase shadow-sm hover:bg-teal-50 transition"
+                        x-text="tutorStep === 10 ? 'Finish' : 'Next Step'">
+                    </button>
+                    <button @click="tutorActive = false"
+                        class="ml-auto text-[10px] opacity-70 uppercase font-bold hover:opacity-100 transition">Skip</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border-b h-14 flex items-center justify-between px-6 no-print">
+        <div class="flex items-center space-x-3">
+            <button @click="window.print()" class="btn_primary" id="btn-print-main">Print Labels</button>
+            <button @click="goBack()" class="btn_secondary px-3 py-1.5 text-sm font-bold text-slate-500 border rounded hover:bg-slate-50">Discard</button>
+            <div class="h-6 w-px bg-slate-200"></div>
+            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest" x-text="'Lines: ' + lines.length + ' | Labels: ' + printCount"></span>
+        </div>
+        <div class="text-xs text-slate-400 font-bold uppercase tracking-widest">Kiss of Beauty - Label Studio</div>
+    </div>
+
+    <div class="o_main">
+        <aside class="o_sidebar no-print" id="tutor-step-1">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PRODUCT LINES</h3>
+                <span x-text="lines.length" class="text-[10px] bg-slate-200 px-2 rounded font-black"></span>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <template x-for="line in lines" :key="line.id">
+                    <div @click="selectLine(line)" class="p-4 border-b cursor-pointer hover:bg-slate-50 transition-all"
+                        :class="selectedLine?.id === line.id ? 'sidebar-item-active' : ''">
+                        <div class="text-xs font-bold text-slate-500" x-text="line.product_code"></div>
+                        <div class="text-sm font-bold text-slate-800 line-clamp-1" x-text="line.product_name"></div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold"
+                                x-text="line.uom"></span>
+                            <span class="text-xs font-bold text-slate-400">Qty: <span class="text-slate-800"
+                                    x-text="line.qty"></span></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </aside>
+
+        <main class="o_canvas overflow-y-auto">
+            <div class="preview_wrapper">
+                <template x-for="idx in (parseInt(printCount) || 1)" :key="idx">
+                    <div class="preview_scale"
+                        :style="getWrapperStyle() + ` --label-w-mm: ${customWidth}mm; --label-h-mm: ${customHeight}mm;`">
+                        <div :style="getLabelStyle()" class="label_template flex flex-col overflow-hidden bg-white"
+                            :class="layout === 'compact' ? 'px-3 py-1 border-[1.5px] border-black' : 'p-4'">
+                            <div x-show="layout !== 'compact'" class="label_header no-print-border">
+                                <div class="label_title"
+                                    x-text="isPallet ? 'PALLET IDENTIFICATION' : 'CARTON IDENTIFICATION'">
+                                </div>
+                                <div class="label_subtitle"
+                                    x-text="(isPallet ? 'PALLET ' : 'CARTON ') + idx + ' OF ' + totalCount"></div>
+                            </div>
+
+                            <div class="flex justify-between items-start px-2"
+                                :class="layout === 'compact' ? 'mt-0 mb-0' : 'mt-1 mb-1'">
+                                <div class="flex-grow">
+                                    <template x-if="layout === 'compact'">
+                                        <div class="text-[17px] font-black leading-none mb-0">SKU: <span
+                                                x-text="selectedLine?.product_code"></span></div>
+                                    </template>
+                                    <template x-if="layout !== 'compact'">
+                                        <div>
+                                            <div class="text-[20px] font-black leading-none mb-1">SKU:</div>
+                                            <div class="text-[40px] font-black leading-[0.9] tracking-tighter mb-1"
+                                                x-text="selectedLine?.product_code"
+                                                style="font-family: 'Outfit', sans-serif;">
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div class="font-bold text-[#4B5E71] line-clamp-1 max-w-[180mm] leading-tight"
+                                        :class="layout === 'compact' ? 'text-[8px]' : 'text-[11px]'"
+                                        x-text="'[' + selectedLine?.product_code + '] ' + (selectedLine?.product_name || '')">
+                                    </div>
+                                </div>
+                                <div class="ml-2 shrink-0 flex flex-col items-center">
+                                    <div class="border-black bg-white"
+                                        :class="layout === 'compact' ? 'border-[1px] p-0.5' : 'border-[2px] p-2'">
+                                        <div :id="'qrcode-' + idx" class="shrink-0"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid_table" :class="layout === 'compact' ? 'mt-0.5 borderless_table' : ''">
+                                <div class="grid_cell flex flex-col justify-between"
+                                    :class="layout === 'compact' ? 'min-h-[32px] compact_cell' : 'min-h-[70px]'">
+                                    <div>
+                                        <div class="cell_label">RC NO. / LOT NO.</div>
+                                        <div class="font-black text-[#714B67]"
+                                            :class="layout === 'compact' ? 'text-[15px]' : 'text-[22px]'"
+                                            x-text="lotNumber"></div>
+                                    </div>
+                                    <div class="mt-0 flex justify-start -ml-1">
+                                        <svg :id="'barcode-' + idx"
+                                            :style="layout === 'compact' ? 'width: 100%; height: 16px;' : 'width: 100%; height: 30px;'">
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="grid_cell" :class="layout === 'compact' ? 'compact_cell' : ''">
+                                    <div class="cell_label">RECEIVED BY / DATE</div>
+                                    <div class="font-black text-[#714B67] mt-0.5 truncate"
+                                        :class="layout === 'compact' ? 'text-[11px]' : 'text-[14px]'" x-text="userName">
+                                    </div>
+                                    <div class="font-black text-[#4B5E71]"
+                                        :class="layout === 'compact' ? 'text-[10px]' : 'text-[13px]'"
+                                        x-text="currentDate">
+                                    </div>
+                                </div>
+                                <div class="grid_cell flex flex-col items-center justify-center"
+                                    :class="layout === 'compact' ? 'compact_cell' : ''">
+                                    <div class="cell_label" x-text="isPallet ? 'PALLET NO.' : 'CARTON NO.'"></div>
+                                    <div class="flex flex-col items-center justify-center mt-0">
+                                        <template x-if="layout === 'compact'">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <div class="text-[14px] font-black leading-none" x-text="idx"></div>
+                                                <div class="w-4 h-[1px] bg-black my-0.5"></div>
+                                                <div class="text-[12px] font-black text-[#6c757d] leading-none"
+                                                    x-text="totalCount"></div>
+                                            </div>
+                                        </template>
+                                        <template x-if="layout !== 'compact'">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <div class="text-[32px] font-black leading-none" x-text="idx"></div>
+                                                <div class="w-8 h-[1.5px] bg-black my-1"></div>
+                                                <div class="text-[24px] font-black text-[#6c757d] leading-none"
+                                                    x-text="totalCount"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="storageCondition" class="px-2 flex items-center gap-1 border-black"
+                                :class="layout === 'compact' ? 'border-none pt-1 pb-0.5 mt-0' : 'border-x-[1.5px] border-b-[1.5px] py-1.5'">
+                                <div class="font-bold text-[#968490] uppercase leading-none"
+                                    :class="layout === 'compact' ? 'text-[8px]' : 'text-[10px]'">Storage:</div>
+                                <div class="font-black text-[#714B67] leading-none"
+                                    :class="layout === 'compact' ? 'text-[9px]' : 'text-[12px]'"
+                                    x-text="storageCondition"></div>
+                            </div>
+
+                            <div class="bottom_grid" :class="layout === 'compact' ? 'borderless_table px-2 mt-1' : ''">
+                                <div class="grid_cell text-center"
+                                    :class="layout === 'compact' ? 'compact_cell' : 'py-1'">
+                                    <div class="cell_label">PACKSIZE</div>
+                                    <div class="font-black" :class="layout === 'compact' ? 'text-[8px]' : 'text-[16px]'"
+                                        x-text="packSize">
+                                    </div>
+                                </div>
+                                <div class="grid_cell text-center"
+                                    :class="layout === 'compact' ? 'compact_cell border-none' : 'py-1 border-x-[1.5px] border-black'">
+                                    <div class="cell_label uppercase">TOTAL CTN.</div>
+                                    <div class="font-black" :class="layout === 'compact' ? 'text-[8px]' : 'text-[16px]'"
+                                        x-text="!isPallet ? totalCount : (selectedLine?.pallet_calc?.total_cartons || totalCount)">
+                                    </div>
+                                </div>
+                                <div class="grid_cell text-center"
+                                    :class="layout === 'compact' ? 'compact_cell' : 'py-1'">
+                                    <div class="cell_label uppercase">CARTON NO.</div>
+                                    <div class="font-black" :class="layout === 'compact' ? 'text-[8px]' : 'text-[16px]'"
+                                        x-text="getCartonRange(idx)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-end mt-auto px-2"
+                                :class="layout === 'compact' ? 'pt-0 pb-0.5' : 'pt-2'">
+                                <div>
+                                    <div class="text-[8px] font-black text-[#968490] uppercase tracking-widest leading-none mb-0.5">
+                                        UNIT OF MEASURE</div>
+                                    <div class="font-black text-[#1F2937] tracking-tighter"
+                                        :class="layout === 'compact' ? 'text-[10px]' : 'text-[20px]'"
+                                        x-text="selectedLine?.uom || 'Units'"></div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-black text-[#714B67] uppercase mb-0"
+                                        :class="layout === 'compact' ? 'text-[10px]' : 'text-[14px]'"
+                                        x-text="isPallet ? 'NET QTY. / PALLET' : 'NET QTY. / CARTON'">
+                                    </div>
+                                    <div class="font-black leading-none tracking-tighter text-black"
+                                        :class="layout === 'compact' ? 'text-[24px]' : 'text-[56px]'"
+                                        x-text="getLabelQty(idx)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </main>
+
+        <aside class="o_settings no-print">
+            <div class="p-6 space-y-4">
+                <div id="tutor-step-qty">
+                    <label class="o_label">Qty / Label</label>
+                    <input type="number" x-model="qtyPerLabel" class="o_input">
+                </div>
+                <div id="tutor-step-labels">
+                    <label class="o_label">No. of Labels</label>
+                    <input type="number" x-model="printCount" class="o_input">
+                </div>
+                <div id="tutor-step-lot">
+                    <label class="o_label">RC No. / Lot No.</label>
+                    <input type="text" x-model="lotNumber" class="o_input">
+                </div>
+                <div id="tutor-step-date">
+                    <label class="o_label">Date</label>
+                    <input type="date" x-model="currentDate" class="o_input">
+                </div>
+                <div id="tutor-step-storage">
+                    <label class="o_label">Storage Condition</label>
+                    <select x-model="storageCondition" class="o_input">
+                        <option value="AMBIENT TEMPERATURE: &#xE2D;&#xE38;&#xE13;&#xE2B;&#xE20;&#xE39;&#xE21;&#xE34;&#xE2B;&#xE49;&#xE2D;&#xE07;&#xE1B;&#xE01;&#xE15;&#xE34;">AMBIENT TEMPERATURE</option>
+                        <option value="CHILLED TEMPERATURE: &#xE2D;&#xE38;&#xE13;&#xE2B;&#xE20;&#xE39;&#xE21;&#xE34;&#xE41;&#xE0A;&#xE48;&#xE40;&#xE22;&#xE47;&#xE19;">CHILLED TEMPERATURE</option>
+                        <option value="FROZEN TEMPERATURE: &#xE2D;&#xE38;&#xE13;&#xE2B;&#xE20;&#xE39;&#xE21;&#xE34;&#xE41;&#xE0A;&#xE48;&#xE41;&#xE02;&#xE47;&#xE07;">FROZEN TEMPERATURE</option>
+                    </select>
+                </div>
+                <div id="tutor-step-format">
+                    <label class="o_label">Label Format</label>
+                    <select x-model="layout" class="o_input" @change="onLayoutChange()">
+                        <option value="portrait">100 x 150 mm (Labels)</option>
+                        <option value="landscape">150 x 100 mm (Landscape)</option>
+                        <option value="square">100 x 100 mm (Square)</option>
+                        <option value="compact">100 x 75 mm (Compact)</option>
+                    </select>
+                </div>
+                <div id="tutor-step-mode" class="flex items-center space-x-2 py-2">
+                    <input type="checkbox" x-model="isPallet" class="w-4 h-4 accent-purple-600">
+                    <span class="text-sm font-bold text-slate-700">Print as Pallet</span>
+                </div>
+            </div>
+
+            <!-- Pallet Calculator Section -->
+            <div class="border-b" id="tutor-step-pallet">
+                <div class="px-6 py-4 flex items-center justify-between cursor-pointer group"
+                    @click="showPalletCalc = !showPalletCalc">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 19h10v2H7v-2zm-3-6h16v2H4v-2zm-3-6h22v2H1v-2zM11 2h2v2h-2V2z" />
+                        </svg>
+                        <span class="text-sm font-black text-[#1F2937] uppercase tracking-tight">Pallet Calculator</span>
+                    </div>
+                    <span class="text-[10px] font-black text-teal-600 group-hover:underline"
+                        x-text="showPalletCalc ? 'HIDE' : 'SHOW'"></span>
+                </div>
+
+                <div x-show="showPalletCalc" x-transition class="px-6 pb-6 space-y-4">
+                    <template x-for="(val, label) in getPalletStats()" :key="label">
+                        <div class="flex justify-between items-center text-[13px]">
+                            <span class="text-[#64748B] font-medium" x-text="label"></span>
+                            <span class="text-[#1F2937] font-black" x-text="val"></span>
+                        </div>
+                    </template>
+
+                    <div class="bg-teal-50 border border-teal-100 rounded-xl p-4 text-center mt-2">
+                        <div class="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">Estimated
+                            Pallets</div>
+                        <div class="text-4xl font-black text-teal-800"
+                            x-text="selectedLine?.pallet_calc?.pallet_count || 0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-b flex items-center justify-between cursor-pointer"
+                @click="showLogistics = !showLogistics">
+                <span class="text-xs font-bold text-slate-700 font-outfit uppercase">Logistical Details</span>
+                <span class="text-[10px] text-slate-400 font-bold uppercase"
+                    x-text="showLogistics ? 'Hide' : 'Show'"></span>
+            </div>
+
+            <div class="p-6 space-y-2" x-show="showLogistics" x-transition>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="o_label">Net Weight (kg)</label>
+                        <input type="number" value="0.00" class="o_input">
+                    </div>
+                    <div>
+                        <label class="o_label">Gross Weight (kg)</label>
+                        <input type="number" value="0.00" class="o_input">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="o_label">MFG Date</label>
+                        <input type="date" x-model="currentDate" class="o_input">
+                    </div>
+                    <div>
+                        <label class="o_label">EXP Date</label>
+                        <input type="date" class="o_input">
+                    </div>
+                </div>
+                <div>
+                    <label class="o_label">Additional Notes</label>
+                    <textarea class="o_input h-20" placeholder="Handling instructions..."></textarea>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // ===== DEMO DATA - SKINOXY / KISS-MY-BODY =====
+        const DEMO_LINES = [
+            {
+                id: 1, product_id: 1, product_code: 'STDH080-REFILL',
+                product_name: 'Refill Toner Pad (Dewy Hydra) 150ml',
+                product_barcode: '8859139111901', qty: 2400, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 24, pallet_layer: 5, pallet_high: 8, total_cartons: 100, cartons_per_pallet: 40, qty_per_pallet: 960, pallet_count: 3, label_layout: 'portrait' }
+            },
+            {
+                id: 2, product_id: 2, product_code: 'STBG080-REFILL',
+                product_name: 'Toner Pad Refill (Bright Glow) 150ml',
+                product_barcode: '8859139111925', qty: 1800, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 24, pallet_layer: 5, pallet_high: 8, total_cartons: 75, cartons_per_pallet: 40, qty_per_pallet: 960, pallet_count: 2, label_layout: 'portrait' }
+            },
+            {
+                id: 3, product_id: 3, product_code: 'SWB700',
+                product_name: 'Body Wash (Bright) 700ml',
+                product_barcode: '8859139111703', qty: 1200, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 12, pallet_layer: 4, pallet_high: 6, total_cartons: 100, cartons_per_pallet: 24, qty_per_pallet: 288, pallet_count: 5, label_layout: 'portrait' }
+            },
+            {
+                id: 4, product_id: 4, product_code: 'SWH700',
+                product_name: 'Body Wash (Hydra) 700ml',
+                product_barcode: '8859139111680', qty: 960, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 12, pallet_layer: 4, pallet_high: 6, total_cartons: 80, cartons_per_pallet: 24, qty_per_pallet: 288, pallet_count: 4, label_layout: 'portrait' }
+            },
+            {
+                id: 5, product_id: 5, product_code: 'SHGG030',
+                product_name: 'Hydrogel Mask (Glow) 30g',
+                product_barcode: '8859139119830', qty: 5000, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 50, pallet_layer: 6, pallet_high: 10, total_cartons: 100, cartons_per_pallet: 60, qty_per_pallet: 3000, pallet_count: 2, label_layout: 'portrait' }
+            },
+            {
+                id: 6, product_id: 6, product_code: 'KLA226',
+                product_name: 'Bright & Shining Lotion 226ml',
+                product_barcode: '8859139102261', qty: 1440, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 24, pallet_layer: 5, pallet_high: 8, total_cartons: 60, cartons_per_pallet: 40, qty_per_pallet: 960, pallet_count: 2, label_layout: 'portrait' }
+            },
+            {
+                id: 7, product_id: 7, product_code: 'KMA088',
+                product_name: 'Perfume Mist 88ml',
+                product_barcode: '8859139100882', qty: 3600, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 36, pallet_layer: 6, pallet_high: 10, total_cartons: 100, cartons_per_pallet: 60, qty_per_pallet: 2160, pallet_count: 2, label_layout: 'portrait' }
+            },
+            {
+                id: 8, product_id: 8, product_code: 'KLMH180',
+                product_name: 'Tone Up Body Lotion 180ml',
+                product_barcode: '8859139118010', qty: 720, uom: 'Units',
+                pallet_calc: { enabled: true, pack_size: 24, pallet_layer: 4, pallet_high: 8, total_cartons: 30, cartons_per_pallet: 32, qty_per_pallet: 768, pallet_count: 1, label_layout: 'portrait' }
+            },
+        ];
+
+        function app() {
+            return {
+                orderName: 'WH/IN/00001 - Demo Receiving',
+                userName: 'Administrator',
+                lines: [],
+                selectedLine: null,
+                layout: 'portrait',
+                isPallet: true,
+                qtyPerLabel: 50,
+                printCount: 3,
+                lotNumber: 'P' + new Date().toISOString().slice(2, 10).replace(/-/g, ''),
+                currentDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }),
+                storageCondition: 'AMBIENT TEMPERATURE: \u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34\u0E2B\u0E49\u0E2D\u0E07\u0E1B\u0E01\u0E15\u0E34',
+                packSize: 20,
+                totalCount: 50,
+                showLogistics: false,
+                showPalletCalc: true,
+                showConnectModal: false,
+                isLive: false,
+                dataSource: 'Demo Data',
+                odooUrl: 'http://localhost:8019',
+                odooModel: 'stock.picking',
+                odooRecordId: '1',
+                connectError: '',
+
+                customWidth: 100,
+                customHeight: 150,
+                margin: 5,
+                textSize: 100,
+                rotation: 0,
+                canvasWidth: 800,
+                canvasHeight: 600,
+                model: '',
+                recordId: '',
+
+                getPalletStats() {
+                    if (!this.selectedLine?.pallet_calc) return {};
+                    const pc = this.selectedLine.pallet_calc;
+                    return {
+                        'Pack Size': (pc.pack_size || 0) + ' Units/Ctn',
+                        'Layout': (pc.pallet_layer || 0) + ' x ' + (pc.pallet_high || 0),
+                        'Ctn/Pallet': pc.cartons_per_pallet || 0,
+                        'Qty/Pallet': (pc.qty_per_pallet || 0) + ' Units',
+                        'Total Ctns': pc.total_cartons || 0
+                    };
+                },
+
+                init() {
+                    // Check URL params for Odoo connection
+                    const params = new URLSearchParams(window.location.search);
+                    this.model = params.get('model');
+                    this.recordId = params.get('id');
+                    const odooHost = params.get('odoo');
+
+                    if (this.model && this.recordId && odooHost) {
+                        this.odooUrl = odooHost;
+                        this.connectOdoo();
+                    } else if (this.model && this.recordId) {
+                        this.fetchData(this.model, this.recordId);
+                    } else {
+                        // Load demo data
+                        this.lines = DEMO_LINES;
+                        this.orderName = 'WH/IN/00001 - SKINOXY Receiving';
+                        this.dataSource = 'Demo Data (8 SKUs)';
+                        if (this.lines.length > 0) this.selectLine(this.lines[0]);
+                    }
+
+                    this.updateDimensions();
+                    this.updatePrintStyle();
+                    window.addEventListener('resize', () => this.updateDimensions());
+
+                    this.$watch('isPallet', () => {
+                        if (this.selectedLine?.pallet_calc) {
+                            const pc = this.selectedLine.pallet_calc;
+                            this.totalCount = this.isPallet ? pc.pallet_count : pc.total_cartons;
+                            this.qtyPerLabel = this.isPallet ? pc.qty_per_pallet : pc.pack_size;
+                            this.printCount = this.totalCount;
+                            this.autoTune();
+                        }
+                    });
+
+                    this.$watch('qtyPerLabel', () => {
+                        if (this.selectedLine) {
+                            const totalQty = parseFloat(this.selectedLine.qty) || 0;
+                            const perLabel = parseFloat(this.qtyPerLabel) || 1;
+                            if (perLabel > 0) {
+                                const newCount = Math.ceil(totalQty / perLabel);
+                                this.printCount = newCount;
+                                this.totalCount = newCount;
+                                this.refreshGraphics();
+                            }
+                        }
+                    });
+
+                    this.$watch('customWidth', () => this.refreshGraphics());
+                    this.$watch('customHeight', () => this.refreshGraphics());
+                    this.$watch('margin', () => this.refreshGraphics());
+                    this.$watch('textSize', () => this.refreshGraphics());
+                    this.$watch('printCount', () => this.refreshGraphics());
+                },
+
+                async connectOdoo() {
+                    this.connectError = '';
+                    try {
+                        const url = this.odooUrl.replace(/\/$/, '');
+                        const response = await fetch(`${url}/label_studio/data/order/${this.odooModel}/${this.odooRecordId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc: '2.0', params: {} })
+                        });
+                        const data = await response.json();
+                        if (data.result && !data.result.error) {
+                            this.orderName = data.result.name;
+                            this.userName = data.result.user_name || 'Administrator';
+                            this.lines = data.result.lines;
+                            this.isLive = true;
+                            this.dataSource = 'Odoo Live (' + url + ')';
+                            this.showConnectModal = false;
+                            if (this.lines.length > 0) this.selectLine(this.lines[0]);
+                        } else {
+                            this.connectError = data.result?.error || 'No data returned';
+                        }
+                    } catch (e) {
+                        this.connectError = 'Connection failed: ' + e.message;
+                    }
+                },
+
+                updateDimensions() {
+                    const canvas = document.querySelector('.o_canvas');
+                    if (canvas) {
+                        this.canvasWidth = canvas.clientWidth;
+                        this.canvasHeight = canvas.clientHeight;
+                    }
+                },
+
+                tutorActive: false,
+                tutorStep: 0,
+                tutorMessage: '',
+                tutorStyle: '',
+                tutorPosition: 'top',
+
+                startTutor() {
+                    this.tutorActive = true;
+                    this.tutorStep = 1;
+                    this.goToStep(1);
+                },
+
+                nextStep() {
+                    this.tutorStep++;
+                    if (this.tutorStep > 10) { this.tutorActive = false; return; }
+                    this.goToStep(this.tutorStep);
+                },
+
+                prevStep() {
+                    if (this.tutorStep > 1) { this.tutorStep--; this.goToStep(this.tutorStep); }
+                },
+
+                goToStep(step) {
+                    const steps = {
+                        1: { id: 'tutor-step-1', msg: '\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E17\u0E32\u0E07\u0E14\u0E49\u0E32\u0E19\u0E0B\u0E49\u0E32\u0E22\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E36\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E14\u0E34\u0E21\u0E08\u0E32\u0E01 Odoo' },
+                        2: { id: 'tutor-step-qty', msg: '\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E08\u0E33\u0E19\u0E27\u0E19\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E15\u0E48\u0E2D\u0E01\u0E25\u0E48\u0E2D\u0E07 (Qty/Label) \u0E27\u0E48\u0E32\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E15\u0E32\u0E21\u0E01\u0E32\u0E23\u0E1A\u0E23\u0E23\u0E08\u0E38\u0E08\u0E23\u0E34\u0E07\u0E44\u0E2B\u0E21' },
+                        3: { id: 'tutor-step-labels', msg: '\u0E23\u0E30\u0E1A\u0E38\u0E08\u0E33\u0E19\u0E27\u0E19\u0E43\u0E1A\u0E2A\u0E15\u0E34\u0E01\u0E40\u0E01\u0E2D\u0E23\u0E4C\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E43\u0E19\u0E04\u0E23\u0E31\u0E49\u0E07\u0E19\u0E35\u0E49' },
+                        4: { id: 'tutor-step-lot', msg: '\u0E43\u0E2A\u0E48\u0E40\u0E25\u0E02 Lot Number \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E2A\u0E23\u0E49\u0E32\u0E07 Barcode \u0E43\u0E2B\u0E49\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34\u0E17\u0E31\u0E19\u0E17\u0E35' },
+                        5: { id: 'tutor-step-date', msg: '\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E23\u0E31\u0E1A\u0E40\u0E02\u0E49\u0E32\u0E2B\u0E23\u0E37\u0E2D\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E1C\u0E25\u0E34\u0E15\u0E43\u0E2B\u0E49\u0E15\u0E23\u0E07\u0E15\u0E32\u0E21\u0E0A\u0E38\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25' },
+                        6: { id: 'tutor-step-storage', msg: '\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E2A\u0E20\u0E32\u0E27\u0E30\u0E01\u0E32\u0E23\u0E08\u0E31\u0E14\u0E40\u0E01\u0E47\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32 (Ambient, Chilled, Frozen)' },
+                        7: { id: 'tutor-step-format', msg: '\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E02\u0E19\u0E32\u0E14\u0E09\u0E25\u0E32\u0E01 (\u0E40\u0E25\u0E37\u0E2D\u0E01 Compact \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E43\u0E0A\u0E49\u0E02\u0E19\u0E32\u0E14 100x75 mm)' },
+                        8: { id: 'tutor-step-mode', msg: '\u0E2A\u0E25\u0E31\u0E1A\u0E42\u0E2B\u0E21\u0E14\u0E27\u0E48\u0E32\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E23\u0E32\u0E22\u0E2B\u0E25\u0E31\u0E07 (Carton) \u0E2B\u0E23\u0E37\u0E2D\u0E23\u0E32\u0E22\u0E1E\u0E32\u0E40\u0E25\u0E17 (Pallet)' },
+                        9: { id: 'tutor-step-pallet', msg: '\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E23\u0E32\u0E22\u0E25\u0E30\u0E40\u0E2D\u0E35\u0E22\u0E14\u0E01\u0E32\u0E23\u0E04\u0E33\u0E19\u0E27\u0E13\u0E1E\u0E32\u0E40\u0E25\u0E17 \u0E40\u0E0A\u0E48\u0E19 \u0E08\u0E33\u0E19\u0E27\u0E19\u0E0A\u0E31\u0E49\u0E19 \u0E41\u0E25\u0E30\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E27\u0E21' },
+                        10: { id: 'btn-print-main', msg: '\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E04\u0E27\u0E32\u0E21\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07\u0E17\u0E35\u0E48\u0E1E\u0E23\u0E35\u0E27\u0E34\u0E27\u0E14\u0E49\u0E32\u0E19\u0E1A\u0E19 \u0E40\u0E21\u0E37\u0E48\u0E2D\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E41\u0E25\u0E49\u0E27\u0E01\u0E14 Print \u0E44\u0E14\u0E49\u0E40\u0E25\u0E22!' }
+                    };
+
+                    const config = steps[step];
+                    this.tutorMessage = config.msg;
+
+                    this.$nextTick(() => {
+                        const el = document.getElementById(config.id);
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            setTimeout(() => {
+                                const rect = el.getBoundingClientRect();
+                                const screenW = window.innerWidth;
+                                const screenH = window.innerHeight;
+                                let finalTop, finalLeft;
+                                if (rect.top < 130) {
+                                    this.tutorPosition = 'bottom';
+                                    finalTop = Math.min(rect.bottom + 15, screenH - 120);
+                                } else {
+                                    this.tutorPosition = 'top';
+                                    finalTop = Math.max(rect.top - 85, 10);
+                                }
+                                finalLeft = Math.max(10, Math.min(rect.left, screenW - 270));
+                                this.tutorStyle = `top: ${finalTop}px; left: ${finalLeft}px;`;
+                                el.classList.add('highlight_step');
+                                setTimeout(() => el.classList.remove('highlight_step'), 2500);
+                            }, 350);
+                        }
+                    });
+                },
+
+                goBack() {
+                    window.location.href = '/';
+                },
+
+                autoTune() {
+                    const minDim = Math.min(this.customWidth, this.customHeight);
+                    this.margin = Math.max(4, Math.round(minDim * 0.04));
+                    const codeLen = this.selectedLine?.product_code?.length || 10;
+                    let baseScale = (minDim / 100) * 110;
+                    if (codeLen > 15) baseScale *= 0.8;
+                    this.textSize = Math.round(Math.min(250, Math.max(50, baseScale)));
+                },
+
+                async fetchData(model, id) {
+                    if (!model || !id) return;
+                    try {
+                        const response = await fetch(`/label_studio/data/order/${model}/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jsonrpc: '2.0', params: {} })
+                        });
+                        const data = await response.json();
+                        if (data.result) {
+                            this.orderName = data.result.name;
+                            this.userName = data.result.user_name || 'Administrator';
+                            this.lines = data.result.lines;
+                            if (this.lines.length > 0) this.selectLine(this.lines[0]);
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch data, falling back to demo', e);
+                        this.lines = DEMO_LINES;
+                        if (this.lines.length > 0) this.selectLine(this.lines[0]);
+                    }
+                },
+
+                getLabelQty(idx) {
+                    if (!this.selectedLine) return this.qtyPerLabel;
+                    const totalQty = parseFloat(this.selectedLine.qty) || 0;
+                    const packSize = parseFloat(this.qtyPerLabel) || 0;
+                    const count = parseInt(this.totalCount) || 1;
+                    if (idx < count) return packSize;
+                    const remainder = totalQty - ((count - 1) * packSize);
+                    return remainder > 0 ? remainder : packSize;
+                },
+
+                getCartonRange(idx) {
+                    if (!this.isPallet) return idx;
+                    const pc = this.selectedLine?.pallet_calc;
+                    if (!pc) return 'N/A';
+                    const perPallet = pc.cartons_per_pallet || 0;
+                    const totalCartons = pc.total_cartons || 0;
+                    const start = (idx - 1) * perPallet + 1;
+                    const end = Math.min(idx * perPallet, totalCartons);
+                    return start === end ? start : `${start} - ${end}`;
+                },
+
+                selectLine(line) {
+                    this.selectedLine = line;
+                    if (line.pallet_calc) {
+                        const pc = line.pallet_calc;
+                        this.packSize = pc.pack_size;
+                        this.totalCount = this.isPallet ? pc.pallet_count : pc.total_cartons;
+                        this.qtyPerLabel = this.isPallet ? pc.qty_per_pallet : pc.pack_size;
+                        this.printCount = this.totalCount;
+                        this.autoTune();
+                    } else {
+                        this.qtyPerLabel = line.qty;
+                    }
+                    this.refreshGraphics();
+                },
+
+                onLayoutChange() {
+                    if (this.layout === 'landscape') { this.customWidth = 150; this.customHeight = 100; }
+                    else if (this.layout === 'portrait') { this.customWidth = 100; this.customHeight = 150; }
+                    else if (this.layout === 'compact') { this.customWidth = 100; this.customHeight = 75; }
+                    else { this.customWidth = 100; this.customHeight = 100; }
+                    this.updatePrintStyle();
+                    this.autoTune();
+                    this.refreshGraphics();
+                },
+
+                updatePrintStyle() {
+                    let styleEl = document.getElementById('dynamic-print-style');
+                    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-print-style'; document.head.appendChild(styleEl); }
+                    const w = this.customWidth + 'mm';
+                    const h = this.customHeight + 'mm';
+                    styleEl.textContent = `
+                        @page { size: ${w} ${h}; margin: 0; }
+                        @media print {
+                            :root { --label-w-mm: ${w}; --label-h-mm: ${h}; }
+                            html, body { margin: 0 !important; padding: 0 !important; width: ${w} !important; height: auto !important; background: white !important; }
+                            .o_canvas, .preview_wrapper { margin: 0 !important; padding: 0 !important; width: ${w} !important; }
+                            .preview_scale { width: ${w} !important; height: ${h} !important; display: block !important; page-break-after: always !important; }
+                            .label_template { width: ${w} !important; height: ${h} !important; transform: none !important; transform-origin: top left !important; position: relative !important; left: 0 !important; top: 0 !important; }
+                        }
+                    `.trim();
+                },
+
+                getWrapperStyle() {
+                    const pixelsPerMm = 3.78;
+                    const availableWidth = Math.max(400, this.canvasWidth - 80);
+                    const availableHeight = Math.max(300, this.canvasHeight - 60);
+                    const physicalWidthPx = this.customWidth * pixelsPerMm;
+                    const physicalHeightPx = this.customHeight * pixelsPerMm;
+                    const scaleW = availableWidth / physicalWidthPx;
+                    const scaleH = availableHeight / physicalHeightPx;
+                    const scale = Math.min(1.5, scaleW, scaleH) * 0.98;
+                    const displayWidth = physicalWidthPx * scale;
+                    const displayHeight = physicalHeightPx * scale;
+                    return `width: ${displayWidth}px; height: ${displayHeight}px; position: relative; margin: 0 auto 40px auto; overflow: visible;`;
+                },
+
+                getLabelStyle() {
+                    const pixelsPerMm = 3.78;
+                    const physicalWidthPx = this.customWidth * pixelsPerMm;
+                    const physicalHeightPx = this.customHeight * pixelsPerMm;
+                    const availableWidth = Math.max(400, this.canvasWidth - 80);
+                    const availableHeight = Math.max(300, this.canvasHeight - 60);
+                    const scaleW = availableWidth / physicalWidthPx;
+                    const scaleH = availableHeight / physicalHeightPx;
+                    const scale = Math.min(1.5, scaleW, scaleH) * 0.98;
+                    return `--label-w-px: ${physicalWidthPx}px; --label-h-px: ${physicalHeightPx}px; --label-w-mm: ${this.customWidth}mm; --label-h-mm: ${this.customHeight}mm; transform: scale(${scale}); transform-origin: top left; position: absolute; left: 0; top: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 4px; border: 1px solid rgba(0,0,0,0.05); pointer-events: none;`;
+                },
+
+                refreshGraphics() {
+                    this.$nextTick(() => {
+                        this.$nextTick(() => {
+                            setTimeout(() => {
+                                const count = Math.min(parseInt(this.printCount) || 1, 50);
+                                for (let i = 1; i <= count; i++) {
+                                    this.drawQr(i);
+                                    this.drawBarcode(i);
+                                }
+                            }, 50);
+                        });
+                    });
+                },
+
+                drawQr(idx) {
+                    const el = document.getElementById('qrcode-' + idx);
+                    if (!el) return;
+                    el.innerHTML = '';
+                    let size = 120;
+                    if (this.layout === 'compact') size = 70;
+                    else if (this.customWidth > 120) size = 160;
+                    new QRCode(el, {
+                        text: this.selectedLine?.product_barcode || this.selectedLine?.product_code || 'N/A',
+                        width: size, height: size,
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                },
+
+                drawBarcode(idx) {
+                    const el = document.getElementById('barcode-' + idx);
+                    if (!el) return;
+                    try {
+                        const bWidth = (this.customWidth > 120) ? 3.0 : 2.0;
+                        const bHeight = (this.customHeight > 120) ? 60 : 40;
+                        JsBarcode(el, this.lotNumber, { format: "CODE128", width: bWidth, height: bHeight, displayValue: false });
+                    } catch (e) { }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

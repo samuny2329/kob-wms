@@ -1,0 +1,441 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Odoo 18 CSS Custom Properties ─── */
+:root {
+  --odoo-purple:        #714B67;
+  --odoo-purple-dark:   #5a3d52;
+  --odoo-teal:          #017E84;
+  --odoo-teal-light:    #00A09D;
+  --odoo-bg:            #f8f9fa;
+  --odoo-surface:       #ffffff;
+  --odoo-border:        #dee2e6;
+  --odoo-text:          #212529;
+  --odoo-text-secondary:#6c757d;
+  --odoo-text-muted:    #adb5bd;
+  --odoo-success:       #28a745;
+  --odoo-warning:       #ffac00;
+  --odoo-danger:        #dc3545;
+  --odoo-info:          #17a2b8;
+  --odoo-navbar-h:      46px;
+  --odoo-sidebar-w:     220px;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, Sarabun, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--odoo-text);
+    background-color: var(--odoo-bg);
+    @apply dark:text-slate-200;
+    touch-action: manipulation;
+    overscroll-behavior-y: contain;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    background-color: #0d0d0d;
+  }
+}
+
+@layer components {
+  /* ─── Odoo 18 Component Classes ─── */
+
+  /* Cards — flat white, thin border, 4px radius */
+  .odoo-card {
+    background: var(--odoo-surface);
+    border: 1px solid var(--odoo-border);
+    border-radius: 4px;
+    box-shadow: none;
+  }
+
+  /* Odoo-style table headers */
+  .odoo-table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--odoo-border);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--odoo-text-secondary);
+    padding: 0.5rem 0.75rem;
+  }
+  .odoo-table tbody td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 0.875rem;
+    color: var(--odoo-text);
+  }
+  .odoo-table tbody tr:hover td {
+    background-color: #f8f9fa;
+  }
+
+  /* Odoo-style buttons */
+  .odoo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    line-height: 1.5;
+  }
+  .odoo-btn-primary {
+    background-color: var(--odoo-purple);
+    color: #ffffff;
+    border-color: var(--odoo-purple);
+  }
+  .odoo-btn-primary:hover {
+    background-color: var(--odoo-purple-dark);
+    border-color: var(--odoo-purple-dark);
+  }
+  .odoo-btn-secondary {
+    background-color: #ffffff;
+    color: var(--odoo-purple);
+    border-color: var(--odoo-border);
+  }
+  .odoo-btn-secondary:hover {
+    background-color: #f8f9fa;
+  }
+  .odoo-btn-danger {
+    background-color: var(--odoo-danger);
+    color: #ffffff;
+    border-color: var(--odoo-danger);
+  }
+
+  /* Odoo-style badges — subtle, no border */
+  .odoo-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15em 0.55em;
+    font-size: 0.75em;
+    font-weight: 500;
+    border-radius: 3px;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  /* Status badge variants — Odoo pastel style */
+  .odoo-badge-pending  { background: #eaeaea; color: #555; }
+  .odoo-badge-picking  { background: #fff0cc; color: #7a5800; }
+  .odoo-badge-picked   { background: #d4edda; color: #155724; }
+  .odoo-badge-packing  { background: #cce5ff; color: #004085; }
+  .odoo-badge-packed   { background: #d1ecf1; color: #0c5460; }
+  .odoo-badge-rts      { background: #d4edda; color: #155724; }
+  .odoo-badge-cancelled{ background: #f8d7da; color: #721c24; }
+  /* Courier/platform badge */
+  .odoo-badge-courier  { background: #f0e8ed; color: #714B67; font-size: 0.7em; }
+
+  /* Odoo form inputs */
+  .odoo-input {
+    border: 1px solid var(--odoo-border);
+    border-radius: 4px;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: #ffffff;
+    color: var(--odoo-text);
+  }
+  .odoo-input:focus {
+    border-color: var(--odoo-purple);
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15);
+  }
+
+  /* Odoo sidebar nav item */
+  .odoo-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.82);
+    border-radius: 0;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+  }
+  .odoo-nav-item:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: #ffffff;
+  }
+  .odoo-nav-item.active {
+    background-color: rgba(255,255,255,0.15);
+    color: #ffffff;
+    font-weight: 600;
+  }
+  .odoo-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Odoo-style stat card */
+  .odoo-stat-card {
+    background: var(--odoo-surface);
+    border: 1px solid var(--odoo-border);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 4px;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  .dark .glass-panel {
+    background: rgba(24, 24, 27, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(39, 39, 42, 0.8);
+  }
+
+
+  .page {
+    width: 210mm;
+    padding: 15mm;
+    background: white;
+    color: black;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .login-input {
+    width: 100%;
+    padding-left: 3rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--odoo-border);
+    background-color: #ffffff;
+    font-weight: 400;
+    font-size: 0.875rem;
+    color: var(--odoo-text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .dark .login-input {
+    border-color: #3f3f46;
+    background-color: #18181b;
+    color: #e4e4e7;
+  }
+
+  .login-input:focus {
+    border-color: #714B67;
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15);
+  }
+
+  .login-button {
+    width: 100%;
+    background-color: #714B67;
+    border: 1px solid #714B67;
+    color: white;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.15s, border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .login-button:hover {
+    background-color: #5a3d52;
+    border-color: #5a3d52;
+  }
+
+  .dark .login-button {
+    background-color: #714B67;
+    border-color: #714B67;
+    color: white;
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.2s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white;
+  }
+
+  .page {
+    width: 100%;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+}
+
+.loader {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.4s;
+}
+
+.dark .loader {
+  background: #09090b;
+}
+
+.signature-canvas {
+  touch-action: none;
+  cursor: crosshair;
+  width: 100%;
+  height: 160px;
+  background: #fafafa;
+  border-radius: 0.75rem;
+  border: 2px dashed #e4e4e7;
+  transition: border-color 0.2s;
+}
+
+.dark .signature-canvas {
+  background: #09090b;
+  border-color: #27272a;
+}
+
+.signature-canvas:hover {
+  border-color: #3b82f6;
+}
+
+.shadow-sleek {
+  box-shadow: 0 4px 20px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+.dark .shadow-sleek {
+  box-shadow: 0 4px 20px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+}
+
+@keyframes scan-flash {
+  0% { background-color: rgba(16, 185, 129, 0.2); }
+  100% { background-color: transparent; }
+}
+
+@keyframes scan-error {
+  0% { background-color: rgba(239, 68, 68, 0.2); }
+  100% { background-color: transparent; }
+}
+
+.animate-scan-flash {
+  animation: scan-flash 0.5s ease-out forwards;
+}
+
+.animate-scan-error {
+  animation: scan-error 0.5s ease-out forwards;
+}
+
+.industrial-input {
+  background-color: #f8fafc;
+  border-width: 4px;
+  border-color: #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 0.1em;
+  transition-property: all;
+  transition-duration: 300ms;
+  outline: none;
+}
+
+.dark .industrial-input {
+  background-color: #09090b;
+  border-color: #18181b;
+}
+
+.industrial-input:focus {
+  border-color: #714B67;
+  background-color: white;
+  box-shadow: 0 0 0 8px rgba(113, 75, 103, 0.1);
+}
+
+.dark .industrial-input:focus {
+  background-color: #18181b;
+}
+
