@@ -30,6 +30,9 @@ import Fulfillment from './components/Fulfillment';
 import Invoice from './components/Invoice';
 import HandheldLayout from './components/HandheldLayout';
 import PlatformMonitor from './components/PlatformMonitor';
+import TeamPerformance from './components/TeamPerformance';
+import WorkerPerformance from './components/WorkerPerformance';
+import SLATracker from './components/SLATracker';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
@@ -42,6 +45,7 @@ const App = () => {
     const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('currentUser')) || null);
     const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || 'admin');
     const [activeTab, setActiveTab] = useState(() => localStorage.getItem('activeTab') || 'dashboard');
+    const [selectedWorker, setSelectedWorker] = useState(null);
     const [workDate, setWorkDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -970,8 +974,13 @@ window.onload=function(){
                     {activeTab === 'platformMonitor' && <PlatformMonitor salesOrders={salesOrders} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} />}
                     {activeTab === 'invoice' && <Invoice invoices={invoices} setInvoices={setInvoices} salesOrders={salesOrders} addToast={addToast} />}
                     {activeTab === 'settings' && <Settings t={t} language={language} setLanguage={setLanguage} userRole={userRole} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} workDate={workDate} setWorkDate={setWorkDate} triggerConfirm={triggerConfirm} updateAndSyncData={updateAndSyncData} showAlert={showAlert} syncStatus={syncStatus} />}
+                    {activeTab === 'teamPerformance' && <TeamPerformance activityLogs={activityLogs} orders={orderData} t={t} onSelectWorker={(w) => setSelectedWorker(w)} />}
+                    {activeTab === 'slaTracker' && <SLATracker activityLogs={activityLogs} orders={orderData} salesOrders={salesOrders} onSelectWorker={(w) => setSelectedWorker(w)} t={t} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
+
+                {/* Worker Performance Detail Panel */}
+                {selectedWorker && <WorkerPerformance activityLogs={activityLogs} worker={selectedWorker} onClose={() => setSelectedWorker(null)} t={t} />}
             </div>
 
             {/* Modals & Toasts */}

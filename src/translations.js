@@ -27,7 +27,9 @@ export const TRANSLATIONS = {
         userMgmt: 'User Access Management', addEmp: 'Add New Employee',
         fullName: 'Full Name', assignRole: 'Assigned Role', createBtn: 'Create User',
         empTblCol: 'Employee', roleTblCol: 'Role', secTblCol: 'Security', actTblCol: 'Actions',
-        kpiSpeed: 'Speed (UPH)'
+        kpiSpeed: 'Speed (UPH)',
+        tabTeamPerformance: 'Team Performance', tabSlaTracker: 'SLA Tracker',
+        secAnalytics: 'Analytics'
     },
     th: {
         roleAdmin: 'ผู้ดูแลระบบ', roleAdminDesc: 'เข้าถึงทุกระบบ',
@@ -57,6 +59,8 @@ export const TRANSLATIONS = {
         userMgmt: 'จัดการสิทธิ์ผู้ใช้งาน', addEmp: 'เพิ่มพนักงานใหม่',
         fullName: 'ชื่อ-นามสกุล', assignRole: 'สิทธิ์การใช้งาน', createBtn: 'สร้างบัญชี',
         empTblCol: 'พนักงาน', roleTblCol: 'สิทธิ์', secTblCol: 'ความปลอดภัย', actTblCol: 'จัดการ',
-        kpiSpeed: 'ความเร็ว (UPH)'
+        kpiSpeed: 'ความเร็ว (UPH)',
+        tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA',
+        secAnalytics: 'วิเคราะห์'
     }
 };

@@ -17,7 +17,7 @@ const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInf
 
     const allowedTabs = rolesInfo[userRole]?.tabs || [];
 
-    const sectionOrder = ['Operations', 'Inventory', 'Accounting', 'Logistics', 'System', 'Help & Support'];
+    const sectionOrder = ['Operations', 'Inventory', 'Accounting', 'Analytics', 'Logistics', 'System', 'Help & Support'];
     const grouped = allowedTabs.reduce((acc, key) => {
         const info = tabInfo[key];
         if (!info) return acc;
