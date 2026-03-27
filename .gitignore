@@ -42,6 +42,6 @@ odoo-data/
 
 # Claude Code config (local only)
 .claude/
-setup-github.bat
-setup-github.ps1
-rename-repo.bat
+
+# Utility scripts (local only)
+*.bat
