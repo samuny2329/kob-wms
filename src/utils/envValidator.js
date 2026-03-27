@@ -6,7 +6,7 @@
  */
 
 const REQUIRED_VARS = [
-  // None strictly required for app boot — Odoo/Firebase configured in UI Settings
+  // None strictly required for app boot — Odoo configured in UI Settings
 ];
 
 const RECOMMENDED_VARS = [

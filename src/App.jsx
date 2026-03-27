@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { getAuth, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
 import { AlertCircle, CheckCircle2, RefreshCw, Upload, X, FileSpreadsheet, AlertTriangle, Unlock } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import { TRANSLATIONS } from './translations';
 import { getTrackingUrl, useDebounce } from './utils';
-import { firebaseConfig, rolesInfo, tabInfo, INITIAL_SALES_ORDERS, ITEMS_PER_PAGE, PRODUCT_CATALOG } from './constants';
+import { rolesInfo, tabInfo, INITIAL_SALES_ORDERS, ITEMS_PER_PAGE, PRODUCT_CATALOG } from './constants';
 
 // Sub-components
 import Sidebar from './components/Sidebar';
@@ -124,118 +121,6 @@ const App = () => {
     // Tracks last successful scan time per barcode to prevent stale-state duplicates
     const recentScansRef = useRef({}); // { [barcode]: timestamp }
 
-    // ── Firebase realtime sync ──────────────────────────────────────────────
-    const lastFirebaseOrders = useRef(null);   // last salesOrders snapshot from Firebase
-    const lastFirebaseLogCount = useRef(0);    // last activityLogs count pushed/received
-
-    const orderProg = (o) => o.items?.reduce((s, i) => s + (i.picked || 0) + (i.packed || 0), 0) || 0;
-
-    // Returns true if local matches what Firebase already has (no need to push)
-    const sameAsFirebase = (local) => {
-        const fb = lastFirebaseOrders.current;
-        if (!fb || local.length !== fb.length) return false;
-        return local.every(l => {
-            const r = fb.find(x => x.id === l.id);
-            return r && l.status === r.status && orderProg(l) === orderProg(r);
-        });
-    };
-
-    useEffect(() => {
-        let fbApp, db;
-        try { fbApp = initializeApp(firebaseConfig); db = getFirestore(fbApp); }
-        catch (e) { console.error("Firebase Init Error:", e); return; }
-
-        const unsubscribe = onSnapshot(doc(db, "wms", "shared_state"), (snapshot) => {
-            if (!snapshot.exists()) return;
-            const data = snapshot.data();
-
-            // Merge activityLogs from all devices (dedupe by timestamp+username)
-            if (Array.isArray(data.activityLogs) && data.activityLogs.length > 0) {
-                lastFirebaseLogCount.current = data.activityLogs.length;
-                setActivityLogs(prev => {
-                    const merged = [...prev];
-                    data.activityLogs.forEach(remote => {
-                        const exists = merged.some(l => l.timestamp === remote.timestamp && l.username === remote.username && l.action === remote.action);
-                        if (!exists) merged.push(remote);
-                    });
-                    return merged.sort((a, b) => b.timestamp - a.timestamp).slice(0, 1000);
-                });
-            }
-
-            if (data.odooConfig?.useMock === false && data.odooConfig?.password) {
-                setApiConfigs(prev => ({ ...prev, odoo: { ...prev.odoo, ...data.odooConfig } }));
-            }
-
-            if (Array.isArray(data.salesOrders) && data.salesOrders.length > 0) {
-                lastFirebaseOrders.current = data.salesOrders;
-                const statusRank = { rts: 5, packed: 4, picked: 3, packing: 2, picking: 2, pending: 1 };
-                const winnerOrder = (local, remote) => {
-                    const lp = orderProg(local), rp = orderProg(remote);
-                    const lr = statusRank[local.status] || 1, rr = statusRank[remote.status] || 1;
-                    return (lp > rp || lr > rr) ? local : remote;
-                };
-                setSalesOrders(prev => {
-                    const merged = data.salesOrders.map(remote => {
-                        const local = prev.find(l => l.id === remote.id);
-                        return local ? winnerOrder(local, remote) : remote;
-                    });
-                    prev.forEach(l => { if (!merged.find(m => m.id === l.id)) merged.push(l); });
-                    return merged;
-                });
-                // Refresh selectedPickOrder / selectedPackOrder if updated by another device
-                setSelectedPickOrder(prev => {
-                    if (!prev) return prev;
-                    const updated = data.salesOrders.find(o => o.id === prev.id);
-                    return updated ? winnerOrder(prev, updated) : prev;
-                });
-                setSelectedPackOrder(prev => {
-                    if (!prev) return prev;
-                    const updated = data.salesOrders.find(o => o.id === prev.id);
-                    return updated ? winnerOrder(prev, updated) : prev;
-                });
-            }
-        });
-        return () => unsubscribe();
-    }, []);
-
-    // Push salesOrders to Firebase — only when local differs from last Firebase snapshot (anti-loop)
-    useEffect(() => {
-        // Push all orders that have a valid id and WH-style ref (real orders, not initial dummies)
-        const ordersToSync = salesOrders.filter(o => o.id && o.ref && String(o.ref).startsWith('WH/'));
-        if (ordersToSync.length === 0) return;
-        const timer = setTimeout(() => {
-            if (sameAsFirebase(ordersToSync)) return; // no real local change, skip
-            try {
-                const fbApp = initializeApp(firebaseConfig);
-                const db = getFirestore(fbApp);
-                const payload = { salesOrders: ordersToSync };
-                if (apiConfigs?.odoo?.useMock === false && apiConfigs?.odoo?.password) {
-                    payload.odooConfig = apiConfigs.odoo;
-                }
-                setDoc(doc(db, "wms", "shared_state"), payload, { merge: true })
-                    .then(() => { lastFirebaseOrders.current = ordersToSync; })
-                    .catch(() => {});
-            } catch (e) {}
-        }, 2000);
-        return () => clearTimeout(timer);
-    }, [salesOrders]);
-
-    // Push activityLogs to Firebase (debounced 3s) — for real-time UPH/Team Performance on Dashboard
-    useEffect(() => {
-        const today = new Date().toISOString().split('T')[0];
-        const todayLogs = activityLogs.filter(l => l.timestamp && new Date(l.timestamp).toISOString().split('T')[0] === today);
-        if (todayLogs.length === 0 || todayLogs.length === lastFirebaseLogCount.current) return;
-        const timer = setTimeout(() => {
-            try {
-                const fbApp = initializeApp(firebaseConfig);
-                const db = getFirestore(fbApp);
-                setDoc(doc(db, "wms", "shared_state"), { activityLogs: todayLogs }, { merge: true })
-                    .then(() => { lastFirebaseLogCount.current = todayLogs.length; })
-                    .catch(() => {});
-            } catch (e) {}
-        }, 3000);
-        return () => clearTimeout(timer);
-    }, [activityLogs]);
 
     // Sync to LS
     useEffect(() => {
@@ -279,11 +164,6 @@ const App = () => {
 
     const updateAndSyncData = (newData) => {
         setOrderData(newData);
-        try {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            setDoc(doc(db, "wms", "shared_state"), { lastUpdate: new Date().getTime() }, { merge: true });
-        } catch (e) { }
     };
 
     const logActivity = (action, details) => {

@@ -1,6 +1,57 @@
 // Odoo WMS API Service Layer
 // Reads USE_MOCK from odooConfig.useMock (set in Settings UI)
 // When useMock is false, connects to real Odoo 18 via session-based auth
+//
+// ─── Odoo Models & Fields Used ───────────────────────────────────────
+//
+// STOCK (Warehouse):
+//   stock.picking      — id, name, partner_id, state, move_ids, origin, note,
+//                        scheduled_date, sale_id, company_id, location_id
+//                        Methods: search_read, read, button_validate
+//   stock.move          — id, picking_id, product_id, product_uom_qty, quantity,
+//                        location_id, state
+//                        Methods: search_read
+//   stock.move.line     — id, move_id, picking_id, product_id, location_id,
+//                        location_dest_id, lot_id, quantity, qty_done, date, reference
+//                        Methods: search_read, write, create
+//   stock.quant         — product_id, lot_id, quantity, reserved_quantity, location_id,
+//                        company_id
+//                        Methods: search_read
+//   stock.location      — id, name, complete_name, usage, location_id, active
+//                        Methods: search_read, create
+//
+// SALES & INVOICING:
+//   sale.order          — id, name, partner_id, order_line, team_id, date_order, state,
+//                        source_id, commitment_date, picking_ids, client_order_ref, note
+//                        Methods: search_read, read, create, action_confirm
+//   account.move        — id, name, partner_id, invoice_date, invoice_date_due, state,
+//                        payment_state, amount_untaxed, amount_tax, amount_total,
+//                        invoice_origin, invoice_line_ids, move_type
+//                        Methods: search_read, action_post
+//   account.move.line   — move_id, product_id, name, quantity, price_unit,
+//                        price_subtotal, price_total, display_type
+//                        Methods: search_read
+//
+// MASTER DATA:
+//   product.product     — id, name, default_code (SKU), barcode, lst_price, uom_id, active
+//                        Methods: search_read, read
+//   res.partner         — id, name, customer_rank
+//                        Methods: search_read, create
+//   crm.team            — id, name
+//                        Methods: search_read
+//
+// WIZARDS:
+//   sale.advance.payment.inv      — advance_payment_method, sale_order_ids
+//                                   Methods: create, create_invoices
+//   stock.backorder.confirmation  — pick_ids  |  Methods: create, process
+//   stock.immediate.transfer      — pick_ids  |  Methods: create, process
+//
+// ─── Docker Deployment ────────────────────────────────────────────────
+//   Browser → Nginx (:80) → /web/*, /wms/* proxy → Odoo 18 (:8069) → PostgreSQL 16
+//   docker-compose.yml: wms (Nginx), odoo (Odoo 18), postgres (PostgreSQL 16)
+//   Network: wms-pro-network (bridge 172.28.0.0/16)
+//   CI/CD: GitHub Actions → Lint → Build → Docker Push (GHCR) → Deploy SSH → Health Check
+// ──────────────────────────────────────────────────────────────────────
 
 const API_TIMEOUT = 8000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));

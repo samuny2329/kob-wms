@@ -36,15 +36,14 @@ const HandheldLayout = ({
         enabled: true, useMock: false,
     };
 
-    // Auto-sync from Odoo removed — Firebase realtime sync handles order distribution now
-    // Manual "Sync Orders" button still available if user needs to force-pull from Odoo
+    // Manual "Sync Orders" button available to force-pull from Odoo
 
     const handleSyncOrders = async () => {
         if (syncingRef.current) return;
         syncingRef.current = true;
         setIsSyncingOrders(true);
         try {
-            // Always use real credentials — apiConfigs.odoo may have been updated via Firebase
+            // Always use real credentials from apiConfigs
             const base = apiConfigs?.odoo || {};
             const cfg = {
                 ...base,
@@ -68,7 +67,7 @@ const HandheldLayout = ({
                         }
                         return remote;
                     });
-                    // Preserve ALL existing orders not in this Odoo fetch (Firebase-synced, etc.)
+                    // Preserve existing orders not in this Odoo fetch
                     prev.forEach(l => { if (!merged.find(m => m.id === l.id)) merged.push(l); });
                     return merged;
                 });

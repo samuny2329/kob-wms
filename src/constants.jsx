@@ -2,15 +2,6 @@ import React from 'react';
 import { LayoutDashboard, ShoppingCart, Box, ScanLine, FileText, Truck, Printer, Users, Settings, BookOpen, Smartphone, Monitor, Warehouse, Layers, PackageCheck, Receipt, BarChart2, Trophy, Shield, UserCheck } from 'lucide-react';
 import { PlatformBadge } from './components/PlatformLogo';
 
-export const firebaseConfig = {
-    apiKey: "AIzaSyB_OCHiF5jhR8_J1KBxZ9ytMnZ6JwTT4wk",
-    authDomain: "outbound-scanner-app.firebaseapp.com",
-    projectId: "outbound-scanner-app",
-    storageBucket: "outbound-scanner-app.firebasestorage.app",
-    messagingSenderId: "870142640245",
-    appId: "1:870142640245:web:acbde680241cf2ae24b83c"
-};
-
 export const ITEMS_PER_PAGE = 25;
 
 export const rolesInfo = {
