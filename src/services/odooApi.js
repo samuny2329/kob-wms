@@ -319,15 +319,16 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
     // 1. Get demands from stock.move (source of truth for required qty)
     const moves = await odooCallKw(odooConfig, 'stock.move', 'search_read',
         [[['picking_id', '=', pickingId], ['state', 'not in', ['cancel', 'done']]]],
-        { fields: ['id', 'product_id', 'product_uom_qty', 'location_id'] }
+        { fields: ['id', 'product_id', 'product_uom_qty', 'location_id', 'location_dest_id'] }
     );
 
     // 2. Get picking's company + source location to restrict quant search
     const pickingInfo = await odooCallKw(odooConfig, 'stock.picking', 'read',
-        [[pickingId]], { fields: ['company_id', 'location_id'] }
+        [[pickingId]], { fields: ['company_id', 'location_id', 'location_dest_id'] }
     ).catch(() => [{}]);
     const companyId = pickingInfo[0]?.company_id?.[0];
     const pickingLocId = pickingInfo[0]?.location_id?.[0];
+    const pickingDestId = pickingInfo[0]?.location_dest_id?.[0];
 
     for (const move of moves) {
         const demandQty = move.product_uom_qty;
@@ -364,7 +365,7 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
             // Create new move line with correct company location
             await odooCallKw(odooConfig, 'stock.move.line', 'create',
                 [{ move_id: move.id, picking_id: pickingId, product_id: productId,
-                   location_id: newLocId, location_dest_id: move.location_id[0],
+                   location_id: newLocId, location_dest_id: pickingDestId || move.location_dest_id?.[0] || move.location_id[0],
                    quantity: demandQty, product_uom_id: 1 }]
             ).catch(() => {});
         }

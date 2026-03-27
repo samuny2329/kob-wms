@@ -39,7 +39,7 @@ const App = () => {
     // 1. Initial & System State
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
     const [language, setLanguage] = useState(() => localStorage.getItem('lang') || 'en');
-    const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('currentUser')) || null);
+    const [user, setUser] = useState(() => { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } });
     const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || 'admin');
     const [activeTab, setActiveTab] = useState(() => localStorage.getItem('activeTab') || 'dashboard');
     const [selectedWorker, setSelectedWorker] = useState(null);
@@ -47,13 +47,19 @@ const App = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     // 2. Data State
-    const [orderData, setOrderData] = useState(() => JSON.parse(localStorage.getItem('wms_orders')) || []);
-    const [salesOrders, setSalesOrders] = useState(() => JSON.parse(localStorage.getItem('wms_sales_orders')) || INITIAL_SALES_ORDERS);
-    const [users, setUsers] = useState(() => JSON.parse(localStorage.getItem('wms_users')) || [{ name: 'Admin User', username: 'admin', password: '123', role: 'admin', isFirstLogin: false }]);
-    const [historyData, setHistoryData] = useState(() => JSON.parse(localStorage.getItem('wms_history')) || []);
-    const [activityLogs, setActivityLogs] = useState(() => JSON.parse(localStorage.getItem('wms_logs')) || []);
+    // Safe JSON parse helper — prevents white screen on corrupted localStorage
+    const safeParse = (key, fallback) => {
+        try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+        catch { console.warn(`Corrupted localStorage key: ${key}, using default`); return fallback; }
+    };
+
+    const [orderData, setOrderData] = useState(() => safeParse('wms_orders', []));
+    const [salesOrders, setSalesOrders] = useState(() => safeParse('wms_sales_orders', INITIAL_SALES_ORDERS));
+    const [users, setUsers] = useState(() => safeParse('wms_users', [{ name: 'Admin User', username: 'admin', password: '123456', role: 'admin', isFirstLogin: false }]));
+    const [historyData, setHistoryData] = useState(() => safeParse('wms_history', []));
+    const [activityLogs, setActivityLogs] = useState(() => safeParse('wms_logs', []));
     const [apiConfigs, setApiConfigs] = useState(() => {
-        const stored = JSON.parse(localStorage.getItem('wms_apis')) || {};
+        const stored = safeParse('wms_apis', {});
         const odooDefaults = { enabled: false, url: 'http://localhost:8070', db: 'odoo18', username: 'admin', password: '' };
         return {
             odoo: { ...odooDefaults, ...stored.odoo, url: stored.odoo?.url || odooDefaults.url, db: stored.odoo?.db || odooDefaults.db, username: stored.odoo?.username || odooDefaults.username },
@@ -62,10 +68,10 @@ const App = () => {
             tiktok: stored.tiktok || { enabled: false, appKey: '', appSecret: '', accessToken: '' },
         };
     });
-    const [boxUsageLog, setBoxUsageLog] = useState(() => JSON.parse(localStorage.getItem('wms_box_usage')) || []);
-    const [inventory, setInventory] = useState(() => JSON.parse(localStorage.getItem('wms_inventory')) || null);
-    const [waves, setWaves] = useState(() => JSON.parse(localStorage.getItem('wms_waves')) || []);
-    const [invoices, setInvoices] = useState(() => JSON.parse(localStorage.getItem('wms_invoices')) || []);
+    const [boxUsageLog, setBoxUsageLog] = useState(() => safeParse('wms_box_usage', []));
+    const [inventory, setInventory] = useState(() => safeParse('wms_inventory', null));
+    const [waves, setWaves] = useState(() => safeParse('wms_waves', []));
+    const [invoices, setInvoices] = useState(() => safeParse('wms_invoices', []));
 
     // 3. UI Interaction State
     const [username, setUsername] = useState('');
@@ -162,6 +168,9 @@ const App = () => {
     // Odoo Sync Hook
     const syncStatus = useOdooSync({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast });
 
+    // HTML escape to prevent XSS in print windows
+    const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
     const updateAndSyncData = (newData) => {
         setOrderData(newData);
     };
@@ -211,7 +220,7 @@ const App = () => {
     const handleAddUser = () => {
         if (!newUserName || !newUserUsername) return;
         if (users.find(u => u.username === newUserUsername)) return addToast('User already exists', 'error');
-        const newUser = { name: newUserName, username: newUserUsername, role: newUserRole, password: '123', isFirstLogin: true };
+        const newUser = { name: newUserName, username: newUserUsername, role: newUserRole, password: '123456', isFirstLogin: true };
         setUsers([...users, newUser]);
         setNewUserName(''); setNewUserUsername('');
         addToast('User created successfully');
@@ -225,8 +234,8 @@ const App = () => {
     };
 
     const handleResetPassword = (uname) => {
-        setUsers(users.map(u => u.username === uname ? { ...u, password: '123', isFirstLogin: true } : u));
-        addToast('Password reset to 123');
+        setUsers(users.map(u => u.username === uname ? { ...u, password: '123456', isFirstLogin: true } : u));
+        addToast('Password reset to 123456');
     };
 
     // Remove orders with Dummy/non-SKINOXY products (no real odooPickingId and no real SKU)
@@ -248,7 +257,7 @@ const App = () => {
             addToast(`SO created in Odoo: ${result.soName} → ${result.pickingRef}`);
             logActivity('create-so-odoo', { soName: result.soName, picking: result.pickingRef, platform: orderData.platform });
             // Trigger sync to pull the new picking into WMS
-            if (typeof syncNow === 'function') syncNow();
+            if (typeof syncStatus.syncNow === 'function') syncStatus.syncNow();
         } catch (err) {
             addToast('SO creation failed: ' + err.message, 'error');
         } finally {
@@ -376,8 +385,9 @@ const App = () => {
         if (isThaiPost) theme = { bg:'#f0fff4', headerBg:'#7B2D8B', headerColor:'#fff', logo:'🇹🇭 THP', name:'Thailand Post EMS', accentColor:'#7B2D8B', borderColor:'#7B2D8B', isText:true };
 
         const win = window.open('', '_blank', 'width=500,height=750');
+        if (!win) { addToast('Popup blocked by browser', 'error'); return; }
         win.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>AWB-${awbCode}</title>
+<html><head><meta charset="UTF-8"><title>AWB-${esc(awbCode)}</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
 <style>
   @page{size:100mm 150mm;margin:0}
@@ -526,6 +536,10 @@ window.onload=function(){
     const processBarcode = (barcode) => {
         // Ref-based duplicate guard — blocks re-scan within 3s regardless of state staleness
         const now = Date.now();
+        // Prune old entries to prevent memory growth over long shifts
+        for (const key in recentScansRef.current) {
+            if (now - recentScansRef.current[key] > 10000) delete recentScansRef.current[key];
+        }
         if (recentScansRef.current[barcode] && now - recentScansRef.current[barcode] < 3000) {
             setScanStatus({ type: 'error', message: 'Already Scanned: ' + barcode });
             setIsErrorLocked(true);
@@ -619,9 +633,10 @@ window.onload=function(){
     const endDrawing = () => { isDrawing.current = false; };
 
     const handleDispatchSubmit = () => {
-        const batch = { id: activeOrderId, timestamp: new Date().toLocaleString(), courier: dispatchCourier, items: orderData.filter(i => i.scannedQty > 0 && (i.courier || 'KISS') === dispatchCourier) };
+        const matchCourier = (a, b) => (a || '').toLowerCase() === (b || '').toLowerCase();
+        const batch = { id: activeOrderId, timestamp: new Date().toLocaleString(), courier: dispatchCourier, items: orderData.filter(i => i.scannedQty > 0 && matchCourier(i.courier || 'KISS', dispatchCourier)) };
         setHistoryData([batch, ...historyData]);
-        updateAndSyncData(orderData.filter(i => !(i.scannedQty > 0 && (i.courier || 'KISS') === dispatchCourier)));
+        updateAndSyncData(orderData.filter(i => !(i.scannedQty > 0 && matchCourier(i.courier || 'KISS', dispatchCourier))));
         setDispatchCourier('');
         clearSignature();
         setActiveOrderId('BATCH-' + new Date().getTime());
@@ -689,9 +704,14 @@ window.onload=function(){
         setIsProcessingImport(true);
         try {
             const result = await apiSyncAllPlatforms(apiConfigs.odoo);
-            if (result.shopee) setSalesOrders(prev => [...prev, ...result.shopee]);
-            if (result.lazada) setSalesOrders(prev => [...prev, ...result.lazada]);
-            if (result.tiktok) setSalesOrders(prev => [...prev, ...result.tiktok]);
+            // Deduplicate by ref to prevent duplicates on re-sync
+            const dedup = (prev, newOrders) => {
+                const existingRefs = new Set(prev.map(o => o.ref));
+                return [...prev, ...newOrders.filter(o => !existingRefs.has(o.ref))];
+            };
+            if (result.shopee) setSalesOrders(prev => dedup(prev, result.shopee));
+            if (result.lazada) setSalesOrders(prev => dedup(prev, result.lazada));
+            if (result.tiktok) setSalesOrders(prev => dedup(prev, result.tiktok));
             addToast(`Synced ${result.total || 0} orders from platforms`);
         } catch (err) {
             addToast('Platform sync failed: ' + err.message, 'error');
@@ -719,7 +739,11 @@ window.onload=function(){
     const dailyBoxUsage = useMemo(() => activityLogs.filter(l => new Date(l.timestamp).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && l.action === 'box').length, [activityLogs]);
 
     // Delayed Orders / SLA
-    const totalDelayed = useMemo(() => Math.floor(totalExpected * 0.05), [totalExpected]); // Mock SLA logic
+    // Calculate actual delayed orders (pending for > 4 hours)
+    const totalDelayed = useMemo(() => {
+        const now = Date.now();
+        return salesOrders.filter(o => o.status === 'pending' && o.createdAt && (now - o.createdAt) > 4 * 3600000).length;
+    }, [salesOrders]);
     const courierDistributionData = useMemo(() => {
         const dist = orderData.reduce((acc, curr) => {
             const name = curr.courier || 'KISS';
@@ -729,12 +753,20 @@ window.onload=function(){
         return Object.entries(dist).map(([name, value]) => ({ name, value }));
     }, [orderData]);
 
-    const delayedOrdersData = useMemo(() => [
-        { platform: 'Shopee', count: Math.floor(totalDelayed * 0.4), fill: '#fbbf24' },
-        { platform: 'Lazada', count: Math.floor(totalDelayed * 0.3), fill: '#3b82f6' },
-        { platform: 'TikTok', count: Math.floor(totalDelayed * 0.2), fill: '#ec4899' },
-        { platform: 'Odoo', count: Math.floor(totalDelayed * 0.1), fill: '#8b5cf6' }
-    ].filter(i => i.count > 0), [totalDelayed]);
+    // Calculate delayed orders by actual platform
+    const delayedOrdersData = useMemo(() => {
+        const now = Date.now();
+        const delayed = salesOrders.filter(o => o.status === 'pending' && o.createdAt && (now - o.createdAt) > 4 * 3600000);
+        const platformColors = { 'Shopee Express': '#fbbf24', 'Lazada Express': '#3b82f6', 'TikTok Shop': '#ec4899' };
+        const dist = {};
+        delayed.forEach(o => {
+            const p = o.platform || 'Other';
+            dist[p] = (dist[p] || 0) + 1;
+        });
+        return Object.entries(dist).map(([platform, count]) => ({
+            platform, count, fill: platformColors[platform] || '#8b5cf6'
+        }));
+    }, [salesOrders]);
 
     const filteredListData = useMemo(() => {
         const s = debouncedSearch.toLowerCase();
@@ -782,7 +814,7 @@ window.onload=function(){
 
     return (
         <div className="flex h-screen font-sans" style={{ backgroundColor: '#f8f9fa', color: '#212529' }}>
-            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} setIsRoleModalOpen={setIsRoleModalOpen} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} />
+            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {/* Odoo 18 Top Navbar — white bg, 46px, matches kissgroupdatacenter.com style */}

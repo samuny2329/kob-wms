@@ -118,6 +118,9 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     const generatePickingList = (order) => setShowPickingList(order);
     const generateBatchPickingList = () => setShowPickingList({ batch: true, orders: pendingOrders });
 
+    // HTML escape to prevent XSS in print window
+    const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
     // BiM-style print
     const handlePrint = () => {
         const orders = showPickingList.batch ? showPickingList.orders : [showPickingList];
@@ -132,8 +135,8 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
             return `
 <div class="page">
   <div class="page-header">
-    <div class="page-title">[Pick] ${platformName} · ${storeName}</div>
-    <div class="page-sub">${idx+1}/${total} &nbsp;|&nbsp; ${dateStr} &nbsp;|&nbsp; <strong>${order.ref}</strong>${order.customer ? ' · ' + order.customer : ''}</div>
+    <div class="page-title">[Pick] ${esc(platformName)} · ${esc(storeName)}</div>
+    <div class="page-sub">${idx+1}/${total} &nbsp;|&nbsp; ${dateStr} &nbsp;|&nbsp; <strong>${esc(order.ref)}</strong>${order.customer ? ' · ' + esc(order.customer) : ''}</div>
   </div>
   <div class="bc-wrap"><svg id="bc-${idx}"></svg><div class="bc-label">${order.ref}</div></div>
   <table>
@@ -150,7 +153,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
           return `
       <tr>
         <td class="num">${i+1}</td>
-        <td><div class="item-name">${PRODUCT_CATALOG[item.sku]?.shortName || item.name}</div><div class="item-sku">${item.sku}</div></td>
+        <td><div class="item-name">${esc(PRODUCT_CATALOG[item.sku]?.shortName || item.name)}</div><div class="item-sku">${esc(item.sku)}</div></td>
         <td class="${loc ? 'loc' : 'loc-miss'}">${loc || '-'}</td>
         <td class="qty">${item.expected}</td>
         <td class="check"></td>
@@ -167,6 +170,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         ).join('\n    ');
 
         const win = window.open('', '_blank', 'width=400,height=600');
+        if (!win) return;
         win.document.write(`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Picking List</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>

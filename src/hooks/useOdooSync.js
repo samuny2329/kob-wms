@@ -11,6 +11,7 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
     const [odooProducts, setOdooProducts] = useState([]); // barcode lookup map from Odoo
     const intervalRef = useRef(null);
     const isFirstSync = useRef(true);
+    const syncingRef = useRef(false); // ref-based guard to prevent concurrent syncs
 
     const odooConfig = apiConfigs?.odoo || {};
 
@@ -18,8 +19,9 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
 
     const syncNow = useCallback(async (silent = false) => {
         if (!odooConfig.enabled && !isFirstSync.current) return;
-        if (isSyncing) return;
+        if (syncingRef.current) return; // ref-based guard (no stale closure)
 
+        syncingRef.current = true;
         setIsSyncing(true);
         setSyncError(null);
 
@@ -117,14 +119,19 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
                 isFirstSync.current = false;
             }
         } finally {
+            syncingRef.current = false;
             setIsSyncing(false);
         }
-    }, [odooConfig, isSyncing, setSalesOrders, setInventory, setWaves, setInvoices, addToast]);
+    }, [odooConfig, setSalesOrders, setInventory, setWaves, setInvoices, addToast]);
 
     // Initial sync on mount
+    const initialSyncDone = useRef(false);
     useEffect(() => {
-        syncNow(true);
-    }, []);
+        if (!initialSyncDone.current) {
+            initialSyncDone.current = true;
+            syncNow(true);
+        }
+    }, [syncNow]);
 
     // Polling interval
     useEffect(() => {

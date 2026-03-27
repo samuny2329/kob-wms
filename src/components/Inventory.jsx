@@ -39,7 +39,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
         if (showLocConfig) {
             fetchAllLocations(odooConfig || {}).then(locs => setAllOdooLocations(locs)).catch(() => {});
         }
-    }, [showLocConfig]);
+    }, [showLocConfig, odooConfig]);
 
     const saveLocations = (list) => {
         setAllowedLocations(list);
