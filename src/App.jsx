@@ -38,6 +38,7 @@ import ClaudeChat from './components/ClaudeChat';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
+import { secureSet } from './utils/crypto';
 import { confirmRTS, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
 import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
 
@@ -56,12 +57,12 @@ const App = () => {
     // Safe JSON parse helper — prevents white screen on corrupted localStorage
     const safeParse = (key, fallback) => {
         try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-        catch { console.warn(`Corrupted localStorage key: ${key}, using default`); return fallback; }
+        catch { if (import.meta.env.DEV) console.warn(`Corrupted localStorage key: ${key}`); return fallback; }
     };
 
     const [orderData, setOrderData] = useState(() => safeParse('wms_orders', []));
     const [salesOrders, setSalesOrders] = useState(() => safeParse('wms_sales_orders', INITIAL_SALES_ORDERS));
-    const [users, setUsers] = useState(() => safeParse('wms_users', [{ name: 'Admin User', username: 'admin', password: '123456', role: 'admin', isFirstLogin: false }]));
+    const [users, setUsers] = useState(() => safeParse('wms_users', [{ name: 'Admin User', username: 'admin', password: '', role: 'admin', isFirstLogin: true }]));
     const [historyData, setHistoryData] = useState(() => safeParse('wms_history', []));
     const [activityLogs, setActivityLogs] = useState(() => safeParse('wms_logs', []));
     const [apiConfigs, setApiConfigs] = useState(() => {
@@ -154,7 +155,7 @@ const App = () => {
     useEffect(() => { localStorage.setItem('wms_users', JSON.stringify(users)); }, [users]);
     useEffect(() => { localStorage.setItem('wms_history', JSON.stringify(historyData)); }, [historyData]);
     useEffect(() => { localStorage.setItem('wms_logs', JSON.stringify(activityLogs)); }, [activityLogs]);
-    useEffect(() => { localStorage.setItem('wms_apis', JSON.stringify(apiConfigs)); }, [apiConfigs]);
+    useEffect(() => { secureSet('wms_apis', apiConfigs); }, [apiConfigs]);
     useEffect(() => { localStorage.setItem('wms_box_usage', JSON.stringify(boxUsageLog)); }, [boxUsageLog]);
     useEffect(() => { if (inventory) localStorage.setItem('wms_inventory', JSON.stringify(inventory)); }, [inventory]);
     useEffect(() => { localStorage.setItem('wms_waves', JSON.stringify(waves)); }, [waves]);
@@ -276,22 +277,45 @@ const App = () => {
             const foundUser = users.find(u => u.username === username);
 
             if (foundUser) {
-                // Support both hashed and legacy plaintext passwords (migration)
+                // First-login flow: empty password means user must set one
+                if (foundUser.isFirstLogin && !foundUser.password) {
+                    recordLoginAttempt(true);
+                    const session = createSession(foundUser);
+                    setUser(foundUser);
+                    setUserRole(foundUser.role);
+                    auditLog('first_login', { username, role: foundUser.role }, username);
+                    playSound('success');
+                    setShowPasswordChange(true);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Support salted hash, legacy hash, and plaintext passwords (auto-migrate)
                 let passwordMatch = false;
-                if (foundUser.password?.length === 64) {
-                    // Hashed password (SHA-256 = 64 hex chars)
+                if (foundUser.password?.includes(':')) {
+                    // New salted format (salt:hash)
                     passwordMatch = await verifyPassword(password, foundUser.password);
-                } else {
-                    // Legacy plaintext — migrate on successful login
-                    passwordMatch = foundUser.password === password;
+                } else if (foundUser.password?.length === 64) {
+                    // Legacy unsalted SHA-256 hash
+                    passwordMatch = await verifyPassword(password, foundUser.password);
                     if (passwordMatch) {
-                        // Auto-migrate to hashed password
+                        // Re-hash with salt
                         const hashed = await hashPassword(password);
                         const updatedUsers = users.map(u =>
                             u.username === username ? { ...u, password: hashed } : u
                         );
                         setUsers(updatedUsers);
-                        localStorage.setItem('wms_users', JSON.stringify(updatedUsers));
+                        auditLog('password_rehashed', { username }, username);
+                    }
+                } else if (foundUser.password) {
+                    // Legacy plaintext — migrate on successful login
+                    passwordMatch = foundUser.password === password;
+                    if (passwordMatch) {
+                        const hashed = await hashPassword(password);
+                        const updatedUsers = users.map(u =>
+                            u.username === username ? { ...u, password: hashed } : u
+                        );
+                        setUsers(updatedUsers);
                         auditLog('password_migrated', { username }, username);
                     }
                 }
@@ -395,7 +419,6 @@ const App = () => {
         );
         setUsers(updatedUsers);
         setUser({ ...user, isFirstLogin: false });
-        localStorage.setItem('wms_users', JSON.stringify(updatedUsers));
         auditLog('password_changed', { username: user.username }, user.username);
         setShowPasswordChange(false);
         setNewPwInput('');

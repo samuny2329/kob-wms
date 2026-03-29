@@ -48,8 +48,11 @@ export const sendMessage = async (apiKey, messages, systemPrompt) => {
     });
 
     if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error?.message || `API error: ${response.status}`);
+        const status = response.status;
+        if (status === 401) throw new Error('Invalid API key. Check your Claude API key in Settings.');
+        if (status === 429) throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+        if (status >= 500) throw new Error('Claude service is temporarily unavailable. Try again later.');
+        throw new Error('Failed to get a response. Please try again.');
     }
 
     const data = await response.json();
