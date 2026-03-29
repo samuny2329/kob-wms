@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift, Truck, CheckCircle2, AlertTriangle } from 'lucide-react';
 import Pick from './Pick';
 import HandheldPack from './HandheldPack';
 import CycleCount from './CycleCount';
@@ -182,18 +182,18 @@ const HandheldLayout = ({
                         </div>
                     )}
 
-                    {/* PICK & PACK — equal row */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* PICK, PACK & OUT — main row */}
+                    <div className="grid grid-cols-3 gap-3">
                         <button
                             onClick={() => setScreen('pick')}
-                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/20 border-2 border-[#714B67] active:scale-95 transition-all"
+                            className="min-h-[130px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-[#714B67]/20 border-2 border-[#714B67] active:scale-95 transition-all"
                         >
-                            <div className="w-14 h-14 rounded-2xl bg-[#714B67] flex items-center justify-center">
-                                <ShoppingCart className="w-7 h-7 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-[#714B67] flex items-center justify-center">
+                                <ShoppingCart className="w-6 h-6 text-white" />
                             </div>
                             <div className="text-center">
-                                <p className="font-black text-xl text-white">PICK</p>
-                                <p className="text-[10px] mt-0.5">
+                                <p className="font-black text-lg text-white">PICK</p>
+                                <p className="text-[9px] mt-0.5">
                                     {pendingPick > 0
                                         ? <span className="text-amber-400 font-bold">{pendingPick} pending</span>
                                         : <span className="text-zinc-500">No tasks</span>
@@ -204,18 +204,33 @@ const HandheldLayout = ({
 
                         <button
                             onClick={() => setScreen('pack')}
-                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/10 border-2 border-[#00A09D] active:scale-95 transition-all"
+                            className="min-h-[130px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-[#00A09D]/10 border-2 border-[#00A09D] active:scale-95 transition-all"
                         >
-                            <div className="w-14 h-14 rounded-2xl bg-[#00A09D] flex items-center justify-center">
-                                <Package className="w-7 h-7 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-[#00A09D] flex items-center justify-center">
+                                <Package className="w-6 h-6 text-white" />
                             </div>
                             <div className="text-center">
-                                <p className="font-black text-xl text-white">PACK</p>
-                                <p className="text-[10px] mt-0.5">
+                                <p className="font-black text-lg text-white">PACK</p>
+                                <p className="text-[9px] mt-0.5">
                                     {readyPack > 0
                                         ? <span className="text-emerald-400 font-bold">{readyPack} pending</span>
                                         : <span className="text-zinc-500">No tasks</span>
                                     }
+                                </p>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setScreen('out')}
+                            className="min-h-[130px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-orange-500/10 border-2 border-orange-500 active:scale-95 transition-all"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center">
+                                <Truck className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-lg text-white">OUT</p>
+                                <p className="text-[9px] mt-0.5">
+                                    {(() => { const rts = salesOrders.filter(o => ['packed','rts'].includes(o.status)).length; return rts > 0 ? <span className="text-orange-400 font-bold">{rts} ready</span> : <span className="text-zinc-500">No tasks</span>; })()}
                                 </p>
                             </div>
                         </button>
@@ -344,6 +359,19 @@ const HandheldLayout = ({
                 </div>
             )}
 
+            {/* Outbound Scan screen */}
+            {screen === 'out' && (
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
+                    <HandheldOutbound
+                        salesOrders={salesOrders}
+                        setSalesOrders={setSalesOrders}
+                        addToast={addToast}
+                        logActivity={logActivity}
+                        user={user}
+                    />
+                </div>
+            )}
+
             {/* Clock screen */}
             {screen === 'clock' && (
                 <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
@@ -415,5 +443,223 @@ const HandheldLayout = ({
         </div>
     );
 };
+
+// ── Handheld Outbound Scan ──────────────────────────────────────────────────
+const COURIER_BINS = {
+    'Flash': { color: '#f59e0b', bin: 'BIN-A' },
+    'Kerry': { color: '#f97316', bin: 'BIN-B' },
+    'J&T': { color: '#ef4444', bin: 'BIN-C' },
+    'Thai Post': { color: '#dc2626', bin: 'BIN-D' },
+    'Shopee Express': { color: '#ee4d2d', bin: 'BIN-E' },
+    'Lazada Express': { color: '#0f146d', bin: 'BIN-F' },
+};
+
+function HandheldOutbound({ salesOrders, setSalesOrders, addToast, logActivity, user }) {
+    const [scanInput, setScanInput] = useState('');
+    const [lastScan, setLastScan] = useState(null);
+    const [scanFlash, setScanFlash] = useState(null); // 'ok'|'error'|'duplicate'
+    const [scannedIds, setScannedIds] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('wms_handheld_outbound_scanned') || '[]'); } catch { return []; }
+    });
+    const inputRef = useRef(null);
+
+    // Auto-focus scan input (same pattern as Pick)
+    useEffect(() => {
+        const timer = setTimeout(() => inputRef.current?.focus(), 100);
+        return () => clearTimeout(timer);
+    }, []);
+    useEffect(() => { localStorage.setItem('wms_handheld_outbound_scanned', JSON.stringify(scannedIds)); }, [scannedIds]);
+
+    // Re-focus after any scan result
+    useEffect(() => {
+        if (lastScan) {
+            const timer = setTimeout(() => inputRef.current?.focus(), 200);
+            return () => clearTimeout(timer);
+        }
+    }, [lastScan]);
+
+    const readyOrders = salesOrders.filter(o => ['packed', 'rts'].includes(o.status));
+
+    const handleScanKeyDown = (e) => {
+        if (e.key !== 'Enter') return;
+        const val = scanInput.trim();
+        if (!val) return;
+        setScanInput('');
+
+        const order = salesOrders.find(o =>
+            o.awb === val || o.trackingNumber === val || o.id === val ||
+            o.orderId === val || o.name === val
+        );
+
+        if (!order) {
+            setLastScan({ order: null, status: 'error', msg: `Not found: ${val}` });
+            setScanFlash('error');
+            setTimeout(() => setScanFlash(null), 600);
+            return;
+        }
+
+        if (scannedIds.includes(order.id)) {
+            setLastScan({ order, status: 'duplicate', msg: 'Already scanned' });
+            setScanFlash('duplicate');
+            setTimeout(() => setScanFlash(null), 600);
+            return;
+        }
+
+        if (!['packed', 'rts', 'picked'].includes(order.status)) {
+            setLastScan({ order, status: 'error', msg: `Status: ${order.status} — not ready` });
+            setScanFlash('error');
+            setTimeout(() => setScanFlash(null), 600);
+            return;
+        }
+
+        setScannedIds(prev => [...prev, order.id]);
+        setSalesOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'rts', outboundScannedAt: new Date().toISOString() } : o));
+        logActivity?.('scan', user?.username || 'handheld', { orderId: order.id, awb: order.awb || val });
+        setLastScan({ order, status: 'ok', msg: 'Scanned OK' });
+        setScanFlash('ok');
+        setTimeout(() => setScanFlash(null), 600);
+        addToast?.(`Outbound: ${order.orderId || order.id}`, 'success');
+    };
+
+    const courierInfo = lastScan?.order?.courier ? COURIER_BINS[lastScan.order.courier] || { color: '#6b7280', bin: 'BIN-X' } : null;
+
+    return (
+        <div className="space-y-3">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <h2 className="text-base font-black flex items-center gap-2" style={{ color: '#111827' }}>
+                    <Truck className="w-5 h-5" style={{ color: '#f97316' }} />
+                    Outbound Scan
+                </h2>
+                <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ backgroundColor: '#fff7ed', color: '#ea580c' }}>
+                    {readyOrders.length} ready / {scannedIds.length} scanned
+                </span>
+            </div>
+
+            {/* Industrial Scan Input — same style as Pick/Pack */}
+            <div className="text-center">
+                <div className="relative group"
+                    style={{
+                        transition: 'all 0.3s',
+                        borderRadius: '1rem',
+                        boxShadow: scanFlash === 'ok' ? '0 0 0 6px rgba(34,197,94,0.25)'
+                            : scanFlash === 'error' ? '0 0 0 6px rgba(239,68,68,0.25)'
+                            : scanFlash === 'duplicate' ? '0 0 0 6px rgba(245,158,11,0.25)'
+                            : 'none',
+                    }}
+                >
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        autoFocus
+                        value={scanInput}
+                        onChange={e => setScanInput(e.target.value)}
+                        onKeyDown={handleScanKeyDown}
+                        onFocus={e => {
+                            const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+                            if (isMobile) {
+                                e.target.setAttribute('readonly', 'readonly');
+                                setTimeout(() => e.target.removeAttribute('readonly'), 200);
+                            }
+                        }}
+                        placeholder="SCAN AWB..."
+                        className="industrial-input w-full text-2xl focus:ring-0"
+                    />
+                    <ScanLine className="w-8 h-8 absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 group-focus-within:text-[#f97316] transition-colors" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-2 animate-pulse" style={{ color: '#adb5bd' }}>
+                    Waiting for barcode scan...
+                </p>
+            </div>
+
+            {/* Last Scan Result */}
+            {lastScan && (
+                <div className="rounded-xl p-4 animate-fade-in" style={{
+                    backgroundColor: lastScan.status === 'ok' ? '#f0fdf4' : lastScan.status === 'duplicate' ? '#fffbeb' : '#fef2f2',
+                    border: `2px solid ${lastScan.status === 'ok' ? '#22c55e' : lastScan.status === 'duplicate' ? '#f59e0b' : '#ef4444'}`,
+                }}>
+                    <div className="flex items-center gap-3">
+                        {lastScan.status === 'ok' ? <CheckCircle2 className="w-8 h-8" style={{ color: '#22c55e' }} />
+                            : lastScan.status === 'duplicate' ? <AlertTriangle className="w-8 h-8" style={{ color: '#f59e0b' }} />
+                            : <X className="w-8 h-8" style={{ color: '#ef4444' }} />}
+                        <div className="flex-1">
+                            <p className="text-sm font-bold" style={{ color: '#111827' }}>{lastScan.msg}</p>
+                            {lastScan.order && (
+                                <>
+                                    <p className="text-xs mt-0.5" style={{ color: '#374151' }}>
+                                        {lastScan.order.orderId || lastScan.order.id} — {lastScan.order.platform || 'N/A'}
+                                    </p>
+                                    <p className="text-xs" style={{ color: '#6b7280' }}>
+                                        {lastScan.order.items?.length || 0} items — {lastScan.order.courier || 'No courier'}
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Courier Bin Assignment */}
+                    {lastScan.status === 'ok' && courierInfo && (
+                        <div className="mt-3 p-3 rounded-lg text-center" style={{ backgroundColor: courierInfo.color + '15', border: `2px dashed ${courierInfo.color}` }}>
+                            <p className="text-[10px] font-bold uppercase" style={{ color: courierInfo.color }}>Place in</p>
+                            <p className="text-2xl font-black" style={{ color: courierInfo.color }}>{courierInfo.bin}</p>
+                            <p className="text-xs font-semibold" style={{ color: courierInfo.color }}>{lastScan.order.courier}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Ready Orders List */}
+            <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#9ca3af' }}>
+                    Ready for Outbound ({readyOrders.length})
+                </p>
+                {readyOrders.length === 0 ? (
+                    <div className="text-center py-8 rounded-xl" style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                        <Truck className="w-8 h-8 mx-auto mb-2" style={{ color: '#d1d5db' }} />
+                        <p className="text-xs" style={{ color: '#9ca3af' }}>No orders ready for outbound</p>
+                    </div>
+                ) : (
+                    <div className="space-y-1.5">
+                        {readyOrders.slice(0, 20).map(order => {
+                            const isScanned = scannedIds.includes(order.id);
+                            return (
+                                <div key={order.id} className="flex items-center gap-2 p-2.5 rounded-lg" style={{
+                                    backgroundColor: isScanned ? '#f0fdf4' : '#ffffff',
+                                    border: `1px solid ${isScanned ? '#86efac' : '#e5e7eb'}`,
+                                }}>
+                                    {isScanned
+                                        ? <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: '#22c55e' }} />
+                                        : <ScanLine className="w-5 h-5 shrink-0" style={{ color: '#d1d5db' }} />}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold truncate" style={{ color: '#111827' }}>
+                                            {order.orderId || order.id}
+                                        </p>
+                                        <p className="text-[10px] truncate" style={{ color: '#6b7280' }}>
+                                            {order.platform || 'N/A'} — {order.courier || 'No courier'} — {order.items?.length || 0} items
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0" style={{
+                                        backgroundColor: isScanned ? '#dcfce7' : '#f3f4f6',
+                                        color: isScanned ? '#16a34a' : '#6b7280',
+                                    }}>
+                                        {isScanned ? 'DONE' : order.status.toUpperCase()}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Clear today's scans */}
+            {scannedIds.length > 0 && (
+                <button onClick={() => { setScannedIds([]); setLastScan(null); addToast?.('Scan history cleared'); }}
+                    className="w-full py-2 rounded-lg text-xs font-medium" style={{ backgroundColor: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' }}>
+                    Clear Today's Scans ({scannedIds.length})
+                </button>
+            )}
+        </div>
+    );
+}
 
 export default HandheldLayout;

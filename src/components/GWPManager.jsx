@@ -916,7 +916,7 @@ export function HandheldGWPQuickAdd({ addToast, logActivity, user }) {
                         </button>
                     </div>
                     {/* Inline barcode preview */}
-                    <div className="mt-2 flex justify-center" dangerouslySetInnerHTML={{ __html: generateBarcodeSVG(saved.sku, 200, 40) || '' }} />
+                    <div className="mt-2 flex justify-center" ref={el => { if (el) { el.innerHTML = ''; const svg = generateBarcodeSVG(saved.sku, 200, 40); if (svg) { const parser = new DOMParser(); const doc = parser.parseFromString(svg, 'image/svg+xml'); const svgEl = doc.documentElement; if (svgEl.nodeName === 'svg') el.appendChild(svgEl); } } }} />
                 </div>
             )}
 

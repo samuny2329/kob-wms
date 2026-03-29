@@ -59,7 +59,7 @@ function HeatmapCell({ value, maxValue }) {
 export default function TeamPerformance({ activityLogs, orders, users = [], t, onSelectWorker, workerOkrData = {} }) {
     const [sortCol, setSortCol] = useState('total');
     const [sortAsc, setSortAsc] = useState(false);
-    const [okrView, setOkrView] = useState('scorecard');
+    const [okrView, setOkrView] = useState('kanban');
 
     const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 

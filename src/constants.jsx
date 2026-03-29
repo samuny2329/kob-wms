@@ -1,12 +1,43 @@
 import React from 'react';
-import { LayoutDashboard, ShoppingCart, Box, ScanLine, FileText, Truck, Printer, Users, Settings, BookOpen, Smartphone, Monitor, Warehouse, Layers, PackageCheck, Receipt, BarChart2, Trophy, Shield, UserCheck, ClipboardCheck, Clock, Target, Gift } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Box, ScanLine, FileText, Truck, Printer, Users, Settings, BookOpen, Smartphone, Monitor, Warehouse, Layers, PackageCheck, Receipt, BarChart2, Trophy, Shield, UserCheck, ClipboardCheck, Clock, Target, Gift, Building2, BrainCircuit, Globe } from 'lucide-react';
 import { PlatformBadge } from './components/PlatformLogo';
 
 export const ITEMS_PER_PAGE = 25;
 
+// ── Company Configuration (Kiss Group Dual-Company) ──
+export const COMPANIES = {
+    kob: {
+        id: 1,          // Odoo company_id
+        code: 'KOB',
+        name: 'Kiss of Beauty',
+        nameTh: 'คิสออฟบิวตี้',
+        warehouse: 'KOB-WH1',
+        color: '#714B67',     // Odoo purple
+        logo: '💋',
+        soPrefix: 'K-Off',
+        modules: ['sales', 'inventory', 'manufacturing', 'accounting', 'ecommerce'],
+        description: 'Manufacturer + E-commerce',
+    },
+    btv: {
+        id: 2,          // Odoo company_id
+        code: 'BTV',
+        name: 'Beautyville',
+        nameTh: 'บิวตี้วิลล์',
+        warehouse: 'BTV-WH1',
+        color: '#2563eb',     // Blue
+        logo: '🏪',
+        soPrefix: 'B-Off',
+        modules: ['sales', 'inventory', 'accounting', 'modernTrade', 'consignment'],
+        description: 'Distributor + Modern Trade',
+    },
+};
+
+export const getCompany = (key) => COMPANIES[key] || COMPANIES.kob;
+export const getCompanyById = (id) => Object.values(COMPANIES).find(c => c.id === id) || COMPANIES.kob;
+
 export const rolesInfo = {
-    senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
-    admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
+    senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
+    admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
     picker: { label: 'Picker Specialist', tabs: ['pick', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'sorting', 'manual'], icon: <ShoppingCart />, desc: 'Inventory Picking' },
     packer: { label: 'Packer & QC', tabs: ['pack', 'handheldPack', 'posPack', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'manual'], icon: <Box />, desc: 'Packing & Validation' },
     outbound: { label: 'Outbound Ops', tabs: ['scan', 'list', 'dispatch', 'kpiAssessment', 'timeAttendance', 'report', 'manual'], icon: <ScanLine />, desc: 'Scanning & Logistics' },
@@ -517,6 +548,8 @@ export const tabInfo = {
     slaTracker: { icon: <Shield className="w-5 h-5" />, section: 'Analytics' },
     timeAttendance: { icon: <Clock className="w-5 h-5" />, section: 'Analytics' },
     kpiAssessment: { icon: <Target className="w-5 h-5" />, section: 'Analytics' },
+    aiAnalyzer: { icon: <BrainCircuit className="w-5 h-5" />, section: 'Analytics' },
+    marketIntelligence: { icon: <Globe className="w-5 h-5" />, section: 'Analytics' },
     report: { icon: <Printer className="w-5 h-5" />, section: 'System' },
     users: { icon: <Users className="w-5 h-5" />, section: 'System' },
     settings: { icon: <Settings className="w-5 h-5" />, section: 'System' },
