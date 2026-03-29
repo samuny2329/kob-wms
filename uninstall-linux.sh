@@ -25,17 +25,28 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Stop and disable service
-if systemctl --user is-active "$APP_NAME" &>/dev/null; then
-    echo -e "  ${YELLOW}Stopping service...${NC}"
-    systemctl --user stop "$APP_NAME"
+# Stop running process (PID-based)
+if [ -f "$INSTALL_DIR/server.pid" ]; then
+    PID=$(cat "$INSTALL_DIR/server.pid")
+    if kill -0 "$PID" 2>/dev/null; then
+        echo -e "  ${YELLOW}Stopping server (PID: $PID)...${NC}"
+        kill "$PID"
+    fi
 fi
-if [ -f "$SERVICE_FILE" ]; then
-    systemctl --user disable "$APP_NAME" 2>/dev/null || true
-    rm -f "$SERVICE_FILE"
-    systemctl --user daemon-reload
-    echo -e "  ${GREEN}Service removed${NC}"
+
+# Stop and disable systemd service
+if command -v systemctl &>/dev/null && systemctl --user status 2>/dev/null; then
+    if systemctl --user is-active "$APP_NAME" &>/dev/null; then
+        echo -e "  ${YELLOW}Stopping service...${NC}"
+        systemctl --user stop "$APP_NAME"
+    fi
+    if [ -f "$SERVICE_FILE" ]; then
+        systemctl --user disable "$APP_NAME" 2>/dev/null || true
+        rm -f "$SERVICE_FILE"
+        systemctl --user daemon-reload
+    fi
 fi
+echo -e "  ${GREEN}Service removed${NC}"
 
 # Remove desktop shortcut
 if [ -f "$DESKTOP_FILE" ]; then

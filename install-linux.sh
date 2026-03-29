@@ -141,9 +141,12 @@ Keywords=warehouse;wms;inventory;logistics;
 StartupNotify=true
 EOF
 
-# ── Create systemd user service ──
-mkdir -p "$HOME/.config/systemd/user"
-cat > "$HOME/.config/systemd/user/$SERVICE_NAME.service" << EOF
+# ── Create systemd user service (if systemd available) ──
+HAS_SYSTEMD=false
+if command -v systemctl &>/dev/null && systemctl --user status 2>/dev/null; then
+    HAS_SYSTEMD=true
+    mkdir -p "$HOME/.config/systemd/user"
+    cat > "$HOME/.config/systemd/user/$SERVICE_NAME.service" << EOF
 [Unit]
 Description=KOB WMS Pro - Warehouse Management System
 After=network.target
@@ -160,11 +163,50 @@ Environment=NODE_ENV=production
 [Install]
 WantedBy=default.target
 EOF
+    systemctl --user daemon-reload
+    systemctl --user enable "$SERVICE_NAME.service" 2>/dev/null || true
+    systemctl --user restart "$SERVICE_NAME.service" 2>/dev/null || true
+    echo -e "  ${GREEN}systemd service enabled (auto-start on login)${NC}"
+else
+    echo -e "  ${YELLOW}systemd user bus not available — using direct mode${NC}"
+    # Start server directly in background
+    pkill -f "serve.sh.*$APP_NAME" 2>/dev/null || true
+    nohup bash "$INSTALL_DIR/serve.sh" > "$INSTALL_DIR/server.log" 2>&1 &
+    echo $! > "$INSTALL_DIR/server.pid"
+    echo -e "  ${GREEN}Server started (PID: $(cat "$INSTALL_DIR/server.pid"))${NC}"
+fi
 
-# Reload and enable
-systemctl --user daemon-reload
-systemctl --user enable "$SERVICE_NAME.service" 2>/dev/null || true
-systemctl --user restart "$SERVICE_NAME.service" 2>/dev/null || true
+# Create start/stop helper scripts
+cat > "$INSTALL_DIR/start.sh" << 'START_EOF'
+#!/usr/bin/env bash
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$APP_DIR/server.pid" ] && kill -0 "$(cat "$APP_DIR/server.pid")" 2>/dev/null; then
+    echo "KOB WMS Pro is already running (PID: $(cat "$APP_DIR/server.pid"))"
+    exit 0
+fi
+nohup bash "$APP_DIR/serve.sh" > "$APP_DIR/server.log" 2>&1 &
+echo $! > "$APP_DIR/server.pid"
+echo "KOB WMS Pro started (PID: $!)"
+START_EOF
+chmod +x "$INSTALL_DIR/start.sh"
+
+cat > "$INSTALL_DIR/stop.sh" << 'STOP_EOF'
+#!/usr/bin/env bash
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$APP_DIR/server.pid" ]; then
+    PID=$(cat "$APP_DIR/server.pid")
+    if kill -0 "$PID" 2>/dev/null; then
+        kill "$PID"
+        echo "KOB WMS Pro stopped (PID: $PID)"
+    else
+        echo "Process not running"
+    fi
+    rm -f "$APP_DIR/server.pid"
+else
+    echo "No PID file found"
+fi
+STOP_EOF
+chmod +x "$INSTALL_DIR/stop.sh"
 
 # Update desktop database
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
@@ -181,10 +223,16 @@ echo -e "  ${CYAN}Shortcut:${NC}   $DESKTOP_FILE"
 echo -e "  ${CYAN}Service:${NC}    systemctl --user status $SERVICE_NAME"
 echo ""
 echo -e "  ${YELLOW}Commands:${NC}"
+if [ "$HAS_SYSTEMD" = true ]; then
 echo -e "    systemctl --user start $SERVICE_NAME    # Start"
 echo -e "    systemctl --user stop $SERVICE_NAME     # Stop"
 echo -e "    systemctl --user restart $SERVICE_NAME  # Restart"
 echo -e "    journalctl --user -u $SERVICE_NAME -f   # View logs"
+else
+echo -e "    $INSTALL_DIR/start.sh                   # Start"
+echo -e "    $INSTALL_DIR/stop.sh                    # Stop"
+echo -e "    tail -f $INSTALL_DIR/server.log         # View logs"
+fi
 echo ""
 echo -e "  ${YELLOW}Docker (full stack with Odoo):${NC}"
 echo -e "    cp .env.example .env  # Edit credentials first"
