@@ -30,6 +30,7 @@ export const TRANSLATIONS = {
         kpiSpeed: 'Speed (UPH)',
         tabTeamPerformance: 'Team Performance', tabSlaTracker: 'SLA Tracker', tabTimeAttendance: 'Time & Attendance', tabKpiAssessment: 'KPI Assessment',
         tabGwp: 'GWP Manager',
+        tabChat: 'Claude AI',
 
     },
     th: {
@@ -62,6 +63,7 @@ export const TRANSLATIONS = {
         empTblCol: 'พนักงาน', roleTblCol: 'สิทธิ์', secTblCol: 'ความปลอดภัย', actTblCol: 'จัดการ',
         kpiSpeed: 'ความเร็ว (UPH)',
         tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA', tabTimeAttendance: 'เวลาทำงาน', tabKpiAssessment: 'ประเมิน KPI',
-        tabGwp: 'จัดการของแถม'
+        tabGwp: 'จัดการของแถม',
+        tabChat: 'แชท AI'
     }
 };

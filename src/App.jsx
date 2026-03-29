@@ -34,6 +34,7 @@ import CycleCount from './components/CycleCount';
 import TimeAttendance from './components/TimeAttendance';
 import KPIAssessment from './components/KPIAssessment';
 import GWPManager from './components/GWPManager';
+import ClaudeChat from './components/ClaudeChat';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
@@ -71,6 +72,7 @@ const App = () => {
             shopee: stored.shopee || { enabled: false, shopId: '', partnerId: '', partnerKey: '' },
             lazada: stored.lazada || { enabled: false, appKey: '', appSecret: '', accessToken: '' },
             tiktok: stored.tiktok || { enabled: false, appKey: '', appSecret: '', accessToken: '' },
+            claude: stored.claude || { enabled: false, apiKey: '' },
         };
     });
     const [boxUsageLog, setBoxUsageLog] = useState(() => safeParse('wms_box_usage', []));
@@ -1077,6 +1079,7 @@ window.onload=function(){
                     {activeTab === 'slaTracker' && <SLATracker activityLogs={activityLogs} orders={orderData} salesOrders={salesOrders} onSelectWorker={(w) => setSelectedWorker(w)} t={t} />}
                     {activeTab === 'timeAttendance' && <TimeAttendance user={user} users={users} userRole={userRole} addToast={addToast} logActivity={logActivity} />}
                     {activeTab === 'kpiAssessment' && <KPIAssessment user={user} users={users} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} logActivity={logActivity} workerOkrData={workerOkrData} />}
+                    {activeTab === 'chat' && <ClaudeChat t={t} apiConfigs={apiConfigs} setActiveTab={setActiveTab} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
 
