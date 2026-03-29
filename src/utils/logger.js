@@ -17,10 +17,37 @@ const minLevel = isProd ? LOG_LEVELS.info : LOG_LEVELS.debug;
 
 const PREFIX = '[WMS]';
 
+// Sensitive field names to redact from log output
+const SENSITIVE_KEYS = /^(password|secret|token|apikey|api_key|key|authorization|cookie|session_id|access_token|refresh_token|partnerkey|appsecret)$/i;
+const REDACTED = '[REDACTED]';
+
+function redactSensitive(obj, depth = 0) {
+  if (depth > 5) return obj; // prevent infinite recursion
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'number' || typeof obj === 'boolean') return obj;
+  if (obj instanceof Error) return { message: obj.message, stack: obj.stack };
+  if (Array.isArray(obj)) return obj.map(item => redactSensitive(item, depth + 1));
+  if (typeof obj === 'object') {
+    const result = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (SENSITIVE_KEYS.test(key)) {
+        result[key] = REDACTED;
+      } else {
+        result[key] = redactSensitive(value, depth + 1);
+      }
+    }
+    return result;
+  }
+  return obj;
+}
+
 function formatArgs(level, message, data) {
   const timestamp = new Date().toISOString();
   const tag = `${PREFIX} ${timestamp} [${level.toUpperCase()}]`;
-  return data !== undefined ? [tag, message, data] : [tag, message];
+  if (data === undefined) return [tag, message];
+  const safeData = (typeof data === 'object' && data !== null) ? redactSensitive(data) : data;
+  return [tag, message, safeData];
 }
 
 const log = {

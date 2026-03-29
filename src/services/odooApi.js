@@ -53,6 +53,8 @@
 //   CI/CD: GitHub Actions → Lint → Build → Docker Push (GHCR) → Deploy SSH → Health Check
 // ──────────────────────────────────────────────────────────────────────
 
+import { getCSRFToken, auditLog } from '../utils/security';
+
 const API_TIMEOUT = 8000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -87,7 +89,7 @@ export const authenticateOdoo = async (odooConfig) => {
         // Use Odoo's standard JSONRPC auth endpoint (proxied via Vite /web/session/*)
         const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/web/session/authenticate`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
             credentials: 'include',
             body: JSON.stringify({
                 jsonrpc: '2.0',
@@ -118,7 +120,7 @@ const odooPost = async (odooConfig, endpoint, params = {}) => {
     const url = `${getOdooBase(odooConfig)}${endpoint}`;
     const response = await fetchWithTimeout(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
         credentials: 'include',
         body: JSON.stringify({ params })
     });
@@ -130,7 +132,7 @@ const odooPost = async (odooConfig, endpoint, params = {}) => {
             await authenticateOdoo(odooConfig);
             const retry = await fetchWithTimeout(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                 credentials: 'include',
                 body: JSON.stringify({ params })
             });

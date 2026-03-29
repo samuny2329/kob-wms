@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock } from 'lucide-react';
 import Pick from './Pick';
 import HandheldPack from './HandheldPack';
+import CycleCount from './CycleCount';
+import TimeAttendance, { isClockedIn } from './TimeAttendance';
 import { fetchAllOrders, authenticateOdoo } from '../services/odooApi';
 
 const HandheldLayout = ({
@@ -13,7 +15,7 @@ const HandheldLayout = ({
     handleFulfillmentAndAWB, isProcessingAPI,
     apiConfigs, setApiConfigs, inventory, printAwbLabel,
     syncPlatformOrders, isProcessingImport,
-    syncStatus, syncNow,
+    syncStatus, syncNow, activityLogs,
 }) => {
     const [screen, setScreen] = useState('home');
     const [isSyncingOrders, setIsSyncingOrders] = useState(false);
@@ -217,6 +219,36 @@ const HandheldLayout = ({
                         </div>
                     </button>
 
+                    {/* COUNT */}
+                    <button
+                        onClick={() => setScreen('count')}
+                        className="min-h-[90px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-amber-500/10 border-2 border-amber-500 active:scale-95 transition-all"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center">
+                            <ClipboardCheck className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-center">
+                            <p className="font-black text-lg text-white">COUNT</p>
+                            <p className="text-[10px] text-zinc-500">Cycle Count / Stock Check</p>
+                        </div>
+                    </button>
+
+                    {/* CLOCK IN/OUT */}
+                    <button
+                        onClick={() => setScreen('clock')}
+                        className="min-h-[70px] flex items-center gap-3 rounded-2xl bg-violet-500/10 border-2 border-violet-500 active:scale-95 transition-all px-4"
+                    >
+                        <div className="w-10 h-10 rounded-xl bg-violet-500 flex items-center justify-center flex-shrink-0">
+                            <Clock className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="text-left">
+                            <p className="font-black text-sm text-white">TIME & ATTENDANCE</p>
+                            <p className="text-[10px] text-zinc-500">
+                                {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked In</span>}
+                            </p>
+                        </div>
+                    </button>
+
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-2">
                         {[
@@ -266,6 +298,33 @@ const HandheldLayout = ({
                         isProcessingAPI={isProcessingAPI}
                         apiConfigs={apiConfigs}
                         printAwbLabel={printAwbLabel}
+                    />
+                </div>
+            )}
+
+            {/* Count screen */}
+            {screen === 'count' && (
+                <div className="flex-1 overflow-y-auto bg-gray-50 text-gray-900 p-3">
+                    <CycleCount
+                        inventory={inventory}
+                        activityLogs={activityLogs || []}
+                        salesOrders={salesOrders}
+                        addToast={addToast}
+                        user={user}
+                        users={[]}
+                        logActivity={logActivity}
+                    />
+                </div>
+            )}
+
+            {/* Clock screen */}
+            {screen === 'clock' && (
+                <div className="flex-1 overflow-y-auto bg-gray-50 text-gray-900 p-3">
+                    <TimeAttendance
+                        user={user}
+                        users={[]}
+                        addToast={addToast}
+                        logActivity={logActivity}
                     />
                 </div>
             )}

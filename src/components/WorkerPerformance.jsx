@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { X, Trophy, Zap, Target, Clock, Activity, TrendingUp, Star, Flame, Award, Crosshair, Layers } from 'lucide-react';
 import { TIER_CONFIG, calculateTaskDifficulty } from '../utils/taskScoring';
+import { ROLE_KPI_CONFIG, computeOkrResults } from '../constants';
 
 // Generate a consistent color from a string
 const hashColor = (str = '') => {
@@ -64,7 +65,7 @@ const GaugeRing = ({ value, max, color, size = 64 }) => {
   );
 };
 
-export default function WorkerPerformance({ activityLogs = [], worker, onClose, t }) {
+export default function WorkerPerformance({ activityLogs = [], worker, users = [], onClose, t }) {
   const [isClosing, setIsClosing] = useState(false);
 
   const handleClose = () => {
@@ -110,7 +111,10 @@ export default function WorkerPerformance({ activityLogs = [], worker, onClose, 
     }
 
     const uph = activeHours > 0 ? Math.round(totalActions / activeHours) : 0;
-    const efficiency = Math.min(Math.round((uph / 50) * 100), 200);
+    const workerRole = (users || []).find(u => u.username === worker.username)?.role || 'admin';
+    const roleConfig = ROLE_KPI_CONFIG[workerRole] || ROLE_KPI_CONFIG.admin;
+    const roleTargetUPH = roleConfig.targetUPH || 50;
+    const efficiency = Math.min(Math.round((uph / roleTargetUPH) * 100), 200);
 
     // Hourly data (6AM to current hour)
     const currentHour = new Date().getHours();
@@ -183,8 +187,9 @@ export default function WorkerPerformance({ activityLogs = [], worker, onClose, 
       workerLogs, todayLogs, uph, totalActions, activeHours, efficiency,
       hourlyData, actionBreakdown: breakdown, recentLogs: workerLogs.slice(0, 50),
       weeklyData, sparklines, avgTimeBetween, firstAction,
+      roleConfig, roleTargetUPH, workerRole, todayLogs,
     };
-  }, [activityLogs, worker]);
+  }, [activityLogs, worker, users]);
 
   // Badges
   const badges = useMemo(() => {
@@ -284,8 +289,8 @@ export default function WorkerPerformance({ activityLogs = [], worker, onClose, 
             <h2 className="text-white font-bold text-base truncate">{worker?.name || 'Unknown'}</h2>
             <p className="text-slate-400 text-xs font-mono">@{worker?.username || '—'}</p>
           </div>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
-            WORKER
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: stats.roleConfig?.color + '22', color: stats.roleConfig?.color || '#a78bfa', border: `1px solid ${stats.roleConfig?.color || '#a78bfa'}44` }}>
+            {stats.roleConfig?.label?.toUpperCase() || 'WORKER'}
           </span>
           {stats.firstAction && (
             <span className="text-[10px] text-slate-500 flex items-center gap-1 flex-shrink-0">
@@ -334,6 +339,48 @@ export default function WorkerPerformance({ activityLogs = [], worker, onClose, 
                 ))}
               </div>
             </div>
+
+            {/* 2.5. OKR SCORECARD */}
+            {stats.roleConfig?.keyResults && (() => {
+              const okr = computeOkrResults(stats.workerRole, stats.todayLogs, []);
+              return (
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">OKR — {stats.roleConfig.label}</h3>
+                  <p className="text-[10px] text-slate-500 mb-3">{stats.roleConfig.objective}</p>
+                  {/* Overall Score */}
+                  <div className="rounded-xl p-3 mb-3 flex items-center justify-between" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+                    <div>
+                      <span className="text-[10px] text-slate-500 uppercase">Overall Score</span>
+                      <div className="text-2xl font-black" style={{ color: okr.grade.color }}>{okr.totalScore}%</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-2xl font-black" style={{ color: okr.grade.color }}>{okr.grade.grade}</span>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: okr.grade.bg, color: okr.grade.color }}>{okr.grade.label}</span>
+                    </div>
+                  </div>
+                  {/* Key Results */}
+                  <div className="space-y-2">
+                    {okr.results.map(kr => (
+                      <div key={kr.key} className="rounded-lg p-2.5" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-slate-700 text-slate-400">{Math.round(kr.weight * 100)}%</span>
+                            <span className="text-[11px] text-slate-300">{kr.label}</span>
+                          </div>
+                          <span className="text-[11px] font-bold" style={{ color: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }}>{kr.score}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }} />
+                          </div>
+                          <span className="text-[10px] text-slate-400 whitespace-nowrap">{kr.actual} / {kr.target} {kr.unit}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* 3. HOURLY ACTIVITY TIMELINE */}
             <div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Globe, Database, ToggleRight, ToggleLeft, ShoppingBag, Store, Link, Trash2, RotateCcw, Wifi, CheckCircle2, AlertCircle, RefreshCw, Monitor, Cloud, MapPin, Truck, Package, ExternalLink, Zap } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Database, ToggleRight, ToggleLeft, ShoppingBag, Store, Link, Trash2, RotateCcw, Wifi, CheckCircle2, AlertCircle, RefreshCw, Monitor, Cloud, MapPin, Truck, Package, ExternalLink, Zap, Shield } from 'lucide-react';
 import { testConnection, resetOdooSession, ensurePickfaceLocation, createTestSalesOrders } from '../services/odooApi';
 import platformApi, { MARKETPLACES, COURIERS } from '../services/platformApi';
 
@@ -163,6 +163,105 @@ const PlatformCard = ({ def, config, testResult, isTesting, isExpanded, onToggle
                 </div>
             )}
         </div>
+    );
+};
+
+// ── Security Audit Log Panel (admin only) ──────────────
+const AUDIT_KEY = 'wms_audit_log';
+const AUDIT_COLORS = {
+    login_failed: { bg: '#fff5f5', color: '#dc3545', label: 'FAILED' },
+    login_success: { bg: '#e8f5e9', color: '#28a745', label: 'LOGIN' },
+    login_blocked: { bg: '#fff8e1', color: '#e67700', label: 'BLOCKED' },
+};
+const DEFAULT_AUDIT_STYLE = { bg: '#f8f9fa', color: '#6c757d', label: 'ACTION' };
+
+const SecurityAuditPanel = ({ triggerConfirm }) => {
+    const [logs, setLogs] = useState([]);
+    const [expanded, setExpanded] = useState(false);
+
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(AUDIT_KEY);
+            if (raw) setLogs(JSON.parse(raw).slice(0, 50));
+        } catch { /* ignore */ }
+    }, []);
+
+    const handleClear = () => {
+        triggerConfirm(
+            'Clear Audit Log',
+            'Are you sure you want to clear the security audit log? This cannot be undone.',
+            'danger',
+            () => {
+                localStorage.removeItem(AUDIT_KEY);
+                setLogs([]);
+            }
+        );
+    };
+
+    const getStyle = (action) => AUDIT_COLORS[action] || DEFAULT_AUDIT_STYLE;
+
+    return (
+        <section>
+            <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#6c757d' }}>
+                    <Shield className="w-3.5 h-3.5" /> Security Audit Log
+                </h3>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => setExpanded(!expanded)} className="odoo-btn text-[10px] px-2 py-1" style={{ color: '#714B67', borderColor: '#714B67' }}>
+                        {expanded ? 'Collapse' : `Show (${logs.length})`}
+                    </button>
+                    {logs.length > 0 && (
+                        <button onClick={handleClear} className="odoo-btn text-[10px] px-2 py-1 flex items-center gap-1" style={{ color: '#dc3545', borderColor: '#f5c6cb', backgroundColor: '#fff5f5' }}>
+                            <Trash2 className="w-3 h-3" /> Clear
+                        </button>
+                    )}
+                </div>
+            </div>
+            {expanded && (
+                <div className="rounded overflow-hidden" style={{ border: '1px solid #dee2e6' }}>
+                    {logs.length === 0 ? (
+                        <div className="p-4 text-center text-xs" style={{ color: '#6c757d' }}>No audit log entries</div>
+                    ) : (
+                        <div className="overflow-x-auto" style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                            <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                        <th className="text-left px-3 py-2 font-semibold" style={{ color: '#495057' }}>Timestamp</th>
+                                        <th className="text-left px-3 py-2 font-semibold" style={{ color: '#495057' }}>Action</th>
+                                        <th className="text-left px-3 py-2 font-semibold" style={{ color: '#495057' }}>User</th>
+                                        <th className="text-left px-3 py-2 font-semibold" style={{ color: '#495057' }}>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logs.map((entry, i) => {
+                                        const style = getStyle(entry.action);
+                                        const details = typeof entry.details === 'object'
+                                            ? Object.entries(entry.details).map(([k, v]) => `${k}: ${v}`).join(', ')
+                                            : String(entry.details || '');
+                                        return (
+                                            <tr key={entry.id || i} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                                <td className="px-3 py-1.5 whitespace-nowrap" style={{ color: '#6c757d' }}>
+                                                    {entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '-'}
+                                                </td>
+                                                <td className="px-3 py-1.5">
+                                                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: style.bg, color: style.color }}>
+                                                        {style.label}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-1.5 font-medium" style={{ color: '#212529' }}>{entry.username || '-'}</td>
+                                                <td className="px-3 py-1.5" style={{ color: '#6c757d', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {details || '-'}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
+        </section>
     );
 };
 
@@ -424,6 +523,11 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                             )}
                         </div>
                     </section>
+
+                    {/* Security Audit Log (admin only) */}
+                    {userRole === 'admin' && (
+                        <SecurityAuditPanel triggerConfirm={triggerConfirm} />
+                    )}
                 </div>
             </div>
         </div>

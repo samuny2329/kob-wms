@@ -2,6 +2,11 @@
 #  WMS Pro — Full Stack Docker Compose (Production)
 #  Services: WMS (Nginx), Odoo 18, PostgreSQL
 #
+#  Security:
+#    - NEVER commit .env with real passwords. Use Docker secrets for production.
+#    - POSTGRES_PASSWORD is REQUIRED (enforced via :? syntax).
+#    - For production, consider using Docker Swarm secrets or external vault.
+#
 #  Prerequisites:
 #    Copy .env.example to .env and fill in secrets before starting.
 #
@@ -107,6 +112,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
     deploy:
       resources:
         limits:
