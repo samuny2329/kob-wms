@@ -33,6 +33,7 @@ import SLATracker from './components/SLATracker';
 import CycleCount from './components/CycleCount';
 import TimeAttendance from './components/TimeAttendance';
 import KPIAssessment from './components/KPIAssessment';
+import GWPManager from './components/GWPManager';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
@@ -1066,6 +1067,7 @@ window.onload=function(){
                     {activeTab === 'users' && <Users t={t} userRole={userRole} newUserName={newUserName} setNewUserName={setNewUserName} newUserUsername={newUserUsername} setNewUserUsername={setNewUserUsername} newUserRole={newUserRole} setNewUserRole={setNewUserRole} handleAddUser={handleAddUser} rolesInfo={rolesInfo} users={users} handleResetPassword={handleResetPassword} handleDeleteUser={handleDeleteUser} />}
                     {activeTab === 'inventory' && <Inventory inventory={inventory} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} />}
                     {activeTab === 'cycleCount' && <CycleCount inventory={inventory} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} user={user} users={users} logActivity={logActivity} />}
+                    {activeTab === 'gwp' && <GWPManager inventory={inventory} addToast={addToast} logActivity={logActivity} user={user} apiConfigs={apiConfigs} />}
                     {activeTab === 'sorting' && <Sorting salesOrders={salesOrders} waves={waves} setWaves={setWaves} addToast={addToast} />}
                     {activeTab === 'fulfillment' && <Fulfillment salesOrders={salesOrders} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} addToast={addToast} />}
                     {activeTab === 'platformMonitor' && <PlatformMonitor salesOrders={salesOrders} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} activityLogs={activityLogs} inventory={inventory} users={users} orders={orderData} />}

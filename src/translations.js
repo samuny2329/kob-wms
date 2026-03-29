@@ -29,6 +29,7 @@ export const TRANSLATIONS = {
         empTblCol: 'Employee', roleTblCol: 'Role', secTblCol: 'Security', actTblCol: 'Actions',
         kpiSpeed: 'Speed (UPH)',
         tabTeamPerformance: 'Team Performance', tabSlaTracker: 'SLA Tracker', tabTimeAttendance: 'Time & Attendance', tabKpiAssessment: 'KPI Assessment',
+        tabGwp: 'GWP Manager',
 
     },
     th: {
@@ -60,6 +61,7 @@ export const TRANSLATIONS = {
         fullName: 'ชื่อ-นามสกุล', assignRole: 'สิทธิ์การใช้งาน', createBtn: 'สร้างบัญชี',
         empTblCol: 'พนักงาน', roleTblCol: 'สิทธิ์', secTblCol: 'ความปลอดภัย', actTblCol: 'จัดการ',
         kpiSpeed: 'ความเร็ว (UPH)',
-        tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA', tabTimeAttendance: 'เวลาทำงาน', tabKpiAssessment: 'ประเมิน KPI'
+        tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA', tabTimeAttendance: 'เวลาทำงาน', tabKpiAssessment: 'ประเมิน KPI',
+        tabGwp: 'จัดการของแถม'
     }
 };

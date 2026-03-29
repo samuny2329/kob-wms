@@ -1514,3 +1514,108 @@ export const createInternalTransfer = async (odooConfig, { srcLocationId, destLo
         return { status: 'error', error: e.message };
     }
 };
+
+// ============ GWP (Gift With Purchase) ============
+
+// Fetch product categories from Odoo
+export const fetchProductCategories = async (odooConfig) => {
+    if (isMock(odooConfig)) {
+        await delay(150);
+        return [
+            { id: 1, name: 'All', complete_name: 'All' },
+            { id: 2, name: 'Consumable', complete_name: 'All / Consumable' },
+            { id: 3, name: 'GWP', complete_name: 'All / GWP' },
+            { id: 4, name: 'Sample', complete_name: 'All / GWP / Sample' },
+            { id: 5, name: 'Gift', complete_name: 'All / GWP / Gift' },
+            { id: 6, name: 'Accessory', complete_name: 'All / GWP / Accessory' },
+        ];
+    }
+    try {
+        return await odooCallKw(odooConfig, 'product.category', 'search_read',
+            [[]], { fields: ['id', 'name', 'complete_name', 'parent_id'], limit: 200 }
+        );
+    } catch (e) {
+        console.warn('fetchProductCategories error:', e);
+        return [];
+    }
+};
+
+// Fetch all brands from existing products (distinct values)
+export const fetchProductBrands = async (odooConfig) => {
+    if (isMock(odooConfig)) {
+        await delay(100);
+        return ['SKINOXY', 'KISS-MY-BODY'];
+    }
+    try {
+        // Read product_brand or use product template brand field
+        // Odoo 18 may have product_brand_id on product.template
+        const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
+            [[['active', '=', true]]], { fields: ['product_brand_id'], limit: 500 }
+        );
+        const brands = [...new Set(products.filter(p => p.product_brand_id).map(p => p.product_brand_id[1]))];
+        return brands.length > 0 ? brands : ['SKINOXY', 'KISS-MY-BODY'];
+    } catch {
+        return ['SKINOXY', 'KISS-MY-BODY'];
+    }
+};
+
+// Create a GWP product in Odoo
+export const createGWPProduct = async (odooConfig, { name, sku, barcode, categoryId, weight, listPrice, description }) => {
+    if (isMock(odooConfig)) {
+        await delay(300);
+        return { status: 'success', id: 90000 + Math.floor(Math.random() * 9999), sku };
+    }
+    try {
+        const productData = {
+            name,
+            default_code: sku,
+            barcode: barcode || false,
+            detailed_type: 'product',  // storable product
+            categ_id: categoryId || false,
+            lst_price: listPrice || 0,
+            standard_price: 0,
+            weight: weight || 0,
+            active: true,
+            description_sale: description || '',
+        };
+        const productId = await odooCallKw(odooConfig, 'product.product', 'create', [productData]);
+        return { status: 'success', id: productId, sku };
+    } catch (e) {
+        console.warn('createGWPProduct error:', e);
+        return { status: 'error', error: e.message };
+    }
+};
+
+// Update initial stock for a GWP product via stock.quant
+export const setGWPInitialStock = async (odooConfig, { productId, locationId, qty }) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        return { status: 'success' };
+    }
+    try {
+        // Use inventory adjustment (stock.quant with inventory_quantity)
+        const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
+            [[['product_id', '=', productId], ['location_id', '=', locationId]]],
+            { fields: ['id', 'quantity'], limit: 1 }
+        );
+        if (quants.length > 0) {
+            // Update existing quant
+            await odooCallKw(odooConfig, 'stock.quant', 'write',
+                [[quants[0].id], { inventory_quantity: qty }]
+            );
+            await odooCallKw(odooConfig, 'stock.quant', 'action_apply_inventory', [[quants[0].id]]);
+        } else {
+            // Create new quant via inventory adjustment
+            const quantId = await odooCallKw(odooConfig, 'stock.quant', 'create', [{
+                product_id: productId,
+                location_id: locationId,
+                inventory_quantity: qty,
+            }]);
+            await odooCallKw(odooConfig, 'stock.quant', 'action_apply_inventory', [[quantId]]);
+        }
+        return { status: 'success' };
+    } catch (e) {
+        console.warn('setGWPInitialStock error:', e);
+        return { status: 'error', error: e.message };
+    }
+};

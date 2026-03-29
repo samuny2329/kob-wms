@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift } from 'lucide-react';
 import Pick from './Pick';
 import HandheldPack from './HandheldPack';
 import CycleCount from './CycleCount';
 import TimeAttendance, { isClockedIn } from './TimeAttendance';
+import { HandheldGWPQuickAdd } from './GWPManager';
 import { fetchAllOrders, authenticateOdoo } from '../services/odooApi';
 
 const HandheldLayout = ({
@@ -220,32 +221,45 @@ const HandheldLayout = ({
                         </button>
                     </div>
 
-                    {/* COUNT & CLOCK — equal row */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* COUNT, GWP & CLOCK — row 2 */}
+                    <div className="grid grid-cols-3 gap-3">
                         <button
                             onClick={() => setScreen('count')}
-                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/10 border-2 border-[#714B67]/60 active:scale-95 transition-all"
+                            className="min-h-[120px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-[#714B67]/10 border-2 border-[#714B67]/60 active:scale-95 transition-all"
                         >
-                            <div className="w-14 h-14 rounded-2xl bg-[#714B67]/80 flex items-center justify-center">
-                                <ClipboardCheck className="w-7 h-7 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-[#714B67]/80 flex items-center justify-center">
+                                <ClipboardCheck className="w-6 h-6 text-white" />
                             </div>
                             <div className="text-center">
-                                <p className="font-black text-xl text-white">COUNT</p>
-                                <p className="text-[10px] text-zinc-500">Cycle Count</p>
+                                <p className="font-black text-base text-white">COUNT</p>
+                                <p className="text-[9px] text-zinc-500">Cycle Count</p>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setScreen('gwp')}
+                            className="min-h-[120px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-amber-500/10 border-2 border-amber-500/60 active:scale-95 transition-all"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-amber-600/80 flex items-center justify-center">
+                                <Gift className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-base text-white">GWP</p>
+                                <p className="text-[9px] text-zinc-500">Freebie</p>
                             </div>
                         </button>
 
                         <button
                             onClick={() => setScreen('clock')}
-                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/5 border-2 border-[#00A09D]/60 active:scale-95 transition-all"
+                            className="min-h-[120px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-[#00A09D]/5 border-2 border-[#00A09D]/60 active:scale-95 transition-all"
                         >
-                            <div className="w-14 h-14 rounded-2xl bg-[#00A09D]/80 flex items-center justify-center">
-                                <Clock className="w-7 h-7 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-[#00A09D]/80 flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-white" />
                             </div>
                             <div className="text-center">
-                                <p className="font-black text-xl text-white">CLOCK</p>
-                                <p className="text-[10px]">
-                                    {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked In</span>}
+                                <p className="font-black text-base text-white">CLOCK</p>
+                                <p className="text-[9px]">
+                                    {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked</span>}
                                 </p>
                             </div>
                         </button>
@@ -315,6 +329,17 @@ const HandheldLayout = ({
                         user={user}
                         users={[]}
                         logActivity={logActivity}
+                    />
+                </div>
+            )}
+
+            {/* GWP screen */}
+            {screen === 'gwp' && (
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
+                    <HandheldGWPQuickAdd
+                        addToast={addToast}
+                        logActivity={logActivity}
+                        user={user}
                     />
                 </div>
             )}
