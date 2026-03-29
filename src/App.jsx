@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 
 import { TRANSLATIONS } from './translations';
 import { getTrackingUrl, useDebounce } from './utils';
-import { rolesInfo, tabInfo, INITIAL_SALES_ORDERS, ITEMS_PER_PAGE, PRODUCT_CATALOG } from './constants';
+import { rolesInfo, tabInfo, INITIAL_SALES_ORDERS, ITEMS_PER_PAGE, PRODUCT_CATALOG, ROLE_KPI_CONFIG, computeOkrResults } from './constants';
 
 // Sub-components
 import Sidebar from './components/Sidebar';
@@ -30,17 +30,21 @@ import PlatformMonitor from './components/PlatformMonitor';
 import TeamPerformance from './components/TeamPerformance';
 import WorkerPerformance from './components/WorkerPerformance';
 import SLATracker from './components/SLATracker';
+import CycleCount from './components/CycleCount';
+import TimeAttendance from './components/TimeAttendance';
+import KPIAssessment from './components/KPIAssessment';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
 import { confirmRTS, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
+import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
 
 const App = () => {
     // 1. Initial & System State
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
     const [language, setLanguage] = useState(() => localStorage.getItem('lang') || 'en');
-    const [user, setUser] = useState(() => { try { return JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } });
-    const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || 'admin');
+    const [user, setUser] = useState(() => { try { const session = getSession(); return session?.user ? { ...JSON.parse(localStorage.getItem('currentUser') || 'null'), ...session.user } : JSON.parse(localStorage.getItem('currentUser')); } catch { return null; } });
+    const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || 'picker');
     const [activeTab, setActiveTab] = useState(() => localStorage.getItem('activeTab') || 'dashboard');
     const [selectedWorker, setSelectedWorker] = useState(null);
     const [workDate, setWorkDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -105,6 +109,11 @@ const App = () => {
     const [scanStatus, setScanStatus] = useState(null);
     const [isProcessingImport, setIsProcessingImport] = useState(false);
     const [isProcessingAPI, setIsProcessingAPI] = useState(false);
+    const [sessionWarning, setSessionWarning] = useState(null); // { minutesLeft }
+    const [showPasswordChange, setShowPasswordChange] = useState(false);
+    const [newPwInput, setNewPwInput] = useState('');
+    const [confirmPwInput, setConfirmPwInput] = useState('');
+    const [pwStrength, setPwStrength] = useState(null);
 
     // 4. Admin sub-states
     const [newUserName, setNewUserName] = useState('');
@@ -147,6 +156,59 @@ const App = () => {
     useEffect(() => { if (inventory) localStorage.setItem('wms_inventory', JSON.stringify(inventory)); }, [inventory]);
     useEffect(() => { localStorage.setItem('wms_waves', JSON.stringify(waves)); }, [waves]);
     useEffect(() => { localStorage.setItem('wms_invoices', JSON.stringify(invoices)); }, [invoices]);
+
+    // ── Session timeout checker ──
+    useEffect(() => {
+        if (!user) return;
+        const checkSession = () => {
+            const session = getSession();
+            if (!session) {
+                handleLogout();
+                setSessionWarning(null);
+                addToast?.('Session expired. Please log in again.', 'warning');
+                return;
+            }
+            if (isSessionExpiringSoon()) {
+                const mins = Math.ceil(getSessionTimeRemaining() / 60000);
+                setSessionWarning({ minutesLeft: mins });
+            } else {
+                setSessionWarning(null);
+            }
+        };
+        checkSession();
+        const interval = setInterval(checkSession, 30000); // Check every 30s
+        return () => clearInterval(interval);
+    }, [user]);
+
+    // Refresh session on user activity
+    useEffect(() => {
+        if (!user) return;
+        const refresh = () => refreshSession();
+        window.addEventListener('click', refresh);
+        window.addEventListener('keydown', refresh);
+        return () => {
+            window.removeEventListener('click', refresh);
+            window.removeEventListener('keydown', refresh);
+        };
+    }, [user]);
+
+    // Shared OKR computation — single source of truth for TeamPerformance + KPIAssessment
+    const workerOkrData = useMemo(() => {
+        if (!activityLogs?.length || !users?.length) return {};
+        const today = new Date().toISOString().split('T')[0];
+        const result = {};
+        users.forEach(u => {
+            const role = u.role || 'picker';
+            const config = ROLE_KPI_CONFIG[role];
+            if (!config) return;
+            const userLogs = activityLogs.filter(l => l.username === u.username);
+            const todayLogs = userLogs.filter(l => l.timestamp && new Date(l.timestamp).toISOString().split('T')[0] === today);
+            const okrAll = computeOkrResults(role, userLogs, salesOrders);
+            const okrToday = computeOkrResults(role, todayLogs, salesOrders);
+            result[u.username] = { role, config, okrAll, okrToday, todayLogs, allLogs: userLogs };
+        });
+        return result;
+    }, [activityLogs, users, salesOrders]);
 
     // Helpers
     const t = (key) => TRANSLATIONS[language][key] || key;
@@ -193,36 +255,110 @@ const App = () => {
     };
 
     // User Logics
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
-        setTimeout(() => {
-            const foundUser = users.find(u => u.username === username && u.password === password);
+
+        // Check account lockout
+        const lockStatus = isAccountLocked();
+        if (lockStatus.locked) {
+            setError(`Account locked. Try again in ${lockStatus.remainingMin} minutes.`);
+            setIsLoading(false);
+            auditLog('login_blocked', { username, reason: 'account_locked' });
+            return;
+        }
+
+        try {
+            const foundUser = users.find(u => u.username === username);
+
             if (foundUser) {
-                setUser(foundUser);
-                setUserRole(foundUser.role);
-                localStorage.setItem('currentUser', JSON.stringify(foundUser));
-                playSound('success');
+                // Support both hashed and legacy plaintext passwords (migration)
+                let passwordMatch = false;
+                if (foundUser.password?.length === 64) {
+                    // Hashed password (SHA-256 = 64 hex chars)
+                    passwordMatch = await verifyPassword(password, foundUser.password);
+                } else {
+                    // Legacy plaintext — migrate on successful login
+                    passwordMatch = foundUser.password === password;
+                    if (passwordMatch) {
+                        // Auto-migrate to hashed password
+                        const hashed = await hashPassword(password);
+                        const updatedUsers = users.map(u =>
+                            u.username === username ? { ...u, password: hashed } : u
+                        );
+                        setUsers(updatedUsers);
+                        localStorage.setItem('wms_users', JSON.stringify(updatedUsers));
+                        auditLog('password_migrated', { username }, username);
+                    }
+                }
+
+                if (passwordMatch) {
+                    recordLoginAttempt(true);
+                    const session = createSession(foundUser);
+                    setUser(foundUser);
+                    setUserRole(foundUser.role);
+                    auditLog('login_success', { username, role: foundUser.role }, username);
+                    playSound('success');
+                    // Force password change on first login
+                    if (foundUser.isFirstLogin) {
+                        setShowPasswordChange(true);
+                    }
+                } else {
+                    const result = recordLoginAttempt(false);
+                    const msg = result.locked
+                        ? `Too many attempts. Locked for ${result.remainingMin} minutes.`
+                        : `Invalid credentials. ${result.attemptsLeft} attempts remaining.`;
+                    setError(msg);
+                    auditLog('login_failed', { username, attemptsLeft: result.attemptsLeft });
+                    playSound('error');
+                }
             } else {
-                setError('Invalid credentials');
+                const result = recordLoginAttempt(false);
+                const msg = result.locked
+                    ? `Too many attempts. Locked for ${result.remainingMin} minutes.`
+                    : `Invalid credentials. ${result.attemptsLeft} attempts remaining.`;
+                setError(msg);
+                auditLog('login_failed', { username });
                 playSound('error');
             }
-            setIsLoading(false);
-        }, 800);
+        } catch (err) {
+            setError('Login error. Please try again.');
+            console.error('Login error:', err);
+        }
+
+        setIsLoading(false);
     };
+
+    // EOD Archive — save daily snapshot to localStorage (max 30 days)
+    const saveEodArchive = useCallback(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const archives = safeParse('wms_eod_archives', []);
+        if (archives.some(a => a.date === today)) return;
+        const snapshot = { salesOrders, activityLogs, inventory, invoices };
+        const updated = [{ date: today, data: snapshot }, ...archives].slice(0, 30);
+        localStorage.setItem('wms_eod_archives', JSON.stringify(updated));
+    }, [salesOrders, activityLogs, inventory, invoices]);
 
     const handleLogout = () => {
+        saveEodArchive();
+        auditLog('logout', { username: user?.username });
+        destroySession();
         setUser(null);
-        localStorage.removeItem('currentUser');
+        setUserRole('picker'); // Don't default to admin!
+        setActiveTab('dashboard');
+        setUsername('');
+        setPassword('');
     };
 
-    const handleAddUser = () => {
+    const handleAddUser = async () => {
         if (!newUserName || !newUserUsername) return;
         if (users.find(u => u.username === newUserUsername)) return addToast('User already exists', 'error');
-        const newUser = { name: newUserName, username: newUserUsername, role: newUserRole, password: '123456', isFirstLogin: true };
+        const hashedPw = await hashPassword('123456');
+        const newUser = { name: newUserName, username: newUserUsername, role: newUserRole, password: hashedPw, isFirstLogin: true };
         setUsers([...users, newUser]);
         setNewUserName(''); setNewUserUsername('');
+        auditLog('user_created', { username: newUserUsername, role: newUserRole });
         addToast('User created successfully');
     };
 
@@ -233,9 +369,36 @@ const App = () => {
         });
     };
 
-    const handleResetPassword = (uname) => {
-        setUsers(users.map(u => u.username === uname ? { ...u, password: '123456', isFirstLogin: true } : u));
+    const handleResetPassword = async (uname) => {
+        const hashedPw = await hashPassword('123456');
+        setUsers(users.map(u => u.username === uname ? { ...u, password: hashedPw, isFirstLogin: true } : u));
+        auditLog('password_reset', { targetUser: uname });
         addToast('Password reset to 123456');
+    };
+
+    const handlePasswordChange = async () => {
+        if (newPwInput !== confirmPwInput) {
+            addToast('Passwords do not match', 'error');
+            return;
+        }
+        const strength = validatePasswordStrength(newPwInput);
+        if (!strength.valid) {
+            addToast(strength.errors[0], 'error');
+            return;
+        }
+        const hashed = await hashPassword(newPwInput);
+        const updatedUsers = users.map(u =>
+            u.username === user.username ? { ...u, password: hashed, isFirstLogin: false } : u
+        );
+        setUsers(updatedUsers);
+        setUser({ ...user, isFirstLogin: false });
+        localStorage.setItem('wms_users', JSON.stringify(updatedUsers));
+        auditLog('password_changed', { username: user.username }, user.username);
+        setShowPasswordChange(false);
+        setNewPwInput('');
+        setConfirmPwInput('');
+        setPwStrength(null);
+        addToast('Password changed successfully', 'success');
     };
 
     // Remove orders with Dummy/non-SKINOXY products (no real odooPickingId and no real SKU)
@@ -648,6 +811,11 @@ window.onload=function(){
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        const validation = validateFileUpload(file);
+        if (!validation.valid) {
+            addToast(validation.error, 'error');
+            return;
+        }
         setUploadedFileName(file.name);
         const reader = new FileReader();
         reader.onload = (evt) => {
@@ -810,7 +978,7 @@ window.onload=function(){
 
     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isHandheld = isMobileDevice || (window.innerWidth < 768 && 'ontouchstart' in window);
-    if (isHandheld) return <HandheldLayout user={user} handleLogout={handleLogout} salesOrders={salesOrders} setSalesOrders={setSalesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} inventory={inventory} printAwbLabel={printAwbLabel} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} syncStatus={syncStatus} syncNow={syncStatus.syncNow} />;
+    if (isHandheld) return <HandheldLayout user={user} handleLogout={handleLogout} salesOrders={salesOrders} setSalesOrders={setSalesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} inventory={inventory} printAwbLabel={printAwbLabel} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} syncStatus={syncStatus} syncNow={syncStatus.syncNow} activityLogs={activityLogs} />;
 
     return (
         <div className="flex h-screen font-sans" style={{ backgroundColor: '#f8f9fa', color: '#212529' }}>
@@ -857,6 +1025,22 @@ window.onload=function(){
                     </div>
                 </header>
 
+                {/* Session timeout warning banner */}
+                {sessionWarning && (
+                    <div className="shrink-0 flex items-center justify-between px-4 py-2 text-xs font-medium"
+                        style={{ backgroundColor: '#fff3cd', color: '#856404', borderBottom: '1px solid #ffc107' }}>
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            <span>Session expires in {sessionWarning.minutesLeft} minute{sessionWarning.minutesLeft !== 1 ? 's' : ''}.</span>
+                        </div>
+                        <button onClick={() => { refreshSession(); setSessionWarning(null); }}
+                            className="px-3 py-1 rounded text-xs font-semibold"
+                            style={{ backgroundColor: '#ffc107', color: '#212529' }}>
+                            Stay logged in
+                        </button>
+                    </div>
+                )}
+
                 {/* Page breadcrumb / title bar */}
                 <div className="shrink-0 px-6 py-2.5 flex items-center gap-2 border-b" style={{ backgroundColor: '#ffffff', borderColor: '#dee2e6' }}>
                     <h1 className="text-sm font-semibold" style={{ color: '#212529' }}>
@@ -878,21 +1062,24 @@ window.onload=function(){
                     {activeTab === 'scan' && <Scan currentBatchId={activeOrderId.split('-')[1]} totalScanned={totalScanned} totalExpected={totalExpected} progressPercent={progressPercent} inputRef={inputRef} scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} scanBinHint={scanBinHint} lastScans={lastScans} orderData={orderData} />}
                     {activeTab === 'list' && <List t={t} searchInput={searchInput} setSearchInput={setSearchInput} paginatedListData={paginatedListData} currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} ITEMS_PER_PAGE={ITEMS_PER_PAGE} filteredListData={filteredListData} />}
                     {activeTab === 'dispatch' && <Dispatch readyToDispatchCouriers={readyToDispatchCouriers} dispatchCourier={dispatchCourier} setDispatchCourier={setDispatchCourier} clearSignature={clearSignature} canvasRef={canvasRef} startDrawing={startDrawing} draw={draw} endDrawing={endDrawing} signatureEmpty={signatureEmpty} handleDispatchSubmit={handleDispatchSubmit} />}
-                    {activeTab === 'report' && <Reports reportViewMode={reportViewMode} setReportViewMode={setReportViewMode} reportFilterCourier={reportFilterCourier} setReportFilterCourier={setReportFilterCourier} orderData={orderData} reportFilterBatchId={reportFilterBatchId} setReportFilterBatchId={setReportFilterBatchId} historyData={historyData} courierBatches={{}} orderId={activeOrderId} />}
+                    {activeTab === 'report' && <Reports reportViewMode={reportViewMode} setReportViewMode={setReportViewMode} reportFilterCourier={reportFilterCourier} setReportFilterCourier={setReportFilterCourier} orderData={orderData} reportFilterBatchId={reportFilterBatchId} setReportFilterBatchId={setReportFilterBatchId} historyData={historyData} courierBatches={{}} orderId={activeOrderId} salesOrders={salesOrders} activityLogs={activityLogs} inventory={inventory} invoices={invoices} onSaveArchive={saveEodArchive} />}
                     {activeTab === 'users' && <Users t={t} userRole={userRole} newUserName={newUserName} setNewUserName={setNewUserName} newUserUsername={newUserUsername} setNewUserUsername={setNewUserUsername} newUserRole={newUserRole} setNewUserRole={setNewUserRole} handleAddUser={handleAddUser} rolesInfo={rolesInfo} users={users} handleResetPassword={handleResetPassword} handleDeleteUser={handleDeleteUser} />}
                     {activeTab === 'inventory' && <Inventory inventory={inventory} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} />}
+                    {activeTab === 'cycleCount' && <CycleCount inventory={inventory} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} user={user} users={users} logActivity={logActivity} />}
                     {activeTab === 'sorting' && <Sorting salesOrders={salesOrders} waves={waves} setWaves={setWaves} addToast={addToast} />}
                     {activeTab === 'fulfillment' && <Fulfillment salesOrders={salesOrders} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} addToast={addToast} />}
                     {activeTab === 'platformMonitor' && <PlatformMonitor salesOrders={salesOrders} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} />}
                     {activeTab === 'invoice' && <Invoice invoices={invoices} setInvoices={setInvoices} salesOrders={salesOrders} addToast={addToast} />}
                     {activeTab === 'settings' && <Settings t={t} language={language} setLanguage={setLanguage} userRole={userRole} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} workDate={workDate} setWorkDate={setWorkDate} triggerConfirm={triggerConfirm} updateAndSyncData={updateAndSyncData} showAlert={showAlert} syncStatus={syncStatus} />}
-                    {activeTab === 'teamPerformance' && <TeamPerformance activityLogs={activityLogs} orders={orderData} t={t} onSelectWorker={(w) => setSelectedWorker(w)} />}
+                    {activeTab === 'teamPerformance' && <TeamPerformance activityLogs={activityLogs} orders={orderData} users={users} t={t} onSelectWorker={(w) => setSelectedWorker(w)} workerOkrData={workerOkrData} />}
                     {activeTab === 'slaTracker' && <SLATracker activityLogs={activityLogs} orders={orderData} salesOrders={salesOrders} onSelectWorker={(w) => setSelectedWorker(w)} t={t} />}
+                    {activeTab === 'timeAttendance' && <TimeAttendance user={user} users={users} userRole={userRole} addToast={addToast} logActivity={logActivity} />}
+                    {activeTab === 'kpiAssessment' && <KPIAssessment user={user} users={users} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} logActivity={logActivity} workerOkrData={workerOkrData} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
 
                 {/* Worker Performance Detail Panel */}
-                {selectedWorker && <WorkerPerformance activityLogs={activityLogs} worker={selectedWorker} onClose={() => setSelectedWorker(null)} t={t} />}
+                {selectedWorker && <WorkerPerformance activityLogs={activityLogs} worker={selectedWorker} users={users} onClose={() => setSelectedWorker(null)} t={t} />}
             </div>
 
             {/* Modals & Toasts */}
@@ -1009,6 +1196,77 @@ window.onload=function(){
                     <button onClick={() => { setIsErrorLocked(false); setScanStatus(null); setScanBinHint(null); }} className="bg-white text-red-600 px-10 py-4 rounded-2xl text-lg font-black shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
                         <Unlock className="w-6 h-6" /> Press Spacebar to Unlock
                     </button>
+                </div>
+            )}
+
+            {/* Password Change Modal (first login or forced reset) */}
+            {showPasswordChange && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 z-[120] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.75)' }}>
+                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <h2 className="text-sm font-semibold" style={{ color: '#212529' }}>Change Password Required</h2>
+                            <p className="text-xs mt-0.5" style={{ color: '#6c757d' }}>Please set a new password to continue</p>
+                        </div>
+                        <div className="p-5 space-y-3">
+                            <div>
+                                <label className="text-xs font-medium mb-1 block" style={{ color: '#495057' }}>New Password</label>
+                                <input type="password" value={newPwInput}
+                                    onChange={e => { setNewPwInput(e.target.value); setPwStrength(validatePasswordStrength(e.target.value)); }}
+                                    className="w-full px-3 py-2 text-sm rounded" placeholder="Minimum 8 characters"
+                                    style={{ border: '1px solid #ced4da', outline: 'none' }}
+                                    onFocus={e => e.target.style.borderColor = '#714B67'}
+                                    onBlur={e => e.target.style.borderColor = '#ced4da'} />
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium mb-1 block" style={{ color: '#495057' }}>Confirm Password</label>
+                                <input type="password" value={confirmPwInput}
+                                    onChange={e => setConfirmPwInput(e.target.value)}
+                                    className="w-full px-3 py-2 text-sm rounded" placeholder="Re-enter password"
+                                    style={{ border: '1px solid #ced4da', outline: 'none' }}
+                                    onFocus={e => e.target.style.borderColor = '#714B67'}
+                                    onBlur={e => e.target.style.borderColor = '#ced4da'} />
+                            </div>
+                            {/* Strength indicator */}
+                            {pwStrength && newPwInput && (
+                                <div>
+                                    <div className="flex gap-1 mb-1">
+                                        {[1, 2, 3, 4].map(i => (
+                                            <div key={i} className="h-1.5 flex-1 rounded-full" style={{
+                                                backgroundColor: pwStrength.score >= i
+                                                    ? pwStrength.strength === 'strong' ? '#28a745'
+                                                    : pwStrength.strength === 'medium' ? '#ffc107' : '#dc3545'
+                                                    : '#dee2e6'
+                                            }} />
+                                        ))}
+                                    </div>
+                                    <div className="text-[10px] font-medium" style={{
+                                        color: pwStrength.strength === 'strong' ? '#28a745'
+                                            : pwStrength.strength === 'medium' ? '#856404' : '#dc3545'
+                                    }}>
+                                        Strength: {pwStrength.strength.charAt(0).toUpperCase() + pwStrength.strength.slice(1)}
+                                    </div>
+                                    {pwStrength.errors.length > 0 && (
+                                        <ul className="mt-1 space-y-0.5">
+                                            {pwStrength.errors.map((err, i) => (
+                                                <li key={i} className="text-[10px]" style={{ color: '#dc3545' }}>- {err}</li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
+                            {confirmPwInput && newPwInput !== confirmPwInput && (
+                                <p className="text-[10px]" style={{ color: '#dc3545' }}>Passwords do not match</p>
+                            )}
+                        </div>
+                        <div className="px-5 py-3 flex justify-end" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <button onClick={handlePasswordChange}
+                                disabled={!pwStrength?.valid || newPwInput !== confirmPwInput}
+                                className="px-4 py-2 text-xs font-semibold rounded transition-colors disabled:opacity-50"
+                                style={{ backgroundColor: '#714B67', color: '#ffffff', border: '1px solid #714B67' }}>
+                                Set Password
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

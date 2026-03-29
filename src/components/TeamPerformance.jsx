@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Trophy, TrendingUp, TrendingDown, Zap, Users, Clock, Target, Award, Activity, Layers } from 'lucide-react';
+import { Trophy, TrendingUp, TrendingDown, Zap, Users, Clock, Target, Award, Activity, Layers, LayoutGrid, List, Columns } from 'lucide-react';
 import { TIER_CONFIG, getTaskDistribution, calculateTaskDifficulty } from '../utils/taskScoring';
+import { ROLE_KPI_CONFIG, computeOkrResults, getOkrGrade, SAMPLE_OKR_WORKERS } from '../constants';
 
 const TARGET_UPH = 50;
 const GAUGE_COLORS = { red: '#ef4444', yellow: '#eab308', green: '#10b981', blue: '#3b82f6' };
@@ -55,11 +56,19 @@ function HeatmapCell({ value, maxValue }) {
     );
 }
 
-export default function TeamPerformance({ activityLogs, orders, t, onSelectWorker }) {
+export default function TeamPerformance({ activityLogs, orders, users = [], t, onSelectWorker, workerOkrData = {} }) {
     const [sortCol, setSortCol] = useState('total');
     const [sortAsc, setSortAsc] = useState(false);
+    const [okrView, setOkrView] = useState('scorecard');
 
     const today = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+    // Username → role lookup
+    const userRoleMap = useMemo(() => {
+        const map = {};
+        (users || []).forEach(u => { map[u.username] = u.role || 'admin'; });
+        return map;
+    }, [users]);
 
     // Filter today's logs
     const todayLogs = useMemo(() => {
@@ -91,14 +100,33 @@ export default function TeamPerformance({ activityLogs, orders, t, onSelectWorke
             if (log.timestamp > s.lastAction) s.lastAction = log.timestamp;
         });
 
+        // Role-specific action sets for UPH — matches KPI Assessment auto KPIs
+        const ROLE_ACTIONS = {
+            picker: ['pick'], packer: ['pack', 'pack-handheld', 'pack-pos'],
+            outbound: ['scan'], admin: ['pick', 'pack', 'pack-handheld', 'pack-pos', 'scan'],
+            senior: ['pick', 'pack', 'pack-handheld', 'pack-pos', 'scan'],
+        };
+
         return Object.values(stats).map(s => {
+            s.role = userRoleMap[s.username] || 'admin';
+            s.roleConfig = ROLE_KPI_CONFIG[s.role] || ROLE_KPI_CONFIG.admin;
+            const targetForRole = s.roleConfig.targetUPH || TARGET_UPH;
+
+            // Use role-specific actions for UPH (aligned with KPI Assessment)
+            const roleActions = ROLE_ACTIONS[s.role] || ROLE_ACTIONS.admin;
+            const roleCount = todayLogs.filter(l => l.username === s.username && roleActions.includes(l.action)).length;
             let hours = (s.lastAction - s.firstAction) / 3600000;
             if (hours < 0.1) hours = 0.1;
-            s.uph = Math.round(s.total / hours);
-            s.efficiency = Math.round((s.uph / TARGET_UPH) * 100);
+            s.uph = Math.round(roleCount / hours);
+            s.efficiency = Math.round((s.uph / targetForRole) * 100);
+
+            // Use shared OKR data if available
+            if (workerOkrData[s.username]?.okrToday) {
+                s.sharedOkr = workerOkrData[s.username].okrToday;
+            }
             return s;
         });
-    }, [todayLogs]);
+    }, [todayLogs, userRoleMap]);
 
     // Historical stats for trend (mock from past 7 days of activityLogs)
     const historicalData = useMemo(() => {
@@ -282,21 +310,12 @@ export default function TeamPerformance({ activityLogs, orders, t, onSelectWorke
     };
     const SortArrow = ({ col }) => sortCol === col ? (sortAsc ? ' ▲' : ' ▼') : '';
 
-    // Empty state
-    if (!todayLogs.length) {
-        return (
-            <div className="flex flex-col items-center justify-center h-96 text-slate-500">
-                <Activity className="w-16 h-16 mb-4 text-slate-600" />
-                <p className="text-lg font-medium">No activity data for today</p>
-                <p className="text-sm mt-1">Performance metrics will appear once team members start working.</p>
-            </div>
-        );
-    }
+    const hasLogs = todayLogs.length > 0;
 
     return (
         <div className="space-y-6">
             {/* ─── SECTION 1: KPI CARDS ─── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {hasLogs && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <KpiCard
                     icon={<Zap className="w-5 h-5" />}
                     label="Avg Team UPH"
@@ -324,8 +343,195 @@ export default function TeamPerformance({ activityLogs, orders, t, onSelectWorke
                     accent={kpis.teamEfficiency >= 80 ? 'emerald' : kpis.teamEfficiency >= 50 ? 'amber' : 'red'}
                     sub={`Target: ${TARGET_UPH} UPH`}
                 />
-            </div>
+            </div>}
 
+            {/* ─── SECTION: OKR SCORECARD (Multi-View) ─── */}
+            {(() => {
+                const displayWorkers = workerStats.length > 0
+                    ? workerStats.map(w => ({ ...w, role: w.role || 'admin' }))
+                    : SAMPLE_OKR_WORKERS.map(w => ({ ...w, pick: Math.floor(Math.random() * 40) + 20, pack: Math.floor(Math.random() * 30) + 15, scan: Math.floor(Math.random() * 25) + 10, total: 0, uph: Math.floor(Math.random() * 30) + 20 }));
+                const roles = ['picker', 'packer', 'outbound', 'accounting'];
+
+                // Compute OKR for all workers
+                const allWorkerOkrs = displayWorkers.map(w => {
+                    const wLogs = workerStats.length > 0 ? todayLogs.filter(l => l.username === w.username) : [];
+                    const okr = computeOkrResults(w.role, wLogs, orders || []);
+                    const rc = ROLE_KPI_CONFIG[w.role] || ROLE_KPI_CONFIG.admin;
+                    return { ...w, okr, rc };
+                });
+
+                const ViewBtn = ({ mode, icon, label }) => (
+                    <button onClick={() => setOkrView(mode)} className="p-1.5 rounded transition-colors" title={label}
+                        style={{ backgroundColor: okrView === mode ? '#714B67' : 'transparent', color: okrView === mode ? '#fff' : '#64748b' }}>
+                        {icon}
+                    </button>
+                );
+
+                return (
+                    <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
+                        {/* Header with view switcher */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                    <Target className="w-4 h-4 text-purple-400" /> OKR Scorecard
+                                </h3>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Objectives & Key Results — role-based performance</p>
+                            </div>
+                            <div className="flex items-center gap-0.5 bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                                <ViewBtn mode="scorecard" icon={<Columns className="w-3.5 h-3.5" />} label="Scorecard" />
+                                <ViewBtn mode="kanban" icon={<LayoutGrid className="w-3.5 h-3.5" />} label="Kanban" />
+                                <ViewBtn mode="list" icon={<List className="w-3.5 h-3.5" />} label="List" />
+                            </div>
+                        </div>
+
+                        {/* ── VIEW: Scorecard (default) ── */}
+                        {okrView === 'scorecard' && (
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                {roles.map(roleKey => {
+                                    const rc = ROLE_KPI_CONFIG[roleKey];
+                                    if (!rc?.keyResults) return null;
+                                    const roleWorkers = allWorkerOkrs.filter(w => w.role === roleKey);
+                                    if (roleWorkers.length === 0) return null;
+                                    const roleLogs = workerStats.length > 0 ? todayLogs.filter(l => roleWorkers.some(w => w.username === l.username)) : [];
+                                    const teamOkr = computeOkrResults(roleKey, roleLogs, orders || []);
+                                    return (
+                                        <div key={roleKey} className="bg-slate-800/60 rounded-lg border border-slate-700 overflow-hidden">
+                                            <div className="px-4 py-3 flex items-center gap-3" style={{ borderBottom: `2px solid ${rc.color}33` }}>
+                                                <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: rc.color + '22', color: rc.color }}>{rc.label.charAt(0)}</span>
+                                                <div className="flex-1">
+                                                    <div className="text-xs font-bold" style={{ color: rc.color }}>{rc.label}</div>
+                                                    <div className="text-[10px] text-slate-400">{rc.objective}</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-lg font-black" style={{ color: teamOkr.grade.color }}>{teamOkr.totalScore}%</span>
+                                                    <div className="text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 text-center" style={{ backgroundColor: teamOkr.grade.bg, color: teamOkr.grade.color }}>{teamOkr.grade.grade} — {teamOkr.grade.label}</div>
+                                                </div>
+                                            </div>
+                                            <div className="px-4 py-3 space-y-2.5">
+                                                {teamOkr.results.map(kr => (
+                                                    <div key={kr.key}>
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-slate-700 text-slate-400">{Math.round(kr.weight * 100)}%</span>
+                                                                <span className="text-xs text-slate-300">{kr.label}</span>
+                                                            </div>
+                                                            <span className="text-[10px] font-bold" style={{ color: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }}>{kr.actual} / {kr.target} — {kr.score}%</span>
+                                                        </div>
+                                                        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }} />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="px-4 py-2 border-t border-slate-700 bg-slate-800/40">
+                                                {roleWorkers.map(w => (
+                                                    <div key={w.username} className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-slate-700/50 rounded px-1" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
+                                                        <span className="text-xs text-slate-300">{w.name}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs font-bold" style={{ color: getGaugeColor(w.uph) }}>{w.uph} UPH</span>
+                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.okr.grade.bg, color: w.okr.grade.color }}>{w.okr.grade.grade}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* ── VIEW: Kanban (by Grade) ── */}
+                        {okrView === 'kanban' && (
+                            <div className="flex gap-3 overflow-x-auto pb-2" style={{ minHeight: '200px' }}>
+                                {[
+                                    { grade: 'S', label: 'Outstanding', color: '#7c3aed', bg: '#ede9fe' },
+                                    { grade: 'A', label: 'Excellent', color: '#059669', bg: '#d1fae5' },
+                                    { grade: 'B', label: 'Good', color: '#2563eb', bg: '#dbeafe' },
+                                    { grade: 'C', label: 'Needs Improvement', color: '#d97706', bg: '#fef3c7' },
+                                    { grade: 'D', label: 'Below Standard', color: '#dc2626', bg: '#fee2e2' },
+                                ].map(col => {
+                                    const colWorkers = allWorkerOkrs.filter(w => w.okr.grade.grade === col.grade);
+                                    return (
+                                        <div key={col.grade} className="flex-1 min-w-[180px] bg-slate-800/40 rounded-lg border border-slate-700 flex flex-col">
+                                            <div className="px-3 py-2 border-b border-slate-700 flex items-center gap-2">
+                                                <span className="text-sm font-black" style={{ color: col.color }}>{col.grade}</span>
+                                                <span className="text-[10px] text-slate-400 flex-1">{col.label}</span>
+                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-400">{colWorkers.length}</span>
+                                            </div>
+                                            <div className="flex-1 p-2 space-y-2 overflow-y-auto" style={{ maxHeight: '400px' }}>
+                                                {colWorkers.map(w => (
+                                                    <div key={w.username} className="bg-slate-800 rounded-lg p-3 border border-slate-700 cursor-pointer hover:border-slate-500 transition-colors" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-xs font-bold text-slate-200">{w.name}</span>
+                                                            <span className="text-sm font-black" style={{ color: col.color }}>{w.okr.totalScore}%</span>
+                                                        </div>
+                                                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.rc.color + '22', color: w.rc.color }}>{w.rc.label}</span>
+                                                        <div className="mt-2 space-y-1">
+                                                            {w.okr.results.slice(0, 3).map(kr => (
+                                                                <div key={kr.key} className="flex items-center gap-1.5">
+                                                                    <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+                                                                        <div className="h-full rounded-full" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }} />
+                                                                    </div>
+                                                                    <span className="text-[8px] text-slate-500 w-6 text-right">{kr.score}%</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {colWorkers.length === 0 && <div className="text-center text-[10px] text-slate-600 py-6">No workers</div>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* ── VIEW: List (Table) ── */}
+                        {okrView === 'list' && (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead>
+                                        <tr className="border-b border-slate-700 text-slate-400">
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase">Employee</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase">Role</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">Score</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">Grade</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">UPH</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">KR1</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">KR2</th>
+                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">KR3</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {allWorkerOkrs.sort((a, b) => b.okr.totalScore - a.okr.totalScore).map(w => (
+                                            <tr key={w.username} className="border-b border-slate-800 hover:bg-slate-800/50 cursor-pointer" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
+                                                <td className="py-2.5 px-3 text-slate-200 font-medium">{w.name}</td>
+                                                <td className="py-2.5 px-3">
+                                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.rc.color + '22', color: w.rc.color }}>{w.rc.label}</span>
+                                                </td>
+                                                <td className="py-2.5 px-3 text-center font-bold" style={{ color: w.okr.grade.color }}>{w.okr.totalScore}%</td>
+                                                <td className="py-2.5 px-3 text-center">
+                                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: w.okr.grade.bg, color: w.okr.grade.color }}>{w.okr.grade.grade}</span>
+                                                </td>
+                                                <td className="py-2.5 px-3 text-center" style={{ color: getGaugeColor(w.uph) }}>{w.uph}</td>
+                                                {w.okr.results.slice(0, 3).map(kr => (
+                                                    <td key={kr.key} className="py-2.5 px-3 text-center">
+                                                        <div className="text-[10px] font-bold" style={{ color: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }}>{kr.score}%</div>
+                                                    </td>
+                                                ))}
+                                                {w.okr.results.length < 3 && Array.from({ length: 3 - w.okr.results.length }).map((_, i) => <td key={`e${i}`} className="py-2.5 px-3" />)}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
+
+            {/* ─── REMAINING SECTIONS (only with real data) ─── */}
+            {hasLogs && <>
             {/* ─── SECTION: TASK DIFFICULTY DISTRIBUTION ─── */}
             {tierDistribution && (
                 <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
@@ -501,7 +707,14 @@ export default function TeamPerformance({ activityLogs, orders, t, onSelectWorke
                                 return (
                                     <tr key={w.username} onClick={() => onSelectWorker?.({ username: w.username, name: w.name })} className={`border-b border-slate-800 cursor-pointer ${isTop ? 'bg-amber-500/5' : 'hover:bg-slate-800/50'}`}>
                                         <td className="py-2.5 px-3 font-medium">{medal}</td>
-                                        <td className="py-2.5 px-3 text-slate-200 font-medium">{w.name}</td>
+                                        <td className="py-2.5 px-3 text-slate-200 font-medium">
+                                            {w.name}
+                                            {w.roleConfig && (
+                                                <span className="ml-2 text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.roleConfig.color + '22', color: w.roleConfig.color }}>
+                                                    {w.roleConfig.label}
+                                                </span>
+                                            )}
+                                        </td>
                                         <td className="py-2.5 px-3 text-blue-400">{w.pick}</td>
                                         <td className="py-2.5 px-3 text-emerald-400">{w.pack}</td>
                                         <td className="py-2.5 px-3 text-amber-400">{w.scan}</td>
@@ -621,6 +834,8 @@ export default function TeamPerformance({ activityLogs, orders, t, onSelectWorke
                 <SummaryCard icon={<Award className="w-5 h-5 text-emerald-400" />} label="Best Day This Week" value={summaryStats.bestDay} />
                 <SummaryCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Quality Score" value={summaryStats.qualityScore} />
             </div>
+            </>
+            }
         </div>
     );
 }
