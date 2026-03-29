@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift } from 'lucide-react';
 import Pick from './Pick';
 import HandheldPack from './HandheldPack';
+import CycleCount from './CycleCount';
+import TimeAttendance, { isClockedIn } from './TimeAttendance';
+import { HandheldGWPQuickAdd } from './GWPManager';
 import { fetchAllOrders, authenticateOdoo } from '../services/odooApi';
 
 const HandheldLayout = ({
@@ -13,7 +16,7 @@ const HandheldLayout = ({
     handleFulfillmentAndAWB, isProcessingAPI,
     apiConfigs, setApiConfigs, inventory, printAwbLabel,
     syncPlatformOrders, isProcessingImport,
-    syncStatus, syncNow,
+    syncStatus, syncNow, activityLogs,
 }) => {
     const [screen, setScreen] = useState('home');
     const [isSyncingOrders, setIsSyncingOrders] = useState(false);
@@ -179,43 +182,88 @@ const HandheldLayout = ({
                         </div>
                     )}
 
-                    {/* PICK */}
-                    <button
-                        onClick={() => setScreen('pick')}
-                        className="flex-1 min-h-[130px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/20 border-2 border-[#714B67] active:scale-95 transition-all"
-                    >
-                        <div className="w-14 h-14 rounded-2xl bg-[#714B67] flex items-center justify-center">
-                            <ShoppingCart className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-black text-xl text-white">PICK</p>
-                            <p className="text-xs mt-0.5">
-                                {pendingPick > 0
-                                    ? <span className="text-amber-400 font-bold">{pendingPick} orders pending Pick</span>
-                                    : <span className="text-zinc-500">No tasks</span>
-                                }
-                            </p>
-                        </div>
-                    </button>
+                    {/* PICK & PACK — equal row */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={() => setScreen('pick')}
+                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/20 border-2 border-[#714B67] active:scale-95 transition-all"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-[#714B67] flex items-center justify-center">
+                                <ShoppingCart className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-xl text-white">PICK</p>
+                                <p className="text-[10px] mt-0.5">
+                                    {pendingPick > 0
+                                        ? <span className="text-amber-400 font-bold">{pendingPick} pending</span>
+                                        : <span className="text-zinc-500">No tasks</span>
+                                    }
+                                </p>
+                            </div>
+                        </button>
 
-                    {/* PACK */}
-                    <button
-                        onClick={() => setScreen('pack')}
-                        className="flex-1 min-h-[130px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/10 border-2 border-[#00A09D] active:scale-95 transition-all"
-                    >
-                        <div className="w-14 h-14 rounded-2xl bg-[#00A09D] flex items-center justify-center">
-                            <Package className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-black text-xl text-white">PACK</p>
-                            <p className="text-xs mt-0.5">
-                                {readyPack > 0
-                                    ? <span className="text-emerald-400 font-bold">{readyPack} orders pending Pack</span>
-                                    : <span className="text-zinc-500">No tasks</span>
-                                }
-                            </p>
-                        </div>
-                    </button>
+                        <button
+                            onClick={() => setScreen('pack')}
+                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/10 border-2 border-[#00A09D] active:scale-95 transition-all"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-[#00A09D] flex items-center justify-center">
+                                <Package className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-xl text-white">PACK</p>
+                                <p className="text-[10px] mt-0.5">
+                                    {readyPack > 0
+                                        ? <span className="text-emerald-400 font-bold">{readyPack} pending</span>
+                                        : <span className="text-zinc-500">No tasks</span>
+                                    }
+                                </p>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* COUNT, GWP & CLOCK — row 2 */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <button
+                            onClick={() => setScreen('count')}
+                            className="min-h-[120px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-[#714B67]/10 border-2 border-[#714B67]/60 active:scale-95 transition-all"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-[#714B67]/80 flex items-center justify-center">
+                                <ClipboardCheck className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-base text-white">COUNT</p>
+                                <p className="text-[9px] text-zinc-500">Cycle Count</p>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setScreen('gwp')}
+                            className="min-h-[120px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-amber-500/10 border-2 border-amber-500/60 active:scale-95 transition-all"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-amber-600/80 flex items-center justify-center">
+                                <Gift className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-base text-white">GWP</p>
+                                <p className="text-[9px] text-zinc-500">Freebie</p>
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setScreen('clock')}
+                            className="min-h-[120px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-[#00A09D]/5 border-2 border-[#00A09D]/60 active:scale-95 transition-all"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-[#00A09D]/80 flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-base text-white">CLOCK</p>
+                                <p className="text-[9px]">
+                                    {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked</span>}
+                                </p>
+                            </div>
+                        </button>
+                    </div>
 
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-2">
@@ -266,6 +314,44 @@ const HandheldLayout = ({
                         isProcessingAPI={isProcessingAPI}
                         apiConfigs={apiConfigs}
                         printAwbLabel={printAwbLabel}
+                    />
+                </div>
+            )}
+
+            {/* Count screen */}
+            {screen === 'count' && (
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
+                    <CycleCount
+                        inventory={inventory}
+                        activityLogs={activityLogs || []}
+                        salesOrders={salesOrders}
+                        addToast={addToast}
+                        user={user}
+                        users={[]}
+                        logActivity={logActivity}
+                    />
+                </div>
+            )}
+
+            {/* GWP screen */}
+            {screen === 'gwp' && (
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
+                    <HandheldGWPQuickAdd
+                        addToast={addToast}
+                        logActivity={logActivity}
+                        user={user}
+                    />
+                </div>
+            )}
+
+            {/* Clock screen */}
+            {screen === 'clock' && (
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
+                    <TimeAttendance
+                        user={user}
+                        users={[]}
+                        addToast={addToast}
+                        logActivity={logActivity}
                     />
                 </div>
             )}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin } from 'lucide-react';
+import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns } from 'lucide-react';
 import { PRODUCT_CATALOG, PLATFORM_LABELS } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 
@@ -45,6 +45,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     const [showPickingList, setShowPickingList] = useState(null);
     const [scanFlash, setScanFlash] = useState(null);
     const [debugScan, setDebugScan] = useState(null);
+    const [viewMode, setViewMode] = useState('list');
     const listScanRef = useRef(null);
     const pendingOrdersRef = useRef([]);
 
@@ -226,7 +227,21 @@ window.onload=function(){
                                 <p className="text-[11px]" style={{ color: '#6c757d' }}>{pendingOrders.length} orders waiting</p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
+                            {/* Odoo-style view switcher */}
+                            <div className="flex items-center gap-0.5 rounded p-0.5" style={{ backgroundColor: '#e9ecef', border: '1px solid #dee2e6' }}>
+                                {[
+                                    { mode: 'list', icon: <List className="w-3.5 h-3.5" />, label: 'List' },
+                                    { mode: 'kanban', icon: <LayoutGrid className="w-3.5 h-3.5" />, label: 'Kanban' },
+                                    { mode: 'card', icon: <Columns className="w-3.5 h-3.5" />, label: 'Card' },
+                                ].map(v => (
+                                    <button key={v.mode} onClick={() => setViewMode(v.mode)} title={v.label}
+                                        className="p-1.5 rounded transition-colors"
+                                        style={{ backgroundColor: viewMode === v.mode ? '#714B67' : 'transparent', color: viewMode === v.mode ? '#fff' : '#6c757d' }}>
+                                        {v.icon}
+                                    </button>
+                                ))}
+                            </div>
                             {pendingOrders.length > 0 && (
                                 <button onClick={generateBatchPickingList} className="odoo-btn odoo-btn-secondary flex items-center gap-1.5">
                                     <Printer className="w-3.5 h-3.5" /> Print List
@@ -296,56 +311,129 @@ window.onload=function(){
                                 <p className="text-sm">No active picking tasks</p>
                             </div>
                         ) : (
-                            <div>
-                                {pendingOrders
-                                    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
-                                    .map((order, idx) => {
+                            <>
+                            {/* ── LIST VIEW ── */}
+                            {viewMode === 'list' && (
+                                <div>
+                                    {pendingOrders.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(order => {
                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                         const isFlash = scanFlash === order.id;
                                         return (
-                                            <div
-                                                key={order.id}
-                                                className="flex items-center justify-between px-4 py-3 cursor-pointer transition-colors group"
-                                                style={{
-                                                    borderBottom: '1px solid #f1f3f5',
-                                                    backgroundColor: isFlash ? '#f9f5f8' : '#ffffff',
-                                                }}
+                                            <div key={order.id} className="flex items-center justify-between px-4 py-3 cursor-pointer transition-colors"
+                                                style={{ borderBottom: '1px solid #f1f3f5', backgroundColor: isFlash ? '#f9f5f8' : '#ffffff' }}
                                                 onMouseEnter={e => { if (!isFlash) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
-                                                onMouseLeave={e => { if (!isFlash) e.currentTarget.style.backgroundColor = '#ffffff'; }}
-                                            >
+                                                onMouseLeave={e => { if (!isFlash) e.currentTarget.style.backgroundColor = '#ffffff'; }}>
                                                 <div className="flex items-center gap-3 flex-1" onClick={() => setSelectedPickOrder(order)}>
-                                                    {/* Odoo-style avatar: platform logo OR deterministic color from customer name */}
-                                                    {pl ? (
-                                                        <PlatformBadge name={order.courier || order.platform} size={32} />
-                                                    ) : (() => {
-                                                        const av = getAvatarColor(order.customer || order.ref);
-                                                        const initial = (order.customer || order.ref || '?')[0].toUpperCase();
-                                                        return <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: av.bg, color: av.text }}>{initial}</div>;
-                                                    })()}
+                                                    {pl ? <PlatformBadge name={order.courier || order.platform} size={32} /> : (() => { const av = getAvatarColor(order.customer || order.ref); return <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: av.bg, color: av.text }}>{(order.customer || order.ref || '?')[0].toUpperCase()}</div>; })()}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1.5 mb-0.5">
                                                             <h3 className="font-semibold text-sm" style={{ color: '#212529' }}>{order.ref}</h3>
                                                             <span className={statusBadgeClass(order.status)}>{statusLabel(order.status)}</span>
                                                         </div>
-                                                        <p className="text-xs truncate" style={{ color: '#6c757d' }}>
-                                                            {order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} items
-                                                            {order.scheduledDate && <span className="ml-2" style={{ color: '#adb5bd' }}>{order.scheduledDate}</span>}
-                                                        </p>
+                                                        <p className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} items</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <button onClick={(e) => { e.stopPropagation(); generatePickingList(order); }} className="p-1.5 rounded transition-colors" style={{ color: '#adb5bd' }}
-                                                        onMouseEnter={e => e.currentTarget.style.color = '#714B67'}
-                                                        onMouseLeave={e => e.currentTarget.style.color = '#adb5bd'}
-                                                        title="Print Picking List">
-                                                        <Printer className="w-4 h-4" />
-                                                    </button>
+                                                    <button onClick={(e) => { e.stopPropagation(); generatePickingList(order); }} className="p-1.5 rounded transition-colors" style={{ color: '#adb5bd' }} title="Print Picking List"><Printer className="w-4 h-4" /></button>
                                                     <ChevronRight className="w-4 h-4" style={{ color: '#dee2e6' }} />
                                                 </div>
                                             </div>
                                         );
                                     })}
-                            </div>
+                                </div>
+                            )}
+
+                            {/* ── KANBAN VIEW (columns by status) ── */}
+                            {viewMode === 'kanban' && (
+                                <div className="flex gap-3 p-4 overflow-x-auto" style={{ minHeight: '300px' }}>
+                                    {[
+                                        { status: 'pending', label: 'Pending', color: '#ffac00', borderColor: '#ffac00' },
+                                        { status: 'picking', label: 'In Progress', color: '#17a2b8', borderColor: '#17a2b8' },
+                                        { status: 'picked', label: 'Picked', color: '#714B67', borderColor: '#714B67' },
+                                    ].map(col => {
+                                        const colOrders = pendingOrders.filter(o => o.status === col.status);
+                                        return (
+                                            <div key={col.status} className="flex-1 min-w-[220px] rounded-lg flex flex-col" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+                                                <div className="px-3 py-2.5 flex items-center gap-2 rounded-t-lg" style={{ borderBottom: `3px solid ${col.borderColor}` }}>
+                                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: col.color }} />
+                                                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#212529' }}>{col.label}</span>
+                                                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#dee2e6', color: '#6c757d' }}>{colOrders.length}</span>
+                                                </div>
+                                                <div className="flex-1 p-2 space-y-2 overflow-y-auto" style={{ maxHeight: '500px' }}>
+                                                    {colOrders.map(order => {
+                                                        const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
+                                                        const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
+                                                        return (
+                                                            <div key={order.id} onClick={() => setSelectedPickOrder(order)}
+                                                                className="rounded-lg p-3 cursor-pointer transition-all hover:shadow-md"
+                                                                style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderLeft: `3px solid ${col.borderColor}` }}>
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <span className="text-xs font-bold" style={{ color: '#212529' }}>{order.ref}</span>
+                                                                    {pl && <PlatformBadge name={order.courier || order.platform} size={20} />}
+                                                                </div>
+                                                                <p className="text-[11px] truncate mb-2" style={{ color: '#6c757d' }}>{order.customer}</p>
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-[10px] font-medium" style={{ color: '#714B67' }}>{itemCount} items &bull; {order.items.length} SKUs</span>
+                                                                    <ChevronRight className="w-3 h-3" style={{ color: '#dee2e6' }} />
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    {colOrders.length === 0 && <div className="text-center py-8 text-xs" style={{ color: '#adb5bd' }}>No orders</div>}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* ── CARD VIEW (grid) ── */}
+                            {viewMode === 'card' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
+                                    {pendingOrders.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(order => {
+                                        const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
+                                        const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
+                                        const picked = order.items.reduce((s, i) => s + (i.picked || 0), 0);
+                                        const progress = itemCount > 0 ? Math.round((picked / itemCount) * 100) : 0;
+                                        const statusColors = { pending: '#ffac00', picking: '#17a2b8', picked: '#714B67' };
+                                        return (
+                                            <div key={order.id} onClick={() => setSelectedPickOrder(order)}
+                                                className="rounded-lg cursor-pointer transition-all hover:shadow-md overflow-hidden"
+                                                style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6' }}>
+                                                <div className="h-1" style={{ backgroundColor: statusColors[order.status] || '#dee2e6' }} />
+                                                <div className="p-4">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h3 className="text-sm font-bold" style={{ color: '#212529' }}>{order.ref}</h3>
+                                                        <span className={statusBadgeClass(order.status)}>{statusLabel(order.status)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        {pl ? <PlatformBadge name={order.courier || order.platform} size={24} /> : (() => { const av = getAvatarColor(order.customer || order.ref); return <div className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: av.bg, color: av.text }}>{(order.customer || '?')[0].toUpperCase()}</div>; })()}
+                                                        <span className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer}</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-2 mb-3">
+                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                                            <div className="text-sm font-bold" style={{ color: '#714B67' }}>{itemCount}</div>
+                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: '#adb5bd' }}>Items</div>
+                                                        </div>
+                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                                            <div className="text-sm font-bold" style={{ color: '#017E84' }}>{order.items.length}</div>
+                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: '#adb5bd' }}>SKUs</div>
+                                                        </div>
+                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                                            <div className="text-sm font-bold" style={{ color: progress === 100 ? '#28a745' : '#ffac00' }}>{progress}%</div>
+                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: '#adb5bd' }}>Done</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#e9ecef' }}>
+                                                        <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: progress === 100 ? '#28a745' : '#714B67' }} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            </>
                         )}
                     </div>
                 </div>

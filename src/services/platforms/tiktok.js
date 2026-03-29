@@ -74,8 +74,15 @@ class TikTokAdapter extends BasePlatformAdapter {
 
     async authenticate(code) {
         const { appKey, appSecret } = this._config;
-        const data = await this._json(`${TIKTOK_HOST}/api/v2/token?app_key=${appKey}&app_secret=${appSecret}&auth_code=${code}&grant_type=authorized_code`, {
-            method: 'GET',
+        const data = await this._json(`${TIKTOK_HOST}/api/v2/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                app_key: appKey,
+                app_secret: appSecret,
+                auth_code: code,
+                grant_type: 'authorized_code',
+            }),
         });
         if (data.data) {
             this._tokens = {
@@ -97,8 +104,15 @@ class TikTokAdapter extends BasePlatformAdapter {
 
     async refreshToken() {
         const { appKey, appSecret } = this._config;
-        const data = await this._json(`${TIKTOK_HOST}/api/v2/token?app_key=${appKey}&app_secret=${appSecret}&refresh_token=${this._tokens.refresh_token}&grant_type=refresh_token`, {
-            method: 'GET',
+        const data = await this._json(`${TIKTOK_HOST}/api/v2/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                app_key: appKey,
+                app_secret: appSecret,
+                refresh_token: this._tokens.refresh_token,
+                grant_type: 'refresh_token',
+            }),
         });
         if (data.data) {
             this._tokens = {

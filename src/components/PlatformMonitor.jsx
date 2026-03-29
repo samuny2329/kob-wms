@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
     RefreshCw, AlertTriangle, CheckCircle2, Clock, Package,
     TrendingUp, Zap, AlertCircle, ChevronDown, ChevronUp,
     Bell, Activity, Timer, BarChart2, ShieldAlert, Wifi, WifiOff,
-    Filter, Download, TrendingDown, Calendar, ArrowUpRight
+    Filter, Download, TrendingDown, Calendar, ArrowUpRight,
+    FileText, FileSpreadsheet, Printer, Brain, ClipboardList,
+    Users, AlertOctagon, Star, ThumbsUp, ThumbsDown, MessageSquare
 } from 'lucide-react';
 import { PlatformBadge } from './PlatformLogo';
 import { fetchPlatformOrders, fetchSaleOrderHistory } from '../services/odooApi';
@@ -782,36 +784,503 @@ const SummaryBar = ({ salesOrders, syncStates }) => {
     );
 };
 
-const EODChecklist = ({ salesOrders }) => {
+// ─── AI End-of-Day Report Engine ────────────────────────────────────────────
+const generateAIReport = (salesOrders, activityLogs, inventory, users) => {
     const all = salesOrders || [];
-    const [checked, setChecked] = useState({});
-    const toggle = k => setChecked(p => ({ ...p, [k]: !p[k] }));
+    const logs = activityLogs || [];
+    const inv = inventory?.items || [];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const todayLogs = logs.filter(l => l.timestamp && new Date(l.timestamp).toISOString().split('T')[0] === today);
+
+    // ── Order Analysis ──
+    const total = all.length;
+    const shipped = all.filter(o => ['rts', 'delivered', 'shipped'].includes(o.status)).length;
+    const pending = all.filter(o => o.status === 'pending').length;
+    const picking = all.filter(o => o.status === 'picking').length;
+    const packed = all.filter(o => ['picked', 'packing', 'packed'].includes(o.status)).length;
+    const cancelled = all.filter(o => o.status === 'cancelled').length;
+    const fulfillmentRate = total > 0 ? Math.round((shipped / total) * 100) : 0;
+
+    // ── Platform breakdown ──
+    const platformStats = {};
+    ['Shopee', 'Lazada', 'TikTok', 'LINE'].forEach(p => {
+        const pOrders = all.filter(o => o.platform?.toLowerCase().includes(p.toLowerCase()));
+        const pShipped = pOrders.filter(o => ['rts', 'delivered', 'shipped'].includes(o.status)).length;
+        platformStats[p] = {
+            total: pOrders.length,
+            shipped: pShipped,
+            pending: pOrders.filter(o => o.status === 'pending').length,
+            rate: pOrders.length > 0 ? Math.round((pShipped / pOrders.length) * 100) : 0,
+        };
+    });
+
+    // ── SLA breach detection ──
+    const SLA_HOURS = { shopee: 48, lazada: 48, tiktok: 72 };
+    const lateOrders = all.filter(o => {
+        if (['rts', 'delivered', 'shipped', 'cancelled'].includes(o.status)) return false;
+        const age = (now - new Date(o.createdAt)) / 3600000;
+        const pk = Object.keys(SLA_HOURS).find(k => o.platform?.toLowerCase().includes(k));
+        return pk && age > SLA_HOURS[pk];
+    });
+
+    // ── Worker Performance ──
+    const workerMap = {};
+    todayLogs.forEach(l => {
+        const u = l.username || 'unknown';
+        if (!workerMap[u]) workerMap[u] = { name: l.name || u, pick: 0, pack: 0, scan: 0, total: 0, first: l.timestamp, last: l.timestamp };
+        const w = workerMap[u];
+        if (l.action === 'pick') w.pick++;
+        else if (l.action === 'pack' || l.action === 'pack-handheld') w.pack++;
+        else if (l.action === 'scan') w.scan++;
+        w.total++;
+        if (l.timestamp < w.first) w.first = l.timestamp;
+        if (l.timestamp > w.last) w.last = l.timestamp;
+    });
+    const workers = Object.values(workerMap).map(w => {
+        let hours = (w.last - w.first) / 3600000;
+        if (hours < 0.1) hours = 0.1;
+        w.uph = Math.round(w.total / hours);
+        return w;
+    }).sort((a, b) => b.total - a.total);
+
+    const avgUph = workers.length > 0 ? Math.round(workers.reduce((s, w) => s + w.uph, 0) / workers.length) : 0;
+    const topWorker = workers[0] || null;
+    const lowWorker = workers.length > 1 ? workers[workers.length - 1] : null;
+
+    // ── Inventory alerts ──
+    const lowStockItems = inv.filter(i => (i.onHand ?? i.quantity ?? 0) > 0 && (i.onHand ?? i.quantity ?? 0) <= 5);
+    const outOfStock = inv.filter(i => (i.onHand ?? i.quantity ?? 0) === 0);
+
+    // ── Hourly throughput ──
+    const hourlyMap = {};
+    todayLogs.forEach(l => {
+        const h = new Date(l.timestamp).getHours();
+        hourlyMap[h] = (hourlyMap[h] || 0) + 1;
+    });
+    const peakHour = Object.entries(hourlyMap).sort(([,a], [,b]) => b - a)[0];
+    const slowHour = Object.entries(hourlyMap).filter(([,v]) => v > 0).sort(([,a], [,b]) => a - b)[0];
+
+    // ── AI Checklist (auto-verified) ──
     const checks = [
-        { key: 'rts_done', label: 'All RTS orders scanned out to courier', auto: all.filter(o => ['rts', 'delivered'].includes(o.status)).length, total: all.length },
-        { key: 'awb_printed', label: 'AWB labels printed for all shipped orders', auto: null },
-        { key: 'late_cleared', label: 'No pending late shipments remaining', auto: null },
-        { key: 'shopee_rts', label: 'Shopee: All orders before 17:00 cut-off are RTS', auto: null },
-        { key: 'lazada_rts', label: 'Lazada: All orders before 16:00 cut-off are RTS', auto: null },
-        { key: 'tiktok_rts', label: 'TikTok: All orders before 18:00 cut-off are RTS', auto: null },
-        { key: 'courier_scan', label: 'Courier scan-out signature completed', auto: null },
-        { key: 'inv_updated', label: 'Inventory adjusted for damaged/returned items', auto: null },
+        { key: 'rts_done', label: 'All orders scanned out to courier', pass: pending === 0 && picking === 0, detail: `${shipped}/${total} shipped` },
+        { key: 'sla_ok', label: 'No SLA breaches remaining', pass: lateOrders.length === 0, detail: lateOrders.length > 0 ? `${lateOrders.length} late orders` : 'All clear' },
+        { key: 'shopee_cut', label: 'Shopee: Pre-cutoff orders completed (17:00)', pass: (platformStats.Shopee?.pending || 0) === 0, detail: `${platformStats.Shopee?.shipped || 0}/${platformStats.Shopee?.total || 0}` },
+        { key: 'lazada_cut', label: 'Lazada: Pre-cutoff orders completed (16:00)', pass: (platformStats.Lazada?.pending || 0) === 0, detail: `${platformStats.Lazada?.shipped || 0}/${platformStats.Lazada?.total || 0}` },
+        { key: 'tiktok_cut', label: 'TikTok: Pre-cutoff orders completed (18:00)', pass: (platformStats.TikTok?.pending || 0) === 0, detail: `${platformStats.TikTok?.shipped || 0}/${platformStats.TikTok?.total || 0}` },
+        { key: 'inv_ok', label: 'No critical out-of-stock items', pass: outOfStock.length === 0, detail: outOfStock.length > 0 ? `${outOfStock.length} OOS items` : 'Stock OK' },
+        { key: 'team_active', label: 'All team members logged activity', pass: workers.length >= (users?.length || 1) - 1, detail: `${workers.length} active workers` },
+        { key: 'quality', label: 'Zero cancelled/returned orders', pass: cancelled === 0, detail: cancelled > 0 ? `${cancelled} cancelled` : 'None' },
     ];
-    const done = checks.filter(c => checked[c.key]).length;
+
+    // ── AI Insights & Recommendations ──
+    const insights = [];
+    const issues = [];
+    const recommendations = [];
+
+    // Performance insights
+    if (fulfillmentRate >= 95) insights.push({ type: 'positive', text: `Excellent fulfillment rate: ${fulfillmentRate}% — target exceeded` });
+    else if (fulfillmentRate >= 80) insights.push({ type: 'neutral', text: `Fulfillment rate: ${fulfillmentRate}% — within acceptable range` });
+    else issues.push({ severity: 'high', text: `Low fulfillment rate: ${fulfillmentRate}% — ${pending + picking} orders still pending` });
+
+    if (lateOrders.length > 0) {
+        issues.push({ severity: 'critical', text: `${lateOrders.length} SLA breaches detected — risk of platform penalties` });
+        recommendations.push(`Prioritize ${lateOrders.length} late order(s) first thing tomorrow morning`);
+    }
+
+    if (topWorker && topWorker.uph >= 50) insights.push({ type: 'positive', text: `Top performer: ${topWorker.name} at ${topWorker.uph} UPH (${topWorker.total} actions)` });
+    if (lowWorker && lowWorker.uph < 20 && workers.length > 1) issues.push({ severity: 'medium', text: `${lowWorker.name} below target at ${lowWorker.uph} UPH — may need training` });
+
+    if (lowStockItems.length > 0) {
+        issues.push({ severity: 'medium', text: `${lowStockItems.length} items at critical low stock (≤5 units)` });
+        recommendations.push(`Create replenishment order for ${lowStockItems.length} low-stock items`);
+    }
+
+    if (peakHour) insights.push({ type: 'neutral', text: `Peak hour: ${peakHour[0]}:00 with ${peakHour[1]} actions` });
+    if (slowHour && peakHour && slowHour[0] !== peakHour[0]) recommendations.push(`Consider redistributing workload — ${slowHour[0]}:00 had only ${slowHour[1]} actions vs peak ${peakHour[1]}`);
+
+    // Platform-specific recommendations
+    Object.entries(platformStats).forEach(([p, s]) => {
+        if (s.total > 0 && s.rate < 80) recommendations.push(`${p}: Only ${s.rate}% fulfillment — investigate bottleneck`);
+    });
+
+    if (avgUph < 30 && workers.length > 0) recommendations.push(`Team avg UPH is ${avgUph} — consider process improvement or additional training`);
+    if (recommendations.length === 0) recommendations.push('No critical action items — maintain current performance');
+
+    // ── Meeting Brief ──
+    const brief = {
+        date: today,
+        summary: `${today} — ${total} orders processed, ${fulfillmentRate}% fulfilled, ${workers.length} active staff`,
+        keyMetrics: { total, shipped, pending, fulfillmentRate, avgUph, lateOrders: lateOrders.length, lowStock: lowStockItems.length },
+        platformStats,
+        workers: workers.map(w => ({ name: w.name, pick: w.pick, pack: w.pack, scan: w.scan, total: w.total, uph: w.uph })),
+        checks,
+        insights,
+        issues,
+        recommendations,
+        lowStockItems: lowStockItems.slice(0, 10).map(i => ({ sku: i.sku || i.default_code, name: i.name, qty: i.onHand ?? i.quantity })),
+        lateOrders: lateOrders.slice(0, 10).map(o => ({ ref: o.ref || o.id, customer: o.customer, platform: o.platform, status: o.status })),
+    };
+
+    return brief;
+};
+
+// ── Export helpers ──
+const exportToCSV = (brief) => {
+    const rows = [
+        ['WMS Pro — End-of-Day Report'],
+        ['Date', brief.date],
+        [''],
+        ['=== KEY METRICS ==='],
+        ['Total Orders', brief.keyMetrics.total],
+        ['Shipped', brief.keyMetrics.shipped],
+        ['Pending', brief.keyMetrics.pending],
+        ['Fulfillment Rate', `${brief.keyMetrics.fulfillmentRate}%`],
+        ['Avg Team UPH', brief.keyMetrics.avgUph],
+        ['SLA Breaches', brief.keyMetrics.lateOrders],
+        ['Low Stock Items', brief.keyMetrics.lowStock],
+        [''],
+        ['=== PLATFORM BREAKDOWN ==='],
+        ['Platform', 'Total', 'Shipped', 'Pending', 'Rate'],
+        ...Object.entries(brief.platformStats).map(([p, s]) => [p, s.total, s.shipped, s.pending, `${s.rate}%`]),
+        [''],
+        ['=== WORKER PERFORMANCE ==='],
+        ['Name', 'Pick', 'Pack', 'Scan', 'Total', 'UPH'],
+        ...brief.workers.map(w => [w.name, w.pick, w.pack, w.scan, w.total, w.uph]),
+        [''],
+        ['=== CHECKLIST ==='],
+        ...brief.checks.map(c => [c.pass ? 'PASS' : 'FAIL', c.label, c.detail]),
+        [''],
+        ['=== ISSUES ==='],
+        ...brief.issues.map(i => [i.severity.toUpperCase(), i.text]),
+        [''],
+        ['=== RECOMMENDATIONS ==='],
+        ...brief.recommendations.map((r, i) => [`${i + 1}.`, r]),
+    ];
+    if (brief.lateOrders.length > 0) {
+        rows.push([''], ['=== LATE ORDERS ==='], ['Ref', 'Customer', 'Platform', 'Status']);
+        brief.lateOrders.forEach(o => rows.push([o.ref, o.customer, o.platform, o.status]));
+    }
+    if (brief.lowStockItems.length > 0) {
+        rows.push([''], ['=== LOW STOCK ==='], ['SKU', 'Name', 'Qty']);
+        brief.lowStockItems.forEach(i => rows.push([i.sku, i.name, i.qty]));
+    }
+    const csv = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `EOD_Report_${brief.date}.csv`; a.click();
+    URL.revokeObjectURL(url);
+};
+
+const exportToPDF = (brief) => {
+    const w = window.open('', '_blank');
+    if (!w) return;
+    const passIcon = (pass) => pass ? '<span style="color:#16a34a">&#10003;</span>' : '<span style="color:#dc2626">&#10007;</span>';
+    const sevColor = { critical: '#dc2626', high: '#ea580c', medium: '#d97706', low: '#2563eb' };
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EOD Report ${brief.date}</title>
+    <style>
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;margin:0;padding:40px;color:#212529;font-size:13px;line-height:1.6}
+        h1{font-size:20px;color:#714B67;margin:0 0 4px;border-bottom:3px solid #714B67;padding-bottom:8px}
+        h2{font-size:14px;color:#017E84;margin:24px 0 8px;text-transform:uppercase;letter-spacing:0.05em}
+        .subtitle{color:#6c757d;font-size:12px;margin-bottom:20px}
+        .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+        .metric{border:1px solid #dee2e6;border-radius:6px;padding:12px;text-align:center}
+        .metric .val{font-size:24px;font-weight:800;color:#017E84}
+        .metric .lbl{font-size:10px;color:#6c757d;text-transform:uppercase;margin-top:2px}
+        table{width:100%;border-collapse:collapse;margin:8px 0}
+        th{background:#f8f9fa;border:1px solid #dee2e6;padding:6px 10px;text-align:left;font-size:11px;text-transform:uppercase;color:#6c757d}
+        td{border:1px solid #dee2e6;padding:6px 10px;font-size:12px}
+        .check{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f1f3f5}
+        .issue{padding:6px 10px;border-radius:4px;margin:4px 0;font-size:12px}
+        .rec{padding:4px 0;border-bottom:1px solid #f1f3f5;font-size:12px}
+        .footer{margin-top:30px;padding-top:12px;border-top:2px solid #dee2e6;font-size:10px;color:#adb5bd;text-align:center}
+        @media print{body{padding:20px}h1{font-size:18px}}
+    </style></head><body>
+    <h1>WMS Pro — End-of-Day Report</h1>
+    <div class="subtitle">${brief.date} | Generated ${new Date().toLocaleTimeString()} | KOB & BTV-Online</div>
+
+    <h2>Key Metrics</h2>
+    <div class="grid">
+        <div class="metric"><div class="val">${brief.keyMetrics.total}</div><div class="lbl">Total Orders</div></div>
+        <div class="metric"><div class="val">${brief.keyMetrics.fulfillmentRate}%</div><div class="lbl">Fulfillment</div></div>
+        <div class="metric"><div class="val">${brief.keyMetrics.avgUph}</div><div class="lbl">Avg UPH</div></div>
+        <div class="metric"><div class="val" style="color:${brief.keyMetrics.lateOrders > 0 ? '#dc2626' : '#16a34a'}">${brief.keyMetrics.lateOrders}</div><div class="lbl">SLA Breaches</div></div>
+    </div>
+
+    <h2>Platform Performance</h2>
+    <table><thead><tr><th>Platform</th><th>Total</th><th>Shipped</th><th>Pending</th><th>Rate</th></tr></thead><tbody>
+    ${Object.entries(brief.platformStats).map(([p, s]) => `<tr><td><b>${p}</b></td><td>${s.total}</td><td>${s.shipped}</td><td>${s.pending}</td><td><b>${s.rate}%</b></td></tr>`).join('')}
+    </tbody></table>
+
+    <h2>Worker Performance</h2>
+    <table><thead><tr><th>Name</th><th>Pick</th><th>Pack</th><th>Scan</th><th>Total</th><th>UPH</th></tr></thead><tbody>
+    ${brief.workers.map(w => `<tr><td><b>${w.name}</b></td><td>${w.pick}</td><td>${w.pack}</td><td>${w.scan}</td><td><b>${w.total}</b></td><td><b>${w.uph}</b></td></tr>`).join('')}
+    </tbody></table>
+
+    <h2>Verification Checklist</h2>
+    ${brief.checks.map(c => `<div class="check">${passIcon(c.pass)} <span style="flex:1">${c.label}</span> <span style="color:#6c757d;font-size:11px">${c.detail}</span></div>`).join('')}
+
+    ${brief.issues.length > 0 ? `<h2>Issues & Alerts</h2>${brief.issues.map(i => `<div class="issue" style="background:${sevColor[i.severity]}11;border-left:3px solid ${sevColor[i.severity]};color:${sevColor[i.severity]}"><b>[${i.severity.toUpperCase()}]</b> ${i.text}</div>`).join('')}` : ''}
+
+    <h2>Recommendations for Tomorrow</h2>
+    ${brief.recommendations.map((r, i) => `<div class="rec"><b>${i + 1}.</b> ${r}</div>`).join('')}
+
+    ${brief.lateOrders.length > 0 ? `<h2>Late Orders Detail</h2><table><thead><tr><th>Ref</th><th>Customer</th><th>Platform</th><th>Status</th></tr></thead><tbody>${brief.lateOrders.map(o => `<tr><td>${o.ref}</td><td>${o.customer || '—'}</td><td>${o.platform || '—'}</td><td>${o.status}</td></tr>`).join('')}</tbody></table>` : ''}
+
+    ${brief.lowStockItems.length > 0 ? `<h2>Critical Low Stock</h2><table><thead><tr><th>SKU</th><th>Name</th><th>Qty</th></tr></thead><tbody>${brief.lowStockItems.map(i => `<tr><td>${i.sku}</td><td>${i.name}</td><td style="color:#dc2626;font-weight:700">${i.qty}</td></tr>`).join('')}</tbody></table>` : ''}
+
+    <div class="footer">WMS Pro by KOB & BTV-Online — Auto-generated End-of-Day Report</div>
+    </body></html>`;
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+};
+
+const EODChecklist = ({ salesOrders, activityLogs, inventory, users }) => {
+    const [checked, setChecked] = useState({});
+    const [showBrief, setShowBrief] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    const toggle = k => setChecked(p => ({ ...p, [k]: !p[k] }));
+
+    const brief = useMemo(() => generateAIReport(salesOrders, activityLogs, inventory, users), [salesOrders, activityLogs, inventory, users]);
+    const passCount = brief.checks.filter(c => c.pass).length;
+    const manualDone = brief.checks.filter(c => checked[c.key]).length;
+    const totalChecked = brief.checks.filter(c => c.pass || checked[c.key]).length;
+    const allDone = totalChecked === brief.checks.length;
+    const issueCount = brief.issues.length;
+    const sevColor = { critical: '#dc2626', high: '#ea580c', medium: '#d97706', low: '#2563eb' };
+    const sevBg = { critical: '#fff0f0', high: '#fff7ed', medium: '#fffbeb', low: '#eff6ff' };
+
+    const handleGenerate = () => {
+        setGenerating(true);
+        setTimeout(() => { setShowBrief(true); setGenerating(false); }, 800);
+    };
+
     return (
-        <div className="rounded" style={{ border: '1px solid #dee2e6', backgroundColor: '#ffffff' }}>
-            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                <span className="font-semibold text-sm flex items-center gap-2" style={{ color: '#212529' }}><CheckCircle2 className="w-4 h-4" style={{ color: '#016b73' }} /> End-of-Day Checklist</span>
-                <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: done === checks.length ? '#f0fff4' : '#f8f9fa', color: done === checks.length ? '#16a34a' : '#6c757d', border: `1px solid ${done === checks.length ? '#bbf7d0' : '#dee2e6'}` }}>{done}/{checks.length} Done</span>
+        <div className="space-y-4 max-w-4xl">
+            {/* Header card */}
+            <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #dee2e6', backgroundColor: '#ffffff' }}>
+                <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '2px solid #714B67', background: 'linear-gradient(135deg, #714B67 0%, #017E84 100%)' }}>
+                    <div className="flex items-center gap-3">
+                        <Brain className="w-6 h-6 text-white" />
+                        <div>
+                            <h2 className="text-base font-bold text-white">AI End-of-Day Report</h2>
+                            <p className="text-xs text-white/70">Auto-verified checklist, insights & meeting brief</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs px-2.5 py-1 rounded-full font-bold" style={{ backgroundColor: allDone ? '#d1fae5' : '#fef3c7', color: allDone ? '#059669' : '#d97706' }}>
+                            {totalChecked}/{brief.checks.length} Verified
+                        </span>
+                    </div>
+                </div>
+
+                {/* Quick KPI strip */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-0" style={{ borderBottom: '1px solid #dee2e6' }}>
+                    {[
+                        { label: 'Orders', value: brief.keyMetrics.total, color: '#017E84' },
+                        { label: 'Fulfilled', value: `${brief.keyMetrics.fulfillmentRate}%`, color: brief.keyMetrics.fulfillmentRate >= 90 ? '#059669' : '#d97706' },
+                        { label: 'Avg UPH', value: brief.keyMetrics.avgUph, color: '#3b82f6' },
+                        { label: 'SLA Issues', value: brief.keyMetrics.lateOrders, color: brief.keyMetrics.lateOrders > 0 ? '#dc2626' : '#059669' },
+                        { label: 'Low Stock', value: brief.keyMetrics.lowStock, color: brief.keyMetrics.lowStock > 0 ? '#d97706' : '#059669' },
+                    ].map(m => (
+                        <div key={m.label} className="px-4 py-3 text-center" style={{ borderRight: '1px solid #f1f3f5' }}>
+                            <div className="text-xl font-black" style={{ color: m.color }}>{m.value}</div>
+                            <div className="text-[10px] uppercase font-bold" style={{ color: '#6c757d' }}>{m.label}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Auto-verified checklist */}
+                <div className="p-4 space-y-1.5">
+                    {brief.checks.map(c => {
+                        const isAuto = c.pass;
+                        const isManual = checked[c.key];
+                        const isDone = isAuto || isManual;
+                        return (
+                            <div key={c.key} className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors" style={{ backgroundColor: isDone ? '#f0fdf4' : '#fff', border: `1px solid ${isDone ? '#bbf7d0' : '#e9ecef'}` }}>
+                                {isAuto ? (
+                                    <CheckCircle2 className="w-4.5 h-4.5 flex-shrink-0" style={{ color: '#16a34a' }} />
+                                ) : (
+                                    <input type="checkbox" checked={!!isManual} onChange={() => toggle(c.key)} className="w-4 h-4 accent-teal-600 flex-shrink-0" />
+                                )}
+                                <span className="text-sm flex-1" style={{ color: isDone ? '#6c757d' : '#212529', textDecoration: isDone ? 'line-through' : 'none' }}>{c.label}</span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium flex-shrink-0" style={{ backgroundColor: isDone ? '#d1fae5' : '#f8f9fa', color: isDone ? '#059669' : '#6c757d' }}>
+                                    {c.detail}
+                                </span>
+                                {isAuto && <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ backgroundColor: '#eff6ff', color: '#2563eb' }}>AUTO</span>}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
-            <div className="p-4 space-y-2">
-                {checks.map(c => (
-                    <label key={c.key} className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" checked={!!checked[c.key]} onChange={() => toggle(c.key)} className="w-4 h-4 accent-teal-600" />
-                        <span className="text-sm flex-1" style={{ color: checked[c.key] ? '#6c757d' : '#212529', textDecoration: checked[c.key] ? 'line-through' : 'none' }}>{c.label}</span>
-                        {c.auto !== null && <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f0fafb', color: '#017E84' }}>{c.auto}/{c.total}</span>}
-                    </label>
-                ))}
+
+            {/* AI Insights & Issues */}
+            {(brief.insights.length > 0 || brief.issues.length > 0) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Insights */}
+                    <div className="rounded-lg" style={{ border: '1px solid #dee2e6', backgroundColor: '#ffffff' }}>
+                        <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <Star className="w-4 h-4" style={{ color: '#017E84' }} />
+                            <span className="font-semibold text-sm" style={{ color: '#212529' }}>AI Insights</span>
+                        </div>
+                        <div className="p-3 space-y-2">
+                            {brief.insights.map((ins, i) => (
+                                <div key={i} className="flex items-start gap-2 px-3 py-2 rounded" style={{ backgroundColor: ins.type === 'positive' ? '#f0fdf4' : '#f8f9fa' }}>
+                                    {ins.type === 'positive' ? <ThumbsUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#16a34a' }} /> : <Activity className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: '#6c757d' }} />}
+                                    <span className="text-xs" style={{ color: '#374151' }}>{ins.text}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Issues */}
+                    <div className="rounded-lg" style={{ border: `1px solid ${issueCount > 0 ? '#fecaca' : '#dee2e6'}`, backgroundColor: '#ffffff' }}>
+                        <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: issueCount > 0 ? '#fff5f5' : '#f8f9fa' }}>
+                            <div className="flex items-center gap-2">
+                                <AlertOctagon className="w-4 h-4" style={{ color: issueCount > 0 ? '#dc2626' : '#16a34a' }} />
+                                <span className="font-semibold text-sm" style={{ color: '#212529' }}>Issues</span>
+                            </div>
+                            {issueCount > 0 && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>{issueCount}</span>}
+                        </div>
+                        <div className="p-3 space-y-2">
+                            {brief.issues.length > 0 ? brief.issues.map((iss, i) => (
+                                <div key={i} className="px-3 py-2 rounded text-xs" style={{ backgroundColor: sevBg[iss.severity], borderLeft: `3px solid ${sevColor[iss.severity]}`, color: '#374151' }}>
+                                    <span className="font-bold" style={{ color: sevColor[iss.severity] }}>[{iss.severity.toUpperCase()}]</span> {iss.text}
+                                </div>
+                            )) : (
+                                <div className="text-center py-4 text-sm" style={{ color: '#16a34a' }}>
+                                    <CheckCircle2 className="w-8 h-8 mx-auto mb-1" style={{ color: '#16a34a' }} />
+                                    No issues detected
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Recommendations for tomorrow */}
+            <div className="rounded-lg" style={{ border: '1px solid #dee2e6', backgroundColor: '#ffffff' }}>
+                <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                    <MessageSquare className="w-4 h-4" style={{ color: '#714B67' }} />
+                    <span className="font-semibold text-sm" style={{ color: '#212529' }}>Tomorrow's Action Items (Meeting Brief)</span>
+                </div>
+                <div className="p-4 space-y-2">
+                    {brief.recommendations.map((r, i) => (
+                        <div key={i} className="flex items-start gap-3 px-3 py-2 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: '#714B67', color: '#fff' }}>{i + 1}</span>
+                            <span className="text-sm" style={{ color: '#374151' }}>{r}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
+
+            {/* Platform comparison table */}
+            <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #dee2e6', backgroundColor: '#ffffff' }}>
+                <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                    <BarChart2 className="w-4 h-4" style={{ color: '#017E84' }} />
+                    <span className="font-semibold text-sm" style={{ color: '#212529' }}>Platform Comparison</span>
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ backgroundColor: '#f8f9fa' }}>
+                            {['Platform', 'Total', 'Shipped', 'Pending', 'Rate'].map(h => (
+                                <th key={h} style={{ padding: '8px 12px', borderBottom: '1px solid #dee2e6', textAlign: 'left', fontSize: '11px', textTransform: 'uppercase', color: '#6c757d', fontWeight: 700 }}>{h}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.entries(brief.platformStats).map(([p, s]) => (
+                            <tr key={p} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                                <td style={{ padding: '8px 12px', fontWeight: 600, color: '#212529', fontSize: '13px' }}>{p}</td>
+                                <td style={{ padding: '8px 12px', fontSize: '13px' }}>{s.total}</td>
+                                <td style={{ padding: '8px 12px', fontSize: '13px', color: '#059669', fontWeight: 600 }}>{s.shipped}</td>
+                                <td style={{ padding: '8px 12px', fontSize: '13px', color: s.pending > 0 ? '#d97706' : '#6c757d' }}>{s.pending}</td>
+                                <td style={{ padding: '8px 12px' }}>
+                                    <div className="flex items-center gap-2">
+                                        <div style={{ width: 60, height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' }}>
+                                            <div style={{ width: `${s.rate}%`, height: '100%', borderRadius: 3, backgroundColor: s.rate >= 90 ? '#059669' : s.rate >= 70 ? '#d97706' : '#dc2626' }} />
+                                        </div>
+                                        <span style={{ fontSize: '12px', fontWeight: 700, color: s.rate >= 90 ? '#059669' : s.rate >= 70 ? '#d97706' : '#dc2626' }}>{s.rate}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Export buttons */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <button onClick={() => handleGenerate()} disabled={generating}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-colors"
+                        style={{ backgroundColor: '#714B67', color: '#fff', opacity: generating ? 0.6 : 1 }}>
+                        <Brain className="w-4 h-4" />
+                        {generating ? 'Generating...' : 'Generate Full Brief'}
+                    </button>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => exportToCSV(brief)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium"
+                        style={{ backgroundColor: '#f8f9fa', color: '#212529', border: '1px solid #dee2e6' }}>
+                        <FileSpreadsheet className="w-3.5 h-3.5" style={{ color: '#059669' }} /> Export Excel/CSV
+                    </button>
+                    <button onClick={() => exportToPDF(brief)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium"
+                        style={{ backgroundColor: '#f8f9fa', color: '#212529', border: '1px solid #dee2e6' }}>
+                        <FileText className="w-3.5 h-3.5" style={{ color: '#dc2626' }} /> Export PDF
+                    </button>
+                </div>
+            </div>
+
+            {/* Full Brief modal */}
+            {showBrief && (
+                <div className="rounded-lg overflow-hidden" style={{ border: '2px solid #714B67', backgroundColor: '#ffffff' }}>
+                    <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: '#714B67' }}>
+                        <span className="text-sm font-bold text-white flex items-center gap-2"><ClipboardList className="w-4 h-4" /> Meeting Brief — {brief.date}</span>
+                        <button onClick={() => setShowBrief(false)} className="text-white/70 hover:text-white text-sm font-bold px-2">Close</button>
+                    </div>
+                    <div className="p-5 space-y-4">
+                        <div className="px-4 py-3 rounded-lg" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+                            <p className="text-sm font-medium" style={{ color: '#212529' }}>{brief.summary}</p>
+                        </div>
+
+                        <div>
+                            <h4 className="text-xs font-bold uppercase mb-2" style={{ color: '#6c757d' }}>Worker Summary</h4>
+                            <div className="space-y-1">
+                                {brief.workers.map(w => (
+                                    <div key={w.name} className="flex items-center justify-between px-3 py-2 rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                                        <span className="text-sm font-medium" style={{ color: '#212529' }}>{w.name}</span>
+                                        <div className="flex items-center gap-4 text-xs" style={{ color: '#6c757d' }}>
+                                            <span>Pick: <b style={{ color: '#3b82f6' }}>{w.pick}</b></span>
+                                            <span>Pack: <b style={{ color: '#059669' }}>{w.pack}</b></span>
+                                            <span>UPH: <b style={{ color: w.uph >= 50 ? '#059669' : w.uph >= 30 ? '#d97706' : '#dc2626' }}>{w.uph}</b></span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {brief.issues.length > 0 && (
+                            <div>
+                                <h4 className="text-xs font-bold uppercase mb-2" style={{ color: '#dc2626' }}>Open Issues</h4>
+                                {brief.issues.map((iss, i) => (
+                                    <p key={i} className="text-sm mb-1" style={{ color: '#374151' }}>
+                                        <span className="font-bold" style={{ color: sevColor[iss.severity] }}>[{iss.severity.toUpperCase()}]</span> {iss.text}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
+
+                        <div>
+                            <h4 className="text-xs font-bold uppercase mb-2" style={{ color: '#714B67' }}>Action Items for Tomorrow</h4>
+                            {brief.recommendations.map((r, i) => (
+                                <p key={i} className="text-sm mb-1" style={{ color: '#374151' }}><b>{i + 1}.</b> {r}</p>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -850,7 +1319,7 @@ const MorningBriefing = ({ salesOrders }) => {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus, apiConfigs }) {
+export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus, apiConfigs, activityLogs, inventory, users, orders }) {
     const [syncStates, setSyncStates] = useState(() => initSyncState(apiConfigs));
     const [view, setView] = useState('monitor'); // monitor | morning | eod | reports
 
@@ -970,7 +1439,7 @@ export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus
 
                 {view === 'morning' && <div className="max-w-2xl"><MorningBriefing salesOrders={salesOrders} /></div>}
 
-                {view === 'eod' && <div className="max-w-2xl"><EODChecklist salesOrders={salesOrders} /></div>}
+                {view === 'eod' && <div className="max-w-4xl"><EODChecklist salesOrders={salesOrders} activityLogs={activityLogs} inventory={inventory} users={users} /></div>}
             </div>
         </div>
     );

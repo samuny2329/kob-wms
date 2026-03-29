@@ -33,12 +33,24 @@
 //                        Methods: search_read
 //
 // MASTER DATA:
-//   product.product     — id, name, default_code (SKU), barcode, lst_price, uom_id, active
+//   product.product     — id, name, default_code (SKU), barcode, lst_price, uom_id, active,
+//                        categ_id, detailed_type, tracking, standard_price, taxes_id,
+//                        supplier_taxes_id, weight, volume, description, description_sale,
+//                        description_purchase, image_1920, seller_ids,
+//                        qty_available, virtual_available, incoming_qty, outgoing_qty
 //                        Methods: search_read, read
+//   product.supplierinfo — partner_id, price, min_qty, delay, date_start, date_end,
+//                          currency_id, product_id, product_tmpl_id
+//                          Methods: search_read
 //   res.partner         — id, name, customer_rank
 //                        Methods: search_read, create
 //   crm.team            — id, name
 //                        Methods: search_read
+//
+// REORDER RULES:
+//   stock.warehouse.orderpoint — product_id, location_id, product_min_qty, product_max_qty,
+//                                qty_to_order, trigger, active
+//                                Methods: search_read, create, write
 //
 // WIZARDS:
 //   sale.advance.payment.inv      — advance_payment_method, sale_order_ids
@@ -52,6 +64,8 @@
 //   Network: wms-pro-network (bridge 172.28.0.0/16)
 //   CI/CD: GitHub Actions → Lint → Build → Docker Push (GHCR) → Deploy SSH → Health Check
 // ──────────────────────────────────────────────────────────────────────
+
+import { getCSRFToken, auditLog } from '../utils/security';
 
 const API_TIMEOUT = 8000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -87,7 +101,7 @@ export const authenticateOdoo = async (odooConfig) => {
         // Use Odoo's standard JSONRPC auth endpoint (proxied via Vite /web/session/*)
         const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/web/session/authenticate`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
             credentials: 'include',
             body: JSON.stringify({
                 jsonrpc: '2.0',
@@ -118,7 +132,7 @@ const odooPost = async (odooConfig, endpoint, params = {}) => {
     const url = `${getOdooBase(odooConfig)}${endpoint}`;
     const response = await fetchWithTimeout(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
         credentials: 'include',
         body: JSON.stringify({ params })
     });
@@ -130,7 +144,7 @@ const odooPost = async (odooConfig, endpoint, params = {}) => {
             await authenticateOdoo(odooConfig);
             const retry = await fetchWithTimeout(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
                 credentials: 'include',
                 body: JSON.stringify({ params })
             });
@@ -1168,5 +1182,440 @@ export const fetchStockHistory = async (odooConfig, productId, locationKeywords 
     } catch (e) {
         console.warn('fetchStockHistory error:', e);
         return null;
+    }
+};
+
+// ============ INVENTORY — FULL ODOO INTEGRATION ============
+
+// Fetch full product detail (General Information tab)
+export const fetchProductDetail = async (odooConfig, productId) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        return {
+            id: productId, name: 'Mock Product', default_code: 'MOCK-001', barcode: '8859139111901',
+            categ_id: [1, 'Skincare'], detailed_type: 'product', tracking: 'lot',
+            list_price: 350, standard_price: 189, taxes_id: [[1, '7% Output VAT']],
+            supplier_taxes_id: [[1, '7% Input VAT']], uom_id: [1, 'Units'],
+            weight: 0.15, volume: 0.0002, description: '', description_sale: '',
+            description_purchase: '', image_1920: false, seller_ids: [],
+            qty_available: 450, virtual_available: 420, incoming_qty: 100, outgoing_qty: 130,
+        };
+    }
+    try {
+        const result = await odooCallKw(odooConfig, 'product.product', 'read',
+            [[productId]],
+            { fields: [
+                'id', 'name', 'default_code', 'barcode', 'categ_id', 'detailed_type',
+                'tracking', 'list_price', 'standard_price', 'taxes_id', 'supplier_taxes_id',
+                'uom_id', 'weight', 'volume', 'description', 'description_sale',
+                'description_purchase', 'image_1920', 'seller_ids',
+                'qty_available', 'virtual_available', 'incoming_qty', 'outgoing_qty',
+            ] }
+        );
+        return result?.[0] || null;
+    } catch (e) {
+        console.warn('fetchProductDetail error:', e);
+        return null;
+    }
+};
+
+// Fetch supplier/vendor info for a product
+export const fetchSupplierInfo = async (odooConfig, productId) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        return [
+            { id: 1, partner_id: [1, 'Cosmax Thailand'], price: 120, min_qty: 500, delay: 14, currency_id: [1, 'THB'] },
+            { id: 2, partner_id: [2, 'Thai Packaging Co.'], price: 135, min_qty: 200, delay: 7, currency_id: [1, 'THB'] },
+        ];
+    }
+    try {
+        return await odooCallKw(odooConfig, 'product.supplierinfo', 'search_read',
+            [[['product_id', '=', productId]]],
+            { fields: ['partner_id', 'price', 'min_qty', 'delay', 'date_start', 'date_end', 'currency_id'] }
+        );
+    } catch (e) {
+        console.warn('fetchSupplierInfo error:', e);
+        return [];
+    }
+};
+
+// Fetch recent sales history for a product
+export const fetchSalesHistory = async (odooConfig, productId, limit = 20) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        const now = Date.now();
+        const day = 86400000;
+        return [
+            { order_id: [1, 'S00045'], product_uom_qty: 5, price_unit: 350, price_subtotal: 1750, create_date: new Date(now - 1 * day).toISOString() },
+            { order_id: [2, 'S00038'], product_uom_qty: 10, price_unit: 340, price_subtotal: 3400, create_date: new Date(now - 3 * day).toISOString() },
+            { order_id: [3, 'S00029'], product_uom_qty: 3, price_unit: 350, price_subtotal: 1050, create_date: new Date(now - 7 * day).toISOString() },
+            { order_id: [4, 'S00021'], product_uom_qty: 8, price_unit: 345, price_subtotal: 2760, create_date: new Date(now - 14 * day).toISOString() },
+        ];
+    }
+    try {
+        return await odooCallKw(odooConfig, 'sale.order.line', 'search_read',
+            [[['product_id', '=', productId], ['state', 'in', ['sale', 'done']]]],
+            { fields: ['order_id', 'product_uom_qty', 'price_unit', 'price_subtotal', 'create_date'], order: 'create_date desc', limit }
+        );
+    } catch (e) {
+        console.warn('fetchSalesHistory error:', e);
+        return [];
+    }
+};
+
+// Fetch stock breakdown by ALL locations for a product
+export const fetchStockByLocation = async (odooConfig, productId) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        return [
+            { location_id: [1, 'WH/Stock/PICKFACE/A-01-01'], lot_id: [1, 'LOT-2026-001'], quantity: 200, reserved_quantity: 10 },
+            { location_id: [1, 'WH/Stock/PICKFACE/A-01-01'], lot_id: [2, 'LOT-2026-002'], quantity: 250, reserved_quantity: 2 },
+            { location_id: [2, 'WH/Stock/BULK'], lot_id: [3, 'LOT-2026-003'], quantity: 500, reserved_quantity: 0 },
+            { location_id: [3, 'WH2/Stock'], lot_id: false, quantity: 120, reserved_quantity: 0 },
+        ];
+    }
+    try {
+        return await odooCallKw(odooConfig, 'stock.quant', 'search_read',
+            [[['product_id', '=', productId], ['location_id.usage', '=', 'internal']]],
+            { fields: ['location_id', 'lot_id', 'quantity', 'reserved_quantity'] }
+        );
+    } catch (e) {
+        console.warn('fetchStockByLocation error:', e);
+        return [];
+    }
+};
+
+// Fetch stock forecast (available, incoming, outgoing, future moves)
+export const fetchStockForecast = async (odooConfig, productId) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        return {
+            qty_available: 450, virtual_available: 420, incoming_qty: 100, outgoing_qty: 130,
+            upcoming_moves: [
+                { date: new Date(Date.now() + 2 * 86400000).toISOString(), product_uom_qty: 50, state: 'assigned', origin: 'WH/IN/00055', direction: 'in' },
+                { date: new Date(Date.now() + 1 * 86400000).toISOString(), product_uom_qty: 30, state: 'confirmed', origin: 'WH/OUT/00130', direction: 'out' },
+                { date: new Date(Date.now() + 3 * 86400000).toISOString(), product_uom_qty: 50, state: 'assigned', origin: 'WH/IN/00058', direction: 'in' },
+                { date: new Date(Date.now() + 5 * 86400000).toISOString(), product_uom_qty: 100, state: 'confirmed', origin: 'WH/OUT/00145', direction: 'out' },
+            ],
+        };
+    }
+    try {
+        const product = await odooCallKw(odooConfig, 'product.product', 'read',
+            [[productId]], { fields: ['qty_available', 'virtual_available', 'incoming_qty', 'outgoing_qty'] }
+        );
+        const moves = await odooCallKw(odooConfig, 'stock.move', 'search_read',
+            [[['product_id', '=', productId], ['state', 'in', ['confirmed', 'assigned', 'waiting']]]],
+            { fields: ['date', 'product_uom_qty', 'location_id', 'location_dest_id', 'state', 'origin'], order: 'date asc', limit: 20 }
+        );
+        const p = product?.[0] || {};
+        return {
+            qty_available: p.qty_available || 0,
+            virtual_available: p.virtual_available || 0,
+            incoming_qty: p.incoming_qty || 0,
+            outgoing_qty: p.outgoing_qty || 0,
+            upcoming_moves: (moves || []).map(m => ({
+                date: m.date, product_uom_qty: m.product_uom_qty, state: m.state, origin: m.origin || '—',
+                direction: (m.location_dest_id?.[1] || '').includes('Virtual') || (m.location_dest_id?.[1] || '').includes('Customer') ? 'out' : 'in',
+            })),
+        };
+    } catch (e) {
+        console.warn('fetchStockForecast error:', e);
+        return { qty_available: 0, virtual_available: 0, incoming_qty: 0, outgoing_qty: 0, upcoming_moves: [] };
+    }
+};
+
+// Fetch full inventory — ALL internal locations (no whitelist filter)
+export const fetchFullInventory = async (odooConfig) => {
+    if (isMock(odooConfig)) {
+        await delay(300);
+        // Return mock data with multiple locations
+        return [
+            { sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml', shortName: 'Refill Toner Pad (Dewy)', location: 'PICKFACE/A-01-01', onHand: 450, reserved: 12, available: 438, unitCost: 189, reorderPoint: 50, lots: [
+                { lotNumber: 'LOT-2026-001', expiryDate: '2027-06-15', qty: 200, receivedDate: '2026-01-10' },
+                { lotNumber: 'LOT-2026-002', expiryDate: '2027-09-20', qty: 250, receivedDate: '2026-02-28' },
+            ]},
+            { sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml', shortName: 'Refill Toner Pad (Dewy)', location: 'WH/Stock/BULK', onHand: 2000, reserved: 0, available: 2000, unitCost: 189, reorderPoint: 200, lots: [
+                { lotNumber: 'LOT-2026-010', expiryDate: '2028-01-15', qty: 2000, receivedDate: '2026-03-01' },
+            ]},
+            { sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml (Bright & Glow)', shortName: 'Toner Pad Refill (Bright)', location: 'PICKFACE/A-01-02', onHand: 320, reserved: 6, available: 314, unitCost: 199, reorderPoint: 40, lots: [
+                { lotNumber: 'LOT-2026-003', expiryDate: '2027-08-01', qty: 320, receivedDate: '2026-02-15' },
+            ]},
+            { sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml (Bright & Glow)', shortName: 'Toner Pad Refill (Bright)', location: 'WH/Stock/BULK', onHand: 1500, reserved: 0, available: 1500, unitCost: 199, reorderPoint: 200, lots: [] },
+            { sku: 'SWB700', name: 'SKINOXY Body Wash 700ml (Brightening)', shortName: 'Body Wash (Bright)', location: 'PICKFACE/B-02-01', onHand: 180, reserved: 4, available: 176, unitCost: 259, reorderPoint: 30, lots: [
+                { lotNumber: 'LOT-2025-010', expiryDate: '2027-03-10', qty: 80, receivedDate: '2025-09-20' },
+                { lotNumber: 'LOT-2026-004', expiryDate: '2027-12-01', qty: 100, receivedDate: '2026-03-01' },
+            ]},
+            { sku: 'SWB700', name: 'SKINOXY Body Wash 700ml (Brightening)', shortName: 'Body Wash (Bright)', location: 'WH/Stock/BULK', onHand: 800, reserved: 0, available: 800, unitCost: 259, reorderPoint: 100, lots: [] },
+            { sku: 'SWH700', name: 'SKINOXY Body Wash 700ml (Hydrating)', shortName: 'Body Wash (Hydra)', location: 'PICKFACE/B-02-02', onHand: 95, reserved: 5, available: 90, unitCost: 259, reorderPoint: 30, lots: [] },
+            { sku: 'SWH700', name: 'SKINOXY Body Wash 700ml (Hydrating)', shortName: 'Body Wash (Hydra)', location: 'WH/Stock/BULK', onHand: 600, reserved: 0, available: 600, unitCost: 259, reorderPoint: 100, lots: [] },
+        ];
+    }
+    // Live: fetch ALL stock.quant without location whitelist
+    const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
+        [[['location_id.usage', '=', 'internal']]],
+        { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'], limit: 5000 }
+    );
+    // Group by product + location (preserve per-location rows)
+    const grouped = {};
+    for (const q of quants) {
+        const key = `${q.product_id[0]}_${q.location_id[0]}`;
+        if (!grouped[key]) {
+            grouped[key] = { productId: q.product_id[0], name: q.product_id[1], location: q.location_id[1], onHand: 0, reserved: 0, lots: [] };
+        }
+        grouped[key].onHand += q.quantity;
+        grouped[key].reserved += q.reserved_quantity;
+        if (q.lot_id) grouped[key].lots.push({ lotNumber: q.lot_id[1], qty: q.quantity });
+    }
+    const productIds = [...new Set(Object.values(grouped).map(g => g.productId))];
+    let skuMap = {};
+    let costMap = {};
+    if (productIds.length > 0) {
+        const products = await odooCallKw(odooConfig, 'product.product', 'read',
+            [productIds], { fields: ['id', 'default_code', 'standard_price'] }
+        );
+        for (const p of products) { skuMap[p.id] = p.default_code || ''; costMap[p.id] = p.standard_price || 0; }
+    }
+    return Object.values(grouped).map(g => ({
+        ...g, sku: skuMap[g.productId] || g.name, shortName: skuMap[g.productId] || '',
+        available: g.onHand - g.reserved, unitCost: costMap[g.productId] || 0, reorderPoint: 10,
+    }));
+};
+
+// Fetch reorder rules (stock.warehouse.orderpoint)
+export const fetchReorderRules = async (odooConfig, productId = null) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        const stored = JSON.parse(localStorage.getItem('wms_reorder_rules') || 'null');
+        if (stored) return productId ? stored.filter(r => r.product_id?.[0] === productId) : stored;
+        return [
+            { id: 1, product_id: [1, 'Refill Toner Pad (Dewy)'], location_id: [1, 'PICKFACE'], product_min_qty: 50, product_max_qty: 200, qty_to_order: 0, trigger: 'auto', sku: 'STDH080-REFILL' },
+            { id: 2, product_id: [2, 'Toner Pad Refill (Bright)'], location_id: [1, 'PICKFACE'], product_min_qty: 40, product_max_qty: 150, qty_to_order: 0, trigger: 'auto', sku: 'STBG080-REFILL' },
+            { id: 3, product_id: [3, 'Body Wash (Bright)'], location_id: [1, 'PICKFACE'], product_min_qty: 30, product_max_qty: 100, qty_to_order: 0, trigger: 'auto', sku: 'SWB700' },
+        ];
+    }
+    try {
+        const domain = [['active', '=', true]];
+        if (productId) domain.push(['product_id', '=', productId]);
+        return await odooCallKw(odooConfig, 'stock.warehouse.orderpoint', 'search_read',
+            [domain],
+            { fields: ['product_id', 'location_id', 'product_min_qty', 'product_max_qty', 'qty_to_order', 'trigger'] }
+        );
+    } catch (e) {
+        console.warn('fetchReorderRules error:', e);
+        return [];
+    }
+};
+
+// Create reorder rule
+export const createReorderRule = async (odooConfig, { productId, locationId, minQty, maxQty }) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        const rules = JSON.parse(localStorage.getItem('wms_reorder_rules') || '[]');
+        const newRule = { id: Date.now(), product_id: [productId, ''], location_id: [locationId, ''], product_min_qty: minQty, product_max_qty: maxQty, qty_to_order: 0, trigger: 'auto' };
+        rules.push(newRule);
+        localStorage.setItem('wms_reorder_rules', JSON.stringify(rules));
+        return newRule;
+    }
+    try {
+        const id = await odooCallKw(odooConfig, 'stock.warehouse.orderpoint', 'create',
+            [{ product_id: productId, location_id: locationId, product_min_qty: minQty, product_max_qty: maxQty }]
+        );
+        return { id };
+    } catch (e) {
+        console.warn('createReorderRule error:', e);
+        return null;
+    }
+};
+
+// Update reorder rule
+export const updateReorderRule = async (odooConfig, ruleId, { minQty, maxQty }) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        const rules = JSON.parse(localStorage.getItem('wms_reorder_rules') || '[]');
+        const idx = rules.findIndex(r => r.id === ruleId);
+        if (idx >= 0) { rules[idx].product_min_qty = minQty; rules[idx].product_max_qty = maxQty; }
+        localStorage.setItem('wms_reorder_rules', JSON.stringify(rules));
+        return true;
+    }
+    try {
+        await odooCallKw(odooConfig, 'stock.warehouse.orderpoint', 'write',
+            [[ruleId], { product_min_qty: minQty, product_max_qty: maxQty }]
+        );
+        return true;
+    } catch (e) {
+        console.warn('updateReorderRule error:', e);
+        return false;
+    }
+};
+
+// Create internal transfer (Bulk → PICKFACE or any location)
+export const createInternalTransfer = async (odooConfig, { srcLocationId, destLocationId, lines }) => {
+    if (isMock(odooConfig)) {
+        await delay(400);
+        return {
+            status: 'success',
+            picking_id: `WH/INT/${Date.now().toString().slice(-5)}`,
+            state: 'done',
+            lines: lines.map(l => ({ ...l, status: 'done' })),
+        };
+    }
+    try {
+        // Find internal picking type
+        const pickTypes = await odooCallKw(odooConfig, 'stock.picking.type', 'search_read',
+            [[['code', '=', 'internal']]], { fields: ['id', 'name'], limit: 1 }
+        );
+        if (!pickTypes?.length) throw new Error('No internal picking type found');
+        const pickTypeId = pickTypes[0].id;
+
+        // Create picking
+        const pickingId = await odooCallKw(odooConfig, 'stock.picking', 'create', [{
+            picking_type_id: pickTypeId,
+            location_id: srcLocationId,
+            location_dest_id: destLocationId,
+        }]);
+
+        // Create moves for each line
+        for (const line of lines) {
+            await odooCallKw(odooConfig, 'stock.move', 'create', [{
+                picking_id: pickingId,
+                product_id: line.productId,
+                product_uom_qty: line.qty,
+                name: line.name || 'Internal Transfer',
+                location_id: srcLocationId,
+                location_dest_id: destLocationId,
+            }]);
+        }
+
+        // Confirm
+        await odooCallKw(odooConfig, 'stock.picking', 'action_confirm', [[pickingId]]);
+
+        // Set qty_done on move lines
+        const moveLines = await odooCallKw(odooConfig, 'stock.move.line', 'search_read',
+            [[['picking_id', '=', pickingId]]], { fields: ['id', 'quantity'] }
+        );
+        for (const ml of moveLines) {
+            await odooCallKw(odooConfig, 'stock.move.line', 'write', [[ml.id], { qty_done: ml.quantity || ml.product_uom_qty }]);
+        }
+
+        // Validate (with wizard handling like existing code)
+        try {
+            await odooCallKw(odooConfig, 'stock.picking', 'button_validate', [[pickingId]]);
+        } catch (wizardError) {
+            // Handle immediate transfer wizard
+            try {
+                const wizId = await odooCallKw(odooConfig, 'stock.immediate.transfer', 'create', [{ pick_ids: [pickingId] }]);
+                await odooCallKw(odooConfig, 'stock.immediate.transfer', 'process', [[wizId]]);
+            } catch (_) { /* ignore wizard errors */ }
+        }
+
+        return { status: 'success', picking_id: pickingId, state: 'done' };
+    } catch (e) {
+        console.warn('createInternalTransfer error:', e);
+        return { status: 'error', error: e.message };
+    }
+};
+
+// ============ GWP (Gift With Purchase) ============
+
+// Fetch product categories from Odoo
+export const fetchProductCategories = async (odooConfig) => {
+    if (isMock(odooConfig)) {
+        await delay(150);
+        return [
+            { id: 1, name: 'All', complete_name: 'All' },
+            { id: 2, name: 'Consumable', complete_name: 'All / Consumable' },
+            { id: 3, name: 'GWP', complete_name: 'All / GWP' },
+            { id: 4, name: 'Sample', complete_name: 'All / GWP / Sample' },
+            { id: 5, name: 'Gift', complete_name: 'All / GWP / Gift' },
+            { id: 6, name: 'Accessory', complete_name: 'All / GWP / Accessory' },
+        ];
+    }
+    try {
+        return await odooCallKw(odooConfig, 'product.category', 'search_read',
+            [[]], { fields: ['id', 'name', 'complete_name', 'parent_id'], limit: 200 }
+        );
+    } catch (e) {
+        console.warn('fetchProductCategories error:', e);
+        return [];
+    }
+};
+
+// Fetch all brands from existing products (distinct values)
+export const fetchProductBrands = async (odooConfig) => {
+    if (isMock(odooConfig)) {
+        await delay(100);
+        return ['SKINOXY', 'KISS-MY-BODY'];
+    }
+    try {
+        // Read product_brand or use product template brand field
+        // Odoo 18 may have product_brand_id on product.template
+        const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
+            [[['active', '=', true]]], { fields: ['product_brand_id'], limit: 500 }
+        );
+        const brands = [...new Set(products.filter(p => p.product_brand_id).map(p => p.product_brand_id[1]))];
+        return brands.length > 0 ? brands : ['SKINOXY', 'KISS-MY-BODY'];
+    } catch {
+        return ['SKINOXY', 'KISS-MY-BODY'];
+    }
+};
+
+// Create a GWP product in Odoo
+export const createGWPProduct = async (odooConfig, { name, sku, barcode, categoryId, weight, listPrice, description }) => {
+    if (isMock(odooConfig)) {
+        await delay(300);
+        return { status: 'success', id: 90000 + Math.floor(Math.random() * 9999), sku };
+    }
+    try {
+        const productData = {
+            name,
+            default_code: sku,
+            barcode: barcode || false,
+            detailed_type: 'product',  // storable product
+            categ_id: categoryId || false,
+            lst_price: listPrice || 0,
+            standard_price: 0,
+            weight: weight || 0,
+            active: true,
+            description_sale: description || '',
+        };
+        const productId = await odooCallKw(odooConfig, 'product.product', 'create', [productData]);
+        return { status: 'success', id: productId, sku };
+    } catch (e) {
+        console.warn('createGWPProduct error:', e);
+        return { status: 'error', error: e.message };
+    }
+};
+
+// Update initial stock for a GWP product via stock.quant
+export const setGWPInitialStock = async (odooConfig, { productId, locationId, qty }) => {
+    if (isMock(odooConfig)) {
+        await delay(200);
+        return { status: 'success' };
+    }
+    try {
+        // Use inventory adjustment (stock.quant with inventory_quantity)
+        const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
+            [[['product_id', '=', productId], ['location_id', '=', locationId]]],
+            { fields: ['id', 'quantity'], limit: 1 }
+        );
+        if (quants.length > 0) {
+            // Update existing quant
+            await odooCallKw(odooConfig, 'stock.quant', 'write',
+                [[quants[0].id], { inventory_quantity: qty }]
+            );
+            await odooCallKw(odooConfig, 'stock.quant', 'action_apply_inventory', [[quants[0].id]]);
+        } else {
+            // Create new quant via inventory adjustment
+            const quantId = await odooCallKw(odooConfig, 'stock.quant', 'create', [{
+                product_id: productId,
+                location_id: locationId,
+                inventory_quantity: qty,
+            }]);
+            await odooCallKw(odooConfig, 'stock.quant', 'action_apply_inventory', [[quantId]]);
+        }
+        return { status: 'success' };
+    } catch (e) {
+        console.warn('setGWPInitialStock error:', e);
+        return { status: 'error', error: e.message };
     }
 };
