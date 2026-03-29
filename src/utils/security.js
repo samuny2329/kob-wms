@@ -2,13 +2,42 @@
 
 // ── Password Hashing (SHA-256 based — for client-side, production should use bcrypt server-side) ──
 // Uses Web Crypto API for browser-native hashing
+// Falls back to simple hash when crypto.subtle unavailable (HTTP on LAN)
 const SALT_PREFIX = 'wms_pro_v1_';
 
+function simpleSha256Fallback(str) {
+  // Simple hash for non-secure contexts (LAN HTTP access)
+  // Not cryptographically secure — production should use HTTPS
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Expand to 64-char hex to match SHA-256 format
+  const base = Math.abs(hash).toString(16).padStart(8, '0');
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    let segment = 0;
+    for (let j = 0; j < base.length; j++) {
+      segment = ((segment << 3) - segment) + base.charCodeAt((j + i * 3) % base.length) + i * 7;
+      segment = segment & segment;
+    }
+    result += Math.abs(segment).toString(16).padStart(8, '0');
+  }
+  return result.slice(0, 64);
+}
+
 export async function hashPassword(password) {
-  const data = new TextEncoder().encode(SALT_PREFIX + password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const salted = SALT_PREFIX + password;
+  if (crypto?.subtle) {
+    const data = new TextEncoder().encode(salted);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  // Fallback for non-secure contexts (HTTP on LAN)
+  return simpleSha256Fallback(salted);
 }
 
 export async function verifyPassword(password, hash) {

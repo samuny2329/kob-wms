@@ -1068,7 +1068,7 @@ window.onload=function(){
                     {activeTab === 'cycleCount' && <CycleCount inventory={inventory} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} user={user} users={users} logActivity={logActivity} />}
                     {activeTab === 'sorting' && <Sorting salesOrders={salesOrders} waves={waves} setWaves={setWaves} addToast={addToast} />}
                     {activeTab === 'fulfillment' && <Fulfillment salesOrders={salesOrders} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} addToast={addToast} />}
-                    {activeTab === 'platformMonitor' && <PlatformMonitor salesOrders={salesOrders} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} />}
+                    {activeTab === 'platformMonitor' && <PlatformMonitor salesOrders={salesOrders} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} activityLogs={activityLogs} inventory={inventory} users={users} orders={orderData} />}
                     {activeTab === 'invoice' && <Invoice invoices={invoices} setInvoices={setInvoices} salesOrders={salesOrders} addToast={addToast} />}
                     {activeTab === 'settings' && <Settings t={t} language={language} setLanguage={setLanguage} userRole={userRole} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} workDate={workDate} setWorkDate={setWorkDate} triggerConfirm={triggerConfirm} updateAndSyncData={updateAndSyncData} showAlert={showAlert} syncStatus={syncStatus} />}
                     {activeTab === 'teamPerformance' && <TeamPerformance activityLogs={activityLogs} orders={orderData} users={users} t={t} onSelectWorker={(w) => setSelectedWorker(w)} workerOkrData={workerOkrData} />}

@@ -386,7 +386,7 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
 
                         {/* ── VIEW: Scorecard (default) ── */}
                         {okrView === 'scorecard' && (
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
                                 {roles.map(roleKey => {
                                     const rc = ROLE_KPI_CONFIG[roleKey];
                                     if (!rc?.keyResults) return null;
@@ -395,41 +395,50 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                                     const roleLogs = workerStats.length > 0 ? todayLogs.filter(l => roleWorkers.some(w => w.username === l.username)) : [];
                                     const teamOkr = computeOkrResults(roleKey, roleLogs, orders || []);
                                     return (
-                                        <div key={roleKey} className="bg-slate-800/60 rounded-lg border border-slate-700 overflow-hidden">
-                                            <div className="px-4 py-3 flex items-center gap-3" style={{ borderBottom: `2px solid ${rc.color}33` }}>
-                                                <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: rc.color + '22', color: rc.color }}>{rc.label.charAt(0)}</span>
-                                                <div className="flex-1">
-                                                    <div className="text-xs font-bold" style={{ color: rc.color }}>{rc.label}</div>
-                                                    <div className="text-[10px] text-slate-400">{rc.objective}</div>
+                                        <div key={roleKey} className="bg-slate-800/60 rounded-xl border border-slate-700 overflow-hidden flex flex-col">
+                                            {/* Role header with score */}
+                                            <div className="px-4 py-3 flex items-center gap-3" style={{ borderBottom: `2px solid ${rc.color}44` }}>
+                                                <span className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black" style={{ backgroundColor: rc.color + '22', color: rc.color }}>
+                                                    {rc.label.charAt(0)}
+                                                </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-bold truncate" style={{ color: rc.color }}>{rc.label}</div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-lg font-black" style={{ color: teamOkr.grade.color }}>{teamOkr.totalScore}%</span>
-                                                    <div className="text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 text-center" style={{ backgroundColor: teamOkr.grade.bg, color: teamOkr.grade.color }}>{teamOkr.grade.grade} — {teamOkr.grade.label}</div>
+                                                <div className="text-center">
+                                                    <span className="text-2xl font-black" style={{ color: teamOkr.grade.color }}>{teamOkr.totalScore}%</span>
+                                                    <div className="text-[8px] font-bold px-1.5 py-0.5 rounded mt-0.5" style={{ backgroundColor: teamOkr.grade.bg, color: teamOkr.grade.color }}>{teamOkr.grade.grade}</div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 py-3 space-y-2.5">
-                                                {teamOkr.results.map(kr => (
-                                                    <div key={kr.key}>
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-slate-700 text-slate-400">{Math.round(kr.weight * 100)}%</span>
-                                                                <span className="text-xs text-slate-300">{kr.label}</span>
+
+                                            {/* Compact KR bars */}
+                                            <div className="px-3 py-2.5 space-y-2 flex-1">
+                                                {teamOkr.results.slice(0, 5).map(kr => {
+                                                    const barColor = kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444';
+                                                    return (
+                                                        <div key={kr.key}>
+                                                            <div className="flex items-center justify-between mb-0.5">
+                                                                <span className="text-[10px] text-slate-400 truncate flex-1">{kr.label}</span>
+                                                                <span className="text-[10px] font-bold ml-2" style={{ color: barColor }}>{kr.score}%</span>
                                                             </div>
-                                                            <span className="text-[10px] font-bold" style={{ color: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }}>{kr.actual} / {kr.target} — {kr.score}%</span>
+                                                            <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+                                                                <div className="h-full rounded-full" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: barColor, transition: 'width 0.5s' }} />
+                                                            </div>
                                                         </div>
-                                                        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }} />
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
-                                            <div className="px-4 py-2 border-t border-slate-700 bg-slate-800/40">
+
+                                            {/* Workers */}
+                                            <div className="px-3 py-2 border-t border-slate-700/60 bg-slate-800/30 space-y-0.5">
                                                 {roleWorkers.map(w => (
-                                                    <div key={w.username} className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-slate-700/50 rounded px-1" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
-                                                        <span className="text-xs text-slate-300">{w.name}</span>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xs font-bold" style={{ color: getGaugeColor(w.uph) }}>{w.uph} UPH</span>
-                                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.okr.grade.bg, color: w.okr.grade.color }}>{w.okr.grade.grade}</span>
+                                                    <div key={w.username} className="flex items-center justify-between py-1 cursor-pointer hover:bg-slate-700/40 rounded px-1.5 -mx-1.5" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ backgroundColor: rc.color }}>{w.name?.charAt(0)}</span>
+                                                            <span className="text-[11px] text-slate-300">{w.name}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-[10px] font-bold" style={{ color: getGaugeColor(w.uph) }}>{w.uph}</span>
+                                                            <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ backgroundColor: w.okr.grade.bg, color: w.okr.grade.color }}>{w.okr.grade.grade}</span>
                                                         </div>
                                                     </div>
                                                 ))}

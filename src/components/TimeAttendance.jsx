@@ -304,7 +304,7 @@ const TimeAttendance = ({ users = [], user, userRole: userRoleProp, addToast }) 
                         <Clock className="w-6 h-6 text-purple-600" />
                         Time & Attendance
                     </h2>
-                    <p className="text-sm text-gray-500">Clock in/out, shifts, and attendance tracking</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Clock in/out, shifts, and attendance tracking</p>
                 </div>
 
                 {/* Clock In/Out button */}
@@ -528,17 +528,17 @@ const TimeAttendance = ({ users = [], user, userRole: userRoleProp, addToast }) 
                                         <label className="text-[10px] font-medium text-gray-500 uppercase">Name</label>
                                         <input type="text" value={customShift.label} onChange={e => setCustomShift(p => ({ ...p, label: e.target.value }))}
                                             placeholder="e.g. Night"
-                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" />
+                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" />
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-medium text-gray-500 uppercase">Start</label>
                                         <input type="time" value={customShift.start} onChange={e => setCustomShift(p => ({ ...p, start: e.target.value }))}
-                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" />
+                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" />
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-medium text-gray-500 uppercase">End</label>
                                         <input type="time" value={customShift.end} onChange={e => setCustomShift(p => ({ ...p, end: e.target.value }))}
-                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" />
+                                            className="w-full px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" />
                                     </div>
                                     <div className="flex gap-1">
                                         <button onClick={() => {

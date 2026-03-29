@@ -181,73 +181,75 @@ const HandheldLayout = ({
                         </div>
                     )}
 
-                    {/* PICK */}
-                    <button
-                        onClick={() => setScreen('pick')}
-                        className="flex-1 min-h-[130px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/20 border-2 border-[#714B67] active:scale-95 transition-all"
-                    >
-                        <div className="w-14 h-14 rounded-2xl bg-[#714B67] flex items-center justify-center">
-                            <ShoppingCart className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-black text-xl text-white">PICK</p>
-                            <p className="text-xs mt-0.5">
-                                {pendingPick > 0
-                                    ? <span className="text-amber-400 font-bold">{pendingPick} orders pending Pick</span>
-                                    : <span className="text-zinc-500">No tasks</span>
-                                }
-                            </p>
-                        </div>
-                    </button>
+                    {/* PICK & PACK — equal row */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={() => setScreen('pick')}
+                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/20 border-2 border-[#714B67] active:scale-95 transition-all"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-[#714B67] flex items-center justify-center">
+                                <ShoppingCart className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-xl text-white">PICK</p>
+                                <p className="text-[10px] mt-0.5">
+                                    {pendingPick > 0
+                                        ? <span className="text-amber-400 font-bold">{pendingPick} pending</span>
+                                        : <span className="text-zinc-500">No tasks</span>
+                                    }
+                                </p>
+                            </div>
+                        </button>
 
-                    {/* PACK */}
-                    <button
-                        onClick={() => setScreen('pack')}
-                        className="flex-1 min-h-[130px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/10 border-2 border-[#00A09D] active:scale-95 transition-all"
-                    >
-                        <div className="w-14 h-14 rounded-2xl bg-[#00A09D] flex items-center justify-center">
-                            <Package className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-black text-xl text-white">PACK</p>
-                            <p className="text-xs mt-0.5">
-                                {readyPack > 0
-                                    ? <span className="text-emerald-400 font-bold">{readyPack} orders pending Pack</span>
-                                    : <span className="text-zinc-500">No tasks</span>
-                                }
-                            </p>
-                        </div>
-                    </button>
+                        <button
+                            onClick={() => setScreen('pack')}
+                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/10 border-2 border-[#00A09D] active:scale-95 transition-all"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-[#00A09D] flex items-center justify-center">
+                                <Package className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-xl text-white">PACK</p>
+                                <p className="text-[10px] mt-0.5">
+                                    {readyPack > 0
+                                        ? <span className="text-emerald-400 font-bold">{readyPack} pending</span>
+                                        : <span className="text-zinc-500">No tasks</span>
+                                    }
+                                </p>
+                            </div>
+                        </button>
+                    </div>
 
-                    {/* COUNT */}
-                    <button
-                        onClick={() => setScreen('count')}
-                        className="min-h-[90px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-amber-500/10 border-2 border-amber-500 active:scale-95 transition-all"
-                    >
-                        <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center">
-                            <ClipboardCheck className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-black text-lg text-white">COUNT</p>
-                            <p className="text-[10px] text-zinc-500">Cycle Count / Stock Check</p>
-                        </div>
-                    </button>
+                    {/* COUNT & CLOCK — equal row */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={() => setScreen('count')}
+                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#714B67]/10 border-2 border-[#714B67]/60 active:scale-95 transition-all"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-[#714B67]/80 flex items-center justify-center">
+                                <ClipboardCheck className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-xl text-white">COUNT</p>
+                                <p className="text-[10px] text-zinc-500">Cycle Count</p>
+                            </div>
+                        </button>
 
-                    {/* CLOCK IN/OUT */}
-                    <button
-                        onClick={() => setScreen('clock')}
-                        className="min-h-[70px] flex items-center gap-3 rounded-2xl bg-violet-500/10 border-2 border-violet-500 active:scale-95 transition-all px-4"
-                    >
-                        <div className="w-10 h-10 rounded-xl bg-violet-500 flex items-center justify-center flex-shrink-0">
-                            <Clock className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="text-left">
-                            <p className="font-black text-sm text-white">TIME & ATTENDANCE</p>
-                            <p className="text-[10px] text-zinc-500">
-                                {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked In</span>}
-                            </p>
-                        </div>
-                    </button>
+                        <button
+                            onClick={() => setScreen('clock')}
+                            className="min-h-[140px] flex flex-col items-center justify-center gap-3 rounded-2xl bg-[#00A09D]/5 border-2 border-[#00A09D]/60 active:scale-95 transition-all"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-[#00A09D]/80 flex items-center justify-center">
+                                <Clock className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-black text-xl text-white">CLOCK</p>
+                                <p className="text-[10px]">
+                                    {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked In</span>}
+                                </p>
+                            </div>
+                        </button>
+                    </div>
 
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-2">
@@ -304,7 +306,7 @@ const HandheldLayout = ({
 
             {/* Count screen */}
             {screen === 'count' && (
-                <div className="flex-1 overflow-y-auto bg-gray-50 text-gray-900 p-3">
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
                     <CycleCount
                         inventory={inventory}
                         activityLogs={activityLogs || []}
@@ -319,7 +321,7 @@ const HandheldLayout = ({
 
             {/* Clock screen */}
             {screen === 'clock' && (
-                <div className="flex-1 overflow-y-auto bg-gray-50 text-gray-900 p-3">
+                <div className="flex-1 overflow-y-auto p-3" style={{ color: '#111827', backgroundColor: '#f9fafb' }}>
                     <TimeAttendance
                         user={user}
                         users={[]}
