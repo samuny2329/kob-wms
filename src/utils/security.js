@@ -1,9 +1,10 @@
 // src/utils/security.js — Security utilities for WMS Pro
 
-// ── Password Hashing (SHA-256 based — for client-side, production should use bcrypt server-side) ──
-// Uses Web Crypto API for browser-native hashing
-// Falls back to simple hash when crypto.subtle unavailable (HTTP on LAN)
-const SALT_PREFIX = 'wms_pro_v1_';
+// ── Password Hashing (SHA-256 + random salt — client-side) ──
+// Production note: For internet-facing deployment, use server-side bcrypt/Argon2 via Odoo.
+// This client-side hashing protects against casual access and credential reuse.
+const SALT_PREFIX = 'wms_pro_v2_';
+const HASH_ITERATIONS = 10000; // Stretch SHA-256 for better security
 
 function simpleSha256Fallback(str) {
   // Simple hash for non-secure contexts (LAN HTTP access)
@@ -28,27 +29,50 @@ function simpleSha256Fallback(str) {
   return result.slice(0, 64);
 }
 
-export async function hashPassword(password) {
-  const salted = SALT_PREFIX + password;
+export async function hashPassword(password, existingSalt = null) {
+  // Generate a random 16-byte salt if none provided
+  const salt = existingSalt || Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+  const salted = SALT_PREFIX + salt + password;
+  if (crypto?.subtle) {
+    let data = new TextEncoder().encode(salted);
+    // Iterative hashing for key stretching
+    for (let i = 0; i < HASH_ITERATIONS; i++) {
+      data = new Uint8Array(await crypto.subtle.digest('SHA-256', data));
+    }
+    const hash = Array.from(data, b => b.toString(16).padStart(2, '0')).join('');
+    return salt + ':' + hash; // Store salt:hash together
+  }
+  // Fallback for non-secure contexts (HTTP on LAN)
+  return salt + ':' + simpleSha256Fallback(salted);
+}
+
+export async function verifyPassword(password, storedHash) {
+  // Handle new salt:hash format
+  if (storedHash.includes(':')) {
+    const [salt, _hash] = storedHash.split(':');
+    const computed = await hashPassword(password, salt);
+    // Constant-time comparison
+    if (computed.length !== storedHash.length) return false;
+    let result = 0;
+    for (let i = 0; i < computed.length; i++) {
+      result |= computed.charCodeAt(i) ^ storedHash.charCodeAt(i);
+    }
+    return result === 0;
+  }
+  // Legacy format (unsalted 64-char hash) — verify then caller should re-hash
+  const salted = 'wms_pro_v1_' + password;
   if (crypto?.subtle) {
     const data = new TextEncoder().encode(salted);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const computed = Array.from(new Uint8Array(hashBuffer), b => b.toString(16).padStart(2, '0')).join('');
+    if (computed.length !== storedHash.length) return false;
+    let result = 0;
+    for (let i = 0; i < computed.length; i++) {
+      result |= computed.charCodeAt(i) ^ storedHash.charCodeAt(i);
+    }
+    return result === 0;
   }
-  // Fallback for non-secure contexts (HTTP on LAN)
-  return simpleSha256Fallback(salted);
-}
-
-export async function verifyPassword(password, hash) {
-  const computed = await hashPassword(password);
-  // Constant-time comparison to prevent timing attacks
-  if (computed.length !== hash.length) return false;
-  let result = 0;
-  for (let i = 0; i < computed.length; i++) {
-    result |= computed.charCodeAt(i) ^ hash.charCodeAt(i);
-  }
-  return result === 0;
+  return simpleSha256Fallback(salted) === storedHash;
 }
 
 // ── Session Management ──
@@ -307,9 +331,13 @@ export function validateFileUpload(file) {
   const allowedExts = ['pdf', 'xlsx', 'xls', 'csv', 'jpg', 'jpeg', 'png', 'docx'];
   if (!allowedExts.includes(ext)) return { valid: false, error: `File type .${ext} not allowed` };
 
-  // Check MIME type if available
+  // Check MIME type if available (strict — no text/html or text/javascript)
+  const BLOCKED_MIME = ['text/html', 'text/javascript', 'application/javascript', 'text/xml', 'application/xml'];
+  if (file.type && BLOCKED_MIME.includes(file.type)) {
+    return { valid: false, error: 'File type not allowed for security reasons' };
+  }
   if (file.type && !ALLOWED_FILE_TYPES.includes(file.type) && !file.type.startsWith('text/')) {
-    return { valid: false, error: `MIME type ${file.type} not allowed` };
+    return { valid: false, error: 'File type not allowed' };
   }
 
   // Sanitize filename

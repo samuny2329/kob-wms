@@ -53,8 +53,14 @@ const CODE128B = {
     })(),
 };
 
+function escapeXml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
 function generateBarcodeSVG(text, w = 260, h = 60) {
     if (!text) return null;
+    // Sanitize text to prevent XSS in SVG output
+    const safeText = escapeXml(text);
     const encode = [];
     encode.push(...CODE128B.START);
     let checksum = 104; // START B value
@@ -81,7 +87,7 @@ function generateBarcodeSVG(text, w = 260, h = 60) {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h + 18}" width="${w}" height="${h + 18}">
         <rect width="${w}" height="${h + 18}" fill="white"/>
         ${rects}
-        <text x="${w / 2}" y="${h + 14}" text-anchor="middle" font-family="monospace" font-size="11" fill="#000">${text}</text>
+        <text x="${w / 2}" y="${h + 14}" text-anchor="middle" font-family="monospace" font-size="11" fill="#000">${safeText}</text>
     </svg>`;
 }
 
@@ -127,10 +133,10 @@ function printLabel(item) {
         .meta { font-size: 8px; color: #999; margin-top: 4px; }
     </style></head><body>
     <div class="label">
-        <div class="sku">${item.sku}</div>
-        <div class="name">${item.name}</div>
+        <div class="sku">${escapeXml(item.sku)}</div>
+        <div class="name">${escapeXml(item.name)}</div>
         <div class="barcode">${svgBarcode || ''}</div>
-        <div class="meta">${item.brand} | ${item.category}</div>
+        <div class="meta">${escapeXml(item.brand)} | ${escapeXml(item.category)}</div>
     </div>
     <script>setTimeout(() => { window.print(); }, 300);</script>
     </body></html>`);
@@ -144,8 +150,8 @@ function printBatchLabels(items) {
     const labels = items.map(item => {
         const svg = generateBarcodeSVG(item.sku, 200, 45);
         return `<div class="label">
-            <div class="sku">${item.sku}</div>
-            <div class="name">${item.name}</div>
+            <div class="sku">${escapeXml(item.sku)}</div>
+            <div class="name">${escapeXml(item.name)}</div>
             <div class="barcode">${svg || ''}</div>
             <div class="meta">${item.brand} | Qty: ${item.qty}</div>
         </div>`;
