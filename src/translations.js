@@ -6,10 +6,10 @@ export const TRANSLATIONS = {
         roleOutbound: 'Outbound', roleOutboundDesc: 'Scanning & dispatching',
         tabDashboard: 'Dashboard', tabPick: 'Pick List', tabPack: 'Pack & Verify',
         tabHandheldPack: 'Handheld Pack', tabPosPack: 'POS Pack',
-        tabInventory: 'Inventory', tabSorting: 'Wave Sorting', tabFulfillment: 'Fulfillment', tabPlatformMonitor: 'Platform Monitor', tabInvoice: 'Invoices',
+        tabInventory: 'Inventory', tabCycleCount: 'Cycle Count', tabSorting: 'Wave Sorting', tabFulfillment: 'Fulfillment', tabPlatformMonitor: 'Platform Monitor', tabInvoice: 'Invoices',
         tabScan: 'Outbound Scan', tabList: 'Manifest', tabDispatch: 'Dispatch',
         tabReport: 'Reports', tabUsers: 'User Management', tabSettings: 'Settings', tabManual: 'User Manual',
-        secOps: 'Operations', secInventory: 'Inventory', secLogistics: 'Logistics', secAccounting: 'Accounting', secSystem: 'System', secHelp: 'Help & Support',
+        secOperations: 'OPERATIONS', secInventory: 'INVENTORY', secLogistics: 'LOGISTICS', secAccounting: 'ACCOUNTING', secSystem: 'SYSTEM', secAnalytics: 'ANALYTICS', secHelp: 'HELP & SUPPORT',
         roleAccounting: 'Accounting', roleAccountingDesc: 'Invoices & finance',
         connOnline: 'Connected', connOffline: 'Offline', connSyncing: 'Syncing...', lastSync: 'Last sync',
         statExpected: 'Total Expected', statScanned: 'Total Scanned', statPending: 'Pending Docs',
@@ -28,8 +28,9 @@ export const TRANSLATIONS = {
         fullName: 'Full Name', assignRole: 'Assigned Role', createBtn: 'Create User',
         empTblCol: 'Employee', roleTblCol: 'Role', secTblCol: 'Security', actTblCol: 'Actions',
         kpiSpeed: 'Speed (UPH)',
-        tabTeamPerformance: 'Team Performance', tabSlaTracker: 'SLA Tracker',
-        secAnalytics: 'Analytics'
+        tabTeamPerformance: 'Team Performance', tabSlaTracker: 'SLA Tracker', tabTimeAttendance: 'Time & Attendance', tabKpiAssessment: 'KPI Assessment',
+        tabGwp: 'GWP Manager',
+
     },
     th: {
         roleAdmin: 'ผู้ดูแลระบบ', roleAdminDesc: 'เข้าถึงทุกระบบ',
@@ -38,10 +39,10 @@ export const TRANSLATIONS = {
         roleOutbound: 'พนักงานจ่ายของ', roleOutboundDesc: 'สแกนจ่ายและส่งมอบ',
         tabDashboard: 'แดชบอร์ด', tabPick: 'รายการหยิบ', tabPack: 'แพ็คและตรวจสอบ',
         tabHandheldPack: 'แพ็ค (มือถือ)', tabPosPack: 'แพ็ค (POS)',
-        tabInventory: 'คลังสินค้า', tabSorting: 'จัดเรียงรอบ', tabFulfillment: 'การจัดส่ง', tabPlatformMonitor: 'มอนิเตอร์แพลตฟอร์ม', tabInvoice: 'ใบแจ้งหนี้',
+        tabInventory: 'คลังสินค้า', tabCycleCount: 'นับสต็อค', tabSorting: 'จัดเรียงรอบ', tabFulfillment: 'การจัดส่ง', tabPlatformMonitor: 'มอนิเตอร์แพลตฟอร์ม', tabInvoice: 'ใบแจ้งหนี้',
         tabScan: 'สแกนจ่ายออก', tabList: 'รายการจัดส่ง', tabDispatch: 'ส่งมอบขนส่ง',
         tabReport: 'รายงาน', tabUsers: 'จัดการผู้ใช้งาน', tabSettings: 'ตั้งค่าระบบ', tabManual: 'คู่มือการใช้งาน',
-        secOps: 'ปฏิบัติการ', secInventory: 'คลังสินค้า', secLogistics: 'โลจิสติกส์', secAccounting: 'บัญชี', secSystem: 'ระบบ', secHelp: 'ช่วยเหลือ',
+        secOperations: 'ปฏิบัติการ', secInventory: 'คลังสินค้า', secLogistics: 'โลจิสติกส์', secAccounting: 'บัญชี', secSystem: 'ระบบ', secAnalytics: 'วิเคราะห์', secHelp: 'ช่วยเหลือ',
         roleAccounting: 'บัญชี', roleAccountingDesc: 'ใบแจ้งหนี้และการเงิน',
         connOnline: 'เชื่อมต่อแล้ว', connOffline: 'ออฟไลน์', connSyncing: 'กำลังซิงค์...', lastSync: 'ซิงค์ล่าสุด',
         statExpected: 'ยอดต้องจัดทั้งหมด', statScanned: 'สแกนสำเร็จ', statPending: 'รอสแกน',
@@ -60,7 +61,7 @@ export const TRANSLATIONS = {
         fullName: 'ชื่อ-นามสกุล', assignRole: 'สิทธิ์การใช้งาน', createBtn: 'สร้างบัญชี',
         empTblCol: 'พนักงาน', roleTblCol: 'สิทธิ์', secTblCol: 'ความปลอดภัย', actTblCol: 'จัดการ',
         kpiSpeed: 'ความเร็ว (UPH)',
-        tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA',
-        secAnalytics: 'วิเคราะห์'
+        tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA', tabTimeAttendance: 'เวลาทำงาน', tabKpiAssessment: 'ประเมิน KPI',
+        tabGwp: 'จัดการของแถม'
     }
 };
