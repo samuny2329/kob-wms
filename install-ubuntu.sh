@@ -199,8 +199,12 @@ const server = http.createServer((req, res) => {
     fs.createReadStream(filePath).pipe(res);
 });
 
-server.listen(${PORT}, '127.0.0.1', () => {
-    console.log('KOB WMS Pro running at http://localhost:${PORT}');
+server.listen(${PORT}, '0.0.0.0', () => {
+    const nets = require('os').networkInterfaces();
+    const ips = Object.values(nets).flat().filter(n => n.family === 'IPv4' && !n.internal).map(n => n.address);
+    console.log('KOB WMS Pro running at:');
+    console.log('  Local:   http://localhost:${PORT}');
+    ips.forEach(ip => console.log('  Network: http://' + ip + ':${PORT}'));
 });
 "
 SERVE_EOF
