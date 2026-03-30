@@ -10,6 +10,12 @@ import { PRODUCT_CATALOG } from '../constants';
 import { getActivePickers } from './TimeAttendance';
 import WarehouseMap from './WarehouseMap';
 
+// ── Zone Colors ──
+const ZONE_COLORS = {
+    A: '#dc2626', B: '#d97706', C: '#2563eb', D: '#16a34a',
+    E: '#9333ea', F: '#e11d48', G: '#0891b2', H: '#65a30d',
+};
+
 // ── ABC Classification ──
 const ABC_CONFIG = {
     A: { label: 'A — High Movement', color: '#dc2626', bg: '#fee2e2', pct: 0.20, dailySamplePct: 1.00, desc: 'Count every day' },
