@@ -1146,15 +1146,7 @@ export const fetchStockHistory = async (odooConfig, productId, locationKeywords 
 export const fetchProductDetail = async (odooConfig, productId) => {
     if (isMock(odooConfig)) {
         await delay(200);
-        return {
-            id: productId, name: 'Mock Product', default_code: 'MOCK-001', barcode: '8859139111901',
-            categ_id: [1, 'Skincare'], detailed_type: 'product', tracking: 'lot',
-            list_price: 350, standard_price: 189, taxes_id: [[1, '7% Output VAT']],
-            supplier_taxes_id: [[1, '7% Input VAT']], uom_id: [1, 'Units'],
-            weight: 0.15, volume: 0.0002, description: '', description_sale: '',
-            description_purchase: '', image_1920: false, seller_ids: [],
-            qty_available: 450, virtual_available: 420, incoming_qty: 100, outgoing_qty: 130,
-        };
+        return null;
     }
     try {
         const result = await odooCallKw(odooConfig, 'product.product', 'read',
@@ -1178,10 +1170,7 @@ export const fetchProductDetail = async (odooConfig, productId) => {
 export const fetchSupplierInfo = async (odooConfig, productId) => {
     if (isMock(odooConfig)) {
         await delay(200);
-        return [
-            { id: 1, partner_id: [1, 'Cosmax Thailand'], price: 120, min_qty: 500, delay: 14, currency_id: [1, 'THB'] },
-            { id: 2, partner_id: [2, 'Thai Packaging Co.'], price: 135, min_qty: 200, delay: 7, currency_id: [1, 'THB'] },
-        ];
+        return [];
     }
     try {
         return await odooCallKw(odooConfig, 'product.supplierinfo', 'search_read',
@@ -1198,14 +1187,7 @@ export const fetchSupplierInfo = async (odooConfig, productId) => {
 export const fetchSalesHistory = async (odooConfig, productId, limit = 20) => {
     if (isMock(odooConfig)) {
         await delay(200);
-        const now = Date.now();
-        const day = 86400000;
-        return [
-            { order_id: [1, 'S00045'], product_uom_qty: 5, price_unit: 350, price_subtotal: 1750, create_date: new Date(now - 1 * day).toISOString() },
-            { order_id: [2, 'S00038'], product_uom_qty: 10, price_unit: 340, price_subtotal: 3400, create_date: new Date(now - 3 * day).toISOString() },
-            { order_id: [3, 'S00029'], product_uom_qty: 3, price_unit: 350, price_subtotal: 1050, create_date: new Date(now - 7 * day).toISOString() },
-            { order_id: [4, 'S00021'], product_uom_qty: 8, price_unit: 345, price_subtotal: 2760, create_date: new Date(now - 14 * day).toISOString() },
-        ];
+        return [];
     }
     try {
         return await odooCallKw(odooConfig, 'sale.order.line', 'search_read',
@@ -1222,12 +1204,7 @@ export const fetchSalesHistory = async (odooConfig, productId, limit = 20) => {
 export const fetchStockByLocation = async (odooConfig, productId) => {
     if (isMock(odooConfig)) {
         await delay(200);
-        return [
-            { location_id: [1, 'WH/Stock/PICKFACE/A-01-01'], lot_id: [1, 'LOT-2026-001'], quantity: 200, reserved_quantity: 10 },
-            { location_id: [1, 'WH/Stock/PICKFACE/A-01-01'], lot_id: [2, 'LOT-2026-002'], quantity: 250, reserved_quantity: 2 },
-            { location_id: [2, 'WH/Stock/BULK'], lot_id: [3, 'LOT-2026-003'], quantity: 500, reserved_quantity: 0 },
-            { location_id: [3, 'WH2/Stock'], lot_id: false, quantity: 120, reserved_quantity: 0 },
-        ];
+        return [];
     }
     try {
         return await odooCallKw(odooConfig, 'stock.quant', 'search_read',
@@ -1244,15 +1221,7 @@ export const fetchStockByLocation = async (odooConfig, productId) => {
 export const fetchStockForecast = async (odooConfig, productId) => {
     if (isMock(odooConfig)) {
         await delay(200);
-        return {
-            qty_available: 450, virtual_available: 420, incoming_qty: 100, outgoing_qty: 130,
-            upcoming_moves: [
-                { date: new Date(Date.now() + 2 * 86400000).toISOString(), product_uom_qty: 50, state: 'assigned', origin: 'WH/IN/00055', direction: 'in' },
-                { date: new Date(Date.now() + 1 * 86400000).toISOString(), product_uom_qty: 30, state: 'confirmed', origin: 'WH/OUT/00130', direction: 'out' },
-                { date: new Date(Date.now() + 3 * 86400000).toISOString(), product_uom_qty: 50, state: 'assigned', origin: 'WH/IN/00058', direction: 'in' },
-                { date: new Date(Date.now() + 5 * 86400000).toISOString(), product_uom_qty: 100, state: 'confirmed', origin: 'WH/OUT/00145', direction: 'out' },
-            ],
-        };
+        return { qty_available: 0, virtual_available: 0, incoming_qty: 0, outgoing_qty: 0, upcoming_moves: [] };
     }
     try {
         const product = await odooCallKw(odooConfig, 'product.product', 'read',
@@ -1283,27 +1252,7 @@ export const fetchStockForecast = async (odooConfig, productId) => {
 export const fetchFullInventory = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(300);
-        // Return mock data with multiple locations
-        return [
-            { sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml', shortName: 'Refill Toner Pad (Dewy)', location: 'PICKFACE/A-01-01', onHand: 450, reserved: 12, available: 438, unitCost: 189, reorderPoint: 50, lots: [
-                { lotNumber: 'LOT-2026-001', expiryDate: '2027-06-15', qty: 200, receivedDate: '2026-01-10' },
-                { lotNumber: 'LOT-2026-002', expiryDate: '2027-09-20', qty: 250, receivedDate: '2026-02-28' },
-            ]},
-            { sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml', shortName: 'Refill Toner Pad (Dewy)', location: 'WH/Stock/BULK', onHand: 2000, reserved: 0, available: 2000, unitCost: 189, reorderPoint: 200, lots: [
-                { lotNumber: 'LOT-2026-010', expiryDate: '2028-01-15', qty: 2000, receivedDate: '2026-03-01' },
-            ]},
-            { sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml (Bright & Glow)', shortName: 'Toner Pad Refill (Bright)', location: 'PICKFACE/A-01-02', onHand: 320, reserved: 6, available: 314, unitCost: 199, reorderPoint: 40, lots: [
-                { lotNumber: 'LOT-2026-003', expiryDate: '2027-08-01', qty: 320, receivedDate: '2026-02-15' },
-            ]},
-            { sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml (Bright & Glow)', shortName: 'Toner Pad Refill (Bright)', location: 'WH/Stock/BULK', onHand: 1500, reserved: 0, available: 1500, unitCost: 199, reorderPoint: 200, lots: [] },
-            { sku: 'SWB700', name: 'SKINOXY Body Wash 700ml (Brightening)', shortName: 'Body Wash (Bright)', location: 'PICKFACE/B-02-01', onHand: 180, reserved: 4, available: 176, unitCost: 259, reorderPoint: 30, lots: [
-                { lotNumber: 'LOT-2025-010', expiryDate: '2027-03-10', qty: 80, receivedDate: '2025-09-20' },
-                { lotNumber: 'LOT-2026-004', expiryDate: '2027-12-01', qty: 100, receivedDate: '2026-03-01' },
-            ]},
-            { sku: 'SWB700', name: 'SKINOXY Body Wash 700ml (Brightening)', shortName: 'Body Wash (Bright)', location: 'WH/Stock/BULK', onHand: 800, reserved: 0, available: 800, unitCost: 259, reorderPoint: 100, lots: [] },
-            { sku: 'SWH700', name: 'SKINOXY Body Wash 700ml (Hydrating)', shortName: 'Body Wash (Hydra)', location: 'PICKFACE/B-02-02', onHand: 95, reserved: 5, available: 90, unitCost: 259, reorderPoint: 30, lots: [] },
-            { sku: 'SWH700', name: 'SKINOXY Body Wash 700ml (Hydrating)', shortName: 'Body Wash (Hydra)', location: 'WH/Stock/BULK', onHand: 600, reserved: 0, available: 600, unitCost: 259, reorderPoint: 100, lots: [] },
-        ];
+        return [];
     }
     // Live: fetch ALL stock.quant without location whitelist
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
@@ -1342,11 +1291,7 @@ export const fetchReorderRules = async (odooConfig, productId = null) => {
         await delay(200);
         const stored = JSON.parse(localStorage.getItem('wms_reorder_rules') || 'null');
         if (stored) return productId ? stored.filter(r => r.product_id?.[0] === productId) : stored;
-        return [
-            { id: 1, product_id: [1, 'Refill Toner Pad (Dewy)'], location_id: [1, 'PICKFACE'], product_min_qty: 50, product_max_qty: 200, qty_to_order: 0, trigger: 'auto', sku: 'STDH080-REFILL' },
-            { id: 2, product_id: [2, 'Toner Pad Refill (Bright)'], location_id: [1, 'PICKFACE'], product_min_qty: 40, product_max_qty: 150, qty_to_order: 0, trigger: 'auto', sku: 'STBG080-REFILL' },
-            { id: 3, product_id: [3, 'Body Wash (Bright)'], location_id: [1, 'PICKFACE'], product_min_qty: 30, product_max_qty: 100, qty_to_order: 0, trigger: 'auto', sku: 'SWB700' },
-        ];
+        return [];
     }
     try {
         const domain = [['active', '=', true]];
@@ -1476,14 +1421,7 @@ export const createInternalTransfer = async (odooConfig, { srcLocationId, destLo
 export const fetchProductCategories = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(150);
-        return [
-            { id: 1, name: 'All', complete_name: 'All' },
-            { id: 2, name: 'Consumable', complete_name: 'All / Consumable' },
-            { id: 3, name: 'GWP', complete_name: 'All / GWP' },
-            { id: 4, name: 'Sample', complete_name: 'All / GWP / Sample' },
-            { id: 5, name: 'Gift', complete_name: 'All / GWP / Gift' },
-            { id: 6, name: 'Accessory', complete_name: 'All / GWP / Accessory' },
-        ];
+        return [];
     }
     try {
         return await odooCallKw(odooConfig, 'product.category', 'search_read',
@@ -1499,7 +1437,7 @@ export const fetchProductCategories = async (odooConfig) => {
 export const fetchProductBrands = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(100);
-        return ['SKINOXY', 'KISS-MY-BODY'];
+        return [];
     }
     try {
         // Read product_brand or use product template brand field

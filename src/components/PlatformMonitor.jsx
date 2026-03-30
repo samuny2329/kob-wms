@@ -49,40 +49,8 @@ const PLATFORMS = {
     },
 };
 
-// ─── Seeded random for consistent mock history ────────────────────────────────
-const seededRand = (seed) => {
-    let s = seed | 0;
-    return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
-};
-
-const generateHistoricalData = (days = 30) => {
-    const result = [];
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today); date.setDate(date.getDate() - i);
-        const rand = seededRand(Math.floor(date.getTime() / 86400000));
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-        const isSpike = rand() > 0.8;
-        const calc = (total, onTimeRate) => {
-            const t = Math.max(0, total);
-            const shipped = Math.floor(t * onTimeRate);
-            const late = Math.floor(t * (1 - onTimeRate) * 0.7);
-            const cancelled = Math.floor(t * 0.03);
-            const pending = Math.max(0, t - shipped - late - cancelled);
-            return { total: t, shipped, late, cancelled, pending };
-        };
-        result.push({
-            date: date.toISOString().split('T')[0],
-            label: date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' }),
-            shopee: calc(Math.floor(rand() * 12 + 8 + (isWeekend ? 5 : 0)), 0.82 + rand() * 0.1),
-            lazada: calc(Math.floor(rand() * 10 + 5), 0.85 + rand() * 0.1),
-            tiktok: calc(Math.floor(rand() * 8 + 3 + (isSpike ? 15 : 0)), 0.78 + rand() * 0.12),
-            manual: calc(Math.floor(rand() * 4 + 1), 0.92 + rand() * 0.07),
-            isSpike,
-        });
-    }
-    return result;
-};
+// No mock historical data — returns empty array when no real data
+const generateHistoricalData = () => [];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const timeUntil = (hhmm) => {

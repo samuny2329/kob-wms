@@ -1252,7 +1252,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                     className="w-full px-3 py-2 text-sm outline-none" style={{ border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529', backgroundColor: '#ffffff' }}>
                                     <option value="">Select source...</option>
                                     {allOdooLocations.map(l => <option key={l.id} value={l.id}>{l.complete_name}</option>)}
-                                    {allOdooLocations.length === 0 && <option value="1">WH/Stock/BULK (Mock)</option>}
+                                    {allOdooLocations.length === 0 && <option value="" disabled>Connect Odoo to load locations</option>}
                                 </select>
                             </div>
                             {/* Destination Location */}
@@ -1262,7 +1262,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                     className="w-full px-3 py-2 text-sm outline-none" style={{ border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529', backgroundColor: '#ffffff' }}>
                                     <option value="">Select destination...</option>
                                     {allOdooLocations.map(l => <option key={l.id} value={l.id}>{l.complete_name}</option>)}
-                                    {allOdooLocations.length === 0 && <option value="2">WH/Stock/PICKFACE (Mock)</option>}
+                                    {allOdooLocations.length === 0 && <option value="" disabled>Connect Odoo to load locations</option>}
                                 </select>
                             </div>
                             {/* Transfer lines */}
