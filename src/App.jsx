@@ -311,14 +311,7 @@ const App = () => {
         setIsLoading(true);
         setError('');
 
-        // Check account lockout
-        const lockStatus = isAccountLocked();
-        if (lockStatus.locked) {
-            setError(`Account locked. Try again in ${lockStatus.remainingMin} minutes.`);
-            setIsLoading(false);
-            auditLog('login_blocked', { username, reason: 'account_locked' });
-            return;
-        }
+        // Lockout disabled — allow unlimited login attempts
 
         try {
             const foundUser = users.find(u => u.username === username);
@@ -359,20 +352,12 @@ const App = () => {
                         setShowPasswordChange(true);
                     }
                 } else {
-                    const result = recordLoginAttempt(false);
-                    const msg = result.locked
-                        ? `Too many attempts. Locked for ${result.remainingMin} minutes.`
-                        : `Invalid credentials. ${result.attemptsLeft} attempts remaining.`;
-                    setError(msg);
-                    auditLog('login_failed', { username, attemptsLeft: result.attemptsLeft });
+                    setError('Invalid username or password.');
+                    auditLog('login_failed', { username });
                     playSound('error');
                 }
             } else {
-                const result = recordLoginAttempt(false);
-                const msg = result.locked
-                    ? `Too many attempts. Locked for ${result.remainingMin} minutes.`
-                    : `Invalid credentials. ${result.attemptsLeft} attempts remaining.`;
-                setError(msg);
+                setError('Invalid username or password.');
                 auditLog('login_failed', { username });
                 playSound('error');
             }
