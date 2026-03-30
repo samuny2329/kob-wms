@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { AlertCircle, CheckCircle2, RefreshCw, Upload, X, FileSpreadsheet, AlertTriangle, Unlock } from 'lucide-react';
+import { AlertCircle, CheckCircle2, RefreshCw, Upload, X, FileSpreadsheet, AlertTriangle, Unlock, Building2, ChevronDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import { TRANSLATIONS } from './translations';
 import { getTrackingUrl, useDebounce } from './utils';
-import { rolesInfo, tabInfo, INITIAL_SALES_ORDERS, ITEMS_PER_PAGE, PRODUCT_CATALOG, ROLE_KPI_CONFIG, computeOkrResults } from './constants';
+import { rolesInfo, tabInfo, INITIAL_SALES_ORDERS, ITEMS_PER_PAGE, PRODUCT_CATALOG, ROLE_KPI_CONFIG, computeOkrResults, COMPANIES, getCompany } from './constants';
 
 // Sub-components
 import Sidebar from './components/Sidebar';
@@ -35,12 +35,16 @@ import TimeAttendance from './components/TimeAttendance';
 import KPIAssessment from './components/KPIAssessment';
 import GWPManager from './components/GWPManager';
 import ClaudeChat from './components/ClaudeChat';
+import AIAnalyzer from './components/AIAnalyzer';
+import MarketIntelligence from './components/MarketIntelligence';
+import ActivityHistory from './components/ActivityHistory';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
 import { secureSet } from './utils/crypto';
 import { confirmRTS, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
 import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
+import { addActivity } from './utils/activityDB';
 
 const App = () => {
     // 1. Initial & System State
@@ -52,6 +56,7 @@ const App = () => {
     const [selectedWorker, setSelectedWorker] = useState(null);
     const [workDate, setWorkDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [activeCompany, setActiveCompany] = useState(() => localStorage.getItem('wms_active_company') || 'kob');
 
     // 2. Data State
     // Safe JSON parse helper — prevents white screen on corrupted localStorage
@@ -62,7 +67,7 @@ const App = () => {
 
     const [orderData, setOrderData] = useState(() => safeParse('wms_orders', []));
     const [salesOrders, setSalesOrders] = useState(() => safeParse('wms_sales_orders', INITIAL_SALES_ORDERS));
-    const [users, setUsers] = useState(() => safeParse('wms_users', [{ name: 'Admin User', username: 'admin', password: '', role: 'admin', isFirstLogin: true }]));
+    const [users, setUsers] = useState(() => safeParse('wms_users', [{ name: 'Admin User', username: 'admin', password: '$wms$default$setup', role: 'admin', isFirstLogin: true }]));
     const [historyData, setHistoryData] = useState(() => safeParse('wms_history', []));
     const [activityLogs, setActivityLogs] = useState(() => safeParse('wms_logs', []));
     const [apiConfigs, setApiConfigs] = useState(() => {
@@ -150,6 +155,7 @@ const App = () => {
     useEffect(() => { localStorage.setItem('lang', language); }, [language]);
     useEffect(() => { localStorage.setItem('userRole', userRole); }, [userRole]);
     useEffect(() => { localStorage.setItem('activeTab', activeTab); }, [activeTab]);
+    useEffect(() => { localStorage.setItem('wms_active_company', activeCompany); }, [activeCompany]);
     useEffect(() => { localStorage.setItem('wms_orders', JSON.stringify(orderData)); }, [orderData]);
     useEffect(() => { localStorage.setItem('wms_sales_orders', JSON.stringify(salesOrders)); }, [salesOrders]);
     useEffect(() => { localStorage.setItem('wms_users', JSON.stringify(users)); }, [users]);
@@ -244,17 +250,61 @@ const App = () => {
     const logActivity = (action, details) => {
         const entry = { timestamp: new Date().getTime(), username: user.username, name: user.name, action, details };
         setActivityLogs(prev => [entry, ...prev].slice(0, 1000));
+        // Persist to IndexedDB with flat fields for querying
+        addActivity({
+            action,
+            username: user.username,
+            name: user.name,
+            timestamp: entry.timestamp,
+            orderRef: details?.order || details?.soName || '',
+            awb: details?.awb || '',
+            sku: details?.sku || '',
+            boxType: details?.boxType || '',
+            courier: details?.courier || '',
+            platform: details?.platform || '',
+            itemCount: details?.items || details?.count || 0,
+            picking: details?.picking || '',
+            barcode: details?.barcode || '',
+        });
     };
 
     const playSound = (type) => {
         try {
-            const sounds = {
-                success: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
-                error: 'https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3',
-                click: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'
-            };
-            const audio = new Audio(sounds[type]);
-            audio.play().catch(() => {});
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const t = ctx.currentTime;
+
+            if (type === 'success') {
+                // Bright chime — C6 → E6 → G6 arpeggio
+                [1047, 1319, 1568].forEach((freq, i) => {
+                    const g = ctx.createGain(); g.connect(ctx.destination);
+                    const start = t + i * 0.08;
+                    g.gain.setValueAtTime(0.15, start);
+                    g.gain.exponentialRampToValueAtTime(0.001, start + 0.2);
+                    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+                    o.connect(g); o.start(start); o.stop(start + 0.2);
+                });
+            } else if (type === 'error') {
+                // SAP System Error — classic ERP triple-beep alert
+                [0, 0.12, 0.24].forEach((offset) => {
+                    const g = ctx.createGain(); g.connect(ctx.destination);
+                    const s = t + offset;
+                    g.gain.setValueAtTime(0.22, s);
+                    g.gain.setValueAtTime(0.22, s + 0.06);
+                    g.gain.linearRampToValueAtTime(0, s + 0.09);
+                    const o = ctx.createOscillator(); o.type = 'sine';
+                    o.frequency.value = 750;
+                    o.connect(g); o.start(s); o.stop(s + 0.09);
+                });
+            } else if (type === 'click') {
+                // Crisp pop
+                const g = ctx.createGain(); g.connect(ctx.destination);
+                g.gain.setValueAtTime(0.12, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+                const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 800;
+                o.connect(g); o.start(t); o.stop(t + 0.04);
+            }
+
+            setTimeout(() => ctx.close(), 1200);
         } catch (e) { }
     };
 
@@ -264,35 +314,18 @@ const App = () => {
         setIsLoading(true);
         setError('');
 
-        // Check account lockout
-        const lockStatus = isAccountLocked();
-        if (lockStatus.locked) {
-            setError(`Account locked. Try again in ${lockStatus.remainingMin} minutes.`);
-            setIsLoading(false);
-            auditLog('login_blocked', { username, reason: 'account_locked' });
-            return;
-        }
+        // Lockout disabled — allow unlimited login attempts
 
         try {
             const foundUser = users.find(u => u.username === username);
 
             if (foundUser) {
-                // First-login flow: empty password means user must set one
-                if (foundUser.isFirstLogin && !foundUser.password) {
-                    recordLoginAttempt(true);
-                    const session = createSession(foundUser);
-                    setUser(foundUser);
-                    setUserRole(foundUser.role);
-                    auditLog('first_login', { username, role: foundUser.role }, username);
-                    playSound('success');
-                    setShowPasswordChange(true);
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Support salted hash, legacy hash, and plaintext passwords (auto-migrate)
+                // Support default setup password, salted hash, legacy hash, and plaintext (auto-migrate)
                 let passwordMatch = false;
-                if (foundUser.password?.includes(':')) {
+                if (foundUser.password === '$wms$default$setup') {
+                    // Default setup account — accept 'admin123' and force password change
+                    passwordMatch = password === 'admin123';
+                } else if (foundUser.password?.includes(':')) {
                     // New salted format (salt:hash)
                     passwordMatch = await verifyPassword(password, foundUser.password);
                 } else if (foundUser.password?.length === 64) {
@@ -332,20 +365,12 @@ const App = () => {
                         setShowPasswordChange(true);
                     }
                 } else {
-                    const result = recordLoginAttempt(false);
-                    const msg = result.locked
-                        ? `Too many attempts. Locked for ${result.remainingMin} minutes.`
-                        : `Invalid credentials. ${result.attemptsLeft} attempts remaining.`;
-                    setError(msg);
-                    auditLog('login_failed', { username, attemptsLeft: result.attemptsLeft });
+                    setError('Invalid username or password.');
+                    auditLog('login_failed', { username });
                     playSound('error');
                 }
             } else {
-                const result = recordLoginAttempt(false);
-                const msg = result.locked
-                    ? `Too many attempts. Locked for ${result.remainingMin} minutes.`
-                    : `Invalid credentials. ${result.attemptsLeft} attempts remaining.`;
-                setError(msg);
+                setError('Invalid username or password.');
                 auditLog('login_failed', { username });
                 playSound('error');
             }
@@ -577,7 +602,7 @@ const App = () => {
         if (!win) { addToast('Popup blocked by browser', 'error'); return; }
         win.document.write(`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>AWB-${esc(awbCode)}</title>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" integrity="sha256-mMXrFxRHV5dn8UjLJCHr28yBH+RrKGgpcqKl1YpJOE0=" crossorigin="anonymous"><\/script>
 <style>
   @page{size:100mm 150mm;margin:0}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -1103,6 +1128,9 @@ window.onload=function(){
                     {activeTab === 'timeAttendance' && <TimeAttendance user={user} users={users} userRole={userRole} addToast={addToast} logActivity={logActivity} />}
                     {activeTab === 'kpiAssessment' && <KPIAssessment user={user} users={users} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} logActivity={logActivity} workerOkrData={workerOkrData} />}
                     {activeTab === 'chat' && <ClaudeChat t={t} apiConfigs={apiConfigs} setActiveTab={setActiveTab} />}
+                    {activeTab === 'aiAnalyzer' && <AIAnalyzer language={language} addToast={addToast} activityLogs={activityLogs} inventory={inventory} orders={salesOrders} users={users} invoices={invoices} apiConfigs={apiConfigs} />}
+                    {activeTab === 'marketIntelligence' && <MarketIntelligence language={language} addToast={addToast} />}
+                    {activeTab === 'activityHistory' && <ActivityHistory language={language} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
 
@@ -1227,8 +1255,8 @@ window.onload=function(){
                 </div>
             )}
 
-            {/* Password Change Modal (first login or forced reset) */}
-            {showPasswordChange && (
+            {/* Password Change Modal (first login or forced reset) — cannot be bypassed when isFirstLogin */}
+            {(showPasswordChange || user?.isFirstLogin) && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[120] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.75)' }}>
                     <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
                         <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
