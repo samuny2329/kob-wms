@@ -1,175 +1,190 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
-    MapPin, Package, Eye, Edit3, Upload, Save, RotateCcw, ZoomIn, ZoomOut,
-    Layers, Grid, Image, X, Check, ChevronDown, AlertTriangle, CheckCircle2,
-    Clock, Maximize2, Move, Trash2, Plus, Settings
+    Map, ZoomIn, ZoomOut, RotateCcw, Upload, Save, Edit3,
+    Package, BarChart3, ClipboardCheck, X, Maximize2,
+    ChevronRight, MapPin, Trash2, Settings,
 } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants';
 
-// ── Color scales ─────────────────────────────────────────────────────────────
-const STOCK_COLORS = {
-    full:     { bg: '#dcfce7', border: '#16a34a', text: '#15803d' },  // >50%
-    medium:   { bg: '#fef9c3', border: '#ca8a04', text: '#a16207' },  // 30-50%
-    low:      { bg: '#fee2e2', border: '#dc2626', text: '#b91c1c' },  // 10-30%
-    critical: { bg: '#fecaca', border: '#991b1b', text: '#7f1d1d' },  // <10%
-    empty:    { bg: '#f3f4f6', border: '#d1d5db', text: '#9ca3af' },  // 0
-};
-
-const COUNT_COLORS = {
-    matched:  { bg: '#dcfce7', border: '#16a34a', icon: '✅' },
-    variance: { bg: '#fef3c7', border: '#d97706', icon: '⚠️' },
-    pending:  { bg: '#e0e7ff', border: '#6366f1', icon: '⏳' },
-    recount:  { bg: '#fee2e2', border: '#dc2626', icon: '🔄' },
-    frozen:   { bg: '#e0f2fe', border: '#0284c7', icon: '🔒' },
-};
-
 const ZONE_COLORS = {
-    A: '#3b82f6', B: '#10b981', C: '#f59e0b', D: '#8b5cf6',
-    E: '#ec4899', F: '#06b6d4', BULK: '#6b7280',
+    A: '#dc2626', B: '#d97706', C: '#2563eb', D: '#16a34a',
+    E: '#9333ea', F: '#e11d48', G: '#0891b2', H: '#65a30d',
 };
 
 const VIEW_MODES = [
-    { key: 'stock', label: 'Stock Level', icon: <Package className="w-3.5 h-3.5" /> },
-    { key: 'count', label: 'Count Status', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-    { key: 'frequency', label: 'Pick Frequency', icon: <Layers className="w-3.5 h-3.5" /> },
+    { id: 'stock', label: 'Stock Level', Icon: Package },
+    { id: 'count', label: 'Count Status', Icon: ClipboardCheck },
+    { id: 'frequency', label: 'Pick Frequency', Icon: BarChart3 },
 ];
 
-// ── Auto-generate layout from PRODUCT_CATALOG locations ──────────────────────
-const autoGenerateLayout = (inventory) => {
-    const locations = {};
+const CELL_W = 72;
+const CELL_H = 52;
+const GAP = 8;
+const RACK_GAP = 28;
+const ZONE_GAP = 56;
 
-    // Collect locations from PRODUCT_CATALOG
+// ── Utility functions ───────────────────────────────────────────────────────
+
+function parseLocation(loc) {
+    if (!loc) return null;
+    const parts = loc.split('-');
+    if (parts.length !== 3) return null;
+    return { zone: parts[0], rack: parseInt(parts[1], 10), position: parseInt(parts[2], 10) };
+}
+
+function autoGenerateLayout(inventory) {
+    const zones = {};
+
+    // Build zone structure from PRODUCT_CATALOG
     Object.entries(PRODUCT_CATALOG).forEach(([sku, product]) => {
-        if (!product.location) return;
-        const loc = product.location;
-        const parts = loc.split('-');
-        if (parts.length < 3) return;
-        const [zone, rack, pos] = parts;
-        if (!locations[zone]) locations[zone] = {};
-        if (!locations[zone][rack]) locations[zone][rack] = {};
-        locations[zone][rack][pos] = {
-            id: loc, sku, name: product.shortName || product.name,
-            barcode: product.barcode || '',
-            capacity: 500,
+        const parsed = parseLocation(product.location);
+        if (!parsed) return;
+        const { zone, rack, position } = parsed;
+        if (!zones[zone]) zones[zone] = {};
+        if (!zones[zone][rack]) zones[zone][rack] = {};
+        zones[zone][rack][position] = {
+            sku, location: product.location,
+            name: product.shortName || product.name,
+            barcode: product.barcode,
         };
     });
 
-    // Add from real inventory if available
+    // Include bins from inventory not already in catalog
     const invItems = inventory?.items || (Array.isArray(inventory) ? inventory : []);
-    invItems.forEach(item => {
+    invItems.forEach((item) => {
         const loc = item.location;
-        if (!loc) return;
-        const parts = loc.split('-');
-        if (parts.length < 3) return;
-        const [zone, rack, pos] = parts;
-        const sku = item.sku || item.default_code || '';
-        if (!locations[zone]) locations[zone] = {};
-        if (!locations[zone][rack]) locations[zone][rack] = {};
-        if (!locations[zone][rack][pos]) {
-            locations[zone][rack][pos] = {
-                id: loc, sku, name: item.name || sku,
-                barcode: item.barcode || '', capacity: 500,
+        const parsed = parseLocation(loc);
+        if (!parsed) return;
+        const { zone, rack, position } = parsed;
+        if (!zones[zone]) zones[zone] = {};
+        if (!zones[zone][rack]) zones[zone][rack] = {};
+        if (!zones[zone][rack][position]) {
+            zones[zone][rack][position] = {
+                sku: item.sku || item.default_code || '',
+                location: loc, name: item.name || item.sku || '',
+                barcode: item.barcode || '',
             };
         }
     });
 
-    // Build zones array
-    const zones = [];
-    const zoneKeys = Object.keys(locations).sort();
-    const ZONE_NAMES = { A: 'Skincare', B: 'Body Care', C: 'Lotion & Mist', D: 'Accessories', BULK: 'Bulk Storage' };
+    // Convert to flat bin list with computed x/y positions
+    const bins = [];
+    const sortedZones = Object.keys(zones).sort();
+    let zoneOffsetX = 24;
 
-    zoneKeys.forEach((zoneKey, zi) => {
-        const racks = Object.keys(locations[zoneKey]).sort();
-        const rackList = racks.map((rackId, ri) => {
-            const bins = Object.keys(locations[zoneKey][rackId]).sort();
-            return {
-                id: `${zoneKey}-${rackId}`,
-                label: `Rack ${zoneKey}-${rackId}`,
-                bins: bins.map(pos => ({
-                    ...locations[zoneKey][rackId][pos],
-                    id: `${zoneKey}-${rackId}-${pos}`,
-                })),
-            };
+    sortedZones.forEach((zoneLetter) => {
+        const racks = zones[zoneLetter];
+        const sortedRacks = Object.keys(racks).map(Number).sort((a, b) => a - b);
+        let maxRackWidth = 0;
+
+        sortedRacks.forEach((rackNum, ri) => {
+            const positions = racks[rackNum];
+            const sortedPos = Object.keys(positions).map(Number).sort((a, b) => a - b);
+
+            sortedPos.forEach((posNum, pi) => {
+                const bin = positions[posNum];
+                const x = zoneOffsetX + pi * (CELL_W + GAP);
+                const y = 32 + ri * (CELL_H + RACK_GAP);
+                bins.push({
+                    ...bin, id: bin.location, zone: zoneLetter,
+                    rack: rackNum, position: posNum, x, y,
+                });
+                maxRackWidth = Math.max(maxRackWidth, (pi + 1) * (CELL_W + GAP));
+            });
         });
 
-        zones.push({
-            id: zoneKey,
-            name: `Zone ${zoneKey} — ${ZONE_NAMES[zoneKey] || 'General'}`,
-            color: ZONE_COLORS[zoneKey] || '#6b7280',
-            racks: rackList,
-        });
+        zoneOffsetX += Math.max(maxRackWidth, CELL_W) + ZONE_GAP;
     });
 
-    return { zones, elements: [] };
-};
+    return bins;
+}
 
-// ── Get stock level for a bin ─────────────────────────────────────────────────
-const getBinStock = (binId, inventory) => {
+function getBinStock(binId, inventory) {
+    const catalogEntry = Object.entries(PRODUCT_CATALOG).find(([, p]) => p.location === binId);
+    const sku = catalogEntry?.[0];
+    // Try inventory items array
     const invItems = inventory?.items || (Array.isArray(inventory) ? inventory : []);
-    const item = invItems.find(i => (i.location === binId) || (i.sku === PRODUCT_CATALOG[Object.keys(PRODUCT_CATALOG).find(k => PRODUCT_CATALOG[k].location === binId)]?.sku));
-    if (!item) {
-        // Fallback to PRODUCT_CATALOG
-        const catEntry = Object.entries(PRODUCT_CATALOG).find(([_, p]) => p.location === binId);
-        if (catEntry) return { sku: catEntry[0], name: catEntry[1].shortName || catEntry[1].name, qty: 0, capacity: 500, pct: 0 };
-        return null;
-    }
-    const qty = item.onHand ?? item.quantity ?? 0;
-    const capacity = 500;
-    return { sku: item.sku || item.default_code, name: item.name, qty, capacity, pct: capacity > 0 ? (qty / capacity) * 100 : 0, lots: item.lots || [] };
-};
+    const item = invItems.find((i) => i.location === binId || i.sku === sku || i.default_code === sku);
+    const qty = item?.onHand ?? item?.qty_available ?? item?.quantity ?? item?.qty ?? 0;
+    const capacity = item?.capacity ?? 500;
+    const pct = capacity > 0 ? Math.min((qty / capacity) * 100, 100) : 0;
+    return {
+        qty, capacity, pct, sku: sku || item?.sku || '',
+        name: catalogEntry?.[1]?.shortName || catalogEntry?.[1]?.name || item?.name || '',
+        barcode: catalogEntry?.[1]?.barcode || item?.barcode || '',
+        brand: catalogEntry?.[1]?.brand || '',
+        lots: item?.lots || [],
+    };
+}
 
-const getStockColor = (pct) => {
-    if (pct <= 0) return STOCK_COLORS.empty;
-    if (pct < 10) return STOCK_COLORS.critical;
-    if (pct < 30) return STOCK_COLORS.low;
-    if (pct < 50) return STOCK_COLORS.medium;
-    return STOCK_COLORS.full;
-};
+function getStockColor(pct) {
+    if (pct <= 0)  return '#6b7280';
+    if (pct <= 15) return '#dc2626';
+    if (pct <= 35) return '#f97316';
+    if (pct <= 60) return '#eab308';
+    if (pct <= 85) return '#22c55e';
+    return '#16a34a';
+}
 
-// ── Bin Component ─────────────────────────────────────────────────────────────
-const BinCell = ({ bin, viewMode, inventory, countStatus, pickFreq, onClick, isSelected }) => {
-    const stock = getBinStock(bin.id, inventory);
-    const pct = stock?.pct || 0;
-    const qty = stock?.qty || 0;
+function getCountColor(binId, fullCountSession) {
+    if (!fullCountSession) return '#6b7280';
+    const counts = fullCountSession.counts || [];
+    const entry = counts.find((c) => c.location === binId);
+    if (!entry) return '#6b7280';
+    if (entry.status === 'counted' && entry.variance === 0) return '#22c55e';
+    if (entry.status === 'counted') return entry.needsRecount ? '#dc2626' : '#eab308';
+    return '#818cf8';
+}
 
-    let colors, label, sublabel;
-    if (viewMode === 'stock') {
-        colors = getStockColor(pct);
-        label = qty > 0 ? qty : '—';
-        sublabel = pct > 0 ? `${Math.round(pct)}%` : '';
-    } else if (viewMode === 'count') {
-        const status = countStatus?.[bin.id] || 'pending';
-        colors = COUNT_COLORS[status] || COUNT_COLORS.pending;
-        label = COUNT_COLORS[status]?.icon || '⏳';
-        sublabel = status;
-    } else {
-        const freq = pickFreq?.[bin.sku || stock?.sku] || 0;
-        const maxFreq = Math.max(1, ...Object.values(pickFreq || {}));
-        const intensity = freq / maxFreq;
-        colors = {
-            bg: `rgba(59,130,246,${0.05 + intensity * 0.4})`,
-            border: `rgba(59,130,246,${0.3 + intensity * 0.7})`,
-            text: intensity > 0.5 ? '#1e40af' : '#6b7280',
-        };
-        label = freq || '0';
-        sublabel = 'picks';
-    }
+function getCountLabel(binId, fullCountSession) {
+    if (!fullCountSession) return '--';
+    const counts = fullCountSession.counts || [];
+    const entry = counts.find((c) => c.location === binId);
+    if (!entry) return '--';
+    if (entry.status === 'counted') return entry.variance === 0 ? 'OK' : `${entry.variance > 0 ? '+' : ''}${entry.variance}`;
+    return 'Pending';
+}
 
+function getFrequencyData(binId, sku, activityLogs) {
+    if (!activityLogs?.length) return { count: 0, color: '#1e293b' };
+    const count = activityLogs.filter(
+        (l) => l.location === binId || l.binId === binId ||
+               l.details?.sku === sku || l.details?.barcode === sku
+    ).length;
+    if (count === 0) return { count, color: '#1e293b' };
+    if (count <= 3) return { count, color: '#3b82f6' };
+    if (count <= 8) return { count, color: '#8b5cf6' };
+    return { count, color: '#ec4899' };
+}
+
+// ── BinCell SVG component ───────────────────────────────────────────────────
+
+function BinCell({ bin, color, isSelected, onClick, label }) {
     return (
-        <div
-            onClick={() => onClick?.(bin, stock)}
-            className={`relative cursor-pointer rounded-lg p-2 transition-all hover:shadow-md hover:scale-105 ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-105' : ''}`}
-            style={{ backgroundColor: colors.bg, border: `1.5px solid ${colors.border}`, minWidth: 80, minHeight: 70 }}
-        >
-            <div className="text-[10px] font-bold text-gray-500 mb-0.5">{bin.id}</div>
-            <div className="text-lg font-bold" style={{ color: colors.text }}>{label}</div>
-            {sublabel && <div className="text-[9px]" style={{ color: colors.text }}>{sublabel}</div>}
-            {stock?.sku && <div className="text-[9px] text-gray-400 truncate mt-0.5" title={stock.name}>{stock.sku}</div>}
-        </div>
+        <g onClick={() => onClick(bin)} className="cursor-pointer" role="button" tabIndex={0}>
+            <rect
+                x={bin.x} y={bin.y} width={CELL_W} height={CELL_H} rx={5}
+                fill={color} fillOpacity={0.88}
+                stroke={isSelected ? '#ffffff' : (ZONE_COLORS[bin.zone] || '#6b7280')}
+                strokeWidth={isSelected ? 2.5 : 1}
+                strokeOpacity={isSelected ? 1 : 0.3}
+            />
+            <text x={bin.x + CELL_W / 2} y={bin.y + 18} textAnchor="middle"
+                fill="#fff" fontSize={10} fontWeight="600" style={{ pointerEvents: 'none' }}>
+                {bin.id}
+            </text>
+            {label && (
+                <text x={bin.x + CELL_W / 2} y={bin.y + 36} textAnchor="middle"
+                    fill="#ffffffcc" fontSize={9} style={{ pointerEvents: 'none' }}>
+                    {label}
+                </text>
+            )}
+        </g>
     );
-};
+}
 
-// ── Main WarehouseMap Component ───────────────────────────────────────────────
+// ── Main WarehouseMap Component ─────────────────────────────────────────────
+
 export default function WarehouseMap({
     inventory, activityLogs = [], countData = null, fullCountSession = null,
     onBinClick, onCountBin, isEmbedded = false, language = 'en',
@@ -177,346 +192,394 @@ export default function WarehouseMap({
     const isEn = language === 'en';
     const [viewMode, setViewMode] = useState('stock');
     const [selectedBin, setSelectedBin] = useState(null);
-    const [selectedStock, setSelectedStock] = useState(null);
     const [zoom, setZoom] = useState(1);
-    const [showEditor, setShowEditor] = useState(false);
+    const [pan, setPan] = useState({ x: 0, y: 0 });
+    const [isPanning, setIsPanning] = useState(false);
+    const panRef = useRef({ startX: 0, startY: 0, panX: 0, panY: 0 });
+    const [editing, setEditing] = useState(false);
     const [bgImage, setBgImage] = useState(() => localStorage.getItem('wms_map_bg') || null);
     const [bgOpacity, setBgOpacity] = useState(0.15);
     const fileRef = useRef(null);
+    const [savedLayout, setSavedLayout] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('wms_map_layout')); } catch { return null; }
+    });
 
-    // Auto-generate layout
-    const layout = useMemo(() => {
-        const stored = localStorage.getItem('wms_warehouse_layout');
-        if (stored) {
-            try { return JSON.parse(stored); } catch {}
-        }
+    // Generate or load layout
+    const bins = useMemo(() => {
+        if (savedLayout?.length) return savedLayout;
         return autoGenerateLayout(inventory);
-    }, [inventory]);
+    }, [inventory, savedLayout]);
 
-    // Pick frequency from activity logs
-    const pickFreq = useMemo(() => {
-        const freq = {};
-        const thirtyDays = Date.now() - 30 * 86400000;
-        activityLogs.forEach(l => {
-            if (l.action === 'pick' && l.timestamp >= thirtyDays) {
-                const sku = l.details?.sku || l.details?.barcode || '';
-                if (sku) freq[sku] = (freq[sku] || 0) + 1;
-            }
+    // SVG dimensions
+    const { svgW, svgH } = useMemo(() => {
+        if (!bins.length) return { svgW: 600, svgH: 300 };
+        const maxX = Math.max(...bins.map((b) => b.x)) + CELL_W + 48;
+        const maxY = Math.max(...bins.map((b) => b.y)) + CELL_H + 48;
+        return { svgW: maxX, svgH: maxY };
+    }, [bins]);
+
+    // Zone list for legend
+    const zoneList = useMemo(() => [...new Set(bins.map((b) => b.zone))].sort(), [bins]);
+
+    // Color and label getters
+    const getBinColor = useCallback((bin) => {
+        if (viewMode === 'stock') return getStockColor(getBinStock(bin.id, inventory).pct);
+        if (viewMode === 'count') return getCountColor(bin.id, fullCountSession);
+        return getFrequencyData(bin.id, bin.sku, activityLogs).color;
+    }, [viewMode, inventory, fullCountSession, activityLogs]);
+
+    const getBinLabel = useCallback((bin) => {
+        if (viewMode === 'stock') { const { qty } = getBinStock(bin.id, inventory); return `${qty} pcs`; }
+        if (viewMode === 'count') return getCountLabel(bin.id, fullCountSession);
+        return `${getFrequencyData(bin.id, bin.sku, activityLogs).count}x`;
+    }, [viewMode, inventory, fullCountSession, activityLogs]);
+
+    // Summary stats
+    const stats = useMemo(() => {
+        let total = bins.length, inStock = 0, low = 0, empty = 0;
+        bins.forEach((b) => {
+            const { pct } = getBinStock(b.id, inventory);
+            if (pct <= 0) empty++;
+            else if (pct < 30) { low++; inStock++; }
+            else inStock++;
         });
-        return freq;
-    }, [activityLogs]);
+        return { total, inStock, low, empty };
+    }, [bins, inventory]);
 
-    // Count status from countData or fullCountSession
-    const countStatus = useMemo(() => {
-        const status = {};
-        if (fullCountSession?.counts) {
-            fullCountSession.counts.forEach(c => {
-                status[`${c.location}`] = c.status === 'counted'
-                    ? (c.variance === 0 ? 'matched' : 'variance')
-                    : c.needsRecount ? 'recount' : 'pending';
-            });
-        }
-        if (countData) {
-            countData.forEach(r => {
-                if (r.location && !status[r.location]) {
-                    status[r.location] = r.status === 'matched' || (r.countedQty === r.systemQty) ? 'matched'
-                        : r.needsRecount ? 'recount' : 'variance';
-                }
-            });
-        }
-        // Mark frozen bins
-        if (fullCountSession?.status === 'frozen' || fullCountSession?.status === 'counting') {
-            layout.zones.forEach(z => z.racks.forEach(r => r.bins.forEach(b => {
-                if (!status[b.id]) status[b.id] = fullCountSession?.status === 'frozen' ? 'frozen' : 'pending';
-            })));
-        }
-        return status;
-    }, [countData, fullCountSession, layout]);
-
-    const handleBinClick = useCallback((bin, stock) => {
+    // Bin click
+    const handleBinClick = useCallback((bin) => {
         setSelectedBin(bin);
-        setSelectedStock(stock);
-        onBinClick?.(bin, stock);
-    }, [onBinClick]);
+        onBinClick?.(bin, getBinStock(bin.id, inventory));
+    }, [onBinClick, inventory]);
 
+    // Zoom / pan
+    const handleZoomIn = () => setZoom((z) => Math.min(z + 0.15, 2.5));
+    const handleZoomOut = () => setZoom((z) => Math.max(z - 0.15, 0.4));
+    const handleResetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+
+    const handlePointerDown = (e) => {
+        if (editing) return;
+        setIsPanning(true);
+        panRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y };
+    };
+    useEffect(() => {
+        if (!isPanning) return;
+        const onMove = (e) => {
+            setPan({
+                x: panRef.current.panX + (e.clientX - panRef.current.startX) / zoom,
+                y: panRef.current.panY + (e.clientY - panRef.current.startY) / zoom,
+            });
+        };
+        const onUp = () => setIsPanning(false);
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        return () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    }, [isPanning, zoom]);
+
+    // Background upload
     const handleBgUpload = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { alert('Max 5MB'); return; }
+        if (file.size > 5 * 1024 * 1024) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
-            setBgImage(ev.target.result);
-            localStorage.setItem('wms_map_bg', ev.target.result);
-        };
+        reader.onload = (ev) => { setBgImage(ev.target.result); localStorage.setItem('wms_map_bg', ev.target.result); };
         reader.readAsDataURL(file);
     };
+    const handleRemoveBg = () => { setBgImage(null); localStorage.removeItem('wms_map_bg'); };
 
-    const saveLayout = () => {
-        localStorage.setItem('wms_warehouse_layout', JSON.stringify(layout));
-    };
+    // Layout save / reset
+    const handleSaveLayout = () => { localStorage.setItem('wms_map_layout', JSON.stringify(bins)); setSavedLayout(bins); setEditing(false); };
+    const handleResetLayout = () => { localStorage.removeItem('wms_map_layout'); setSavedLayout(null); setEditing(false); };
 
-    // Summary stats
-    const mapStats = useMemo(() => {
-        let totalBins = 0, occupied = 0, lowStock = 0, empty = 0;
-        layout.zones.forEach(z => z.racks.forEach(r => r.bins.forEach(b => {
-            totalBins++;
-            const stock = getBinStock(b.id, inventory);
-            if (!stock || stock.qty <= 0) empty++;
-            else if (stock.pct < 30) { lowStock++; occupied++; }
-            else occupied++;
-        })));
-        return { totalBins, occupied, lowStock, empty };
-    }, [layout, inventory]);
+    // Detail data for selected bin
+    const detail = useMemo(() => {
+        if (!selectedBin) return null;
+        const stock = getBinStock(selectedBin.id, inventory);
+        const freq = getFrequencyData(selectedBin.id, selectedBin.sku, activityLogs);
+        const countLabel = getCountLabel(selectedBin.id, fullCountSession);
+        return { stock, freq, countLabel };
+    }, [selectedBin, inventory, activityLogs, fullCountSession]);
 
     return (
-        <div className={`${isEmbedded ? '' : 'space-y-4'}`}>
-            {/* Header */}
+        <div className={`flex flex-col ${isEmbedded ? 'h-full' : 'space-y-3'}`}>
+            {/* Toolbar */}
             {!isEmbedded && (
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-blue-600" />
-                        <h2 className="text-lg font-bold text-gray-900">{isEn ? 'Warehouse Map' : 'แผนผังคลัง'}</h2>
-                        <span className="text-xs text-gray-400">{mapStats.totalBins} bins</span>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <Map size={18} className="text-blue-600 dark:text-blue-400" />
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                            {isEn ? 'Warehouse Map' : 'แผนผังคลัง'}
+                        </h2>
+                        <span className="text-xs text-gray-400">{stats.total} bins</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* View mode toggle */}
-                        <div className="flex bg-gray-100 rounded-lg p-0.5">
-                            {VIEW_MODES.map(vm => (
-                                <button key={vm.key} onClick={() => setViewMode(vm.key)}
-                                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === vm.key ? 'bg-white shadow text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}>
-                                    {vm.icon} {vm.label}
+                        {/* View mode tabs */}
+                        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+                            {VIEW_MODES.map((m) => (
+                                <button key={m.id} onClick={() => setViewMode(m.id)}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                                        viewMode === m.id
+                                            ? 'bg-white dark:bg-gray-600 text-blue-700 dark:text-blue-300 shadow-sm'
+                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    }`}>
+                                    <m.Icon size={13} /> {m.label}
                                 </button>
                             ))}
                         </div>
-                        {/* Zoom */}
-                        <div className="flex items-center gap-1 border rounded-lg px-1">
-                            <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="p-1 text-gray-400 hover:text-gray-600"><ZoomOut className="w-3.5 h-3.5" /></button>
-                            <span className="text-xs text-gray-500 w-8 text-center">{Math.round(zoom * 100)}%</span>
-                            <button onClick={() => setZoom(z => Math.min(2, z + 0.1))} className="p-1 text-gray-400 hover:text-gray-600"><ZoomIn className="w-3.5 h-3.5" /></button>
+                        {/* Zoom controls */}
+                        <div className="flex items-center gap-0.5 border dark:border-gray-600 rounded-lg px-1">
+                            <button onClick={handleZoomOut} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><ZoomOut size={14} /></button>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 w-8 text-center">{Math.round(zoom * 100)}%</span>
+                            <button onClick={handleZoomIn} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><ZoomIn size={14} /></button>
                         </div>
-                        {/* Editor toggle */}
-                        <button onClick={() => setShowEditor(!showEditor)}
-                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium ${showEditor ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
-                            <Settings className="w-3.5 h-3.5" /> {isEn ? 'Edit Layout' : 'แก้ไข'}
+                        <button onClick={handleResetView} className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"><Maximize2 size={14} /></button>
+                        <button onClick={() => setEditing(!editing)}
+                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium ${editing ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+                            <Settings size={13} /> {isEn ? 'Edit' : 'แก้ไข'}
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Embedded mode: compact view toggle */}
+            {/* Embedded mode: compact toggle */}
             {isEmbedded && (
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex bg-gray-100 rounded-lg p-0.5">
-                        {VIEW_MODES.map(vm => (
-                            <button key={vm.key} onClick={() => setViewMode(vm.key)}
-                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${viewMode === vm.key ? 'bg-white shadow text-blue-700' : 'text-gray-500'}`}>
-                                {vm.icon} {vm.label}
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+                        {VIEW_MODES.map((m) => (
+                            <button key={m.id} onClick={() => setViewMode(m.id)}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${viewMode === m.id ? 'bg-white dark:bg-gray-600 shadow text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}>
+                                <m.Icon size={11} /> {m.label}
                             </button>
                         ))}
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                        <button onClick={handleZoomOut} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><ZoomOut size={12} /></button>
+                        <button onClick={handleZoomIn} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><ZoomIn size={12} /></button>
                     </div>
                 </div>
             )}
 
             {/* Editor panel */}
-            {showEditor && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-                    <h3 className="text-sm font-bold text-blue-800 flex items-center gap-1.5">
-                        <Edit3 className="w-4 h-4" /> {isEn ? 'Layout Editor' : 'แก้ไข Layout'}
+            {editing && !isEmbedded && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 space-y-2">
+                    <h3 className="text-xs font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                        <Edit3 size={13} /> {isEn ? 'Layout Editor' : 'แก้ไข Layout'}
                     </h3>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <button onClick={() => fileRef.current?.click()}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white border rounded-lg text-xs font-medium hover:bg-gray-50">
-                            <Upload className="w-3.5 h-3.5" /> {isEn ? 'Upload Floor Plan' : 'อัปโหลดแบบแปลน'}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200">
+                            <Upload size={13} /> {isEn ? 'Upload Floor Plan' : 'อัปโหลดแบบแปลน'}
                         </button>
                         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
                         {bgImage && (
                             <>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500">{isEn ? 'Opacity' : 'ความโปร่งใส'}:</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Opacity:</span>
                                     <input type="range" min="5" max="50" value={bgOpacity * 100}
-                                        onChange={e => setBgOpacity(e.target.value / 100)}
-                                        className="w-24 h-1" />
-                                    <span className="text-xs text-gray-400">{Math.round(bgOpacity * 100)}%</span>
+                                        onChange={(e) => setBgOpacity(e.target.value / 100)} className="w-20 h-1" />
+                                    <span className="text-[10px] text-gray-400">{Math.round(bgOpacity * 100)}%</span>
                                 </div>
-                                <button onClick={() => { setBgImage(null); localStorage.removeItem('wms_map_bg'); }}
-                                    className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded">
-                                    <Trash2 className="w-3 h-3" /> {isEn ? 'Remove' : 'ลบ'}
+                                <button onClick={handleRemoveBg}
+                                    className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
+                                    <Trash2 size={12} /> {isEn ? 'Remove' : 'ลบ'}
                                 </button>
                             </>
                         )}
-                        <button onClick={saveLayout}
-                            className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 ml-auto">
-                            <Save className="w-3.5 h-3.5" /> {isEn ? 'Save Layout' : 'บันทึก'}
+                        <div className="flex-1" />
+                        <button onClick={handleSaveLayout}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">
+                            <Save size={13} /> {isEn ? 'Save' : 'บันทึก'}
+                        </button>
+                        <button onClick={handleResetLayout}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500">
+                            <RotateCcw size={13} /> {isEn ? 'Reset' : 'รีเซ็ต'}
                         </button>
                     </div>
-                    <p className="text-[10px] text-blue-600">
-                        {isEn
-                            ? 'Upload your warehouse floor plan as background. Bins are auto-generated from product locations.'
-                            : 'อัปโหลดแบบแปลนคลังเป็น background ตำแหน่ง Bin สร้างอัตโนมัติจาก location สินค้า'}
-                    </p>
                 </div>
             )}
 
-            {/* Summary stats bar */}
-            <div className="grid grid-cols-4 gap-2">
-                <div className="bg-white border rounded-lg p-2.5 text-center">
-                    <p className="text-lg font-bold text-gray-900">{mapStats.totalBins}</p>
-                    <p className="text-[10px] text-gray-400">{isEn ? 'Total Bins' : 'ทั้งหมด'}</p>
-                </div>
-                <div className="bg-white border rounded-lg p-2.5 text-center">
-                    <p className="text-lg font-bold text-green-600">{mapStats.occupied}</p>
-                    <p className="text-[10px] text-gray-400">{isEn ? 'In Stock' : 'มีสต็อค'}</p>
-                </div>
-                <div className="bg-white border rounded-lg p-2.5 text-center">
-                    <p className="text-lg font-bold text-orange-600">{mapStats.lowStock}</p>
-                    <p className="text-[10px] text-gray-400">{isEn ? 'Low Stock' : 'สต็อคต่ำ'}</p>
-                </div>
-                <div className="bg-white border rounded-lg p-2.5 text-center">
-                    <p className="text-lg font-bold text-gray-400">{mapStats.empty}</p>
-                    <p className="text-[10px] text-gray-400">{isEn ? 'Empty' : 'ว่าง'}</p>
-                </div>
-            </div>
-
-            {/* Map container */}
-            <div className="relative bg-white border rounded-xl overflow-hidden" style={{ minHeight: 400 }}>
-                {/* Background image */}
-                {bgImage && (
-                    <img src={bgImage} alt="Floor plan" className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                        style={{ opacity: bgOpacity }} />
-                )}
-
-                {/* Zones */}
-                <div className="relative p-4 space-y-4" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}>
-                    {layout.zones.map(zone => (
-                        <div key={zone.id} className="rounded-xl border-2 p-3" style={{ borderColor: zone.color + '60', backgroundColor: zone.color + '08' }}>
-                            {/* Zone header */}
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color }} />
-                                    <span className="text-sm font-bold text-gray-700">{zone.name}</span>
-                                    <span className="text-[10px] text-gray-400">
-                                        {zone.racks.reduce((s, r) => s + r.bins.length, 0)} bins
-                                    </span>
-                                </div>
-                                {/* Zone count progress for full count */}
-                                {fullCountSession && (() => {
-                                    const zoneBins = zone.racks.flatMap(r => r.bins.map(b => b.id));
-                                    const counted = zoneBins.filter(id => countStatus[id] === 'matched' || countStatus[id] === 'variance').length;
-                                    const total = zoneBins.length;
-                                    const pct = total > 0 ? Math.round((counted / total) * 100) : 0;
-                                    return (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                                <div className={`h-full rounded-full ${pct === 100 ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
-                                            </div>
-                                            <span className={`text-xs font-medium ${pct === 100 ? 'text-green-600' : 'text-blue-600'}`}>{pct}%</span>
-                                        </div>
-                                    );
-                                })()}
-                            </div>
-
-                            {/* Racks */}
-                            <div className="space-y-3">
-                                {zone.racks.map(rack => (
-                                    <div key={rack.id}>
-                                        <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1.5">{rack.label}</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {rack.bins.map(bin => (
-                                                <BinCell
-                                                    key={bin.id} bin={bin} viewMode={viewMode}
-                                                    inventory={inventory} countStatus={countStatus} pickFreq={pickFreq}
-                                                    onClick={handleBinClick} isSelected={selectedBin?.id === bin.id}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+            {/* Summary stats */}
+            {!isEmbedded && (
+                <div className="grid grid-cols-4 gap-2">
+                    {[
+                        { val: stats.total, label: isEn ? 'Total Bins' : 'ทั้งหมด', color: 'text-gray-900 dark:text-gray-100' },
+                        { val: stats.inStock, label: isEn ? 'In Stock' : 'มีสต็อค', color: 'text-green-600' },
+                        { val: stats.low, label: isEn ? 'Low Stock' : 'สต็อคต่ำ', color: 'text-orange-600' },
+                        { val: stats.empty, label: isEn ? 'Empty' : 'ว่าง', color: 'text-gray-400' },
+                    ].map((s) => (
+                        <div key={s.label} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-2.5 text-center">
+                            <p className={`text-lg font-bold ${s.color}`}>{s.val}</p>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">{s.label}</p>
                         </div>
                     ))}
-
-                    {/* Empty state */}
-                    {layout.zones.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                            <MapPin className="w-12 h-12 mb-3 opacity-30" />
-                            <p className="text-sm font-medium">{isEn ? 'No locations configured' : 'ยังไม่มีตำแหน่ง'}</p>
-                            <p className="text-xs mt-1">{isEn ? 'Connect Odoo or add products to generate map' : 'เชื่อมต่อ Odoo หรือเพิ่มสินค้าเพื่อสร้างแผนผัง'}</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Legend */}
-            <div className="flex items-center gap-4 text-[10px] text-gray-500 px-1">
-                {viewMode === 'stock' && <>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: STOCK_COLORS.full.bg, border: `1px solid ${STOCK_COLORS.full.border}` }} /> &gt;50%</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: STOCK_COLORS.medium.bg, border: `1px solid ${STOCK_COLORS.medium.border}` }} /> 30-50%</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: STOCK_COLORS.low.bg, border: `1px solid ${STOCK_COLORS.low.border}` }} /> &lt;30%</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded" style={{ backgroundColor: STOCK_COLORS.empty.bg, border: `1px solid ${STOCK_COLORS.empty.border}` }} /> Empty</span>
-                </>}
-                {viewMode === 'count' && <>
-                    <span>✅ Matched</span> <span>⚠️ Variance</span> <span>⏳ Pending</span> <span>🔄 Recount</span> <span>🔒 Frozen</span>
-                </>}
-                {viewMode === 'frequency' && <span>Color intensity = pick frequency (30 days)</span>}
-            </div>
-
-            {/* Bin Detail Panel */}
-            {selectedBin && selectedStock && (
-                <div className="bg-white border-2 border-blue-200 rounded-xl p-4 shadow-lg">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-blue-600" />
-                            <span className="font-bold text-gray-900">{selectedBin.id}</span>
-                            {selectedBin.sku && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono">{selectedBin.sku || selectedStock.sku}</span>}
-                        </div>
-                        <button onClick={() => { setSelectedBin(null); setSelectedStock(null); }} className="p-1 text-gray-400 hover:text-gray-600">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase">{isEn ? 'Product' : 'สินค้า'}</p>
-                            <p className="text-sm font-medium text-gray-900">{selectedStock.name || '—'}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase">{isEn ? 'On Hand' : 'คงเหลือ'}</p>
-                            <p className="text-sm font-bold text-gray-900">{selectedStock.qty ?? 0}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase">{isEn ? 'Capacity' : 'ความจุ'}</p>
-                            <p className="text-sm text-gray-600">{selectedStock.capacity || 500}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase">{isEn ? 'Fill %' : 'เติม %'}</p>
-                            <p className={`text-sm font-bold ${selectedStock.pct > 50 ? 'text-green-600' : selectedStock.pct > 20 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                {Math.round(selectedStock.pct || 0)}%
-                            </p>
-                        </div>
-                    </div>
-                    {selectedStock.lots?.length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
-                            <p className="text-[10px] text-gray-400 uppercase mb-1">{isEn ? 'Lots' : 'ล็อต'}</p>
-                            <div className="flex flex-wrap gap-2">
-                                {selectedStock.lots.map((lot, i) => (
-                                    <span key={i} className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded border border-purple-200">
-                                        {lot.lotNumber || lot.lot_id?.[1] || `Lot ${i + 1}`} — {lot.qty ?? '?'} pcs
-                                        {lot.expiryDate && <span className="text-purple-400 ml-1">exp: {lot.expiryDate}</span>}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    {/* Action buttons */}
-                    <div className="flex gap-2 mt-3 pt-3 border-t">
-                        {onCountBin && (
-                            <button onClick={() => onCountBin(selectedBin, selectedStock)}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">
-                                <CheckCircle2 className="w-3.5 h-3.5" /> {isEn ? 'Count Now' : 'นับ'}
-                            </button>
-                        )}
-                    </div>
                 </div>
             )}
+
+            {/* Main: SVG map + detail panel */}
+            <div className={`flex ${isEmbedded ? 'flex-1' : ''} overflow-hidden`}>
+                {/* Map canvas */}
+                <div className="flex-1 relative bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl overflow-hidden"
+                    style={{ minHeight: isEmbedded ? 200 : 360, cursor: isPanning ? 'grabbing' : 'grab' }}
+                    onPointerDown={handlePointerDown}>
+
+                    {/* Zone legend chips */}
+                    <div className="absolute top-2 left-2 z-10 flex gap-1 flex-wrap">
+                        {zoneList.map((z) => (
+                            <span key={z} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
+                                style={{ backgroundColor: ZONE_COLORS[z] || '#6b7280' }}>
+                                <MapPin size={9} /> Zone {z}
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Zoom badge */}
+                    <div className="absolute bottom-2 right-2 z-10 px-2 py-0.5 rounded bg-black/40 text-white text-[10px] font-mono">
+                        {Math.round(zoom * 100)}%
+                    </div>
+
+                    {/* Background image */}
+                    {bgImage && (
+                        <img src={bgImage} alt="Floor plan" className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                            style={{ opacity: bgOpacity }} />
+                    )}
+
+                    <svg width="100%" height="100%" viewBox={`0 0 ${svgW} ${svgH}`}
+                        preserveAspectRatio="xMidYMid meet"
+                        style={{ transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`, transformOrigin: '0 0' }}>
+
+                        {/* Zone labels */}
+                        {zoneList.map((z) => {
+                            const zoneBins = bins.filter((b) => b.zone === z);
+                            if (!zoneBins.length) return null;
+                            const minX = Math.min(...zoneBins.map((b) => b.x));
+                            const minY = Math.min(...zoneBins.map((b) => b.y));
+                            return (
+                                <text key={`zl-${z}`} x={minX} y={minY - 10} fontSize={12}
+                                    fontWeight="700" fill={ZONE_COLORS[z] || '#6b7280'}>
+                                    Zone {z}
+                                </text>
+                            );
+                        })}
+
+                        {/* Bin cells */}
+                        {bins.map((bin) => (
+                            <BinCell key={bin.id} bin={bin}
+                                color={getBinColor(bin)} label={getBinLabel(bin)}
+                                isSelected={selectedBin?.id === bin.id}
+                                onClick={handleBinClick} />
+                        ))}
+
+                        {/* Empty state */}
+                        {bins.length === 0 && (
+                            <text x={svgW / 2} y={svgH / 2} textAnchor="middle" fill="#9ca3af" fontSize={14}>
+                                {isEn ? 'No locations configured' : 'ยังไม่มีตำแหน่ง'}
+                            </text>
+                        )}
+                    </svg>
+                </div>
+
+                {/* Detail side panel */}
+                {selectedBin && detail && (
+                    <div className="w-64 ml-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-y-auto flex-shrink-0">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded" style={{ backgroundColor: ZONE_COLORS[selectedBin.zone] || '#6b7280' }} />
+                                <span className="font-semibold text-sm text-gray-800 dark:text-gray-100">{selectedBin.id}</span>
+                            </div>
+                            <button onClick={() => setSelectedBin(null)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"><X size={14} /></button>
+                        </div>
+                        <div className="p-3 space-y-3 text-xs">
+                            {/* Product */}
+                            {detail.stock.sku && (
+                                <div className="space-y-1">
+                                    <p className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">{isEn ? 'Product' : 'สินค้า'}</p>
+                                    <p className="text-gray-800 dark:text-gray-100 font-medium">{detail.stock.name}</p>
+                                    <p className="text-gray-500 dark:text-gray-400">SKU: {detail.stock.sku}</p>
+                                    {detail.stock.barcode && <p className="text-gray-500 dark:text-gray-400">Barcode: {detail.stock.barcode}</p>}
+                                    {detail.stock.brand && <p className="text-gray-500 dark:text-gray-400">Brand: {detail.stock.brand}</p>}
+                                </div>
+                            )}
+                            {/* Stock */}
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">{isEn ? 'Stock Level' : 'ระดับสต็อค'}</p>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-700 dark:text-gray-200">{detail.stock.qty} / {detail.stock.capacity}</span>
+                                    <span className="font-bold" style={{ color: getStockColor(detail.stock.pct) }}>{Math.round(detail.stock.pct)}%</span>
+                                </div>
+                                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full transition-all" style={{ width: `${detail.stock.pct}%`, backgroundColor: getStockColor(detail.stock.pct) }} />
+                                </div>
+                            </div>
+                            {/* Lots */}
+                            {detail.stock.lots?.length > 0 && (
+                                <div className="space-y-1">
+                                    <p className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">{isEn ? 'Lots' : 'ล็อต'}</p>
+                                    {detail.stock.lots.map((lot, i) => (
+                                        <div key={i} className="flex justify-between bg-gray-50 dark:bg-gray-700/50 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                                            <span>{lot.lotNumber || lot.lot_id?.[1] || lot.name || `Lot ${i + 1}`}</span>
+                                            <span>{lot.qty ?? lot.quantity ?? '-'}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {/* Picks */}
+                            <div className="space-y-1">
+                                <p className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">{isEn ? 'Pick Frequency' : 'ความถี่หยิบ'}</p>
+                                <p className="text-gray-700 dark:text-gray-200">{detail.freq.count} picks</p>
+                            </div>
+                            {/* Count status */}
+                            <div className="space-y-1">
+                                <p className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">{isEn ? 'Count Status' : 'สถานะนับ'}</p>
+                                <p className="text-gray-700 dark:text-gray-200">{detail.countLabel}</p>
+                            </div>
+                            {/* Actions */}
+                            <div className="pt-2 space-y-1.5 border-t dark:border-gray-700">
+                                {onCountBin && (
+                                    <button onClick={() => onCountBin(selectedBin, detail.stock)}
+                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium">
+                                        <ClipboardCheck size={13} /> {isEn ? 'Count This Bin' : 'นับ Bin นี้'}
+                                    </button>
+                                )}
+                                {onBinClick && (
+                                    <button onClick={() => onBinClick(selectedBin, detail.stock)}
+                                        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-medium">
+                                        <ChevronRight size={13} /> {isEn ? 'View Details' : 'ดูรายละเอียด'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Legend bar */}
+            <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400 px-1 pt-1">
+                <span className="font-semibold">Legend:</span>
+                {viewMode === 'stock' && [
+                    { c: '#6b7280', l: 'Empty' }, { c: '#dc2626', l: '0-15%' }, { c: '#f97316', l: '16-35%' },
+                    { c: '#eab308', l: '36-60%' }, { c: '#22c55e', l: '61-85%' }, { c: '#16a34a', l: '86-100%' },
+                ].map((i) => (
+                    <span key={i.l} className="flex items-center gap-1">
+                        <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: i.c }} />{i.l}
+                    </span>
+                ))}
+                {viewMode === 'count' && [
+                    { c: '#22c55e', l: 'Match' }, { c: '#eab308', l: 'Variance' }, { c: '#dc2626', l: 'Recount' },
+                    { c: '#818cf8', l: 'Pending' }, { c: '#6b7280', l: 'Not Counted' },
+                ].map((i) => (
+                    <span key={i.l} className="flex items-center gap-1">
+                        <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: i.c }} />{i.l}
+                    </span>
+                ))}
+                {viewMode === 'frequency' && [
+                    { c: '#1e293b', l: 'None' }, { c: '#3b82f6', l: 'Low (1-3)' },
+                    { c: '#8b5cf6', l: 'Med (4-8)' }, { c: '#ec4899', l: 'High (9+)' },
+                ].map((i) => (
+                    <span key={i.l} className="flex items-center gap-1">
+                        <span className="w-3 h-2 rounded-sm inline-block" style={{ backgroundColor: i.c }} />{i.l}
+                    </span>
+                ))}
+            </div>
         </div>
     );
 }
