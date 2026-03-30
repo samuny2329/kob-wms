@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants';
 import { getActivePickers } from './TimeAttendance';
+import WarehouseMap from './WarehouseMap';
 
 // ── ABC Classification ──
 const ABC_CONFIG = {
@@ -104,8 +105,18 @@ const generateDailyNotifications = (assignedTasks, pickers, dateStr) => {
 };
 
 
+// ── Full Count Status Config ──
+const FC_STATUS = {
+    planning:     { label: 'Planning', color: '#6366f1', icon: '📋' },
+    frozen:       { label: 'Stock Frozen', color: '#0284c7', icon: '🔒' },
+    counting:     { label: 'Counting', color: '#2563eb', icon: '📊' },
+    reconciling:  { label: 'Reconciling', color: '#d97706', icon: '⚖️' },
+    closed:       { label: 'Closed', color: '#16a34a', icon: '✅' },
+};
+
 const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, user, users = [], logActivity }) => {
-    // ── State ──
+    // ── Tab & Mode State ──
+    const [activeTab, setActiveTab] = useState('cycle'); // 'cycle' | 'fullcount' | 'map'
     const [mode, setMode] = useState('dashboard');
     // Scan flow: 'scan-location' → 'scan-product' → 'enter-qty' → submit → next
     const [scanStep, setScanStep] = useState('scan-location');
@@ -136,6 +147,23 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     useEffect(() => {
         localStorage.setItem(LS_COUNTS, JSON.stringify(countRecords));
     }, [countRecords]);
+
+    // ── Full Count State ──
+    const LS_FULL_COUNTS = 'wms_full_counts';
+    const [fullCountSessions, setFullCountSessions] = useState(() => safeParse(LS_FULL_COUNTS, []));
+    const [activeSession, setActiveSession] = useState(null);
+    const [fcMode, setFcMode] = useState('list'); // 'list' | 'create' | 'counting' | 'reconcile'
+    const [fcForm, setFcForm] = useState({ name: '', blindCount: true, requireDoubleCount: false, freezeStock: true, scopeType: 'full', zones: [] });
+    const [fcCountInput, setFcCountInput] = useState('');
+    const [fcSelectedItem, setFcSelectedItem] = useState(null);
+
+    useEffect(() => {
+        localStorage.setItem(LS_FULL_COUNTS, JSON.stringify(fullCountSessions));
+    }, [fullCountSessions]);
+
+    const stockFrozen = useMemo(() => {
+        return fullCountSessions.some(s => s.status === 'frozen' || s.status === 'counting');
+    }, [fullCountSessions]);
 
     // ── Build product list (only from real inventory data) ──
     const products = useMemo(() => {
@@ -508,6 +536,134 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         myTasks.forEach(t => { summary[t.abcGrade].today++; });
         return summary;
     }, [products, abcClassification, myTasks]);
+
+    // ── Full Count Functions ──
+    const createFullCount = useCallback(() => {
+        const allBins = [];
+        const invItems = inventory?.items || (Array.isArray(inventory) ? inventory : []);
+        // Build from PRODUCT_CATALOG + inventory
+        const seenLocations = new Set();
+        Object.entries(PRODUCT_CATALOG).forEach(([sku, cat]) => {
+            if (!cat.location) return;
+            const invItem = invItems.find(i => (i.sku || i.default_code) === sku);
+            allBins.push({
+                binId: cat.location, sku, name: cat.shortName || cat.name, location: cat.location,
+                systemQty: invItem?.onHand ?? invItem?.quantity ?? 0,
+                countedQty: null, variance: null, countedBy: null, countedAt: null,
+                secondCountQty: null, secondCountBy: null,
+                status: 'pending', needsRecount: false, note: '',
+            });
+            seenLocations.add(cat.location);
+        });
+        invItems.forEach(item => {
+            const loc = item.location;
+            if (!loc || seenLocations.has(loc)) return;
+            allBins.push({
+                binId: loc, sku: item.sku || item.default_code || '', name: item.name || '', location: loc,
+                systemQty: item.onHand ?? item.quantity ?? 0,
+                countedQty: null, variance: null, countedBy: null, countedAt: null,
+                secondCountQty: null, secondCountBy: null,
+                status: 'pending', needsRecount: false, note: '',
+            });
+        });
+
+        // Zone assignments from products
+        const zoneMap = {};
+        allBins.forEach(b => {
+            const zone = b.location.split('-')[0];
+            if (!zoneMap[zone]) zoneMap[zone] = [];
+            if (!zoneMap[zone].includes(b.binId)) zoneMap[zone].push(b.binId);
+        });
+
+        const period = new Date().toISOString().split('T')[0].substring(0, 7);
+        const session = {
+            id: `FC-${Date.now()}`,
+            name: fcForm.name || `Full Count ${period}`,
+            status: 'planning',
+            settings: { blindCount: fcForm.blindCount, requireDoubleCount: fcForm.requireDoubleCount, freezeStock: fcForm.freezeStock },
+            scope: { type: fcForm.scopeType, zones: Object.keys(zoneMap) },
+            zoneAssignments: Object.keys(zoneMap).map(z => ({ zone: z, assignees: [] })),
+            frozenAt: null, frozenInventory: [],
+            counts: allBins,
+            progress: {
+                total: allBins.length, counted: 0, matched: 0, variance: 0,
+                byZone: Object.fromEntries(Object.entries(zoneMap).map(([z, bins]) => [z, { total: bins.length, done: 0 }])),
+            },
+            reconciliation: { totalVarianceQty: 0, totalVarianceValue: 0, adjustments: [], approvedBy: null, approvedAt: null },
+            createdBy: user?.username || 'admin', createdAt: new Date().toISOString(), closedAt: null,
+        };
+
+        setFullCountSessions(prev => [session, ...prev]);
+        setActiveSession(session);
+        setFcMode('counting');
+        addToast?.(`Full Count "${session.name}" created with ${allBins.length} items`, 'success');
+        logActivity?.('full-count-create', { sessionId: session.id, totalItems: allBins.length });
+    }, [inventory, fcForm, user, addToast, logActivity]);
+
+    const freezeStock = useCallback((sessionId) => {
+        const invSnapshot = inventory?.items || (Array.isArray(inventory) ? inventory : []);
+        setFullCountSessions(prev => prev.map(s => s.id === sessionId ? {
+            ...s, status: 'frozen', frozenAt: new Date().toISOString(), frozenInventory: JSON.parse(JSON.stringify(invSnapshot)),
+        } : s));
+        addToast?.('Stock frozen — Pick/Pack blocked during count', 'warning');
+        logActivity?.('full-count-freeze', { sessionId });
+    }, [inventory, addToast, logActivity]);
+
+    const unfreezeStock = useCallback((sessionId) => {
+        setFullCountSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'counting' } : s));
+        addToast?.('Stock unfrozen — operations resumed', 'success');
+    }, [addToast]);
+
+    const submitFullCount = useCallback((sessionId, binId, qty) => {
+        setFullCountSessions(prev => prev.map(s => {
+            if (s.id !== sessionId) return s;
+            const counts = s.counts.map(c => {
+                if (c.binId !== binId) return c;
+                const variance = qty - c.systemQty;
+                const variancePct = c.systemQty > 0 ? Math.abs(variance / c.systemQty) * 100 : (qty > 0 ? 100 : 0);
+                const needsRecount = variancePct > VARIANCE_AUTO_APPROVE_PCT && variance !== 0;
+                return {
+                    ...c, countedQty: qty, variance, countedBy: user?.username, countedAt: new Date().toISOString(),
+                    status: needsRecount ? 'needs-recount' : (variance === 0 ? 'matched' : 'variance-approved'),
+                    needsRecount,
+                };
+            });
+            const counted = counts.filter(c => c.countedQty !== null).length;
+            const matched = counts.filter(c => c.status === 'matched').length;
+            const varianceCount = counts.filter(c => c.countedQty !== null && c.variance !== 0).length;
+            // Update zone progress
+            const byZone = { ...s.progress.byZone };
+            Object.keys(byZone).forEach(z => {
+                const zoneCounts = counts.filter(c => c.location.startsWith(z + '-'));
+                byZone[z] = { total: zoneCounts.length, done: zoneCounts.filter(c => c.countedQty !== null).length };
+            });
+            return { ...s, counts, progress: { ...s.progress, counted, matched, variance: varianceCount, byZone } };
+        }));
+        logActivity?.('full-count-item', { sessionId, binId, qty });
+    }, [user, logActivity]);
+
+    const closeFullCount = useCallback((sessionId) => {
+        setFullCountSessions(prev => prev.map(s => {
+            if (s.id !== sessionId) return s;
+            const totalVarianceQty = s.counts.reduce((sum, c) => sum + Math.abs(c.variance || 0), 0);
+            return {
+                ...s, status: 'closed', closedAt: new Date().toISOString(),
+                reconciliation: { ...s.reconciliation, totalVarianceQty, approvedBy: user?.username, approvedAt: new Date().toISOString() },
+            };
+        }));
+        setActiveSession(null);
+        setFcMode('list');
+        addToast?.('Full Count closed and archived', 'success');
+        logActivity?.('full-count-close', { sessionId });
+    }, [user, addToast, logActivity]);
+
+    // Keep activeSession in sync
+    useEffect(() => {
+        if (activeSession) {
+            const updated = fullCountSessions.find(s => s.id === activeSession.id);
+            if (updated) setActiveSession(updated);
+        }
+    }, [fullCountSessions]);
 
     // ═══════════════════════════════════════════════════════════════
     // ── RENDER: Counting Mode (Location → Product → Qty) ──
@@ -1032,17 +1188,18 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     // ═══════════════════════════════════════════════════════════════
     return (
         <div className="space-y-4">
-            {/* Header */}
+            {/* Header with Tabs */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <ClipboardCheck className="w-6 h-6 text-purple-600" />
-                        Cycle Count
+                        {activeTab === 'cycle' ? 'Cycle Count' : activeTab === 'fullcount' ? 'Full Count' : 'Warehouse Map'}
                     </h2>
-                    <p className="text-sm text-gray-500">Blind Count — Location → Product → Quantity</p>
+                    <p className="text-sm text-gray-500">
+                        {activeTab === 'cycle' ? 'Blind Count — Location → Product → Quantity' : activeTab === 'fullcount' ? '100% Physical Inventory Count' : 'Interactive warehouse layout'}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    {/* Notification bell */}
                     <button onClick={() => setShowNotifications(true)}
                         className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                         {unreadCount > 0 ? <BellRing className="w-5 h-5 text-blue-500" /> : <Bell className="w-5 h-5 text-gray-400" />}
@@ -1052,14 +1209,398 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             </span>
                         )}
                     </button>
-                    <input type="date" value={countDate} onChange={e => setCountDate(e.target.value)}
-                        className="px-3 py-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" />
+                    {activeTab === 'cycle' && (
+                        <input type="date" value={countDate} onChange={e => setCountDate(e.target.value)}
+                            className="px-3 py-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" />
+                    )}
                     <button onClick={() => setMode('history')}
                         className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white">
                         <Archive className="w-4 h-4" /> History
                     </button>
                 </div>
             </div>
+
+            {/* Tab bar */}
+            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
+                {[
+                    { key: 'cycle', label: 'Cycle Count', icon: <RefreshCw className="w-4 h-4" /> },
+                    { key: 'fullcount', label: 'Full Count', icon: <ClipboardCheck className="w-4 h-4" /> },
+                    { key: 'map', label: 'Warehouse Map', icon: <MapPin className="w-4 h-4" /> },
+                ].map(tab => (
+                    <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-1 justify-center ${activeTab === tab.key ? 'bg-white dark:bg-gray-700 shadow text-blue-700 dark:text-blue-300' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
+                        {tab.icon} {tab.label}
+                        {tab.key === 'fullcount' && stockFrozen && <span className="ml-1 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">🔒</span>}
+                    </button>
+                ))}
+            </div>
+
+            {/* Stock Frozen Banner */}
+            {stockFrozen && (
+                <div className="bg-blue-50 border border-blue-300 rounded-xl p-3 flex items-center gap-3">
+                    <Lock className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <div className="flex-1">
+                        <p className="text-sm font-bold text-blue-800">Stock Frozen — Full Count in Progress</p>
+                        <p className="text-xs text-blue-600">Pick and Pack operations are paused until count is complete</p>
+                    </div>
+                </div>
+            )}
+
+            {/* ══════ TAB: WAREHOUSE MAP ══════ */}
+            {activeTab === 'map' && (
+                <WarehouseMap
+                    inventory={inventory} activityLogs={activityLogs}
+                    countData={countRecords}
+                    fullCountSession={fullCountSessions.find(s => s.status !== 'closed')}
+                    language="en"
+                />
+            )}
+
+            {/* ══════ TAB: FULL COUNT ══════ */}
+            {activeTab === 'fullcount' && fcMode === 'list' && (
+                <div className="space-y-4">
+                    {/* Active session */}
+                    {fullCountSessions.filter(s => s.status !== 'closed').map(session => (
+                        <div key={session.id} className="bg-white dark:bg-gray-800 border-2 border-blue-300 rounded-xl p-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-lg">{FC_STATUS[session.status]?.icon}</span>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{session.name}</h3>
+                                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: FC_STATUS[session.status]?.color + '20', color: FC_STATUS[session.status]?.color }}>
+                                            {FC_STATUS[session.status]?.label}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">Created: {new Date(session.createdAt).toLocaleDateString()}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-2xl font-bold text-blue-600">{session.progress.counted}/{session.progress.total}</p>
+                                    <p className="text-xs text-gray-400">items counted</p>
+                                </div>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-3">
+                                <div className={`h-3 rounded-full transition-all ${session.progress.counted === session.progress.total && session.progress.total > 0 ? 'bg-green-500' : 'bg-blue-500'}`}
+                                    style={{ width: `${session.progress.total > 0 ? (session.progress.counted / session.progress.total) * 100 : 0}%` }} />
+                            </div>
+
+                            {/* Zone progress */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                                {Object.entries(session.progress.byZone || {}).map(([zone, data]) => (
+                                    <div key={zone} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2.5">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-bold" style={{ color: ZONE_COLORS[zone] || '#6b7280' }}>Zone {zone}</span>
+                                            <span className="text-xs text-gray-500">{data.done}/{data.total}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+                                            <div className={`h-1.5 rounded-full ${data.done === data.total && data.total > 0 ? 'bg-green-500' : 'bg-blue-500'}`}
+                                                style={{ width: `${data.total > 0 ? (data.done / data.total) * 100 : 0}%` }} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-2">
+                                {session.status === 'planning' && (
+                                    <>
+                                        <button onClick={() => { freezeStock(session.id); }}
+                                            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                                            <Lock className="w-4 h-4" /> Freeze & Start
+                                        </button>
+                                        <button onClick={() => { setActiveSession(session); setFcMode('counting'); }}
+                                            className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+                                            <Eye className="w-4 h-4" /> Start Without Freeze
+                                        </button>
+                                    </>
+                                )}
+                                {(session.status === 'frozen' || session.status === 'counting') && (
+                                    <>
+                                        <button onClick={() => { setActiveSession(session); setFcMode('counting'); }}
+                                            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                                            <ScanLine className="w-4 h-4" /> Continue Counting
+                                        </button>
+                                        {session.status === 'frozen' && (
+                                            <button onClick={() => unfreezeStock(session.id)}
+                                                className="flex items-center gap-1.5 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-200">
+                                                <Unlock className="w-4 h-4" /> Unfreeze
+                                            </button>
+                                        )}
+                                        {session.progress.counted > 0 && (
+                                            <button onClick={() => { setActiveSession(session); setFcMode('reconcile'); }}
+                                                className="flex items-center gap-1.5 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200">
+                                                <BarChart3 className="w-4 h-4" /> Reconcile
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Create new */}
+                    {!fullCountSessions.some(s => s.status !== 'closed') && (
+                        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 rounded-xl p-6">
+                            <h3 className="text-base font-bold text-gray-700 dark:text-gray-200 mb-4">Create Full Count Session</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase">Session Name</label>
+                                    <input value={fcForm.name} onChange={e => setFcForm(f => ({ ...f, name: e.target.value }))}
+                                        placeholder={`Full Count ${new Date().toISOString().split('T')[0].substring(0, 7)}`}
+                                        className="w-full mt-1 px-3 py-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        <input type="checkbox" checked={fcForm.blindCount} onChange={e => setFcForm(f => ({ ...f, blindCount: e.target.checked }))} className="rounded" />
+                                        🙈 Blind Count (hide system qty)
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        <input type="checkbox" checked={fcForm.requireDoubleCount} onChange={e => setFcForm(f => ({ ...f, requireDoubleCount: e.target.checked }))} className="rounded" />
+                                        👥 Require Double Count
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        <input type="checkbox" checked={fcForm.freezeStock} onChange={e => setFcForm(f => ({ ...f, freezeStock: e.target.checked }))} className="rounded" />
+                                        🔒 Freeze Stock (block picks)
+                                    </label>
+                                </div>
+                            </div>
+                            <button onClick={createFullCount}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-bold hover:bg-purple-700">
+                                <Plus className="w-4 h-4" /> Create Full Count
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Past sessions */}
+                    {fullCountSessions.filter(s => s.status === 'closed').length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 border rounded-xl p-4">
+                            <h3 className="text-sm font-bold text-gray-500 uppercase mb-3">Past Sessions</h3>
+                            <div className="space-y-2">
+                                {fullCountSessions.filter(s => s.status === 'closed').map(s => (
+                                    <div key={s.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
+                                            <p className="text-xs text-gray-400">{new Date(s.closedAt).toLocaleDateString()} — {s.progress.total} items</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={`text-sm font-bold ${s.progress.matched === s.progress.total ? 'text-green-600' : 'text-orange-600'}`}>
+                                                {s.progress.total > 0 ? Math.round((s.progress.matched / s.progress.total) * 100) : 0}% match
+                                            </p>
+                                            <p className="text-xs text-gray-400">{s.progress.variance} variances</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ══════ FULL COUNT: COUNTING MODE ══════ */}
+            {activeTab === 'fullcount' && fcMode === 'counting' && activeSession && (
+                <div className="space-y-4">
+                    <button onClick={() => { setFcMode('list'); setFcSelectedItem(null); }}
+                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+                        <ChevronLeft className="w-4 h-4" /> Back to session
+                    </button>
+
+                    {/* Map with count overlay */}
+                    <WarehouseMap
+                        inventory={inventory} activityLogs={activityLogs}
+                        fullCountSession={activeSession} isEmbedded
+                        onCountBin={(bin, stock) => {
+                            const item = activeSession.counts.find(c => c.binId === bin.id);
+                            if (item) { setFcSelectedItem(item); setFcCountInput(''); }
+                        }}
+                        language="en"
+                    />
+
+                    {/* Count entry for selected item */}
+                    {fcSelectedItem && (
+                        <div className="bg-white dark:bg-gray-800 border-2 border-blue-300 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div>
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white">📍 {fcSelectedItem.location} — {fcSelectedItem.sku}</p>
+                                    <p className="text-xs text-gray-500">{fcSelectedItem.name}</p>
+                                </div>
+                                {!activeSession.settings.blindCount && (
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-400">System Qty</p>
+                                        <p className="text-lg font-bold text-gray-600">{fcSelectedItem.systemQty}</p>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex gap-3 items-end">
+                                <div className="flex-1">
+                                    <label className="text-xs font-semibold text-gray-500 uppercase">Counted Quantity</label>
+                                    <input type="number" value={fcCountInput} onChange={e => setFcCountInput(e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter' && fcCountInput.trim()) {
+                                                const qty = parseInt(fcCountInput, 10);
+                                                if (!isNaN(qty) && qty >= 0) {
+                                                    submitFullCount(activeSession.id, fcSelectedItem.binId, qty);
+                                                    const nextItem = activeSession.counts.find(c => c.countedQty === null && c.binId !== fcSelectedItem.binId);
+                                                    if (nextItem) { setFcSelectedItem(nextItem); setFcCountInput(''); }
+                                                    else { setFcSelectedItem(null); addToast?.('All items counted!', 'success'); }
+                                                }
+                                            }
+                                        }}
+                                        placeholder="Enter count..."
+                                        className="w-full mt-1 px-4 py-3 border-2 border-blue-300 rounded-xl text-lg font-bold text-center dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        autoFocus />
+                                </div>
+                                <button onClick={() => {
+                                    const qty = parseInt(fcCountInput, 10);
+                                    if (!isNaN(qty) && qty >= 0) {
+                                        submitFullCount(activeSession.id, fcSelectedItem.binId, qty);
+                                        const nextItem = activeSession.counts.find(c => c.countedQty === null && c.binId !== fcSelectedItem.binId);
+                                        if (nextItem) { setFcSelectedItem(nextItem); setFcCountInput(''); }
+                                        else { setFcSelectedItem(null); addToast?.('All items counted!', 'success'); }
+                                    }
+                                }}
+                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700">
+                                    Submit
+                                </button>
+                            </div>
+                            {fcSelectedItem.countedQty !== null && (
+                                <div className="mt-2 text-xs text-gray-500">
+                                    Previously counted: {fcSelectedItem.countedQty} by {fcSelectedItem.countedBy} at {new Date(fcSelectedItem.countedAt).toLocaleString()}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Item list */}
+                    <div className="bg-white dark:bg-gray-800 border rounded-xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 uppercase">
+                                        <th className="px-3 py-2 text-left">Zone</th>
+                                        <th className="px-3 py-2 text-left">Location</th>
+                                        <th className="px-3 py-2 text-left">SKU</th>
+                                        <th className="px-3 py-2 text-left">Product</th>
+                                        {!activeSession.settings.blindCount && <th className="px-3 py-2 text-right">System</th>}
+                                        <th className="px-3 py-2 text-right">Counted</th>
+                                        <th className="px-3 py-2 text-right">Variance</th>
+                                        <th className="px-3 py-2 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {activeSession.counts.map(item => (
+                                        <tr key={item.binId}
+                                            onClick={() => { setFcSelectedItem(item); setFcCountInput(''); }}
+                                            className={`border-t cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 ${fcSelectedItem?.binId === item.binId ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}>
+                                            <td className="px-3 py-2">
+                                                <span className="w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: ZONE_COLORS[item.location.split('-')[0]] || '#6b7280' }}>
+                                                    {item.location.split('-')[0]}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 font-mono text-xs">{item.location}</td>
+                                            <td className="px-3 py-2 font-mono text-xs font-bold">{item.sku}</td>
+                                            <td className="px-3 py-2 text-gray-600 dark:text-gray-300">{item.name}</td>
+                                            {!activeSession.settings.blindCount && <td className="px-3 py-2 text-right text-gray-500">{item.systemQty}</td>}
+                                            <td className="px-3 py-2 text-right font-bold">{item.countedQty ?? '—'}</td>
+                                            <td className={`px-3 py-2 text-right font-bold ${item.variance > 0 ? 'text-blue-600' : item.variance < 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                                                {item.variance !== null ? (item.variance > 0 ? `+${item.variance}` : item.variance) : '—'}
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                {item.countedQty !== null ? (
+                                                    item.variance === 0 ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> :
+                                                    item.needsRecount ? <AlertTriangle className="w-4 h-4 text-red-500 mx-auto" /> :
+                                                    <AlertTriangle className="w-4 h-4 text-yellow-500 mx-auto" />
+                                                ) : <Clock className="w-4 h-4 text-gray-300 mx-auto" />}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ══════ FULL COUNT: RECONCILIATION ══════ */}
+            {activeTab === 'fullcount' && fcMode === 'reconcile' && activeSession && (
+                <div className="space-y-4">
+                    <button onClick={() => setFcMode('list')} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+                        <ChevronLeft className="w-4 h-4" /> Back
+                    </button>
+                    <div className="bg-white dark:bg-gray-800 border rounded-xl p-5">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">⚖️ Reconciliation — {activeSession.name}</h3>
+                        <div className="grid grid-cols-4 gap-3 mb-4">
+                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                                <p className="text-xl font-bold text-gray-900 dark:text-white">{activeSession.progress.total}</p>
+                                <p className="text-[10px] text-gray-400">Total Items</p>
+                            </div>
+                            <div className="bg-green-50 rounded-lg p-3 text-center">
+                                <p className="text-xl font-bold text-green-600">{activeSession.progress.matched}</p>
+                                <p className="text-[10px] text-gray-400">Matched ✅</p>
+                            </div>
+                            <div className="bg-red-50 rounded-lg p-3 text-center">
+                                <p className="text-xl font-bold text-red-600">{activeSession.progress.variance}</p>
+                                <p className="text-[10px] text-gray-400">Variance ⚠️</p>
+                            </div>
+                            <div className="bg-blue-50 rounded-lg p-3 text-center">
+                                <p className="text-xl font-bold text-blue-600">
+                                    {activeSession.progress.total > 0 ? Math.round((activeSession.progress.matched / activeSession.progress.total) * 100) : 0}%
+                                </p>
+                                <p className="text-[10px] text-gray-400">Accuracy</p>
+                            </div>
+                        </div>
+
+                        {/* Variance items */}
+                        <h4 className="text-sm font-bold text-gray-600 mb-2">Variance Detail</h4>
+                        <div className="overflow-x-auto border rounded-lg">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 uppercase">
+                                        <th className="px-3 py-2 text-left">SKU</th>
+                                        <th className="px-3 py-2 text-left">Location</th>
+                                        <th className="px-3 py-2 text-right">System</th>
+                                        <th className="px-3 py-2 text-right">Counted</th>
+                                        <th className="px-3 py-2 text-right">Variance</th>
+                                        <th className="px-3 py-2 text-left">Counted By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {activeSession.counts.filter(c => c.variance !== null && c.variance !== 0).map(c => (
+                                        <tr key={c.binId} className="border-t">
+                                            <td className="px-3 py-2 font-mono text-xs font-bold">{c.sku}</td>
+                                            <td className="px-3 py-2 font-mono text-xs">{c.location}</td>
+                                            <td className="px-3 py-2 text-right">{c.systemQty}</td>
+                                            <td className="px-3 py-2 text-right font-bold">{c.countedQty}</td>
+                                            <td className={`px-3 py-2 text-right font-bold ${c.variance > 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                {c.variance > 0 ? `+${c.variance}` : c.variance}
+                                            </td>
+                                            <td className="px-3 py-2 text-xs text-gray-500">{c.countedBy}</td>
+                                        </tr>
+                                    ))}
+                                    {activeSession.counts.filter(c => c.variance !== null && c.variance !== 0).length === 0 && (
+                                        <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">No variances — perfect match! 🎉</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Close button */}
+                        <div className="flex gap-3 mt-4 pt-4 border-t">
+                            <button onClick={() => closeFullCount(activeSession.id)}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700">
+                                <Check className="w-4 h-4" /> Approve & Close
+                            </button>
+                            <button onClick={() => setFcMode('counting')}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200">
+                                <ChevronLeft className="w-4 h-4" /> Back to Counting
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ══════ TAB: CYCLE COUNT (original) ══════ */}
+            {activeTab === 'cycle' && <>
 
             {/* Notification banner for today's assignments */}
             {stats.pending > 0 && notifications.filter(n => !n.read && n.type === 'assignment').length > 0 && (
@@ -1352,6 +1893,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                     </table>
                 </div>
             </div>
+            </>}
         </div>
     );
 };
