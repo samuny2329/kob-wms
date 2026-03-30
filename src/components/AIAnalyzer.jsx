@@ -882,8 +882,13 @@ export default function AIAnalyzer({ language, addToast, activityLogs, inventory
 
     const isEn = language === 'en';
 
-    // Run AI analysis
+    // Run AI analysis — requires real data from Odoo
     const runAnalysis = useCallback(() => {
+        const hasRealData = (activityLogs?.length > 10) || (orders?.length > 5) || (inventory?.length > 3);
+        if (!hasRealData) {
+            addToast?.('No data available. Connect Odoo and process orders first.', 'warning');
+            return;
+        }
         setIsAnalyzing(true);
         setTimeout(() => {
             setAnalysisData(generateMockAnalysis('kob'));
@@ -891,7 +896,7 @@ export default function AIAnalyzer({ language, addToast, activityLogs, inventory
             setIsAnalyzing(false);
             addToast?.('AI Analysis complete', 'success');
         }, 2000);
-    }, [addToast]);
+    }, [addToast, activityLogs, orders, inventory]);
 
     // All findings flattened
     const allFindings = useMemo(() => {

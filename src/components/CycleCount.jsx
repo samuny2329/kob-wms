@@ -137,33 +137,25 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         localStorage.setItem(LS_COUNTS, JSON.stringify(countRecords));
     }, [countRecords]);
 
-    // ── Build product list ──
+    // ── Build product list (only from real inventory data) ──
     const products = useMemo(() => {
         const items = [];
-        Object.entries(PRODUCT_CATALOG).forEach(([sku, cat]) => {
-            const invItem = inventory?.items?.find(i => i.sku === sku || i.default_code === sku);
-            items.push({
-                sku,
-                name: cat.shortName || cat.name,
-                barcode: cat.barcode || '',
-                location: cat.location || '',
-                systemQty: invItem?.onHand ?? invItem?.quantity ?? Math.floor(Math.random() * 200) + 20,
-                brand: cat.brand || '',
-                image: cat.image || '',
-                lotTracking: cat.lotTracking ?? false,
-                lots: invItem?.lots || [],
-            });
-        });
-        if (inventory?.items) {
-            inventory.items.forEach(item => {
+        // Only build from real inventory — no fake data from PRODUCT_CATALOG alone
+        if (inventory?.items || (Array.isArray(inventory) && inventory.length > 0)) {
+            const invItems = inventory?.items || inventory;
+            invItems.forEach(item => {
                 const sku = item.sku || item.default_code;
-                if (sku && !items.find(i => i.sku === sku)) {
-                    items.push({
-                        sku, name: item.name || sku, barcode: item.barcode || '',
-                        location: item.location || '', systemQty: item.onHand ?? item.quantity ?? 0,
-                        brand: '', image: '', lotTracking: !!item.lot_id, lots: item.lots || [],
-                    });
-                }
+                if (!sku) return;
+                const cat = PRODUCT_CATALOG[sku];
+                items.push({
+                    sku, name: cat?.shortName || item.name || sku,
+                    barcode: cat?.barcode || item.barcode || '',
+                    location: cat?.location || item.location || '',
+                    systemQty: item.onHand ?? item.quantity ?? 0,
+                    brand: cat?.brand || '', image: cat?.image || '',
+                    lotTracking: cat?.lotTracking ?? !!item.lot_id,
+                    lots: item.lots || [],
+                });
             });
         }
         return items;
