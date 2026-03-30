@@ -34,12 +34,14 @@ import CycleCount from './components/CycleCount';
 import TimeAttendance from './components/TimeAttendance';
 import KPIAssessment from './components/KPIAssessment';
 import GWPManager from './components/GWPManager';
+import ClaudeChat from './components/ClaudeChat';
 import AIAnalyzer from './components/AIAnalyzer';
 import MarketIntelligence from './components/MarketIntelligence';
 import ActivityHistory from './components/ActivityHistory';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
+import { secureSet } from './utils/crypto';
 import { confirmRTS, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
 import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
 import { addActivity } from './utils/activityDB';
@@ -60,7 +62,7 @@ const App = () => {
     // Safe JSON parse helper — prevents white screen on corrupted localStorage
     const safeParse = (key, fallback) => {
         try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-        catch { console.warn(`Corrupted localStorage key: ${key}, using default`); return fallback; }
+        catch { if (import.meta.env.DEV) console.warn(`Corrupted localStorage key: ${key}`); return fallback; }
     };
 
     const [orderData, setOrderData] = useState(() => safeParse('wms_orders', []));
@@ -76,6 +78,7 @@ const App = () => {
             shopee: stored.shopee || { enabled: false, shopId: '', partnerId: '', partnerKey: '' },
             lazada: stored.lazada || { enabled: false, appKey: '', appSecret: '', accessToken: '' },
             tiktok: stored.tiktok || { enabled: false, appKey: '', appSecret: '', accessToken: '' },
+            claude: stored.claude || { enabled: false, apiKey: '' },
         };
     });
     const [boxUsageLog, setBoxUsageLog] = useState(() => safeParse('wms_box_usage', []));
@@ -158,7 +161,7 @@ const App = () => {
     useEffect(() => { localStorage.setItem('wms_users', JSON.stringify(users)); }, [users]);
     useEffect(() => { localStorage.setItem('wms_history', JSON.stringify(historyData)); }, [historyData]);
     useEffect(() => { localStorage.setItem('wms_logs', JSON.stringify(activityLogs)); }, [activityLogs]);
-    useEffect(() => { localStorage.setItem('wms_apis', JSON.stringify(apiConfigs)); }, [apiConfigs]);
+    useEffect(() => { secureSet('wms_apis', apiConfigs); }, [apiConfigs]);
     useEffect(() => { localStorage.setItem('wms_box_usage', JSON.stringify(boxUsageLog)); }, [boxUsageLog]);
     useEffect(() => { if (inventory) localStorage.setItem('wms_inventory', JSON.stringify(inventory)); }, [inventory]);
     useEffect(() => { localStorage.setItem('wms_waves', JSON.stringify(waves)); }, [waves]);
@@ -317,25 +320,35 @@ const App = () => {
             const foundUser = users.find(u => u.username === username);
 
             if (foundUser) {
-                // Support default setup password, hashed, and legacy plaintext passwords
+                // Support default setup password, salted hash, legacy hash, and plaintext (auto-migrate)
                 let passwordMatch = false;
                 if (foundUser.password === '$wms$default$setup') {
                     // Default setup account — accept 'admin123' and force password change
                     passwordMatch = password === 'admin123';
-                } else if (foundUser.password?.length === 64) {
-                    // Hashed password (SHA-256 = 64 hex chars)
+                } else if (foundUser.password?.includes(':')) {
+                    // New salted format (salt:hash)
                     passwordMatch = await verifyPassword(password, foundUser.password);
-                } else {
-                    // Legacy plaintext — migrate on successful login
-                    passwordMatch = foundUser.password === password;
+                } else if (foundUser.password?.length === 64) {
+                    // Legacy unsalted SHA-256 hash
+                    passwordMatch = await verifyPassword(password, foundUser.password);
                     if (passwordMatch) {
-                        // Auto-migrate to hashed password
+                        // Re-hash with salt
                         const hashed = await hashPassword(password);
                         const updatedUsers = users.map(u =>
                             u.username === username ? { ...u, password: hashed } : u
                         );
                         setUsers(updatedUsers);
-                        localStorage.setItem('wms_users', JSON.stringify(updatedUsers));
+                        auditLog('password_rehashed', { username }, username);
+                    }
+                } else if (foundUser.password) {
+                    // Legacy plaintext — migrate on successful login
+                    passwordMatch = foundUser.password === password;
+                    if (passwordMatch) {
+                        const hashed = await hashPassword(password);
+                        const updatedUsers = users.map(u =>
+                            u.username === username ? { ...u, password: hashed } : u
+                        );
+                        setUsers(updatedUsers);
                         auditLog('password_migrated', { username }, username);
                     }
                 }
@@ -431,7 +444,6 @@ const App = () => {
         );
         setUsers(updatedUsers);
         setUser({ ...user, isFirstLogin: false });
-        localStorage.setItem('wms_users', JSON.stringify(updatedUsers));
         auditLog('password_changed', { username: user.username }, user.username);
         setShowPasswordChange(false);
         setNewPwInput('');
@@ -1115,6 +1127,7 @@ window.onload=function(){
                     {activeTab === 'slaTracker' && <SLATracker activityLogs={activityLogs} orders={orderData} salesOrders={salesOrders} onSelectWorker={(w) => setSelectedWorker(w)} t={t} />}
                     {activeTab === 'timeAttendance' && <TimeAttendance user={user} users={users} userRole={userRole} addToast={addToast} logActivity={logActivity} />}
                     {activeTab === 'kpiAssessment' && <KPIAssessment user={user} users={users} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} logActivity={logActivity} workerOkrData={workerOkrData} />}
+                    {activeTab === 'chat' && <ClaudeChat t={t} apiConfigs={apiConfigs} setActiveTab={setActiveTab} />}
                     {activeTab === 'aiAnalyzer' && <AIAnalyzer language={language} addToast={addToast} activityLogs={activityLogs} inventory={inventory} orders={salesOrders} users={users} invoices={invoices} apiConfigs={apiConfigs} />}
                     {activeTab === 'marketIntelligence' && <MarketIntelligence language={language} addToast={addToast} />}
                     {activeTab === 'activityHistory' && <ActivityHistory language={language} />}
