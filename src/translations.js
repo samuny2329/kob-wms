@@ -31,6 +31,12 @@ export const TRANSLATIONS = {
         tabTeamPerformance: 'Team Performance', tabSlaTracker: 'SLA Tracker', tabTimeAttendance: 'Time & Attendance', tabKpiAssessment: 'KPI Assessment',
         tabGwp: 'GWP Manager',
         tabChat: 'Claude AI',
+        tabAiAnalyzer: 'AI Analyzer',
+        tabMarketIntelligence: 'Market Intelligence',
+        tabActivityHistory: 'Activity History',
+        companySwitch: 'Company',
+        companyKob: 'Kiss of Beauty',
+        companyBtv: 'Beautyville',
 
     },
     th: {
@@ -64,6 +70,12 @@ export const TRANSLATIONS = {
         kpiSpeed: 'ความเร็ว (UPH)',
         tabTeamPerformance: 'ผลงานทีม', tabSlaTracker: 'ติดตาม SLA', tabTimeAttendance: 'เวลาทำงาน', tabKpiAssessment: 'ประเมิน KPI',
         tabGwp: 'จัดการของแถม',
-        tabChat: 'แชท AI'
+        tabChat: 'แชท AI',
+        tabAiAnalyzer: 'AI วิเคราะห์',
+        tabMarketIntelligence: 'วิเคราะห์ตลาด',
+        tabActivityHistory: 'ประวัติกิจกรรม',
+        companySwitch: 'บริษัท',
+        companyKob: 'คิสออฟบิวตี้',
+        companyBtv: 'บิวตี้วิลล์',
     }
 };

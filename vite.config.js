@@ -7,6 +7,7 @@ import react from '@vitejs/plugin-react'
 const odooTarget = process.env.VITE_ODOO_URL || 'http://localhost:8070';
 
 export default defineConfig({
+    base: process.env.GITHUB_ACTIONS ? '/kob-wms/' : '/',
     plugins: [react()],
     server: {
         host: true,
