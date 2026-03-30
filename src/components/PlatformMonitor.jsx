@@ -67,15 +67,14 @@ const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString('th-TH', { hour:
 const formatDate = (ts) => ts ? new Date(ts).toLocaleString('th-TH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 const ageHours = (ts) => (Date.now() - ts) / 3600000;
 
-// connected = true if platform API is enabled in Settings, or if running in mock mode
+// connected = true only if platform API is actually enabled in Settings
 const initSyncState = (apiConfigs) => {
-    const isLive = apiConfigs?.odoo?.useMock === false;
-    const plConn = (key) => isLive ? !!(apiConfigs?.[key]?.enabled) : true;
+    const plConn = (key) => !!(apiConfigs?.[key]?.enabled);
     return {
-        shopee: { connected: plConn('shopee'), lastSync: Date.now() - 45000,  syncing: false, error: null },
-        lazada: { connected: plConn('lazada'), lastSync: Date.now() - 120000, syncing: false, error: null },
-        tiktok: { connected: plConn('tiktok'), lastSync: Date.now() - 300000, syncing: false, error: null },
-        manual: { connected: true,             lastSync: Date.now() - 600000, syncing: false, error: null },
+        shopee: { connected: plConn('shopee'), lastSync: null, syncing: false, error: null },
+        lazada: { connected: plConn('lazada'), lastSync: null, syncing: false, error: null },
+        tiktok: { connected: plConn('tiktok'), lastSync: null, syncing: false, error: null },
+        manual: { connected: true,             lastSync: null, syncing: false, error: null },
     };
 };
 
@@ -386,7 +385,7 @@ const ReportsView = ({ salesOrders, apiConfigs }) => {
                     </span>
                 ) : (
                     <span className="flex items-center gap-1.5 text-xs" style={{ color: '#d97706' }}>
-                        <span>🟡</span> Mock mode — showing simulated history. Connect Odoo in Settings for real data.
+                        <span>⚪</span> No data — Connect Odoo in Settings to view real platform history.
                     </span>
                 )}
             </div>
@@ -1307,8 +1306,6 @@ export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus
 
     // Re-evaluate platform connection status when apiConfigs change (e.g., user enables platform in Settings)
     useEffect(() => {
-        const isLive = apiConfigs?.odoo?.useMock === false;
-        if (!isLive) return; // in mock mode keep all connected
         setSyncStates(prev => ({
             shopee: { ...prev.shopee, connected: !!(apiConfigs?.shopee?.enabled) },
             lazada: { ...prev.lazada, connected: !!(apiConfigs?.lazada?.enabled) },
@@ -1375,8 +1372,8 @@ export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus
                 <div className="flex items-center gap-3">
                     <BarChart2 className="w-5 h-5" style={{ color: '#017E84' }} />
                     <h1 className="text-base font-semibold" style={{ color: '#212529' }}>Platform Monitor</h1>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: isLive ? '#f0fff4' : '#fff8e1', color: isLive ? '#16a34a' : '#d97706', border: `1px solid ${isLive ? '#bbf7d0' : '#fcd34d'}` }}>
-                        {isLive ? '🟢 Live' : '🟡 Mock'}
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: isLive ? '#f0fff4' : '#fff0f0', color: isLive ? '#16a34a' : '#9ca3af', border: `1px solid ${isLive ? '#bbf7d0' : '#e5e7eb'}` }}>
+                        {isLive ? '🟢 Live' : '⚪ Not Connected'}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
