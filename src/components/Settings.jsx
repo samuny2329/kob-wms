@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Globe, Database, ToggleRight, ToggleLeft, ShoppingBag, Store, Link, Trash2, RotateCcw, Wifi, CheckCircle2, AlertCircle, RefreshCw, Monitor, Cloud, MapPin, Truck, Package, ExternalLink, Zap, Shield } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Database, ToggleRight, ToggleLeft, ShoppingBag, Store, Link, Trash2, RotateCcw, Wifi, CheckCircle2, AlertCircle, RefreshCw, Monitor, Cloud, MapPin, Truck, Package, ExternalLink, Zap, Shield, Sparkles } from 'lucide-react';
 import { testConnection, resetOdooSession, ensurePickfaceLocation, createTestSalesOrders } from '../services/odooApi';
 import platformApi, { MARKETPLACES, COURIERS } from '../services/platformApi';
 
@@ -345,7 +345,8 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                     { id: 'odoo', name: 'Odoo ERP', desc: 'Connect to core inventory & sales', icon: <Database className="w-4 h-4" />, fields: [{ key: 'url', label: 'Server URL', placeholder: 'http://localhost:8070' }, { key: 'db', label: 'Database Name', placeholder: 'odoo18' }, { key: 'username', label: 'Username', placeholder: 'admin' }, { key: 'password', label: 'Password', type: 'password' }] },
                                     { id: 'shopee', name: 'Shopee Open API', desc: 'Sync Shopee orders & waybills', icon: <ShoppingBag className="w-4 h-4" />, fields: [{ key: 'shopId', label: 'Shop ID' }, { key: 'partnerId', label: 'Partner ID' }, { key: 'partnerKey', label: 'Partner Key', type: 'password' }] },
                                     { id: 'lazada', name: 'Lazada Open Platform', desc: 'Sync Lazada orders & waybills', icon: <Store className="w-4 h-4" />, fields: [{ key: 'appKey', label: 'App Key' }, { key: 'appSecret', label: 'App Secret', type: 'password' }, { key: 'accessToken', label: 'Access Token' }] },
-                                    { id: 'tiktok', name: 'TikTok Shop API', desc: 'Sync TikTok orders & waybills', icon: <Link className="w-4 h-4" />, fields: [{ key: 'appKey', label: 'App Key' }, { key: 'appSecret', label: 'App Secret', type: 'password' }, { key: 'accessToken', label: 'Access Token' }] }
+                                    { id: 'tiktok', name: 'TikTok Shop API', desc: 'Sync TikTok orders & waybills', icon: <Link className="w-4 h-4" />, fields: [{ key: 'appKey', label: 'App Key' }, { key: 'appSecret', label: 'App Secret', type: 'password' }, { key: 'accessToken', label: 'Access Token' }] },
+                                    { id: 'claude', name: 'Claude AI Assistant', desc: 'AI-powered chat for WMS operations', icon: <Sparkles className="w-4 h-4" />, fields: [{ key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'sk-ant-api03-...' }] }
                                 ].map(api => (
                                     <div key={api.id} style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
                                         <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#f8f9fa', borderBottom: apiConfigs[api.id].enabled ? '1px solid #dee2e6' : 'none' }}>
