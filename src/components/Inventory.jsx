@@ -79,18 +79,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
         saveAllowedLocations(list);
     };
 
-    // ── Mock history generator ────────────────────────────────────────────────
-    const getMockHistory = (item) => {
-        const now = Date.now();
-        const day = 86400000;
-        return [
-            { date: new Date(now - 1 * day).toLocaleString(),  type: 'delivery',  ref: 'WH/OUT/00118', qty: -3,  balance: (item.onHand || 0) + 3,  partner: 'Customer A' },
-            { date: new Date(now - 3 * day).toLocaleString(),  type: 'delivery',  ref: 'WH/OUT/00102', qty: -5,  balance: (item.onHand || 0) + 8,  partner: 'Customer B' },
-            { date: new Date(now - 7 * day).toLocaleString(),  type: 'receipt',   ref: 'WH/IN/00045',  qty: +200, balance: (item.onHand || 0) + 13, partner: 'Supplier' },
-            { date: new Date(now - 10 * day).toLocaleString(), type: 'delivery',  ref: 'WH/OUT/00095', qty: -8,  balance: (item.onHand || 0) - 187, partner: 'Customer C' },
-            { date: new Date(now - 14 * day).toLocaleString(), type: 'adjustment',ref: 'WH/INV/00012', qty: +2,  balance: (item.onHand || 0) - 179, partner: '—' },
-        ];
-    };
+    // ── No mock history — return empty when not connected to Odoo ────────────
+    const getMockHistory = () => [];
 
     // ── filter / group options ────────────────────────────────────────────────
     const filterOptions = [

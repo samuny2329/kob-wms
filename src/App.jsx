@@ -57,6 +57,11 @@ const App = () => {
     const [activeCompany, setActiveCompany] = useState(() => localStorage.getItem('wms_active_company') || 'kob');
 
     // 2. Data State
+    // One-time cleanup: clear mock data from localStorage
+    if (!localStorage.getItem('wms_mock_cleared')) {
+        ['wms_orders', 'wms_sales_orders', 'wms_inventory', 'wms_waves', 'wms_invoices', 'wms_history', 'wms_logs', 'wms_box_usage'].forEach(k => localStorage.removeItem(k));
+        localStorage.setItem('wms_mock_cleared', '1');
+    }
     // Safe JSON parse helper — prevents white screen on corrupted localStorage
     const safeParse = (key, fallback) => {
         try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
