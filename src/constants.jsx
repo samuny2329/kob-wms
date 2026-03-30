@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, ShoppingCart, Box, ScanLine, FileText, Truck, Printer, Users, Settings, BookOpen, Smartphone, Monitor, Warehouse, Layers, PackageCheck, Receipt, BarChart2, Trophy, Shield, UserCheck, ClipboardCheck, Clock, Target, Gift, Building2, BrainCircuit, Globe, History } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Box, ScanLine, FileText, Truck, Printer, Users, Settings, BookOpen, Smartphone, Monitor, Warehouse, Layers, PackageCheck, Receipt, BarChart2, Trophy, Shield, UserCheck, ClipboardCheck, Clock, Target, Gift, Sparkles, Building2, BrainCircuit, Globe, History } from 'lucide-react';
 import { PlatformBadge } from './components/PlatformLogo';
 
 export const ITEMS_PER_PAGE = 25;
@@ -36,8 +36,8 @@ export const getCompany = (key) => COMPANIES[key] || COMPANIES.kob;
 export const getCompanyById = (id) => Object.values(COMPANIES).find(c => c.id === id) || COMPANIES.kob;
 
 export const rolesInfo = {
-    senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
-    admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
+    senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
+    admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
     picker: { label: 'Picker Specialist', tabs: ['pick', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'sorting', 'manual'], icon: <ShoppingCart />, desc: 'Inventory Picking' },
     packer: { label: 'Packer & QC', tabs: ['pack', 'handheldPack', 'posPack', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'manual'], icon: <Box />, desc: 'Packing & Validation' },
     outbound: { label: 'Outbound Ops', tabs: ['scan', 'list', 'dispatch', 'kpiAssessment', 'timeAttendance', 'report', 'manual'], icon: <ScanLine />, desc: 'Scanning & Logistics' },
@@ -553,6 +553,7 @@ export const tabInfo = {
     activityHistory: { icon: <History className="w-5 h-5" />, section: 'Analytics' },
     report: { icon: <Printer className="w-5 h-5" />, section: 'System' },
     users: { icon: <Users className="w-5 h-5" />, section: 'System' },
+    chat: { icon: <Sparkles className="w-5 h-5" />, section: 'System' },
     settings: { icon: <Settings className="w-5 h-5" />, section: 'System' },
     manual: { icon: <BookOpen className="w-5 h-5" />, section: 'Help' }
 };
