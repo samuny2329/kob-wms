@@ -349,7 +349,7 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
             {(() => {
                 const displayWorkers = workerStats.length > 0
                     ? workerStats.map(w => ({ ...w, role: w.role || 'admin' }))
-                    : SAMPLE_OKR_WORKERS.map(w => ({ ...w, pick: Math.floor(Math.random() * 40) + 20, pack: Math.floor(Math.random() * 30) + 15, scan: Math.floor(Math.random() * 25) + 10, total: 0, uph: Math.floor(Math.random() * 30) + 20 }));
+                    : [];
                 const roles = ['picker', 'packer', 'outbound', 'accounting'];
 
                 // Compute OKR for all workers

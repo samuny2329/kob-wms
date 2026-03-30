@@ -665,23 +665,7 @@ export const fetchInventory = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(250);
         const stored = JSON.parse(localStorage.getItem('wms_inventory') || 'null');
-        if (stored) return stored;
-        return [
-            { sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml', shortName: 'Refill Toner Pad (Dewy)', location: 'A-01-01', onHand: 450, reserved: 12, available: 438, unitCost: 189, reorderPoint: 50, lots: [
-                { lotNumber: 'LOT-2026-001', expiryDate: '2027-06-15', qty: 200, receivedDate: '2026-01-10' },
-                { lotNumber: 'LOT-2026-002', expiryDate: '2027-09-20', qty: 250, receivedDate: '2026-02-28' }
-            ]},
-            { sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad 150 ml (Bright & Glow)', shortName: 'Toner Pad Refill (Bright)', location: 'A-01-02', onHand: 320, reserved: 6, available: 314, unitCost: 199, reorderPoint: 40, lots: [
-                { lotNumber: 'LOT-2026-003', expiryDate: '2027-08-01', qty: 320, receivedDate: '2026-02-15' }
-            ]},
-            { sku: 'SWB700', name: 'SKINOXY Body Wash 700ml (Brightening)', shortName: 'Body Wash (Bright)', location: 'B-02-01', onHand: 180, reserved: 4, available: 176, unitCost: 259, reorderPoint: 30, lots: [
-                { lotNumber: 'LOT-2025-010', expiryDate: '2027-03-10', qty: 80, receivedDate: '2025-09-20' },
-                { lotNumber: 'LOT-2026-004', expiryDate: '2027-12-01', qty: 100, receivedDate: '2026-03-01' }
-            ]},
-            { sku: 'SWH700', name: 'SKINOXY Body Wash 700ml (Hydrating)', shortName: 'Body Wash (Hydra)', location: 'B-02-02', onHand: 95, reserved: 5, available: 90, unitCost: 259, reorderPoint: 30, lots: [
-                { lotNumber: 'LOT-2026-005', expiryDate: '2027-11-15', qty: 95, receivedDate: '2026-03-05' }
-            ]}
-        ];
+        return stored || [];
     }
     // Live mode: fetch stock.quant from configured allowed locations
     const allowedLoc = getStoredAllowedLocations();
@@ -878,18 +862,7 @@ export const postInvoice = async (odooConfig, invoiceId) => {
 export const fetchPlatformOrders = async (odooConfig, platform) => {
     if (isMock(odooConfig)) {
         await delay(400);
-        const mockPlatformOrders = {
-            'shopee': [
-                { id: Date.now() + 1, ref: 'SHP-' + Math.floor(Math.random() * 90000 + 10000), customer: 'Shopee Customer', platform: 'Shopee Express', courier: 'Shopee Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'STDH080-REFILL', name: 'SKINOXY Refill Toner Pad', expected: 2, picked: 0, packed: 0, unitPrice: 299 }] }
-            ],
-            'lazada': [
-                { id: Date.now() + 2, ref: 'LZD-' + Math.floor(Math.random() * 90000 + 10000), customer: 'Lazada Customer', platform: 'Lazada Express', courier: 'Lazada Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'STBG080-REFILL', name: 'SKINOXY Refill Toner Pad (Bright)', expected: 1, picked: 0, packed: 0, unitPrice: 329 }] }
-            ],
-            'tiktok': [
-                { id: Date.now() + 3, ref: 'TKT-' + Math.floor(Math.random() * 90000 + 10000), customer: 'TikTok Customer', platform: 'TikTok Shop', courier: 'J&T Express', status: 'pending', createdAt: Date.now(), items: [{ sku: 'SWB700', name: 'SKINOXY Body Wash (Bright)', expected: 1, picked: 0, packed: 0, unitPrice: 399 }] }
-            ]
-        };
-        return mockPlatformOrders[platform] || [];
+        return [];
     }
     return odooPost(odooConfig, '/wms/platform/orders', { platform });
 };
@@ -897,10 +870,7 @@ export const fetchPlatformOrders = async (odooConfig, platform) => {
 export const syncAllPlatforms = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(800);
-        const shopee = await fetchPlatformOrders(odooConfig, 'shopee');
-        const lazada = await fetchPlatformOrders(odooConfig, 'lazada');
-        const tiktok = await fetchPlatformOrders(odooConfig, 'tiktok');
-        return { shopee, lazada, tiktok, total: shopee.length + lazada.length + tiktok.length };
+        return { shopee: [], lazada: [], tiktok: [], total: 0 };
     }
     return odooPost(odooConfig, '/wms/platform/sync');
 };
@@ -910,13 +880,7 @@ export const syncAllPlatforms = async (odooConfig) => {
 export const fetchAiSuggestion = async (odooConfig, pickingId, question) => {
     if (isMock(odooConfig)) {
         await delay(600);
-        const suggestions = [
-            'Pack fragile items first with bubble wrap, then stack heavier items at the bottom.',
-            'Use Box M for this order. Total weight ~0.53kg fits well within limits.',
-            'FEFO: Use LOT-2025-010 first (expires 2027-03-10) before newer lots.',
-            'Group items by type: Body Wash together, Toner Pads together for efficient packing.',
-        ];
-        return { status: 'success', suggestion: suggestions[Math.floor(Math.random() * suggestions.length)] };
+        return { status: 'success', suggestion: 'Connect to Odoo to enable AI suggestions.' };
     }
     return odooPost(odooConfig, '/wms/ai/ask', { picking_id: pickingId, question });
 };
@@ -926,7 +890,7 @@ export const fetchAiSuggestion = async (odooConfig, pickingId, question) => {
 export const testConnection = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(500);
-        return { status: 'success', version: 'Odoo 18.0 (Mock)', database: odooConfig.db || 'Demo Mode — no live database' };
+        return { status: 'success', version: 'Odoo 18.0 (Not Connected)', database: odooConfig.db || 'No database configured' };
     }
     try {
         // All requests go through Vite proxy → no CORS issues
@@ -1010,16 +974,7 @@ export const saveAllowedLocations = (list) => {
 export const fetchAllLocations = async (odooConfig) => {
     if (isMock(odooConfig)) {
         await delay(150);
-        return [
-            { id: 1, name: 'WH/Stock',              complete_name: 'WH/Stock' },
-            { id: 2, name: 'WH/Stock/PICKFACE',     complete_name: 'WH/Stock/PICKFACE' },
-            { id: 3, name: 'WH/Stock/BIN-A-01',     complete_name: 'WH/Stock/BIN-A-01' },
-            { id: 4, name: 'WH/Stock/BIN-A-02',     complete_name: 'WH/Stock/BIN-A-02' },
-            { id: 5, name: 'WH/Stock/BIN-B-01',     complete_name: 'WH/Stock/BIN-B-01' },
-            { id: 6, name: 'WH/Stock/BULK',         complete_name: 'WH/Stock/BULK' },
-            { id: 7, name: 'WH2/Stock',             complete_name: 'WH2/Stock' },
-            { id: 8, name: 'WH2/Stock/PICKFACE',    complete_name: 'WH2/Stock/PICKFACE' },
-        ];
+        return [];
     }
     return await odooCallKw(odooConfig, 'stock.location', 'search_read',
         [[['usage', '=', 'internal'], ['active', '=', true]]],

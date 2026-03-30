@@ -32,81 +32,10 @@ const getAvatarColor = (name = '') => {
   return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 };
 
-// Generate realistic mock data when real data is insufficient
-const generateMockWorkers = () => {
-  const names = [
-    { username: 'somchai', name: 'Somchai P.' },
-    { username: 'nari', name: 'Nari K.' },
-    { username: 'ploy', name: 'Ploy S.' },
-    { username: 'bank', name: 'Bank T.' },
-    { username: 'mint', name: 'Mint W.' },
-    { username: 'tong', name: 'Tong R.' },
-    { username: 'fern', name: 'Fern C.' },
-  ];
-  return names.map(w => {
-    const pickSla = 70 + Math.random() * 30;
-    const packSla = 65 + Math.random() * 35;
-    const shipSla = 60 + Math.random() * 40;
-    const accuracy = 85 + Math.random() * 15;
-    const overall = pickSla * 0.3 + packSla * 0.3 + shipSla * 0.3 + accuracy * 0.1;
-    const uph = 20 + Math.floor(Math.random() * 30);
-    return {
-      ...w,
-      ordersHandled: 15 + Math.floor(Math.random() * 40),
-      pickSla: +pickSla.toFixed(1),
-      packSla: +packSla.toFixed(1),
-      shipSla: +shipSla.toFixed(1),
-      accuracy: +accuracy.toFixed(1),
-      avgTime: 10 + Math.floor(Math.random() * 50),
-      uph,
-      overall: +overall.toFixed(1),
-      trend: [
-        +(overall - 5 + Math.random() * 3).toFixed(1),
-        +(overall - 3 + Math.random() * 3).toFixed(1),
-        +(overall - 4 + Math.random() * 4).toFixed(1),
-        +(overall - 2 + Math.random() * 3).toFixed(1),
-        +(overall - 1 + Math.random() * 2).toFixed(1),
-        +(overall + Math.random() * 2 - 1).toFixed(1),
-        +overall.toFixed(1),
-      ],
-    };
-  });
-};
-
-const generateMockBreaches = () => {
-  const hours = [];
-  for (let h = 8; h <= 20; h++) {
-    hours.push({
-      hour: `${h}:00`,
-      pick: Math.floor(Math.random() * 4),
-      pack: Math.floor(Math.random() * 3),
-      ship: Math.floor(Math.random() * 2),
-    });
-  }
-  return hours;
-};
-
-const generateMockAlerts = (workers) => {
-  const types = ['Pick SLA Breach', 'Pack SLA Breach', 'Ship SLA Warning', 'Pick SLA Warning'];
-  const alerts = [];
-  const now = Date.now();
-  for (let i = 0; i < 8; i++) {
-    const w = workers[Math.floor(Math.random() * workers.length)];
-    const type = types[Math.floor(Math.random() * types.length)];
-    const isBreach = type.includes('Breach');
-    const overMin = isBreach ? 15 + Math.floor(Math.random() * 60) : Math.floor(Math.random() * 15);
-    alerts.push({
-      id: i,
-      timestamp: new Date(now - i * 420000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-      worker: w.name,
-      type,
-      isBreach,
-      orderRef: `SO-${2400 + Math.floor(Math.random() * 100)}`,
-      overMinutes: overMin,
-    });
-  }
-  return alerts;
-};
+// No mock data — return empty arrays when no real data
+const generateMockWorkers = () => [];
+const generateMockBreaches = () => [];
+const generateMockAlerts = () => [];
 
 // Ring gauge SVG for overview card
 const RingGauge = ({ value, size = 64, strokeWidth = 6, color }) => {

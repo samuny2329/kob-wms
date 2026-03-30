@@ -877,8 +877,8 @@ export default function AIAnalyzer({ language, addToast, activityLogs, inventory
     const [selectedDimension, setSelectedDimension] = useState('all');
     const [severityFilter, setSeverityFilter] = useState('all');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisData, setAnalysisData] = useState(() => generateMockAnalysis('kob'));
-    const [forecastData, setForecastData] = useState(() => generateSalesForecast('kob'));
+    const [analysisData, setAnalysisData] = useState(null);
+    const [forecastData, setForecastData] = useState(null);
 
     const isEn = language === 'en';
 

@@ -36,16 +36,7 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
             return stat;
         }).sort((a, b) => b.total - a.total);
 
-        // Show sample data when no real activity logs exist
-        if (result.length === 0) {
-            return [
-                { name: 'Somchai K.', username: 'somchai', pick: 42, pack: 35, scan: 28, total: 105, uph: 26 },
-                { name: 'Nattaya P.', username: 'nattaya', pick: 38, pack: 40, scan: 20, total: 98, uph: 24 },
-                { name: 'Wichai S.', username: 'wichai', pick: 30, pack: 25, scan: 32, total: 87, uph: 22 },
-                { name: 'Preecha M.', username: 'preecha', pick: 25, pack: 20, scan: 35, total: 80, uph: 20 },
-                { name: 'Kannika R.', username: 'kannika', pick: 20, pack: 30, scan: 15, total: 65, uph: 16 },
-            ];
-        }
+        // No mock data — return empty when no real activity
         return result;
     }, [activityLogs]);
 
