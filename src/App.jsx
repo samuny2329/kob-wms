@@ -36,11 +36,13 @@ import KPIAssessment from './components/KPIAssessment';
 import GWPManager from './components/GWPManager';
 import AIAnalyzer from './components/AIAnalyzer';
 import MarketIntelligence from './components/MarketIntelligence';
+import ActivityHistory from './components/ActivityHistory';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
 import { confirmRTS, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
 import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
+import { addActivity } from './utils/activityDB';
 
 const App = () => {
     // 1. Initial & System State
@@ -245,6 +247,22 @@ const App = () => {
     const logActivity = (action, details) => {
         const entry = { timestamp: new Date().getTime(), username: user.username, name: user.name, action, details };
         setActivityLogs(prev => [entry, ...prev].slice(0, 1000));
+        // Persist to IndexedDB with flat fields for querying
+        addActivity({
+            action,
+            username: user.username,
+            name: user.name,
+            timestamp: entry.timestamp,
+            orderRef: details?.order || details?.soName || '',
+            awb: details?.awb || '',
+            sku: details?.sku || '',
+            boxType: details?.boxType || '',
+            courier: details?.courier || '',
+            platform: details?.platform || '',
+            itemCount: details?.items || details?.count || 0,
+            picking: details?.picking || '',
+            barcode: details?.barcode || '',
+        });
     };
 
     const playSound = (type) => {
@@ -1114,6 +1132,7 @@ window.onload=function(){
                     {activeTab === 'kpiAssessment' && <KPIAssessment user={user} users={users} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} logActivity={logActivity} workerOkrData={workerOkrData} />}
                     {activeTab === 'aiAnalyzer' && <AIAnalyzer language={language} addToast={addToast} activityLogs={activityLogs} inventory={inventory} orders={salesOrders} users={users} invoices={invoices} apiConfigs={apiConfigs} />}
                     {activeTab === 'marketIntelligence' && <MarketIntelligence language={language} addToast={addToast} />}
+                    {activeTab === 'activityHistory' && <ActivityHistory language={language} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
 
