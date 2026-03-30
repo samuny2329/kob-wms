@@ -7,13 +7,22 @@ const Pack = ({
     handlePackScanSubmit, packScanInput, setPackScanInput, packInputRef,
     handleBoxSelect, isProcessingAPI,
     packAwbInput, setPackAwbInput, packAwbRef, handleAwbConfirmScan,
-    printAwbLabel,
+    printAwbLabel, stockFrozen,
 }) => {
     const readyOrders = salesOrders.filter(o => ['picked', 'packing', 'packed'].includes(o.status));
 
     if (!selectedPackOrder) {
         return (
             <div className="max-w-4xl mx-auto w-full animate-slide-up">
+                {stockFrozen && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                        <span className="text-2xl">🔒</span>
+                        <div>
+                            <p className="text-sm font-bold text-red-800">Stock Frozen</p>
+                            <p className="text-xs text-red-600">Packing is blocked during Full Count. Please wait until the count is completed.</p>
+                        </div>
+                    </div>
+                )}
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
                     <div className="px-6 py-4 flex items-center justify-between" style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
                         <div>

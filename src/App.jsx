@@ -944,6 +944,14 @@ window.onload=function(){
         }
     };
 
+    // Stock Frozen flag — check if any Full Count session has freezeStock enabled
+    const stockFrozen = useMemo(() => {
+        try {
+            const sessions = JSON.parse(localStorage.getItem('wms_fullcount_sessions') || '[]');
+            return sessions.some(s => s.status !== 'closed' && s.settings?.freezeStock);
+        } catch { return false; }
+    }, []);
+
     // Calculated Stats
     const totalExpected = useMemo(() => orderData.reduce((s, i) => s + i.expectedQty, 0), [orderData]);
     const totalScanned = useMemo(() => orderData.reduce((s, i) => s + i.scannedQty, 0), [orderData]);
@@ -1111,8 +1119,8 @@ window.onload=function(){
 
                 <main className="flex-1 overflow-y-auto p-5 custom-scrollbar relative z-30" style={{ backgroundColor: '#f8f9fa' }}>
                     {activeTab === 'dashboard' && <Dashboard t={t} totalExpected={totalExpected} totalScanned={totalScanned} uph={uph} dailyBoxUsage={dailyBoxUsage} totalDelayed={totalDelayed} courierDistributionData={courierDistributionData} progressPercent={progressPercent} delayedOrdersData={delayedOrdersData} userRole={userRole} activityLogs={activityLogs} isDarkMode={isDarkMode} salesOrders={salesOrders} inventory={inventory} waves={waves} invoices={invoices} />}
-                    {activeTab === 'pick' && <Pick salesOrders={salesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} inventory={inventory} clearDummyOrders={clearDummyOrders} onCreateSOInOdoo={handleCreateSOInOdoo} isCreatingSO={isCreatingSO} />}
-                    {activeTab === 'pack' && <Pack salesOrders={salesOrders} selectedPackOrder={selectedPackOrder} setSelectedPackOrder={setSelectedPackOrder} handlePackScanSubmit={handlePackScanSubmit} packScanInput={packScanInput} setPackScanInput={setPackScanInput} packInputRef={packInputRef} handleBoxSelect={handleBoxSelect} isProcessingAPI={isProcessingAPI} packAwbInput={packAwbInput} setPackAwbInput={setPackAwbInput} packAwbRef={packAwbRef} handleAwbConfirmScan={handleAwbConfirmScan} printAwbLabel={printAwbLabel} />}
+                    {activeTab === 'pick' && <Pick salesOrders={salesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} inventory={inventory} clearDummyOrders={clearDummyOrders} onCreateSOInOdoo={handleCreateSOInOdoo} isCreatingSO={isCreatingSO} stockFrozen={stockFrozen} />}
+                    {activeTab === 'pack' && <Pack salesOrders={salesOrders} selectedPackOrder={selectedPackOrder} setSelectedPackOrder={setSelectedPackOrder} handlePackScanSubmit={handlePackScanSubmit} packScanInput={packScanInput} setPackScanInput={setPackScanInput} packInputRef={packInputRef} handleBoxSelect={handleBoxSelect} isProcessingAPI={isProcessingAPI} packAwbInput={packAwbInput} setPackAwbInput={setPackAwbInput} packAwbRef={packAwbRef} handleAwbConfirmScan={handleAwbConfirmScan} printAwbLabel={printAwbLabel} stockFrozen={stockFrozen} />}
                     {activeTab === 'handheldPack' && <HandheldPack salesOrders={salesOrders} setSalesOrders={setSalesOrders} playSound={playSound} logActivity={logActivity} addToast={addToast} boxUsageLog={boxUsageLog} setBoxUsageLog={setBoxUsageLog} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} />}
                     {activeTab === 'posPack' && <POSPack salesOrders={salesOrders} setSalesOrders={setSalesOrders} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} boxUsageLog={boxUsageLog} setBoxUsageLog={setBoxUsageLog} printAwbLabel={printAwbLabel} />}
                     {activeTab === 'scan' && <Scan currentBatchId={activeOrderId.split('-')[1]} totalScanned={totalScanned} totalExpected={totalExpected} progressPercent={progressPercent} inputRef={inputRef} scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} scanBinHint={scanBinHint} lastScans={lastScans} orderData={orderData} />}

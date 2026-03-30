@@ -40,7 +40,7 @@ const statusLabel = (status) => ({
 }[status] || status);
 
 // Platform config for Create SO
-const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatformOrders, isProcessingImport, handlePickScanSubmit, pickScanInput, setPickScanInput, pickInputRef, inventory, clearDummyOrders, isSyncingOrders, onSyncOrders, onCreateSOInOdoo, isCreatingSO }) => {
+const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatformOrders, isProcessingImport, handlePickScanSubmit, pickScanInput, setPickScanInput, pickInputRef, inventory, clearDummyOrders, isSyncingOrders, onSyncOrders, onCreateSOInOdoo, isCreatingSO, stockFrozen }) => {
     const getLocation = (sku) => inventory?.find(i => i.sku === sku)?.location || PRODUCT_CATALOG[sku]?.location || null;
     const [showPickingList, setShowPickingList] = useState(null);
     const [scanFlash, setScanFlash] = useState(null);
@@ -214,6 +214,15 @@ window.onload=function(){
 
     return (
         <div className="max-w-4xl mx-auto w-full animate-slide-up">
+            {stockFrozen && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                    <span className="text-2xl">🔒</span>
+                    <div>
+                        <p className="text-sm font-bold text-red-800">Stock Frozen</p>
+                        <p className="text-xs text-red-600">Picking is blocked during Full Count. Please wait until the count is completed.</p>
+                    </div>
+                </div>
+            )}
             {!selectedPickOrder ? (
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
                     {/* Header */}
