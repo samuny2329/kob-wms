@@ -4,7 +4,7 @@ import {
     Package, RefreshCw, Calendar, Filter, ChevronDown, ChevronRight, Hash,
     ArrowUpDown, X, Check, Clock, Target, TrendingUp, TrendingDown, Shuffle,
     Archive, Eye, ChevronLeft, Users, UserCheck, MapPin, Camera, Bell, BellRing,
-    RotateCcw, ShieldCheck, Image, Lock, Unlock, QrCode
+    RotateCcw, ShieldCheck, Image, Lock, Unlock, QrCode, Plus
 } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants';
 import { getActivePickers } from './TimeAttendance';
