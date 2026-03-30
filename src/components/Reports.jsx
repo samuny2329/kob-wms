@@ -116,16 +116,7 @@ const Reports = ({ reportViewMode, setReportViewMode, reportFilterCourier, setRe
             return s;
         }).sort((a, b) => b.total - a.total);
 
-        // Sample data if no real logs
-        if (workers.length === 0) {
-            workers = [
-                { name: 'Somchai K.', username: 'somchai', pick: 42, pack: 35, scan: 28, total: 105, uph: 26 },
-                { name: 'Nattaya P.', username: 'nattaya', pick: 38, pack: 40, scan: 20, total: 98, uph: 24 },
-                { name: 'Wichai S.', username: 'wichai', pick: 30, pack: 25, scan: 32, total: 87, uph: 22 },
-                { name: 'Preecha M.', username: 'preecha', pick: 25, pack: 20, scan: 35, total: 80, uph: 20 },
-                { name: 'Kannika R.', username: 'kannika', pick: 20, pack: 30, scan: 15, total: 65, uph: 16 },
-            ];
-        }
+        // No mock data — show empty when no real activity
 
         const totalActions = workers.reduce((s, w) => s + w.total, 0);
         const avgUph = workers.length > 0 ? Math.round(workers.reduce((s, w) => s + w.uph, 0) / workers.length) : 0;
