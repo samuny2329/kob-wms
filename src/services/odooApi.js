@@ -722,6 +722,95 @@ export const updateInventory = async (odooConfig, sku, adjustment, reason, lotNu
     return odooPost(odooConfig, '/wms/inventory/adjust', { sku, adjustment, reason, lot_number: lotNumber, location: PICKFACE_LOCATION_NAME });
 };
 
+// ============ FULL COUNT (Inventory Adjustment) ============
+
+// Apply Full Count adjustments to Odoo via stock.quant → inventory_quantity → action_apply_inventory
+// items: [{ sku, location, systemQty, countedQty, variance }]
+// Returns: { status, applied, failed, results }
+export const applyFullCountAdjustments = async (odooConfig, { sessionId, sessionName, items, approvedBy }) => {
+    if (isMock(odooConfig)) {
+        await delay(500);
+        return {
+            status: 'success',
+            applied: items.length,
+            failed: 0,
+            results: items.map(item => ({
+                sku: item.sku, location: item.location,
+                oldQty: item.systemQty, newQty: item.countedQty,
+                variance: item.variance, status: 'applied',
+            })),
+        };
+    }
+
+    const results = [];
+    let applied = 0;
+    let failed = 0;
+
+    for (const item of items) {
+        try {
+            // 1. Find product by SKU (default_code)
+            const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
+                [[['default_code', '=', item.sku]]], { fields: ['id', 'name'], limit: 1 }
+            );
+            if (products.length === 0) {
+                results.push({ sku: item.sku, location: item.location, status: 'skipped', error: 'Product not found' });
+                failed++;
+                continue;
+            }
+            const productId = products[0].id;
+
+            // 2. Find location by name/complete_name
+            const locations = await odooCallKw(odooConfig, 'stock.location', 'search_read',
+                [['|', ['name', '=', item.location], ['complete_name', 'ilike', item.location], ['usage', '=', 'internal']]],
+                { fields: ['id', 'complete_name'], limit: 1 }
+            );
+            const locationId = locations.length > 0 ? locations[0].id : null;
+
+            // Fallback: use PICKFACE location
+            let targetLocationId = locationId;
+            if (!targetLocationId) {
+                const pickface = await getOrCreatePickfaceLocation(odooConfig);
+                targetLocationId = pickface.id;
+            }
+
+            // 3. Find existing stock.quant for this product+location
+            const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
+                [[['product_id', '=', productId], ['location_id', '=', targetLocationId]]],
+                { fields: ['id', 'quantity', 'inventory_quantity'], limit: 1 }
+            );
+
+            if (quants.length > 0) {
+                // 4a. Update existing quant — set inventory_quantity to counted qty
+                await odooCallKw(odooConfig, 'stock.quant', 'write',
+                    [[quants[0].id], { inventory_quantity: item.countedQty }]
+                );
+                // 5. Apply the inventory adjustment (Odoo calculates diff and creates stock.move)
+                await odooCallKw(odooConfig, 'stock.quant', 'action_apply_inventory', [[quants[0].id]]);
+            } else {
+                // 4b. No quant exists — create new one with inventory_quantity
+                const quantId = await odooCallKw(odooConfig, 'stock.quant', 'create', [{
+                    product_id: productId,
+                    location_id: targetLocationId,
+                    inventory_quantity: item.countedQty,
+                }]);
+                await odooCallKw(odooConfig, 'stock.quant', 'action_apply_inventory', [[quantId]]);
+            }
+
+            results.push({
+                sku: item.sku, location: item.location,
+                oldQty: item.systemQty, newQty: item.countedQty,
+                variance: item.variance, status: 'applied',
+            });
+            applied++;
+        } catch (err) {
+            results.push({ sku: item.sku, location: item.location, status: 'error', error: err.message });
+            failed++;
+        }
+    }
+
+    return { status: failed === 0 ? 'success' : 'partial', applied, failed, results };
+};
+
 // ============ WAVES / SORTING ============
 
 export const fetchWaves = async (odooConfig) => {
