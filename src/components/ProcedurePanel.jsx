@@ -44,15 +44,16 @@ export default function ProcedurePanel({ activeTab, userRole, language = 'en' })
                 <HelpCircle className="w-5 h-5 text-white" />
             </button>
 
-            {/* Backdrop */}
+            {/* Backdrop + Panel — only render when open */}
+            {isOpen && (
+            <>
             <div
-                className={`fixed inset-0 z-50 bg-black/30 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className="fixed inset-0 z-50 bg-black/30 animate-fade-in"
                 onClick={() => setIsOpen(false)}
             />
 
-            {/* Slide panel */}
             <div
-                className={`fixed top-0 right-0 z-[60] h-full w-[380px] max-w-[90vw] bg-white dark:bg-gray-900 shadow-2xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className="fixed top-0 right-0 z-[60] h-full w-[380px] max-w-[90vw] bg-white dark:bg-gray-900 shadow-2xl animate-slide-left"
             >
                 {/* Header */}
                 <div className="border-t-4 px-5 py-4 flex items-center justify-between border-b border-[#dee2e6] dark:border-gray-700" style={{ borderTopColor: '#714B67' }}>
@@ -226,6 +227,8 @@ export default function ProcedurePanel({ activeTab, userRole, language = 'en' })
                     )}
                 </div>
             </div>
+            </>
+            )}
         </>
     );
 }
