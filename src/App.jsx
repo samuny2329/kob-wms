@@ -31,6 +31,7 @@ import TeamPerformance from './components/TeamPerformance';
 import WorkerPerformance from './components/WorkerPerformance';
 import SLATracker from './components/SLATracker';
 import CycleCount from './components/CycleCount';
+import ProcedurePanel from './components/ProcedurePanel';
 import TimeAttendance from './components/TimeAttendance';
 import KPIAssessment from './components/KPIAssessment';
 import GWPManager from './components/GWPManager';
@@ -1146,6 +1147,9 @@ window.onload=function(){
                     {activeTab === 'activityHistory' && <ActivityHistory language={language} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
+
+                {/* Procedure Help Panel */}
+                <ProcedurePanel activeTab={activeTab} />
 
                 {/* Worker Performance Detail Panel */}
                 {selectedWorker && <WorkerPerformance activityLogs={activityLogs} worker={selectedWorker} users={users} onClose={() => setSelectedWorker(null)} t={t} />}
