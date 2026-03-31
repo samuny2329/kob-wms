@@ -29,3 +29,158 @@ export const PROCEDURE_CONFIG = {
     settings: { title: 'Settings', role: ['admin', 'senior'], purpose: 'Configure Odoo connection, platform API keys, company settings, and system preferences.', steps: ['Set Odoo URL and verify connection', 'Configure platform API keys', 'Set company details and warehouse preferences', 'Configure courier API connections'], kpiMetrics: [], tips: ['Test Odoo connection after changing URL', 'Keep API keys secure'] },
     chat: { title: 'AI Assistant', role: ['admin', 'senior'], purpose: 'Chat with Claude AI for operational questions, data analysis, and troubleshooting.', steps: ['Type your question in the chat box', 'AI has context about your warehouse operations', 'Ask about inventory, orders, performance, or procedures'], kpiMetrics: [], tips: ['Be specific in your questions for better answers'] },
 };
+
+// ── Role-based Daily SOP ──────────────────────────────────────────────────
+// Shows daily workflow for each role when viewing Dashboard or their core tab
+
+export const ROLE_PROCEDURES = {
+    picker: {
+        title: 'Picker Daily SOP',
+        shift: '08:00 - 17:00',
+        dailyWorkflow: [
+            { time: '08:00', action: 'Clock in', tab: 'timeAttendance', detail: 'Scan badge or clock in via Time & Attendance' },
+            { time: '08:05', action: 'Check assignments', tab: 'cycleCount', detail: 'Review Cycle Count tasks assigned for today' },
+            { time: '08:10', action: 'Complete cycle counts', tab: 'cycleCount', detail: 'Blind count assigned SKUs: scan location → scan product → enter qty' },
+            { time: '08:30', action: 'Start picking', tab: 'pick', detail: 'Process orders FIFO from Pick List: scan location → scan product → confirm' },
+            { time: '12:00', action: 'Lunch break', tab: null, detail: '1 hour break' },
+            { time: '13:00', action: 'Resume picking', tab: 'pick', detail: 'Continue processing pending orders' },
+            { time: '16:00', action: 'Final cycle count', tab: 'cycleCount', detail: 'Complete any remaining count tasks' },
+            { time: '16:30', action: 'Review KPI', tab: 'kpiAssessment', detail: 'Check auto-computed KPIs: UPH, accuracy, SLA compliance' },
+            { time: '16:50', action: 'Clock out', tab: 'timeAttendance', detail: 'Clock out via Time & Attendance' },
+        ],
+        kpiTargets: [
+            { name: 'Pick UPH', target: '60 units/hour', pillar: 'developPeople' },
+            { name: 'Pick Accuracy', target: '99%', pillar: 'developPeople' },
+            { name: 'Pick SLA', target: '120 min max', pillar: 'driveValue' },
+            { name: 'Count Compliance', target: '100%', pillar: 'developPeople' },
+            { name: 'Count Accuracy', target: '98%+', pillar: 'manageRisk' },
+            { name: 'Attendance Rate', target: '95%+', pillar: 'developPeople' },
+        ],
+        rules: [
+            'Always scan — never manual entry',
+            'FIFO order processing (oldest first)',
+            'Report damaged products immediately',
+            'Do not skip cycle count assignments',
+            'Wear safety vest in warehouse zones',
+        ],
+    },
+
+    packer: {
+        title: 'Packer Daily SOP',
+        shift: '08:00 - 17:00',
+        dailyWorkflow: [
+            { time: '08:00', action: 'Clock in', tab: 'timeAttendance', detail: 'Scan badge or clock in via Time & Attendance' },
+            { time: '08:05', action: 'Check packing queue', tab: 'pack', detail: 'Review picked orders ready for packing' },
+            { time: '08:10', action: 'Start packing', tab: 'pack', detail: 'Scan verify each item → select box → seal → print AWB' },
+            { time: '10:00', action: 'Check GWP', tab: 'gwp', detail: 'Verify GWP stock for promotions — include freebies in orders' },
+            { time: '12:00', action: 'Lunch break', tab: null, detail: '1 hour break' },
+            { time: '13:00', action: 'Resume packing', tab: 'pack', detail: 'Continue packing picked orders' },
+            { time: '15:00', action: 'POS orders', tab: 'posPack', detail: 'Process any walk-in POS orders' },
+            { time: '16:00', action: 'Check fulfillment', tab: 'fulfillment', detail: 'Verify all picked orders are packed' },
+            { time: '16:30', action: 'Review KPI', tab: 'kpiAssessment', detail: 'Check Pack UPH, AWB verify rate, SLA' },
+            { time: '16:50', action: 'Clock out', tab: 'timeAttendance', detail: 'Clock out via Time & Attendance' },
+        ],
+        kpiTargets: [
+            { name: 'Pack UPH', target: '45 units/hour', pillar: 'developPeople' },
+            { name: 'AWB Verify Rate', target: '100%', pillar: 'developPeople' },
+            { name: 'Pack SLA', target: '60 min post-pick', pillar: 'driveValue' },
+            { name: 'Box Efficiency', target: '90%+', pillar: 'deliverFinancial' },
+            { name: 'Zero Defect', target: '99.5%', pillar: 'driveValue' },
+            { name: 'Attendance Rate', target: '95%+', pillar: 'developPeople' },
+        ],
+        rules: [
+            'Scan verify every item — zero tolerance for wrong items',
+            'Use smallest box that fits to reduce shipping cost',
+            'Fragile items must have bubble wrap',
+            'Print AWB immediately after packing',
+            'Place in correct courier bin after sealing',
+        ],
+    },
+
+    outbound: {
+        title: 'Outbound Daily SOP',
+        shift: '08:00 - 17:00',
+        dailyWorkflow: [
+            { time: '08:00', action: 'Clock in', tab: 'timeAttendance', detail: 'Scan badge or clock in' },
+            { time: '08:05', action: 'Prepare courier bins', tab: null, detail: 'Label and organize courier bins/pallets' },
+            { time: '08:15', action: 'Start outbound scan', tab: 'scan', detail: 'Scan AWB on each box → verify courier bin → confirm placement' },
+            { time: '10:00', action: 'First courier pickup', tab: 'dispatch', detail: 'Flash/Kerry morning pickup — print manifest → count with driver → get signature → dispatch' },
+            { time: '12:00', action: 'Lunch break', tab: null, detail: '1 hour break' },
+            { time: '13:00', action: 'Continue scanning', tab: 'scan', detail: 'Scan remaining packed boxes' },
+            { time: '14:00', action: 'Print manifests', tab: 'list', detail: 'Generate manifest per courier for afternoon pickup' },
+            { time: '15:00', action: 'Second courier pickup', tab: 'dispatch', detail: 'Afternoon pickups — count boxes → manifest → signature → dispatch' },
+            { time: '16:30', action: 'Review KPI', tab: 'kpiAssessment', detail: 'Check Scan UPH, accuracy, dispatch on-time' },
+            { time: '16:50', action: 'Clock out', tab: 'timeAttendance', detail: 'Clock out' },
+        ],
+        kpiTargets: [
+            { name: 'Scan UPH', target: '55 scans/hour', pillar: 'developPeople' },
+            { name: 'Scan Accuracy', target: '100%', pillar: 'developPeople' },
+            { name: 'Manifest Accuracy', target: '100%', pillar: 'developPeople' },
+            { name: 'Dispatch On-Time', target: '95%+', pillar: 'driveValue' },
+            { name: 'Courier Sort Accuracy', target: '100%', pillar: 'driveValue' },
+            { name: 'Attendance Rate', target: '95%+', pillar: 'developPeople' },
+        ],
+        rules: [
+            'Scan every box — never sort by label color alone',
+            'Count boxes with driver before loading',
+            'Get driver signature before truck departs',
+            'Report missing or damaged boxes immediately',
+            'Keep courier bins clearly labeled and organized',
+        ],
+    },
+
+    admin: {
+        title: 'Admin Daily SOP',
+        shift: '08:00 - 18:00',
+        dailyWorkflow: [
+            { time: '08:00', action: 'Check Dashboard', tab: 'dashboard', detail: 'Review overnight orders, SLA status, UPH trends' },
+            { time: '08:15', action: 'Platform sync check', tab: 'platformMonitor', detail: 'Verify Shopee/Lazada/TikTok syncing normally' },
+            { time: '08:30', action: 'Create waves', tab: 'sorting', detail: 'Group pending orders into waves for pickers' },
+            { time: '09:00', action: 'Monitor operations', tab: 'teamPerformance', detail: 'Check team UPH, identify bottlenecks' },
+            { time: '10:00', action: 'SLA monitoring', tab: 'slaTracker', detail: 'Review SLA compliance, escalate breaches' },
+            { time: '12:00', action: 'Lunch break', tab: null, detail: '1 hour break' },
+            { time: '13:00', action: 'Review invoices', tab: 'invoice', detail: 'Post auto-created invoices, check accuracy' },
+            { time: '14:00', action: 'Inventory check', tab: 'inventory', detail: 'Review stock levels, low stock alerts, reorder points' },
+            { time: '15:00', action: 'KPI reviews', tab: 'kpiAssessment', detail: 'Review pending KPI assessments, approve/reject' },
+            { time: '16:00', action: 'AI analysis', tab: 'aiAnalyzer', detail: 'Review AI-detected anomalies and recommendations' },
+            { time: '17:00', action: 'End-of-Day report', tab: 'report', detail: 'Generate EOD report, archive daily data' },
+            { time: '17:30', action: 'Activity review', tab: 'activityHistory', detail: 'Review audit trail for any unusual activity' },
+        ],
+        kpiTargets: [
+            { name: 'Team UPH', target: '50 avg', pillar: 'developPeople' },
+            { name: 'Overall SLA', target: '95%+', pillar: 'driveValue' },
+            { name: 'Fulfillment Rate', target: '98%+', pillar: 'driveValue' },
+            { name: 'Team Coverage', target: '90%+', pillar: 'developPeople' },
+        ],
+        rules: [
+            'Check dashboard before any other task',
+            'Escalate SLA breaches within 15 minutes',
+            'Post invoices same day',
+            'Review KPI assessments within 48 hours',
+            'Generate EOD report before leaving',
+        ],
+    },
+
+    senior: {
+        title: 'Senior Management SOP',
+        shift: '08:00 - 18:00',
+        dailyWorkflow: [
+            { time: '08:00', action: 'Dashboard overview', tab: 'dashboard', detail: 'High-level operations status' },
+            { time: '09:00', action: 'Team performance', tab: 'teamPerformance', detail: 'Review team and individual KPIs' },
+            { time: '10:00', action: 'Market intelligence', tab: 'marketIntelligence', detail: 'Review market trends and competitive data' },
+            { time: '14:00', action: 'KPI approvals', tab: 'kpiAssessment', detail: 'Review and approve KPI assessments in approval chain' },
+            { time: '16:00', action: 'Strategic review', tab: 'report', detail: 'Review weekly/monthly reports for strategic decisions' },
+        ],
+        kpiTargets: [
+            { name: 'Overall SLA', target: '95%+', pillar: 'driveValue' },
+            { name: 'Fulfillment Rate', target: '98%+', pillar: 'driveValue' },
+            { name: 'Revenue Growth', target: '10% QoQ', pillar: 'makeRevenue' },
+            { name: 'Team UPH', target: '50 avg', pillar: 'developPeople' },
+        ],
+        rules: [
+            'Review KPI assessments within approval SLA',
+            'Monitor cross-platform performance weekly',
+            'Ensure compliance reporting is current',
+        ],
+    },
+};

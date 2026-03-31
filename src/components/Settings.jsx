@@ -398,7 +398,28 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                                             className="odoo-input w-full"
                                                         />
                                                     ))}
+                                                    <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
+                                                        <CheckCircle2 className="w-3 h-3" /> Auto-saved
+                                                    </p>
                                                 </div>
+                                                {api.id === 'claude' && (
+                                                    <div className="flex items-center gap-2 pt-1">
+                                                        <button
+                                                            onClick={async () => {
+                                                                const { testConnection } = await import('../services/claudeApi');
+                                                                const result = await testConnection(apiConfigs.claude?.apiKey);
+                                                                if (result.success) {
+                                                                    showAlert?.('Claude AI connected successfully!', 'success');
+                                                                } else {
+                                                                    showAlert?.(`Claude connection failed: ${result.error || 'Status ' + result.status}`, 'error');
+                                                                }
+                                                            }}
+                                                            className="odoo-btn odoo-btn-primary text-xs flex items-center gap-1.5"
+                                                        >
+                                                            <Wifi className="w-3.5 h-3.5" /> Test Connection
+                                                        </button>
+                                                    </div>
+                                                )}
                                                 {api.id === 'odoo' && (
                                                     <div className="space-y-2 pt-1">
                                                         <div className="flex flex-wrap items-center gap-2">

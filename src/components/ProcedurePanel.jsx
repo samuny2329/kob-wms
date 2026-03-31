@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { HelpCircle, X, ListOrdered, Target, Lightbulb, Users, ChevronRight } from 'lucide-react';
-import { PROCEDURE_CONFIG } from '../data/procedureConfig';
+import { HelpCircle, X, ListOrdered, Target, Lightbulb, Users, ChevronRight, Clock, Shield, BookOpen } from 'lucide-react';
+import { PROCEDURE_CONFIG, ROLE_PROCEDURES } from '../data/procedureConfig';
 import { KPI_PILLARS } from '../constants';
 
 function getPillarColor(pillarKey) {
@@ -13,11 +13,13 @@ function getPillarLabel(pillarKey) {
     return pillar?.label || pillarKey;
 }
 
-export default function ProcedurePanel({ activeTab }) {
+export default function ProcedurePanel({ activeTab, userRole }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [view, setView] = useState('tab'); // 'tab' or 'role'
     const config = PROCEDURE_CONFIG[activeTab];
+    const roleSop = ROLE_PROCEDURES[userRole];
 
-    if (!config) return null;
+    if (!config && !roleSop) return null;
 
     return (
         <>
@@ -53,6 +55,85 @@ export default function ProcedurePanel({ activeTab }) {
                 </div>
 
                 <div className="overflow-y-auto h-[calc(100%-60px)] px-5 py-4 space-y-5">
+                    {/* Tab/Role toggle */}
+                    {roleSop && config && (
+                        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+                            <button onClick={() => setView('tab')}
+                                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${view === 'tab' ? 'bg-white dark:bg-gray-700 shadow-sm text-purple-700' : 'text-gray-500'}`}>
+                                <BookOpen className="w-3.5 h-3.5" /> This Page
+                            </button>
+                            <button onClick={() => setView('role')}
+                                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${view === 'role' ? 'bg-white dark:bg-gray-700 shadow-sm text-purple-700' : 'text-gray-500'}`}>
+                                <Users className="w-3.5 h-3.5" /> My Daily SOP
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ── Role Daily SOP ── */}
+                    {(view === 'role' && roleSop) ? (
+                        <div className="space-y-4">
+                            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                                <h3 className="text-sm font-bold text-purple-800 dark:text-purple-200">{roleSop.title}</h3>
+                                <p className="text-[11px] text-purple-600 dark:text-purple-300 mt-0.5">Shift: {roleSop.shift}</p>
+                            </div>
+
+                            {/* Timeline */}
+                            <div>
+                                <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5" style={{ color: '#714B67' }} /> Daily Workflow
+                                </h4>
+                                <div className="space-y-1">
+                                    {roleSop.dailyWorkflow.map((item, i) => (
+                                        <div key={i} className={`flex items-start gap-2 text-xs rounded-md px-2 py-1.5 ${!item.tab ? 'bg-gray-50 dark:bg-gray-800 text-gray-400' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                                            <span className="font-mono text-[10px] text-gray-400 w-10 shrink-0 pt-0.5">{item.time}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-800 dark:text-gray-100">{item.action}</p>
+                                                <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">{item.detail}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* KPI Targets */}
+                            {roleSop.kpiTargets?.length > 0 && (
+                                <div>
+                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
+                                        <Target className="w-3.5 h-3.5" style={{ color: '#714B67' }} /> Your KPI Targets
+                                    </h4>
+                                    <div className="space-y-1.5">
+                                        {roleSop.kpiTargets.map((kpi, i) => (
+                                            <div key={i} className="rounded border border-gray-200 dark:border-gray-700 p-2 bg-white dark:bg-gray-800"
+                                                style={{ borderLeftWidth: 3, borderLeftColor: getPillarColor(kpi.pillar) }}>
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="font-medium text-gray-800 dark:text-gray-100">{kpi.name}</span>
+                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: getPillarColor(kpi.pillar) }}>{kpi.target}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Rules */}
+                            {roleSop.rules?.length > 0 && (
+                                <div>
+                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-1.5">
+                                        <Shield className="w-3.5 h-3.5 text-red-500" /> Rules
+                                    </h4>
+                                    <ul className="space-y-1 bg-red-50 dark:bg-red-900/10 rounded-lg p-3 border border-red-200 dark:border-red-800">
+                                        {roleSop.rules.map((rule, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-xs text-red-800 dark:text-red-200">
+                                                <span className="text-red-500 shrink-0 mt-0.5">*</span>
+                                                <span>{rule}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                    <>
                     {/* Purpose */}
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-[#dee2e6] dark:border-gray-700">
                         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{config.purpose}</p>
@@ -122,13 +203,15 @@ export default function ProcedurePanel({ activeTab }) {
                     )}
 
                     {/* Roles */}
-                    {config.role?.length > 0 && (
+                    {config?.role?.length > 0 && (
                         <div className="pt-2 border-t border-[#dee2e6] dark:border-gray-700">
                             <div className="flex items-center gap-1.5 text-xs text-gray-400">
                                 <Users className="w-3.5 h-3.5" />
                                 <span>Used by: {config.role.join(', ')}</span>
                             </div>
                         </div>
+                    )}
+                    </>
                     )}
                 </div>
             </div>
