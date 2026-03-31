@@ -53,7 +53,7 @@ function generateMockAnalysis(companyKey) {
                         rootCauseTh: 'สาเหตุน่าจะมาจาก: 3 รายการหยิบวันที่ 27/03/2026 ไม่ได้ยืนยันใน Odoo (stock.move.line qty_done=0) พนักงาน "somchai" ทำ 3 ออเดอร์โดยไม่สแกนยืนยัน',
                         recommendation: 'Force-validate pending picks. Run physical count for STDH080-REFILL. Enable mandatory scan-to-confirm.',
                         recommendationTh: 'บังคับ validate pick ที่ค้าง นับสต็อคจริง STDH080-REFILL เปิดบังคับสแกนยืนยัน',
-                        data: { odooQty: 450, actualQty: 412, variance: -38, variancePct: -8.4, sku: 'STDH080-REFILL', location: `${company.warehouse}/Stock/A-01-01` },
+                        data: { odooQty: 450, actualQty: 412, variance: -38, variancePct: -8.4, sku: 'STDH080-REFILL', location: `${company.warehouse}/Stock/K2-A01-01` },
                     },
                     {
                         id: 'inv-002',

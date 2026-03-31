@@ -15,6 +15,18 @@ import WarehouseMap from './WarehouseMap';
 const ZONE_COLORS = {
     A: '#dc2626', B: '#d97706', C: '#2563eb', D: '#16a34a',
     E: '#9333ea', F: '#e11d48', G: '#0891b2', H: '#65a30d',
+    I: '#475569', FLG: '#78716c',
+};
+
+// Extract zone letter from location (handles K2-A01-01 and A-01-01)
+const getZone = (loc) => {
+    if (!loc) return '';
+    const parts = loc.split('-');
+    if (parts.length >= 2 && /\d/.test(parts[0])) {
+        // K2-A01-01 → zone = A (first letter of parts[1])
+        return parts[1].replace(/\d+/g, '');
+    }
+    return parts[0]; // A-01-01 → zone = A
 };
 
 // ── ABC Classification ──
@@ -577,7 +589,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         // Zone assignments from products
         const zoneMap = {};
         allBins.forEach(b => {
-            const zone = b.location.split('-')[0];
+            const zone = getZone(b.location);
             if (!zoneMap[zone]) zoneMap[zone] = [];
             if (!zoneMap[zone].includes(b.binId)) zoneMap[zone].push(b.binId);
         });
@@ -641,7 +653,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
             // Update zone progress
             const byZone = { ...s.progress.byZone };
             Object.keys(byZone).forEach(z => {
-                const zoneCounts = counts.filter(c => c.location.startsWith(z + '-'));
+                const zoneCounts = counts.filter(c => getZone(c.location) === z);
                 byZone[z] = { total: zoneCounts.length, done: zoneCounts.filter(c => c.countedQty !== null).length };
             });
             return { ...s, counts, progress: { ...s.progress, counted, matched, variance: varianceCount, byZone } };
@@ -1553,8 +1565,8 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                             onClick={() => { setFcSelectedItem(item); setFcCountInput(''); }}
                                             className={`border-t cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 ${fcSelectedItem?.binId === item.binId ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}>
                                             <td className="px-3 py-2">
-                                                <span className="w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: ZONE_COLORS[item.location.split('-')[0]] || '#6b7280' }}>
-                                                    {item.location.split('-')[0]}
+                                                <span className="w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: ZONE_COLORS[getZone(item.location)] || '#6b7280' }}>
+                                                    {getZone(item.location)}
                                                 </span>
                                             </td>
                                             <td className="px-3 py-2 font-mono text-xs">{item.location}</td>
