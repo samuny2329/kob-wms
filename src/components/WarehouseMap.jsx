@@ -27,9 +27,26 @@ const ZONE_GAP = 56;
 
 function parseLocation(loc) {
     if (!loc) return null;
+    // Special locations: FLG-01, FLFG-K2, PICKFACE
+    if (/^FLG-\d+$/.test(loc)) return { zone: 'FLG', rack: 0, position: parseInt(loc.split('-')[1], 10) };
+    if (/^FLFG/.test(loc)) return { zone: 'FLG', rack: 0, position: 0 };
+    if (/PICKFACE/.test(loc)) return { zone: 'PF', rack: 0, position: 1 };
+    // Support formats: K2-A01-01 (Odoo real) or A-01-01 (legacy)
     const parts = loc.split('-');
-    if (parts.length !== 3) return null;
-    return { zone: parts[0], rack: parseInt(parts[1], 10), position: parseInt(parts[2], 10) };
+    if (parts.length === 3) {
+        // Check if first part is a prefix like K2 (contains digits)
+        if (/\d/.test(parts[0])) {
+            // Format: K2-A01-01 → zone=A, rack=01, position=01
+            const zoneRack = parts[1]; // e.g. "A01"
+            const zone = zoneRack.replace(/\d+/g, ''); // "A"
+            const rack = parseInt(zoneRack.replace(/\D/g, ''), 10); // 1
+            const position = parseInt(parts[2], 10); // 1
+            return { zone, rack, position, prefix: parts[0] };
+        }
+        // Format: A-01-01 (legacy)
+        return { zone: parts[0], rack: parseInt(parts[1], 10), position: parseInt(parts[2], 10) };
+    }
+    return null;
 }
 
 function autoGenerateLayout(inventory) {

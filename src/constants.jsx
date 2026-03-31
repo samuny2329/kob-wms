@@ -577,7 +577,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/e8d5f5/6b21a8?text=STDH080%0ARefill',
         weight: 0.25,
         barcode: '8859139111901',
-        location: 'A-01-01',
+        location: 'K2-A01-01',
         odooId: 40001,
     },
     'STBG080-REFILL': {
@@ -588,7 +588,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/fde68a/92400e?text=STBG080%0ARefill',
         weight: 0.28,
         barcode: '8859139111925',
-        location: 'A-01-02',
+        location: 'K2-A01-02',
         odooId: 40002,
     },
     'SWB700': {
@@ -599,7 +599,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/bbf7d0/166534?text=SWB700%0ABody+Wash',
         weight: 0.78,
         barcode: '8859139111703',
-        location: 'B-02-01',
+        location: 'K2-B02-01',
         odooId: 40003,
     },
     'SWH700': {
@@ -610,7 +610,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/bfdbfe/1e40af?text=SWH700%0ABody+Wash',
         weight: 0.78,
         barcode: '8859139111680',
-        location: 'B-02-02',
+        location: 'K2-B02-02',
         odooId: 40004,
     },
     // ── SKINOXY Hydrogel Mask ────────────────────────────────
@@ -622,7 +622,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/fce4ec/880e4f?text=SHGG030%0AMask',
         weight: 0.05,
         barcode: '8859139119830',
-        location: 'A-02-01',
+        location: 'K2-A02-01',
         odooId: 43998,
     },
     'SHLF030': {
@@ -633,7 +633,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/e8eaf6/1a237e?text=SHLF030%0AMask',
         weight: 0.05,
         barcode: '8859139119847',
-        location: 'A-02-02',
+        location: 'K2-A02-02',
         odooId: 43999,
     },
     // ── KISS-MY-BODY ─────────────────────────────────────────
@@ -645,7 +645,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/fce4ec/880e4f?text=KLA226%0ALotion',
         weight: 0.32,
         barcode: '8859139102261',
-        location: 'C-01-01',
+        location: 'K2-C01-01',
         odooId: 24310,
     },
     'KMA088': {
@@ -656,7 +656,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/f3e5f5/4a148c?text=KMA088%0AMist',
         weight: 0.18,
         barcode: '8859139100882',
-        location: 'C-01-02',
+        location: 'K2-C01-02',
         odooId: 24376,
     },
     'KLMH180': {
@@ -667,7 +667,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/e8f5e9/1b5e20?text=KLMH180%0AToneUp',
         weight: 0.28,
         barcode: '8859139118010',
-        location: 'C-02-01',
+        location: 'K2-C02-01',
         odooId: 43355,
     },
     'KWAP380': {
@@ -678,7 +678,7 @@ export const PRODUCT_CATALOG = {
         image: 'https://placehold.co/200x200/e3f2fd/0d47a1?text=KWAP380%0AAroma',
         weight: 0.52,
         barcode: '8859139138030',
-        location: 'C-02-02',
+        location: 'K2-C02-02',
         odooId: 43024,
     },
 };
