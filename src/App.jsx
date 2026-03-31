@@ -1149,7 +1149,7 @@ window.onload=function(){
                 </main>
 
                 {/* Procedure Help Panel */}
-                <ProcedurePanel activeTab={activeTab} userRole={userRole} />
+                <ProcedurePanel activeTab={activeTab} userRole={userRole} language={language} />
 
                 {/* Worker Performance Detail Panel */}
                 {selectedWorker && <WorkerPerformance activityLogs={activityLogs} worker={selectedWorker} users={users} onClose={() => setSelectedWorker(null)} t={t} />}
