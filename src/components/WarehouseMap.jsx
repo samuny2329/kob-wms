@@ -38,34 +38,71 @@ function parseLocation(loc) {
     return null;
 }
 
+// Warehouse layout definition — matches Odoo stock.location export (KOB-WH2)
+const WAREHOUSE_LAYOUT = {
+    A: { racks: 4, positions: 8 },
+    B: { racks: 4, positions: 8 },
+    C: { racks: 4, positions: 8 },
+    D: { racks: 4, positions: 10 },
+    E: { racks: 4, positions: 10 },
+    F: { racks: 4, positions: 10 },
+    G: { racks: 4, positions: 10 },
+    H: { racks: 4, positions: 10 },
+    I: { racks: 4, positions: 10 },
+};
+
 function buildZoneRackStructure(inventory) {
     const zones = {};
+
+    // 1. Generate ALL bins from warehouse layout (349 locations)
+    Object.entries(WAREHOUSE_LAYOUT).forEach(([zone, cfg]) => {
+        zones[zone] = {};
+        for (let r = 1; r <= cfg.racks; r++) {
+            zones[zone][r] = {};
+            for (let p = 1; p <= cfg.positions; p++) {
+                const loc = `K2-${zone}${String(r).padStart(2, '0')}-${String(p).padStart(2, '0')}`;
+                zones[zone][r][p] = { sku: '', location: loc, name: '', barcode: '', brand: '' };
+            }
+        }
+    });
+
+    // FLG floor locations
+    zones['FLG'] = { 0: {} };
+    for (let p = 1; p <= 10; p++) {
+        zones['FLG'][0][p] = { sku: '', location: `FLG-${String(p).padStart(2, '0')}`, name: '', barcode: '', brand: '' };
+    }
+
+    // PICKFACE
+    zones['PF'] = { 0: { 1: { sku: '', location: 'PICKFACE', name: '', barcode: '', brand: '' } } };
+
+    // 2. Overlay PRODUCT_CATALOG (fill in SKU/name/barcode where products are assigned)
     Object.entries(PRODUCT_CATALOG).forEach(([sku, product]) => {
         const parsed = parseLocation(product.location);
         if (!parsed) return;
         const { zone, rack, position } = parsed;
-        if (!zones[zone]) zones[zone] = {};
-        if (!zones[zone][rack]) zones[zone][rack] = {};
-        zones[zone][rack][position] = {
-            sku, location: product.location,
-            name: product.shortName || product.name,
-            barcode: product.barcode, brand: product.brand,
-        };
+        if (zones[zone]?.[rack]?.[position]) {
+            zones[zone][rack][position] = {
+                sku, location: product.location,
+                name: product.shortName || product.name,
+                barcode: product.barcode, brand: product.brand,
+            };
+        }
     });
+
+    // 3. Overlay inventory data (products from Odoo not in catalog)
     const invItems = inventory?.items || (Array.isArray(inventory) ? inventory : []);
     invItems.forEach((item) => {
         const parsed = parseLocation(item.location);
         if (!parsed) return;
         const { zone, rack, position } = parsed;
-        if (!zones[zone]) zones[zone] = {};
-        if (!zones[zone][rack]) zones[zone][rack] = {};
-        if (!zones[zone][rack][position]) {
+        if (zones[zone]?.[rack]?.[position] && !zones[zone][rack][position].sku) {
             zones[zone][rack][position] = {
                 sku: item.sku || item.default_code || '', location: item.location,
                 name: item.name || item.sku || '', barcode: item.barcode || '', brand: '',
             };
         }
     });
+
     return zones;
 }
 
@@ -131,8 +168,8 @@ function SlotRow({ pos, slot, stock, color, label, isSelected, onClick, compact 
     return (
         <div onClick={onClick}
             className={`flex items-center gap-1.5 px-2 ${h} cursor-pointer border-l-[3px] transition-all
-                ${isSelected ? 'bg-blue-50 dark:bg-blue-900/30 border-l-blue-500 ring-1 ring-blue-300' :
-                    isEmpty ? 'border-l-gray-200 dark:border-l-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50' :
+                ${isSelected ? 'bg-blue-50 dark:bg-blue-900/30 border-l-blue-500 ring-1 ring-blue-300 ring-inset' :
+                    isEmpty ? 'border-l-emerald-200 dark:border-l-emerald-800/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 border-dashed' :
                     'hover:bg-gray-50 dark:hover:bg-gray-700/50'}
             `}
             style={!isSelected && !isEmpty ? { borderLeftColor: color } : undefined}>
@@ -142,7 +179,7 @@ function SlotRow({ pos, slot, stock, color, label, isSelected, onClick, compact 
             </span>
 
             {isEmpty ? (
-                <span className="flex-1 text-[10px] text-gray-300 dark:text-gray-600 italic">empty</span>
+                <span className="flex-1 text-[10px] text-emerald-400 dark:text-emerald-600 font-medium">Available</span>
             ) : (
                 <>
                     {/* SKU */}
@@ -175,13 +212,20 @@ function RackCard({ zone, rackNum, positions, inventory, viewMode, fullCountSess
     const rackLabel = zone === 'FLG' ? 'Floor' : zone === 'PF' ? 'Pickface' : `${zone}${String(rackNum).padStart(2, '0')}`;
 
     return (
-        <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-            {/* Rack header */}
-            <div className="flex items-center gap-2 px-3 py-1.5 border-b dark:border-gray-700"
-                style={{ backgroundColor: (ZONE_COLORS[zone] || '#6b7280') + '12' }}>
-                <div className="w-2 h-full min-h-[16px] rounded-sm" style={{ backgroundColor: ZONE_COLORS[zone] || '#6b7280' }} />
-                <span className="text-xs font-bold text-gray-800 dark:text-gray-100">Rack {rackLabel}</span>
-                <span className="text-[9px] text-gray-400 ml-auto">{sortedPositions.length} slots</span>
+        <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all group">
+            {/* Rack header — colored gradient bar */}
+            <div className="flex items-center gap-2 px-3 py-2 text-white"
+                style={{ background: `linear-gradient(135deg, ${ZONE_COLORS[zone] || '#6b7280'}, ${ZONE_COLORS[zone] || '#6b7280'}cc)` }}>
+                <div className="w-7 h-7 rounded-md bg-white/20 flex items-center justify-center text-[11px] font-black">
+                    {zone}{String(rackNum).padStart(2, '0')}
+                </div>
+                <div className="flex-1">
+                    <span className="text-xs font-bold">Rack {rackLabel}</span>
+                    <span className="text-[9px] opacity-75 ml-1.5">{sortedPositions.length} slots</span>
+                </div>
+                <div className="text-[9px] opacity-75 bg-white/10 px-1.5 py-0.5 rounded">
+                    {zone === 'FLG' ? 'Floor' : zone === 'PF' ? 'Pick' : 'Shelf'}
+                </div>
             </div>
             {/* Position rows */}
             <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -410,7 +454,7 @@ export default function WarehouseMap({
                                     <span className="text-sm font-bold text-gray-800 dark:text-gray-100">
                                         Zone {zone}
                                     </span>
-                                    <span className="text-[10px] text-gray-400">
+                                    <span className="text-[10px] text-gray-400 tabular-nums">
                                         {sortedRacks.length} rack{sortedRacks.length > 1 ? 's' : ''} · {totalSlots} slots
                                     </span>
                                     <ChevronDown size={14} className={`ml-auto text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
