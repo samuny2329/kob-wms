@@ -398,10 +398,10 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
                                                             className="odoo-input w-full"
                                                         />
                                                     ))}
-                                                    <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
-                                                        <CheckCircle2 className="w-3 h-3" /> Auto-saved
-                                                    </p>
                                                 </div>
+                                                <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 px-1">
+                                                    <CheckCircle2 className="w-3 h-3" /> Auto-saved
+                                                </p>
                                                 {api.id === 'claude' && (
                                                     <div className="flex items-center gap-2 pt-1">
                                                         <button
