@@ -19,7 +19,7 @@ graph TB
         direction TB
         APP["App.jsx<br/>State Controller"]
         SIDEBAR["Sidebar.jsx<br/>Navigation"]
-        PAGES["24 Pages<br/>Dashboard, Pick, Pack,<br/>Scan, Dispatch, Invoice..."]
+        PAGES["26 Pages<br/>Dashboard, Pick, Pack, Scan,<br/>Dispatch, Invoice, Full Count,<br/>Warehouse Map..."]
         CHAT["ClaudeChat.jsx<br/>AI Assistant"]
     end
 
@@ -455,7 +455,7 @@ graph TB
 | `odoo-data` | Images, files | 🟡 High — weekly rsync |
 | `odoo-addons` | Custom modules | 🟢 Low — in git repo |
 
-### localStorage Keys (22 keys)
+### localStorage Keys (25+ keys)
 
 | Key | Encrypted | Size Est. |
 |-----|-----------|-----------|
@@ -468,6 +468,9 @@ graph TB
 | `wms_logs` | No | 20-100 KB |
 | `wms_chat_history` | No | 5-50 KB |
 | `wms_eod_archives` | No | 50-200 KB |
+| `wms_fullcount_sessions` | No | 5-50 KB |
+| `wms_map_bg` | No | 0-5 MB (floor plan image) |
+| `wms_cycle_counts` | No | 5-20 KB |
 | Other 13 keys | No | 1-10 KB each |
 
 ### Sync Intervals

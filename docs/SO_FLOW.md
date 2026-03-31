@@ -1,6 +1,6 @@
 # WMS Pro — Sales Order Flow (End-to-End)
 
-> Version 1.0 | Updated: 2026-03-27
+> Version 1.1 | Updated: 2026-03-31
 > Miro Diagram: https://miro.com/app/board/uXjVGrM5Wms=/
 
 ## Status Flow
@@ -250,3 +250,68 @@ PostgreSQL 16 (:5432) — All WMS data (14 Odoo models)
 |------|----------|----------------|
 | `useOdooSync` | 10 seconds | Orders (stock.picking), Inventory, Waves, Invoices |
 | `usePlatformSync` | 60 seconds | New orders from Shopee/Lazada/TikTok APIs |
+
+---
+
+## 10. Full Count — Physical Inventory Adjustment
+
+**Purpose:** Complete 100% physical inventory count of all 349 bins with Odoo reconciliation.
+
+**Status transition:** `planning` → `frozen` → `counting` → `reconciliation` → `closed`
+
+### Flow
+
+```
+Create Session → Freeze Stock (optional) → Count All Bins → Reconcile → Approve & Send to Odoo
+```
+
+### Calculation
+
+```
+variance = countedQty - systemQty
+variancePct = |variance| / systemQty x 100
+
+variance = 0       → matched
+variancePct <= 5%   → variance-approved (auto)
+variancePct > 5%    → needs-recount
+```
+
+### Odoo Operations (on Approve)
+
+```
+// For each bin with variance != 0:
+product.product.search_read([['default_code', '=', sku]])          → find product_id
+stock.location.search_read([['complete_name', 'ilike', loc]])      → find location_id
+stock.quant.search_read([['product_id','=',pid],['location_id','=',lid]])  → find quant
+stock.quant.write([[quant_id], { inventory_quantity: countedQty }])
+stock.quant.action_apply_inventory([[quant_id]])                   → Odoo creates stock.move
+```
+
+**WMS Function:** `applyFullCountAdjustments()` in `odooApi.js`
+
+**Data stored:** localStorage `wms_fullcount_sessions`
+
+### Odoo Models Written
+
+| Stage | Models Read | Models Written |
+|-------|------------|---------------|
+| Create Session | `stock.quant`, `product.product` | — (localStorage only) |
+| Count | — | — (localStorage only) |
+| Approve & Close | `product.product`, `stock.location`, `stock.quant` | **`stock.quant`** (write + action_apply_inventory) |
+
+---
+
+## 11. Warehouse Map
+
+**349 bins** displayed as bird's eye floor plan matching real warehouse layout (KOB-WH2).
+
+**Location format:** `K2-[Zone][Rack]-[Position]` (e.g., K2-A01-01)
+
+| Zone | Racks | Positions | Total |
+|------|-------|-----------|-------|
+| A-C | 4 x 8 | 96 | Shelf |
+| D-I | 4 x 10 | 240 | Shelf |
+| FLG | 10+1 | 11 | Floor Ground |
+| PF | 1 | 1 | Pick Face |
+
+**Component:** `WarehouseMap.jsx` with 3 view modes (Stock Level, Count Status, Pick Frequency)
