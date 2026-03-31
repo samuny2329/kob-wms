@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants';
 import { getActivePickers } from './TimeAttendance';
+import { applyFullCountAdjustments } from '../services/odooApi';
 import WarehouseMap from './WarehouseMap';
 
 // ── Zone Colors ──
@@ -120,7 +121,7 @@ const FC_STATUS = {
     closed:       { label: 'Closed', color: '#16a34a', icon: '✅' },
 };
 
-const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, user, users = [], logActivity }) => {
+const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, user, users = [], logActivity, apiConfigs }) => {
     // ── Tab & Mode State ──
     const [activeTab, setActiveTab] = useState('cycle'); // 'cycle' | 'fullcount' | 'map'
     const [mode, setMode] = useState('dashboard');
@@ -648,20 +649,73 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         logActivity?.('full-count-item', { sessionId, binId, qty });
     }, [user, logActivity]);
 
-    const closeFullCount = useCallback((sessionId) => {
+    const [isApplying, setIsApplying] = useState(false);
+    const [applyResult, setApplyResult] = useState(null);
+
+    const closeFullCount = useCallback(async (sessionId) => {
+        const session = fullCountSessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        const varianceItems = session.counts.filter(c => c.countedQty !== null && c.variance !== 0);
+        const totalVarianceQty = session.counts.reduce((sum, c) => sum + Math.abs(c.variance || 0), 0);
+
+        // Send variance adjustments to Odoo
+        let odooResult = null;
+        if (varianceItems.length > 0 && apiConfigs?.odoo) {
+            setIsApplying(true);
+            try {
+                odooResult = await applyFullCountAdjustments(apiConfigs.odoo, {
+                    sessionId,
+                    sessionName: session.name,
+                    items: varianceItems.map(c => ({
+                        sku: c.sku, location: c.location,
+                        systemQty: c.systemQty, countedQty: c.countedQty,
+                        variance: c.variance,
+                    })),
+                    approvedBy: user?.username || 'admin',
+                });
+                setApplyResult(odooResult);
+
+                if (odooResult.status === 'success') {
+                    addToast?.(`Full Count approved — ${odooResult.applied} adjustments sent to Odoo`, 'success');
+                } else {
+                    addToast?.(`Partial: ${odooResult.applied} applied, ${odooResult.failed} failed — check details`, 'warning');
+                }
+            } catch (err) {
+                addToast?.(`Odoo error: ${err.message}. Count saved locally.`, 'error');
+                odooResult = { status: 'error', error: err.message, applied: 0, failed: varianceItems.length };
+                setApplyResult(odooResult);
+            } finally {
+                setIsApplying(false);
+            }
+        } else if (varianceItems.length === 0) {
+            addToast?.('Full Count closed — no variances, no adjustments needed', 'success');
+        } else {
+            addToast?.('Full Count closed locally — connect Odoo to sync adjustments', 'info');
+        }
+
+        // Update session status
         setFullCountSessions(prev => prev.map(s => {
             if (s.id !== sessionId) return s;
-            const totalVarianceQty = s.counts.reduce((sum, c) => sum + Math.abs(c.variance || 0), 0);
             return {
                 ...s, status: 'closed', closedAt: new Date().toISOString(),
-                reconciliation: { ...s.reconciliation, totalVarianceQty, approvedBy: user?.username, approvedAt: new Date().toISOString() },
+                reconciliation: {
+                    ...s.reconciliation, totalVarianceQty,
+                    approvedBy: user?.username, approvedAt: new Date().toISOString(),
+                    odooResult: odooResult ? {
+                        status: odooResult.status, applied: odooResult.applied,
+                        failed: odooResult.failed, syncedAt: new Date().toISOString(),
+                    } : null,
+                },
             };
         }));
         setActiveSession(null);
         setFcMode('list');
-        addToast?.('Full Count closed and archived', 'success');
-        logActivity?.('full-count-close', { sessionId });
-    }, [user, addToast, logActivity]);
+        logActivity?.('full-count-close', {
+            sessionId, totalVarianceQty, varianceItems: varianceItems.length,
+            odooApplied: odooResult?.applied || 0, odooFailed: odooResult?.failed || 0,
+        });
+    }, [user, addToast, logActivity, fullCountSessions, apiConfigs]);
 
     // Keep activeSession in sync
     useEffect(() => {
@@ -1590,16 +1644,46 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             </table>
                         </div>
 
-                        {/* Close button */}
+                        {/* Odoo sync result */}
+                        {applyResult && (
+                            <div className={`mt-4 p-3 rounded-lg border ${applyResult.status === 'success' ? 'bg-green-50 border-green-200' : applyResult.status === 'partial' ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
+                                <p className="text-sm font-bold">
+                                    {applyResult.status === 'success' ? '✅ Odoo Sync Complete' : applyResult.status === 'partial' ? '⚠️ Partial Sync' : '❌ Sync Failed'}
+                                </p>
+                                <p className="text-xs text-gray-600 mt-1">
+                                    {applyResult.applied} adjustment{applyResult.applied !== 1 ? 's' : ''} applied to stock.quant
+                                    {applyResult.failed > 0 && ` · ${applyResult.failed} failed`}
+                                </p>
+                                {applyResult.results?.filter(r => r.status === 'error' || r.status === 'skipped').length > 0 && (
+                                    <div className="mt-2 space-y-1">
+                                        {applyResult.results.filter(r => r.status !== 'applied').map((r, i) => (
+                                            <p key={i} className="text-xs text-red-600">• {r.sku} @ {r.location}: {r.error}</p>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Approve & Close / Applying */}
                         <div className="flex gap-3 mt-4 pt-4 border-t">
                             <button onClick={() => closeFullCount(activeSession.id)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700">
-                                <Check className="w-4 h-4" /> Approve & Close
+                                disabled={isApplying}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold ${isApplying ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} text-white`}>
+                                {isApplying ? (
+                                    <><RefreshCw className="w-4 h-4 animate-spin" /> Sending to Odoo...</>
+                                ) : (
+                                    <><Check className="w-4 h-4" /> Approve & Send to Odoo</>
+                                )}
                             </button>
-                            <button onClick={() => setFcMode('counting')}
+                            <button onClick={() => setFcMode('counting')} disabled={isApplying}
                                 className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200">
                                 <ChevronLeft className="w-4 h-4" /> Back to Counting
                             </button>
+                            {!apiConfigs?.odoo && (
+                                <p className="flex items-center text-xs text-amber-600 gap-1">
+                                    <AlertTriangle className="w-3.5 h-3.5" /> Odoo not connected — will save locally only
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
