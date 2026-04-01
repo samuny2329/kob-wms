@@ -693,6 +693,41 @@ export const BOX_TYPES = [
     { id: 'BUBBLE', name: 'Bubble Mailer', size: '20x28 cm', maxWeight: 0.4, icon: '🫧' },
 ];
 
+// Packing consumable materials for station stock tracking
+export const PACKING_MATERIALS = [
+    { id: 'BUBBLE-WRAP', name: 'Bubble Wrap', nameTh: 'บับเบิ้ล', unit: 'sheets', reorderPoint: 50 },
+    { id: 'TAPE-CLEAR', name: 'Clear Tape', nameTh: 'เทปใส', unit: 'rolls', reorderPoint: 5 },
+    { id: 'TAPE-BRAND', name: 'Brand Tape', nameTh: 'เทปแบรนด์', unit: 'rolls', reorderPoint: 3 },
+    { id: 'STRETCH', name: 'Stretch Film', nameTh: 'สเตรชฟิล์ม', unit: 'rolls', reorderPoint: 2 },
+    { id: 'FILL-PAPER', name: 'Filling Paper', nameTh: 'กระดาษรอง', unit: 'sheets', reorderPoint: 100 },
+];
+
+// Material requirements per box type (bubble=sheets, tape=strips, stretch=wraps, fill=sheets)
+export const PACKING_SPEC = {
+    'BOX-S':  { bubble: 1, tape: 2, stretch: 0, fill: 1, maxItems: 2 },
+    'BOX-M':  { bubble: 2, tape: 3, stretch: 0, fill: 2, maxItems: 5 },
+    'BOX-L':  { bubble: 3, tape: 4, stretch: 1, fill: 3, maxItems: 10 },
+    'BOX-XL': { bubble: 4, tape: 5, stretch: 2, fill: 4, maxItems: 20 },
+    'ENV-A4': { bubble: 0, tape: 1, stretch: 0, fill: 0, maxItems: 1 },
+    'BUBBLE': { bubble: 0, tape: 1, stretch: 0, fill: 0, maxItems: 1 },
+};
+
+// Auto-suggest best box for an order based on item weight + count from PRODUCT_CATALOG
+export const suggestBox = (orderItems) => {
+    const totalWeight = (orderItems || []).reduce((sum, item) => {
+        const cat = PRODUCT_CATALOG[item.sku || item.default_code];
+        return sum + (cat?.weight || 0.2) * (item.picked || item.qty || 1);
+    }, 0);
+    const totalItems = (orderItems || []).reduce((sum, item) => sum + (item.picked || item.qty || 1), 0);
+    const boxOrder = ['ENV-A4', 'BUBBLE', 'BOX-S', 'BOX-M', 'BOX-L', 'BOX-XL'];
+    for (const boxId of boxOrder) {
+        const spec = PACKING_SPEC[boxId];
+        const boxType = BOX_TYPES.find(b => b.id === boxId);
+        if (spec && boxType && totalWeight <= boxType.maxWeight && totalItems <= spec.maxItems) return boxId;
+    }
+    return 'BOX-XL';
+};
+
 // Platform label configs — logo is now a React element (SVG badge)
 // Use: <PlatformBadge name={order.platform} size={32} /> for best quality
 // Or legacy: {pl.logo} still works (renders a sized badge)

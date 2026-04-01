@@ -969,7 +969,7 @@ window.onload=function(){
         return hours > 0.016 ? Math.round(todayLogs.length / hours) : todayLogs.length;
     }, [activityLogs]);
 
-    const dailyBoxUsage = useMemo(() => activityLogs.filter(l => new Date(l.timestamp).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && l.action === 'box').length, [activityLogs]);
+    const dailyBoxUsage = useMemo(() => activityLogs.filter(l => new Date(l.timestamp).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] && (l.action === 'box' || l.action === 'box-handheld' || l.action === 'box-pos')).length, [activityLogs]);
 
     // Delayed Orders / SLA
     // Calculate actual delayed orders (pending for > 4 hours)

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, ChevronLeft, ChevronRight, CheckSquare, Lock, Package, RefreshCw, Barcode, Printer } from 'lucide-react';
-import { BOX_TYPES } from '../constants.jsx';
+import { BOX_TYPES, PACKING_SPEC, suggestBox } from '../constants.jsx';
 
 const Pack = ({
     salesOrders, selectedPackOrder, setSelectedPackOrder,
@@ -167,34 +167,73 @@ const Pack = ({
                 {/* Stage: BOX SELECT */}
                 {!isLocked && !hasAwb && allPacked && (
                     <div className="p-8">
-                        <div className="text-center mb-6">
-                            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>Select box type</h3>
-                            <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>System will generate AWB automatically after selecting box</p>
-                        </div>
-                        {isProcessingAPI ? (
-                            <div className="flex flex-col items-center py-10" style={{ gap: '12px', color: '#6c757d' }}>
-                                <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#714B67' }} />
-                                <p style={{ fontSize: '13px', fontWeight: 500 }}>Generating AWB...</p>
+                        {(() => {
+                            const recommended = suggestBox(selectedPackOrder?.items || []);
+                            const recSpec = PACKING_SPEC[recommended];
+                            return (
+                            <>
+                            <div className="text-center mb-4">
+                                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>Select Box Type</h3>
+                                <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>AWB will be generated automatically after selecting box</p>
                             </div>
-                        ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {BOX_TYPES.map(box => (
-                                    <button
-                                        key={box.id}
-                                        onClick={() => handleBoxSelect(selectedPackOrder, box.id)}
-                                        className="flex flex-col items-center"
-                                        style={{ padding: '16px', border: '2px solid #dee2e6', borderRadius: '4px', backgroundColor: '#ffffff', cursor: 'pointer', transition: 'border-color 0.15s' }}
-                                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.backgroundColor = '#f3edf7'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}
-                                    >
-                                        <span style={{ fontSize: '28px', marginBottom: '8px' }}>{box.icon}</span>
-                                        <span style={{ fontWeight: 700, fontSize: '13px', color: '#212529' }}>{box.name}</span>
-                                        <span style={{ fontSize: '11px', color: '#6c757d', marginTop: '2px' }}>{box.size}</span>
-                                        <span style={{ fontSize: '11px', color: '#6c757d' }}>≤ {box.maxWeight} kg</span>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                            {isProcessingAPI ? (
+                                <div className="flex flex-col items-center py-10" style={{ gap: '12px', color: '#6c757d' }}>
+                                    <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#714B67' }} />
+                                    <p style={{ fontSize: '13px', fontWeight: 500 }}>Generating AWB...</p>
+                                </div>
+                            ) : (
+                                <>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {BOX_TYPES.map(box => {
+                                        const isRec = box.id === recommended;
+                                        const spec = PACKING_SPEC[box.id];
+                                        return (
+                                        <button
+                                            key={box.id}
+                                            onClick={() => handleBoxSelect(selectedPackOrder, box.id)}
+                                            className="flex flex-col items-center relative"
+                                            style={{
+                                                padding: '16px 12px 12px', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s',
+                                                border: isRec ? '2px solid #714B67' : '2px solid #dee2e6',
+                                                backgroundColor: isRec ? '#f3edf7' : '#ffffff',
+                                                boxShadow: isRec ? '0 2px 8px rgba(113,75,103,0.15)' : 'none',
+                                            }}
+                                            onMouseEnter={e => { if (!isRec) { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.backgroundColor = '#f3edf7'; }}}
+                                            onMouseLeave={e => { if (!isRec) { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}}
+                                        >
+                                            {isRec && <span style={{ position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)', fontSize: '9px', fontWeight: 700, color: '#fff', backgroundColor: '#714B67', padding: '1px 8px', borderRadius: '8px', whiteSpace: 'nowrap' }}>Recommended</span>}
+                                            <span style={{ fontSize: '28px', marginBottom: '6px' }}>{box.icon}</span>
+                                            <span style={{ fontWeight: 700, fontSize: '13px', color: '#212529' }}>{box.name}</span>
+                                            <span style={{ fontSize: '11px', color: '#6c757d', marginTop: '2px' }}>{box.size}</span>
+                                            <span style={{ fontSize: '11px', color: '#6c757d' }}>{box.maxWeight} kg max</span>
+                                            {spec && (
+                                                <div style={{ marginTop: '6px', fontSize: '9px', color: '#868e96', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                                    {spec.bubble > 0 && <span>Bubble x{spec.bubble}</span>}
+                                                    {spec.tape > 0 && <span>Tape x{spec.tape}</span>}
+                                                    {spec.stretch > 0 && <span>Stretch x{spec.stretch}</span>}
+                                                    {spec.fill > 0 && <span>Fill x{spec.fill}</span>}
+                                                </div>
+                                            )}
+                                        </button>
+                                        );
+                                    })}
+                                </div>
+                                {recSpec && (
+                                    <div style={{ marginTop: '12px', padding: '10px 14px', backgroundColor: '#f3edf7', borderRadius: '4px', border: '1px solid #e0d4e8' }}>
+                                        <p style={{ fontSize: '11px', fontWeight: 600, color: '#714B67', marginBottom: '4px' }}>Materials needed for {BOX_TYPES.find(b=>b.id===recommended)?.name}:</p>
+                                        <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#495057' }}>
+                                            {recSpec.bubble > 0 && <span>Bubble Wrap: {recSpec.bubble} sheet{recSpec.bubble>1?'s':''}</span>}
+                                            {recSpec.tape > 0 && <span>Tape: {recSpec.tape} strip{recSpec.tape>1?'s':''}</span>}
+                                            {recSpec.stretch > 0 && <span>Stretch: {recSpec.stretch} wrap{recSpec.stretch>1?'s':''}</span>}
+                                            {recSpec.fill > 0 && <span>Fill Paper: {recSpec.fill} sheet{recSpec.fill>1?'s':''}</span>}
+                                        </div>
+                                    </div>
+                                )}
+                                </>
+                            )}
+                            </>
+                            );
+                        })()}
                     </div>
                 )}
 
