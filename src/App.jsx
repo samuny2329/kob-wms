@@ -57,7 +57,10 @@ const App = () => {
     const [selectedWorker, setSelectedWorker] = useState(null);
     const [workDate, setWorkDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [activeCompany, setActiveCompany] = useState(() => localStorage.getItem('wms_active_company') || 'kob');
+    const [activeCompanies, setActiveCompanies] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('wms_active_companies')) || ['kob']; }
+        catch { return ['kob']; }
+    });
 
     // 2. Data State
     // One-time cleanup: clear mock data from localStorage
@@ -161,7 +164,7 @@ const App = () => {
     useEffect(() => { localStorage.setItem('lang', language); }, [language]);
     useEffect(() => { localStorage.setItem('userRole', userRole); }, [userRole]);
     useEffect(() => { localStorage.setItem('activeTab', activeTab); }, [activeTab]);
-    useEffect(() => { localStorage.setItem('wms_active_company', activeCompany); }, [activeCompany]);
+    useEffect(() => { localStorage.setItem('wms_active_companies', JSON.stringify(activeCompanies)); }, [activeCompanies]);
     useEffect(() => { localStorage.setItem('wms_orders', JSON.stringify(orderData)); }, [orderData]);
     useEffect(() => {
         try {
@@ -259,8 +262,9 @@ const App = () => {
     };
 
     // Odoo Sync Hook
-    const companyId = COMPANIES[activeCompany]?.id || 1;
-    const syncStatus = useOdooSync({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId });
+        const companyIds = activeCompanies.map(c => COMPANIES[c]?.id).filter(Boolean);
+    const companyId = companyIds.length === 1 ? companyIds[0] : null; // null = show all selected
+    const syncStatus = useOdooSync({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId, companyIds });
 
     // HTML escape to prevent XSS in print windows
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1092,7 +1096,7 @@ window.onload=function(){
 
     return (
         <div className="flex h-screen font-sans" style={{ backgroundColor: '#f8f9fa', color: '#212529' }}>
-            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} activeCompany={activeCompany} setActiveCompany={setActiveCompany} />
+            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} activeCompanies={activeCompanies} setActiveCompanies={setActiveCompanies} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {/* Odoo 18 Top Navbar — white bg, 46px, matches kissgroupdatacenter.com style */}

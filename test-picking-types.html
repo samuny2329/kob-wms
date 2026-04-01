@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head><title>Picking Types Test</title></head>
+<body style="font-family:monospace;padding:20px;background:#1e1e1e;color:#0f0">
+<h2>Odoo Picking Types (Delivery Orders)</h2>
+<pre id="output">Loading...</pre>
+<script>
+const out = document.getElementById('output');
+
+async function test() {
+    out.textContent = '';
+
+    // Test 1: All outgoing picking types
+    try {
+        const r = await fetch('https://odoo-uat.kissgroupbim.work/web/session/authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: { db: 'kiss-production_2026-03-09', login: 'admin', password: 'admin' } })
+        });
+        const auth = await r.json();
+        out.textContent += 'Auth: UID ' + auth.result?.uid + '\n\n';
+
+        // Get all outgoing picking types (use credentials to send session cookie)
+        const r2 = await fetch('https://odoo-uat.kissgroupbim.work/web/dataset/call_kw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                jsonrpc: '2.0', method: 'call', id: 1,
+                params: {
+                    model: 'stock.picking.type',
+                    method: 'search_read',
+                    args: [[['code', '=', 'outgoing']]],
+                    kwargs: { fields: ['id', 'name', 'warehouse_id', 'company_id', 'sequence_code'], limit: 30 }
+                }
+            })
+        });
+        const data = await r2.json();
+
+        out.textContent += '=== ALL Delivery Orders Operation Types ===\n\n';
+        out.textContent += 'ID  | Name                                    | Warehouse              | Company           | Seq\n';
+        out.textContent += '----|----------------------------------------|------------------------|-------------------|----\n';
+
+        data.result.forEach(t => {
+            const id = String(t.id).padEnd(4);
+            const name = (t.name || '').padEnd(40);
+            const wh = (t.warehouse_id?.[1] || 'N/A').padEnd(24);
+            const co = (t.company_id?.[1] || 'N/A').padEnd(19);
+            const seq = t.sequence_code || '';
+            out.textContent += id + '| ' + name + '| ' + wh + '| ' + co + '| ' + seq + '\n';
+        });
+
+        out.textContent += '\n=== DONE ===\n';
+        out.textContent += '\nLook for "WH2 (Online)" or "Online" in Warehouse column';
+
+    } catch(e) {
+        out.textContent += 'ERROR: ' + e.message;
+    }
+}
+
+test();
+</script>
+</body>
+</html>
