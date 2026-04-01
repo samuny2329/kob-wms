@@ -552,7 +552,7 @@ const App = () => {
                 setSelectedPickOrder(updatedOrder);
                 playSound('success');
                 logActivity('pick', { order: selectedPickOrder.ref, sku: item.sku });
-                txRing.emit('pick', { orderId: selectedPickOrder.id, orderRef: selectedPickOrder.ref, sku: item.sku, qty: 1, finished: isFinished });
+                txRing?.emit?.('pick', { orderId: selectedPickOrder.id, orderRef: selectedPickOrder.ref, sku: item.sku, qty: 1, finished: isFinished });
                 if (isFinished) {
                     addToast(`✓ Pick completed: ${selectedPickOrder.ref}`, 'success');
                     setTimeout(() => setSelectedPickOrder(null), 800);
@@ -589,7 +589,7 @@ const App = () => {
                 setSelectedPackOrder(updatedOrder);
                 playSound('success');
                 logActivity('pack', { order: selectedPackOrder.ref, sku: item.sku });
-                txRing.emit('pack', { orderId: selectedPackOrder.id, orderRef: selectedPackOrder.ref, sku: item.sku, qty: 1, finished: isFinished });
+                txRing?.emit?.('pack', { orderId: selectedPackOrder.id, orderRef: selectedPackOrder.ref, sku: item.sku, qty: 1, finished: isFinished });
             } else {
                 playSound('error');
             }
@@ -758,7 +758,7 @@ window.onload=function(){
             const updatedOrders = salesOrders.map(o => o.id === order.id ? updatedOrder : o);
             setSalesOrders(updatedOrders);
             addToast('AWB ready: ' + awbCode);
-            txRing.emit('confirmRTS', { orderId: order.id, orderRef: order.ref, awb: awbCode, courier: order.courier || order.platform });
+            txRing?.emit?.('confirmRTS', { orderId: order.id, orderRef: order.ref, awb: awbCode, courier: order.courier || order.platform });
             if (selectedPackOrder && selectedPackOrder.id === order.id) {
                 setSelectedPackOrder(updatedOrder);
             }
@@ -884,7 +884,7 @@ window.onload=function(){
                     console.warn('Auto-invoice after scan failed:', err.message);
                 });
         }
-        txRing.emit('scan', { barcode, courier, bin });
+        txRing?.emit?.('scan', { barcode, courier, bin });
     };
 
     // Dispatch & Signature
@@ -924,7 +924,7 @@ window.onload=function(){
         setActiveOrderId('BATCH-' + new Date().getTime());
         addToast('Batch Dispatched Successfully');
         logActivity('dispatch', { courier: batch.courier, items: batch.items.length });
-        txRing.emit('dispatch', { courier: batch.courier, count: batch.items.length, batchId: batch.id });
+        txRing?.emit?.('dispatch', { courier: batch.courier, count: batch.items.length, batchId: batch.id });
     };
 
     // Excel Logic
