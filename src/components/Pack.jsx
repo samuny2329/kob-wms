@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Box, ChevronLeft, ChevronRight, CheckSquare, Lock, Package, RefreshCw, Barcode, Printer } from 'lucide-react';
+import { Box, ChevronLeft, ChevronRight, CheckSquare, Lock, Package, RefreshCw, Barcode, Printer, ClipboardList } from 'lucide-react';
 import { BOX_TYPES, PACKING_SPEC, suggestBox } from '../constants.jsx';
+import PackStation from './PackStation';
 
 const Pack = ({
     salesOrders, selectedPackOrder, setSelectedPackOrder,
     handlePackScanSubmit, packScanInput, setPackScanInput, packInputRef,
     handleBoxSelect, isProcessingAPI,
     packAwbInput, setPackAwbInput, packAwbRef, handleAwbConfirmScan,
-    printAwbLabel, stockFrozen,
+    printAwbLabel, stockFrozen, boxUsageLog, addToast, logActivity, user,
 }) => {
     const [showBoxOverride, setShowBoxOverride] = useState(false);
+    const [showStation, setShowStation] = useState(false);
     const readyOrders = salesOrders.filter(o => ['picked', 'packing', 'packed'].includes(o.status));
 
     if (!selectedPackOrder) {
@@ -30,6 +32,10 @@ const Pack = ({
                             <h2 className="font-bold" style={{ fontSize: '14px', color: '#212529' }}>Pack & Verify</h2>
                             <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '2px' }}>Orders ready for packing validation</p>
                         </div>
+                        <button onClick={() => setShowStation(true)}
+                            className="odoo-btn odoo-btn-secondary text-xs flex items-center gap-1.5">
+                            <ClipboardList className="w-3.5 h-3.5" /> Station
+                        </button>
                     </div>
                     <div className="p-0">
                         {readyOrders.length === 0 ? (
@@ -301,6 +307,7 @@ const Pack = ({
                     </div>
                 )}
             </div>
+            <PackStation isOpen={showStation} onClose={() => setShowStation(false)} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} user={user} />
         </div>
     );
 };
