@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Monitor, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Tag, X, Lock } from 'lucide-react';
-import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS } from '../constants';
+import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS, PACKING_SPEC, suggestBox } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 
 const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast, handleFulfillmentAndAWB, isProcessingAPI, boxUsageLog, setBoxUsageLog, printAwbLabel }) => {
@@ -377,19 +377,28 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                     </div>
                                                 ) : (
                                                     <div className="flex gap-3 justify-center flex-wrap">
-                                                        {BOX_TYPES.map(box => (
+                                                        {(() => { const rec = suggestBox(selectedOrder?.items || []); return BOX_TYPES.map(box => {
+                                                            const isRec = box.id === rec;
+                                                            const spec = PACKING_SPEC[box.id];
+                                                            return (
                                                             <button
                                                                 key={box.id}
                                                                 onClick={() => handleBoxSelect(box)}
-                                                                style={{ padding: '14px 20px', border: '2px solid #dee2e6', borderRadius: '4px', fontSize: '13px', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backgroundColor: '#ffffff', transition: 'border-color 0.15s' }}
-                                                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#017E84'; e.currentTarget.style.backgroundColor = '#e0f5f5'; }}
-                                                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                                                                className="relative"
+                                                                style={{ padding: '14px 20px', border: isRec ? '2px solid #017E84' : '2px solid #dee2e6', borderRadius: '4px', fontSize: '13px', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backgroundColor: isRec ? '#e0f5f5' : '#ffffff', transition: 'all 0.15s' }}
+                                                                onMouseEnter={e => { if (!isRec) { e.currentTarget.style.borderColor = '#017E84'; e.currentTarget.style.backgroundColor = '#e0f5f5'; }}}
+                                                                onMouseLeave={e => { if (!isRec) { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}}
                                                             >
+                                                                {isRec && <span style={{ position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 800, color: '#fff', backgroundColor: '#017E84', padding: '1px 6px', borderRadius: '8px' }}>Best</span>}
                                                                 <span style={{ fontSize: '24px' }}>{box.icon}</span>
                                                                 <span style={{ color: '#212529' }}>{box.name}</span>
                                                                 <span style={{ fontSize: '10px', color: '#adb5bd', fontFamily: 'monospace' }}>{box.size}</span>
+                                                                {spec && (spec.bubble > 0 || spec.tape > 0) && (
+                                                                    <span style={{ fontSize: '8px', color: '#adb5bd' }}>{spec.bubble > 0 ? `B${spec.bubble} ` : ''}{spec.tape > 0 ? `T${spec.tape}` : ''}</span>
+                                                                )}
                                                             </button>
-                                                        ))}
+                                                            );
+                                                        }); })()}
                                                     </div>
                                                 )}
                                             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, CheckCircle2, ChevronLeft, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Printer, Tag, PackageCheck, Smartphone, RefreshCw } from 'lucide-react';
-import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS } from '../constants';
+import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS, PACKING_SPEC, suggestBox } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 import { fetchAiSuggestion } from '../services/odooApi';
 
@@ -382,20 +382,37 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-[#00A09D] rounded-full text-[10px] font-black mb-4 border border-emerald-100 uppercase tracking-wider">
                             <PackageCheck className="w-3.5 h-3.5" /> All items verified
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 mb-4 uppercase">Select Box</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            {BOX_TYPES.map(box => (
-                                <button
-                                    key={box.id}
-                                    onClick={() => completePack(box)}
-                                    className="p-4 rounded-xl border-2 border-slate-50 dark:border-zinc-800 hover:border-[#00A09D] active:scale-[0.97] active:bg-emerald-50 transition-all text-center flex flex-col items-center gap-1 shadow-sm bg-slate-50/50"
-                                >
-                                    <span className="text-2xl">{box.icon}</span>
-                                    <p className="font-black text-xs uppercase tracking-tight mt-1">{box.name}</p>
-                                    <p className="text-[9px] font-mono text-slate-400">{box.size}</p>
-                                </button>
-                            ))}
-                        </div>
+                        {(() => {
+                            const rec = suggestBox(selectedOrder?.items || []);
+                            return (
+                            <>
+                            <h3 className="text-sm font-black text-slate-500 mb-4 uppercase">Select Box</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {BOX_TYPES.map(box => {
+                                    const isRec = box.id === rec;
+                                    const spec = PACKING_SPEC[box.id];
+                                    return (
+                                    <button
+                                        key={box.id}
+                                        onClick={() => completePack(box)}
+                                        className={`p-4 rounded-xl border-2 active:scale-[0.97] transition-all text-center flex flex-col items-center gap-1 shadow-sm relative ${isRec ? 'border-[#00A09D] bg-emerald-50 ring-1 ring-emerald-200' : 'border-slate-50 dark:border-zinc-800 hover:border-[#00A09D] bg-slate-50/50'}`}
+                                    >
+                                        {isRec && <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[8px] font-black text-white bg-[#00A09D] px-2 py-0.5 rounded-full uppercase">Best</span>}
+                                        <span className="text-2xl">{box.icon}</span>
+                                        <p className="font-black text-xs uppercase tracking-tight mt-1">{box.name}</p>
+                                        <p className="text-[9px] font-mono text-slate-400">{box.size}</p>
+                                        {spec && (spec.bubble > 0 || spec.tape > 0) && (
+                                            <p className="text-[8px] text-slate-400 mt-0.5">
+                                                {spec.bubble > 0 && `B${spec.bubble}`}{spec.tape > 0 && ` T${spec.tape}`}{spec.stretch > 0 && ` S${spec.stretch}`}
+                                            </p>
+                                        )}
+                                    </button>
+                                    );
+                                })}
+                            </div>
+                            </>
+                            );
+                        })()}
                     </div>
                 )}
             </div>
