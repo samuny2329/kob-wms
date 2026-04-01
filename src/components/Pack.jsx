@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, ChevronLeft, ChevronRight, CheckSquare, Lock, Package, RefreshCw, Barcode, Printer } from 'lucide-react';
-import { BOX_TYPES, PACKING_SPEC, PRODUCT_CATALOG, suggestBox } from '../constants.jsx';
+import { BOX_TYPES, PACKING_SPEC, suggestBox } from '../constants.jsx';
 
 const Pack = ({
     salesOrders, selectedPackOrder, setSelectedPackOrder,
@@ -173,10 +173,7 @@ const Pack = ({
                             const recBox = BOX_TYPES.find(b => b.id === recommended);
                             const recSpec = PACKING_SPEC[recommended];
                             const totalItems = (selectedPackOrder?.items || []).reduce((s, i) => s + (i.picked || i.qty || 1), 0);
-                            const totalWeight = (selectedPackOrder?.items || []).reduce((s, i) => {
-                                const cat = PRODUCT_CATALOG?.[i.sku];
-                                return s + (cat?.weight || 0.2) * (i.picked || i.qty || 1);
-                            }, 0);
+                            const totalWeight = (selectedPackOrder?.items || []).reduce((s, i) => s + (i.weight || 0.2) * (i.picked || i.qty || 1), 0);
                             return (
                             <>
                             {isProcessingAPI ? (
