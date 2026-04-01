@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Monitor, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Tag, X, Lock } from 'lucide-react';
+import { Box, CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Monitor, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Tag, X, Lock, ClipboardList } from 'lucide-react';
 import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS, PACKING_SPEC, suggestBox } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
+import PackStation from './PackStation';
 
 const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast, handleFulfillmentAndAWB, isProcessingAPI, boxUsageLog, setBoxUsageLog, printAwbLabel }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -13,6 +14,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
     const awbRef = useRef(null);
     const workOrderRef = useRef(null);
     const [workOrderInput, setWorkOrderInput] = useState('');
+    const [showStation, setShowStation] = useState(false);
 
 
     const packableOrders = salesOrders.filter(o => ['picked', 'packing', 'packed', 'rts'].includes(o.status));
@@ -185,7 +187,15 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                 <p style={{ fontSize: '11px', color: '#6c757d' }}>{packableOrders.length} orders to pack</p>
                             </div>
                         </div>
-                        <div className="relative">
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => setShowStation(true)}
+                                className="odoo-btn odoo-btn-secondary text-xs flex items-center gap-1.5">
+                                <ClipboardList className="w-3.5 h-3.5" /> Station
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2" style={{ borderBottom: '1px solid #dee2e6' }}>
+                        <div className="relative flex-1">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#adb5bd' }} />
                             <input
                                 type="text"
@@ -525,6 +535,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                 </div>
             </div>
 
+            <PackStation isOpen={showStation} onClose={() => setShowStation(false)} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} />
         </div>
     );
 };

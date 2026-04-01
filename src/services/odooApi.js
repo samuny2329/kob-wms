@@ -769,7 +769,7 @@ export const applyFullCountAdjustments = async (odooConfig, { sessionId, session
             // Fallback: use PICKFACE location
             let targetLocationId = locationId;
             if (!targetLocationId) {
-                const pickface = await getOrCreatePickfaceLocation(odooConfig);
+                const pickface = await ensurePickfaceLocation(odooConfig);
                 targetLocationId = pickface.id;
             }
 
@@ -1050,7 +1050,7 @@ export const getStoredAllowedLocations = () => {
     try {
         const v = localStorage.getItem(LS_LOCATIONS_KEY);
         if (v) return JSON.parse(v);
-    } catch {}
+    } catch { /* ignore parse error */ }
     // Default: accept PICKFACE and any WH/Stock sub-location
     return ['PICKFACE', 'WH/Stock'];
 };
