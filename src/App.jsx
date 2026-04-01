@@ -39,9 +39,11 @@ import ClaudeChat from './components/ClaudeChat';
 import AIAnalyzer from './components/AIAnalyzer';
 import MarketIntelligence from './components/MarketIntelligence';
 import ActivityHistory from './components/ActivityHistory';
+import TxDebugPanel from './components/TxDebugPanel';
 
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
+import useTransactionRing from './hooks/useTransactionRing';
 import { secureSet } from './utils/crypto';
 import { confirmRTS, createInvoiceFromPicking, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
 import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
@@ -265,6 +267,13 @@ const App = () => {
         const companyIds = activeCompanies.map(c => COMPANIES[c]?.id).filter(Boolean);
     const companyId = companyIds.length === 1 ? companyIds[0] : null; // null = show all selected
     const syncStatus = useOdooSync({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId, companyIds });
+
+    // Transaction Ring — event ledger with cross-tab broadcast
+    const txRing = useTransactionRing({
+        userId: user?.username,
+        role: userRole,
+        onNotification: (tx, msg) => addToast(msg, 'info'),
+    });
 
     // HTML escape to prevent XSS in print windows
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -543,6 +552,7 @@ const App = () => {
                 setSelectedPickOrder(updatedOrder);
                 playSound('success');
                 logActivity('pick', { order: selectedPickOrder.ref, sku: item.sku });
+                txRing.emit('pick', { orderId: selectedPickOrder.id, orderRef: selectedPickOrder.ref, sku: item.sku, qty: 1, finished: isFinished });
                 if (isFinished) {
                     addToast(`✓ Pick completed: ${selectedPickOrder.ref}`, 'success');
                     setTimeout(() => setSelectedPickOrder(null), 800);
@@ -579,6 +589,7 @@ const App = () => {
                 setSelectedPackOrder(updatedOrder);
                 playSound('success');
                 logActivity('pack', { order: selectedPackOrder.ref, sku: item.sku });
+                txRing.emit('pack', { orderId: selectedPackOrder.id, orderRef: selectedPackOrder.ref, sku: item.sku, qty: 1, finished: isFinished });
             } else {
                 playSound('error');
             }
@@ -747,6 +758,7 @@ window.onload=function(){
             const updatedOrders = salesOrders.map(o => o.id === order.id ? updatedOrder : o);
             setSalesOrders(updatedOrders);
             addToast('AWB ready: ' + awbCode);
+            txRing.emit('confirmRTS', { orderId: order.id, orderRef: order.ref, awb: awbCode, courier: order.courier || order.platform });
             if (selectedPackOrder && selectedPackOrder.id === order.id) {
                 setSelectedPackOrder(updatedOrder);
             }
@@ -872,6 +884,7 @@ window.onload=function(){
                     console.warn('Auto-invoice after scan failed:', err.message);
                 });
         }
+        txRing.emit('scan', { barcode, courier, bin });
     };
 
     // Dispatch & Signature
@@ -911,6 +924,7 @@ window.onload=function(){
         setActiveOrderId('BATCH-' + new Date().getTime());
         addToast('Batch Dispatched Successfully');
         logActivity('dispatch', { courier: batch.courier, items: batch.items.length });
+        txRing.emit('dispatch', { courier: batch.courier, count: batch.items.length, batchId: batch.id });
     };
 
     // Excel Logic
@@ -1194,6 +1208,7 @@ window.onload=function(){
                     {activeTab === 'aiAnalyzer' && <AIAnalyzer language={language} addToast={addToast} activityLogs={activityLogs} inventory={inventory} orders={salesOrders} users={users} invoices={invoices} apiConfigs={apiConfigs} />}
                     {activeTab === 'marketIntelligence' && <MarketIntelligence language={language} addToast={addToast} />}
                     {activeTab === 'activityHistory' && <ActivityHistory language={language} />}
+                    {activeTab === 'txRing' && <TxDebugPanel notifications={txRing.notifications} unreadCount={txRing.unreadCount} onVerifyChain={txRing.verifyChain} />}
                     {activeTab === 'manual' && <Manual />}
                 </main>
 

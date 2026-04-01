@@ -66,6 +66,7 @@
 // ──────────────────────────────────────────────────────────────────────
 
 import { getCSRFToken, auditLog } from '../utils/security';
+import { nextRequestId } from './requestManager';
 
 const API_TIMEOUT = 8000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -407,14 +408,14 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
             // and set full demand quantity
             await odooCallKw(odooConfig, 'stock.move.line', 'write',
                 [[existingLines[0].id], { location_id: newLocId, quantity: demandQty }]
-            ).catch(() => {});
+            );
         } else {
             // Create new move line with correct company location
             await odooCallKw(odooConfig, 'stock.move.line', 'create',
                 [{ move_id: move.id, picking_id: pickingId, product_id: productId,
                    location_id: newLocId, location_dest_id: pickingDestId || move.location_dest_id?.[0] || move.location_id[0],
                    quantity: demandQty, product_uom_id: 1 }]
-            ).catch(() => {});
+            );
         }
     }
 
@@ -500,14 +501,12 @@ const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => 
     let response = await doCall();
     let data;
     try { data = await response.json(); } catch {
-        // Got HTML instead of JSON — session expired, re-auth and retry
         _sessionAuthenticated = false;
         await authenticateOdoo(odooConfig);
         response = await doCall();
         data = await response.json();
     }
     if (data.error) {
-        // Session error — retry once
         if (data.error.message?.includes('Session') || data.error.data?.name?.includes('SessionExpired')) {
             _sessionAuthenticated = false;
             await authenticateOdoo(odooConfig);
@@ -689,10 +688,7 @@ export const fetchInventory = async (odooConfig, companyId) => {
     // Live mode: fetch stock.quant ONLY from WH2 (Online) warehouse locations
     // KOB = K-On/Stock, BTV = B-On/Stock (Online warehouse prefixes)
     const allowedLoc = getStoredAllowedLocations();
-    // Override: filter by warehouse that contains "(Online)" via location path
-    // K-On/Stock/... for KOB, B-On/Stock/... for BTV
-    // Filter by warehouse location that belongs to WH2 (Online)
-    // Use location_id.warehouse_id.name to ensure only Online warehouse
+    // Filter by warehouse that contains "(Online)" — KOB-WH2 (Online) / BTV-WH2 (Online)
     let locDomain = [
         ['location_id.usage', '=', 'internal'],
         ['location_id.warehouse_id.name', 'ilike', '(Online)'],
@@ -1249,14 +1245,16 @@ export const fetchStockHistory = async (odooConfig, productId, locationKeywords 
         ['product_id', '=', productId],
         ['state', '=', 'done'],
     ];
-    // If location filter is provided, add it
+    // If location filter is provided, add OR domain for all keywords
     if (locationKeywords.length > 0) {
-        const locDomain = locationKeywords.flatMap(kw => [
-            ['location_id.complete_name', 'ilike', kw],
-        ]);
-        // OR all location conditions
-        domain.push('|');
-        domain.push(...locDomain.slice(0, 2)); // basic: first two
+        const conds = locationKeywords.map(kw => ['location_id.complete_name', 'ilike', kw]);
+        if (conds.length === 1) {
+            domain.push(conds[0]);
+        } else {
+            // OR chain: N-1 '|' operators in prefix notation
+            for (let i = 0; i < conds.length - 1; i++) domain.push('|');
+            domain.push(...conds);
+        }
     }
     try {
         const lines = await odooCallKw(odooConfig, 'stock.move.line', 'search_read',
