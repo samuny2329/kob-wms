@@ -38,9 +38,9 @@ export const getCompanyById = (id) => Object.values(COMPANIES).find(c => c.id ==
 export const rolesInfo = {
     senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
     admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
-    picker: { label: 'Picker Specialist', tabs: ['pick', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'sorting', 'manual'], icon: <ShoppingCart />, desc: 'Inventory Picking' },
-    packer: { label: 'Packer & QC', tabs: ['pack', 'handheldPack', 'posPack', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'manual'], icon: <Box />, desc: 'Packing & Validation' },
-    outbound: { label: 'Outbound Ops', tabs: ['scan', 'list', 'dispatch', 'kpiAssessment', 'timeAttendance', 'report', 'manual'], icon: <ScanLine />, desc: 'Scanning & Logistics' },
+    picker: { label: 'Picker Specialist', tabs: ['dashboard', 'pick', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'sorting', 'manual'], icon: <ShoppingCart />, desc: 'Inventory Picking' },
+    packer: { label: 'Packer & QC', tabs: ['dashboard', 'pack', 'handheldPack', 'posPack', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'manual'], icon: <Box />, desc: 'Packing & Validation' },
+    outbound: { label: 'Outbound Ops', tabs: ['dashboard', 'scan', 'list', 'dispatch', 'kpiAssessment', 'timeAttendance', 'report', 'manual'], icon: <ScanLine />, desc: 'Scanning & Logistics' },
     // accounting: HOLD — will be added later
     // accounting: { label: 'Accounting', tabs: ['dashboard', 'invoice', 'kpiAssessment', 'timeAttendance', 'report', 'manual'], icon: <Receipt />, desc: 'Invoices & Finance' }
 };
