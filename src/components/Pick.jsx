@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns } from 'lucide-react';
+import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns, ArrowUpDown } from 'lucide-react';
 import { PRODUCT_CATALOG, PLATFORM_LABELS } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 
@@ -46,6 +46,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     const [scanFlash, setScanFlash] = useState(null);
     const [debugScan, setDebugScan] = useState(null);
     const [viewMode, setViewMode] = useState('list');
+    const [waveSorted, setWaveSorted] = useState(false);
     const listScanRef = useRef(null);
     const pendingOrdersRef = useRef([]);
 
@@ -117,7 +118,40 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     }, [setSelectedPickOrder]);
 
     const generatePickingList = (order) => setShowPickingList(order);
-    const generateBatchPickingList = () => setShowPickingList({ batch: true, orders: pendingOrders });
+    const generateBatchPickingList = () => {
+        const orders = waveSorted ? waveSort(pendingOrders) : pendingOrders;
+        setShowPickingList({ batch: true, orders, waveSorted });
+    };
+
+    // Wave Sort: group orders by primary SKU, then sort by total qty ascending within each group
+    const waveSort = (orders) => {
+        // Build SKU fingerprint for each order (sorted SKUs joined)
+        const withKey = orders.map(o => {
+            const skus = (o.items || []).map(i => i.sku).sort();
+            const primarySku = skus[0] || '';
+            const totalQty = (o.items || []).reduce((s, i) => s + (i.expected || 0), 0);
+            return { order: o, primarySku, skus, totalQty };
+        });
+        // Sort: first by primary SKU alphabetically, then by total qty ascending
+        withKey.sort((a, b) => {
+            if (a.primarySku !== b.primarySku) return a.primarySku.localeCompare(b.primarySku);
+            return a.totalQty - b.totalQty;
+        });
+        return withKey.map(w => w.order);
+    };
+
+    // Compute SKU summary for batch print
+    const computeSkuSummary = (orders) => {
+        const map = {};
+        orders.forEach(o => {
+            (o.items || []).forEach(i => {
+                if (!map[i.sku]) map[i.sku] = { sku: i.sku, name: PRODUCT_CATALOG[i.sku]?.shortName || i.name, qty: 0, orderCount: 0 };
+                map[i.sku].qty += (i.expected || 0);
+                map[i.sku].orderCount += 1;
+            });
+        });
+        return Object.values(map).sort((a, b) => a.sku.localeCompare(b.sku));
+    };
 
     // HTML escape to prevent XSS in print window
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -125,19 +159,61 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     // BiM-style print
     const handlePrint = () => {
         const orders = showPickingList.batch ? showPickingList.orders : [showPickingList];
+        const isWave = showPickingList.waveSorted && showPickingList.batch;
         const today = new Date();
         const dateStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
         const total = orders.length;
+
+        // Summary page (only for wave-sorted batch print)
+        let summaryPage = '';
+        if (isWave) {
+            const summary = computeSkuSummary(orders);
+            const grandTotal = summary.reduce((s, r) => s + r.qty, 0);
+            summaryPage = `
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">[Wave Pick Summary] KissMyBody</div>
+    <div class="page-sub">${dateStr} &nbsp;|&nbsp; ${total} orders &nbsp;|&nbsp; ${grandTotal} total pieces</div>
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th>
+      <th>SKU</th>
+      <th>Product</th>
+      <th style="text-align:center">Orders</th>
+      <th style="text-align:center">Total Qty</th>
+    </tr></thead>
+    <tbody>
+      ${summary.map((r, i) => `
+      <tr>
+        <td class="num">${i+1}</td>
+        <td style="font-family:monospace;font-size:10px;font-weight:600">${esc(r.sku)}</td>
+        <td><div class="item-name">${esc(r.name)}</div></td>
+        <td style="text-align:center;font-size:12px">${r.orderCount}</td>
+        <td class="qty">${r.qty}</td>
+      </tr>`).join('')}
+      <tr style="border-top:2px solid #222;font-weight:bold">
+        <td></td>
+        <td colspan="2" style="padding:6px 2px;font-size:11px">GRAND TOTAL</td>
+        <td style="text-align:center;font-size:12px">${total}</td>
+        <td class="qty" style="font-size:16px">${grandTotal}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="footer">WMS Pro · Wave Pick Summary · ${dateStr}</div>
+</div>`;
+        }
 
         const pages = orders.map((order, idx) => {
             const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
             const platformName = pl?.name || order.platform || 'WMS';
             const storeName = 'KissMyBody';
+            const orderTotal = order.items.reduce((s, i) => s + (i.expected || 0), 0);
             return `
 <div class="page">
   <div class="page-header">
     <div class="page-title">[Pick] ${esc(platformName)} · ${esc(storeName)}</div>
-    <div class="page-sub">${idx+1}/${total} &nbsp;|&nbsp; ${dateStr} &nbsp;|&nbsp; <strong>${esc(order.ref)}</strong>${order.customer ? ' · ' + esc(order.customer) : ''}</div>
+    <div class="page-sub">${idx+1}/${total} &nbsp;|&nbsp; ${dateStr} &nbsp;|&nbsp; <strong>${esc(order.ref)}</strong>${order.customer ? ' · ' + esc(order.customer) : ''} &nbsp;|&nbsp; <strong>${orderTotal} pcs</strong></div>
   </div>
   <div class="bc-wrap"><svg id="bc-${idx}"></svg><div class="bc-label">${order.ref}</div></div>
   <table>
@@ -160,6 +236,12 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         <td class="check"></td>
       </tr>`;
       }).join('')}
+      <tr style="border-top:1.5px solid #222">
+        <td></td>
+        <td colspan="2" style="font-weight:bold;font-size:10px;padding:4px 2px">Total</td>
+        <td class="qty" style="font-size:13px;border-top:1.5px solid #222">${orderTotal}</td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <div class="footer">WMS Pro · ${dateStr}</div>
@@ -173,7 +255,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         const win = window.open('', '_blank', 'width=400,height=600');
         if (!win) return;
         win.document.write(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Picking List</title>
+<html><head><meta charset="UTF-8"><title>${isWave ? 'Wave Picking List' : 'Picking List'}</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
 <style>
   @page{size:100mm 150mm;margin:3mm}
@@ -198,7 +280,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
   .check{text-align:center;border:1px solid #ccc;width:22px;height:22px}
   .footer{font-size:7px;color:#bbb;text-align:center;border-top:1px solid #e0e0e0;padding-top:4px;margin-top:4px}
 </style></head><body>
-${pages}
+${summaryPage}${pages}
 <script>
 window.onload=function(){
   try{
@@ -252,9 +334,21 @@ window.onload=function(){
                                 ))}
                             </div>
                             {pendingOrders.length > 0 && (
+                                <>
+                                <button onClick={() => setWaveSorted(!waveSorted)}
+                                    className="odoo-btn flex items-center gap-1.5"
+                                    style={{
+                                        backgroundColor: waveSorted ? '#714B67' : '#fff',
+                                        color: waveSorted ? '#fff' : '#6c757d',
+                                        border: `1px solid ${waveSorted ? '#714B67' : '#dee2e6'}`,
+                                    }}
+                                    title="Wave Sort: group similar SKUs together, sorted by quantity">
+                                    <ArrowUpDown className="w-3.5 h-3.5" /> Wave Sort
+                                </button>
                                 <button onClick={generateBatchPickingList} className="odoo-btn odoo-btn-secondary flex items-center gap-1.5">
                                     <Printer className="w-3.5 h-3.5" /> Print List
                                 </button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -324,7 +418,7 @@ window.onload=function(){
                             {/* ── LIST VIEW ── */}
                             {viewMode === 'list' && (
                                 <div>
-                                    {pendingOrders.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(order => {
+                                    {(waveSorted ? waveSort(pendingOrders) : [...pendingOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))).map(order => {
                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                         const isFlash = scanFlash === order.id;
                                         return (
@@ -339,7 +433,7 @@ window.onload=function(){
                                                             <h3 className="font-semibold text-sm" style={{ color: '#212529' }}>{order.ref}</h3>
                                                             <span className={statusBadgeClass(order.status)}>{statusLabel(order.status)}</span>
                                                         </div>
-                                                        <p className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} items</p>
+                                                        <p className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} pcs &bull; {order.items.length} SKU{order.items.length > 1 ? 's' : ''}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
@@ -399,7 +493,7 @@ window.onload=function(){
                             {/* ── CARD VIEW (grid) ── */}
                             {viewMode === 'card' && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
-                                    {pendingOrders.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(order => {
+                                    {(waveSorted ? waveSort(pendingOrders) : [...pendingOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))).map(order => {
                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                         const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
                                         const picked = order.items.reduce((s, i) => s + (i.picked || 0), 0);
@@ -549,10 +643,40 @@ window.onload=function(){
                         <div className="flex-1 overflow-y-auto p-5 custom-scrollbar font-mono text-sm">
                             {(() => {
                                 const orders = showPickingList.batch ? showPickingList.orders : [showPickingList];
+                                const isWave = showPickingList.waveSorted && showPickingList.batch;
                                 const total = orders.length;
                                 const today = new Date();
                                 const dateStr = `${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;
-                                return orders.map((order, idx) => {
+
+                                // SKU summary section for wave-sorted batch
+                                const summarySection = isWave ? (() => {
+                                    const summary = computeSkuSummary(orders);
+                                    const grandTotal = summary.reduce((s, r) => s + r.qty, 0);
+                                    return (
+                                        <div className="mb-6 pb-5" style={{ borderBottom: '3px solid #714B67' }}>
+                                            <div className="font-bold text-sm mb-1" style={{ color: '#714B67' }}>[Wave Pick Summary]</div>
+                                            <div className="text-xs mb-3" style={{ color: '#6c757d' }}>{dateStr} | {total} orders | {grandTotal} total pieces</div>
+                                            <div className="space-y-1">
+                                                {summary.map((r, i) => (
+                                                    <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: '1px solid #f1f3f5' }}>
+                                                        <span className="text-xs" style={{ color: '#495057' }}>
+                                                            <span className="font-mono font-bold" style={{ color: '#212529' }}>{r.sku}</span>
+                                                            <span className="ml-2">{r.name}</span>
+                                                            <span className="ml-2" style={{ color: '#adb5bd' }}>({r.orderCount} orders)</span>
+                                                        </span>
+                                                        <span className="font-bold text-sm ml-4" style={{ color: '#714B67' }}>{r.qty} pcs</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-between items-center mt-2 pt-2" style={{ borderTop: '2px solid #212529' }}>
+                                                <span className="text-xs font-bold" style={{ color: '#212529' }}>GRAND TOTAL</span>
+                                                <span className="font-bold text-base" style={{ color: '#714B67' }}>{grandTotal} pcs</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })() : null;
+
+                                return <>{summarySection}{orders.map((order, idx) => {
                                     const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                     return (
                                         <div key={idx} className="mb-6 pb-5 last:border-0" style={{ borderBottom: '2px dashed #dee2e6' }}>
@@ -579,7 +703,7 @@ window.onload=function(){
                                             </div>
                                         </div>
                                     );
-                                });
+                                })}</>;
                             })()}
                         </div>
 
