@@ -1,6 +1,9 @@
 // ─────────────────────────────────────────────────────────────
 //  Base Platform Adapter — common interface for all platforms
+//  Includes: retry with backoff, circuit breaker per platform
 // ─────────────────────────────────────────────────────────────
+
+import { CircuitBreaker, retryWithBackoff, CircuitOpenError } from '../../utils/resilience';
 
 const LS_PREFIX = 'wms_platform_';
 
@@ -10,6 +13,10 @@ export class BasePlatformAdapter {
         this.displayName = displayName;       // e.g. 'Shopee'
         this._config = {};
         this._tokens = {};
+        this._circuit = new CircuitBreaker(`platform-${platformKey}`, {
+            failureThreshold: 3,
+            resetTimeout: 20000,
+        });
     }
 
     // ── Config Management ──────────────────────────────────────
@@ -126,7 +133,7 @@ export class BasePlatformAdapter {
         return hex(md51(string));
     }
 
-    // ── HTTP Helper ────────────────────────────────────────────
+    // ── HTTP Helper (with circuit breaker + retry) ──────────────
     async _fetch(url, options = {}, timeout = 15000) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeout);
@@ -143,8 +150,36 @@ export class BasePlatformAdapter {
 
     async _json(url, options = {}, timeout = 15000) {
         const res = await this._fetch(url, options, timeout);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        if (!res.ok) {
+            const err = new Error(`HTTP ${res.status}: ${res.statusText}`);
+            err.status = res.status;
+            throw err;
+        }
         return res.json();
+    }
+
+    // Resilient fetch: circuit breaker + retry with exponential backoff
+    async _resilientJson(url, options = {}, timeout = 15000) {
+        return this._circuit.execute(() =>
+            retryWithBackoff(
+                () => this._json(url, options, timeout),
+                {
+                    maxRetries: 2,
+                    baseDelay: 1000,
+                    maxDelay: 10000,
+                    retryOn: (err) => {
+                        if (err instanceof CircuitOpenError) return false;
+                        if (err.name === 'AbortError') return false;
+                        if (err.status >= 400 && err.status < 500 && err.status !== 429) return false;
+                        return true;
+                    },
+                }
+            )
+        );
+    }
+
+    getCircuitStatus() {
+        return this._circuit.getStatus();
     }
 
     // ── Timestamp Helpers ──────────────────────────────────────

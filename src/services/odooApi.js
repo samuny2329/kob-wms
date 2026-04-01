@@ -66,6 +66,10 @@
 // ──────────────────────────────────────────────────────────────────────
 
 import { getCSRFToken, auditLog } from '../utils/security';
+import {
+    odooCircuit, apiQueue, deduplicator,
+    retryWithBackoff, CircuitOpenError
+} from '../utils/resilience';
 
 const API_TIMEOUT = 8000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -98,7 +102,6 @@ const getOdooBase = (odooConfig) => odooConfig?.url || import.meta.env.VITE_ODOO
 export const authenticateOdoo = async (odooConfig) => {
     if (isMock(odooConfig)) return { status: 'success', uid: 1 };
     try {
-        // Use Odoo's standard JSONRPC auth endpoint (proxied via Vite /web/session/*)
         const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/web/session/authenticate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
@@ -123,38 +126,60 @@ export const authenticateOdoo = async (odooConfig) => {
     }
 };
 
+// Core Odoo POST with circuit breaker + retry + request queue
 const odooPost = async (odooConfig, endpoint, params = {}) => {
-    // Auto-authenticate if not yet authenticated
     if (!_sessionAuthenticated) {
         await authenticateOdoo(odooConfig);
     }
 
     const url = `${getOdooBase(odooConfig)}${endpoint}`;
-    const response = await fetchWithTimeout(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
-        credentials: 'include',
-        body: JSON.stringify({ params })
-    });
-    const data = await response.json();
-    if (data.error) {
-        // Session expired? Re-auth once
-        if (data.error.message?.includes('Session') || response.status === 401) {
-            _sessionAuthenticated = false;
-            await authenticateOdoo(odooConfig);
-            const retry = await fetchWithTimeout(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
-                credentials: 'include',
-                body: JSON.stringify({ params })
-            });
-            const retryData = await retry.json();
-            if (retryData.error) throw new Error(retryData.error.message || 'Odoo API Error');
-            return retryData.result;
+    const makeRequest = async () => {
+        const response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
+            credentials: 'include',
+            body: JSON.stringify({ params })
+        });
+        const data = await response.json();
+        if (data.error) {
+            // Session expired? Re-auth once
+            if (data.error.message?.includes('Session') || response.status === 401) {
+                _sessionAuthenticated = false;
+                await authenticateOdoo(odooConfig);
+                const retry = await fetchWithTimeout(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
+                    credentials: 'include',
+                    body: JSON.stringify({ params })
+                });
+                const retryData = await retry.json();
+                if (retryData.error) throw new Error(retryData.error.message || 'Odoo API Error');
+                return retryData.result;
+            }
+            const err = new Error(data.error.message || 'Odoo API Error');
+            err.status = response.status;
+            throw err;
         }
-        throw new Error(data.error.message || 'Odoo API Error');
-    }
-    return data.result;
+        return data.result;
+    };
+
+    // Wrap with circuit breaker → retry with backoff → request queue
+    return apiQueue.enqueue(() =>
+        odooCircuit.execute(() =>
+            retryWithBackoff(makeRequest, {
+                maxRetries: 2,
+                baseDelay: 1000,
+                maxDelay: 8000,
+                retryOn: (err) => {
+                    if (err instanceof CircuitOpenError) return false;
+                    if (err.name === 'AbortError') return false;
+                    if (err.message?.includes('Invalid credentials')) return false;
+                    if (err.status >= 400 && err.status < 500 && err.status !== 429) return false;
+                    return true;
+                },
+            })
+        )
+    );
 };
 
 // ============ ORDERS ============
@@ -488,18 +513,45 @@ export const PICKFACE_LOCATION_NAME = 'PICKFACE';
 const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => {
     const url = `${getOdooBase(odooConfig)}/web/dataset/call_kw`;
     if (!_sessionAuthenticated) await authenticateOdoo(odooConfig);
-    const response = await fetchWithTimeout(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-            jsonrpc: '2.0', method: 'call', id: Date.now(),
-            params: { model, method, args, kwargs }
-        })
-    });
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.data?.message || data.error.message || 'Odoo Error');
-    return data.result;
+
+    const makeRequest = async () => {
+        const response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                jsonrpc: '2.0', method: 'call', id: Date.now(),
+                params: { model, method, args, kwargs }
+            })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.data?.message || data.error.message || 'Odoo Error');
+        return data.result;
+    };
+
+    // Read operations (search_read, read) get deduplication + circuit breaker + retry
+    const isRead = method === 'search_read' || method === 'read';
+    const dedupeKey = isRead ? `${model}:${method}:${JSON.stringify(args)}` : null;
+
+    const wrappedRequest = () => apiQueue.enqueue(() =>
+        odooCircuit.execute(() =>
+            retryWithBackoff(makeRequest, {
+                maxRetries: isRead ? 2 : 1,  // writes get fewer retries
+                baseDelay: 1000,
+                maxDelay: 8000,
+                retryOn: (err) => {
+                    if (err instanceof CircuitOpenError) return false;
+                    if (err.name === 'AbortError') return false;
+                    return true;
+                },
+            })
+        )
+    );
+
+    if (dedupeKey) {
+        return deduplicator.dedupe(dedupeKey, wrappedRequest);
+    }
+    return wrappedRequest();
 };
 
 // Find or create the PICKFACE internal location under WH/Stock
@@ -1039,7 +1091,14 @@ export const fetchProducts = async (odooConfig) => {
 export const resetOdooSession = () => {
     _sessionAuthenticated = false;
     _sessionUid = null;
+    odooCircuit.reset();
 };
+
+// Resilience status for dashboard/monitoring
+export const getOdooResilienceStatus = () => ({
+    circuit: odooCircuit.getStatus(),
+    queue: apiQueue.getStatus(),
+});
 
 // ============ LOCATION CONFIG ============
 

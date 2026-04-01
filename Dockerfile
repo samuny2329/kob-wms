@@ -35,7 +35,7 @@ LABEL org.opencontainers.image.source="https://github.com/kissofbeauty/wms-pro"
 RUN addgroup -g 1001 -S wmsgroup && \
     adduser -u 1001 -S wmsuser -G wmsgroup && \
     # Adjust nginx dirs for non-root operation
-    mkdir -p /var/cache/nginx /var/log/nginx /var/run && \
+    mkdir -p /var/cache/nginx /var/cache/nginx/odoo /var/log/nginx /var/run && \
     chown -R wmsuser:wmsgroup /var/cache/nginx /var/log/nginx /var/run /etc/nginx/conf.d && \
     # Make nginx pid writable
     touch /var/run/nginx.pid && \
@@ -43,6 +43,7 @@ RUN addgroup -g 1001 -S wmsgroup && \
 
 # Custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY proxy_params_odoo.conf /etc/nginx/proxy_params_odoo.conf
 
 # Copy built assets
 COPY --from=builder --chown=wmsuser:wmsgroup /app/dist /usr/share/nginx/html

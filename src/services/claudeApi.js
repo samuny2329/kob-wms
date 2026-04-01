@@ -1,4 +1,6 @@
 // Claude AI API Service
+import { claudeCircuit, retryWithBackoff, CircuitOpenError } from '../utils/resilience';
+
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
 const DEFAULT_MODEL = 'claude-sonnet-4-20250514';
@@ -31,32 +33,52 @@ const fetchWithTimeout = async (url, options, timeout = API_TIMEOUT) => {
 export const sendMessage = async (apiKey, messages, systemPrompt) => {
     if (!apiKey) throw new Error('API key not configured');
 
-    const response = await fetchWithTimeout(API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': API_VERSION,
-            'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-            model: DEFAULT_MODEL,
-            max_tokens: MAX_TOKENS,
-            system: systemPrompt || WMS_SYSTEM_PROMPT,
-            messages,
-        }),
-    });
+    const makeRequest = async () => {
+        const response = await fetchWithTimeout(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': API_VERSION,
+                'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+                model: DEFAULT_MODEL,
+                max_tokens: MAX_TOKENS,
+                system: systemPrompt || WMS_SYSTEM_PROMPT,
+                messages,
+            }),
+        });
 
-    if (!response.ok) {
-        const status = response.status;
-        if (status === 401) throw new Error('Invalid API key. Check your Claude API key in Settings.');
-        if (status === 429) throw new Error('Rate limit exceeded. Please wait a moment and try again.');
-        if (status >= 500) throw new Error('Claude service is temporarily unavailable. Try again later.');
-        throw new Error('Failed to get a response. Please try again.');
-    }
+        if (!response.ok) {
+            const status = response.status;
+            const err = new Error(
+                status === 401 ? 'Invalid API key. Check your Claude API key in Settings.'
+                : status === 429 ? 'Rate limit exceeded. Please wait a moment and try again.'
+                : status >= 500 ? 'Claude service is temporarily unavailable. Try again later.'
+                : 'Failed to get a response. Please try again.'
+            );
+            err.status = status;
+            throw err;
+        }
 
-    const data = await response.json();
-    return data.content?.[0]?.text || '';
+        const data = await response.json();
+        return data.content?.[0]?.text || '';
+    };
+
+    // Circuit breaker + retry (only retry on 429/5xx, not 401)
+    return claudeCircuit.execute(() =>
+        retryWithBackoff(makeRequest, {
+            maxRetries: 2,
+            baseDelay: 2000,
+            maxDelay: 15000,
+            retryOn: (err) => {
+                if (err instanceof CircuitOpenError) return false;
+                if (err.status === 429 || err.status >= 500) return true;
+                return false;
+            },
+        })
+    );
 };
 
 export const testConnection = async (apiKey) => {
