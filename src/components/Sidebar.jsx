@@ -14,7 +14,7 @@ const avatarColor = (name = '') => {
 
 const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInfo,
     isDarkMode, setIsDarkMode, handleLogout, sidebarOpen, setSidebarOpen, syncStatus,
-    activeCompany, setActiveCompany }) => {
+    activeCompany, setActiveCompany, activeCompanies, setActiveCompanies }) => {
 
     const allowedTabs = rolesInfo[userRole]?.tabs || [];
 
@@ -153,21 +153,35 @@ const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInf
                     )}
                 </div>
 
-                {/* Company switch */}
-                {setActiveCompany && (
-                    <button
-                        onClick={() => setActiveCompany(activeCompany === 'kob' ? 'btv' : 'kob')}
-                        className={`flex items-center gap-2 py-2 w-full transition-colors ${sidebarOpen ? 'px-3' : 'justify-center px-0'}`}
-                        style={{ color: '#6c757d', fontSize: '12px' }}
-                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f8f9fa'; e.currentTarget.style.color = '#212529'; }}
-                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6c757d'; }}
-                        title={activeCompany === 'kob' ? 'Kiss of Beauty' : 'Beautyville'}
-                    >
-                        <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ backgroundColor: activeCompany === 'kob' ? '#714B67' : '#2563eb' }}>
-                            {activeCompany === 'kob' ? 'K' : 'B'}
-                        </span>
-                        {sidebarOpen && <span>{activeCompany === 'kob' ? 'KOB' : 'BTV'}</span>}
-                    </button>
+                {/* Company multi-select (like Odoo) */}
+                {setActiveCompanies && (
+                    <div className={`py-1 ${sidebarOpen ? 'px-3' : 'px-1'}`}>
+                        {[
+                            { key: 'kob', label: 'KOB', color: '#714B67' },
+                            { key: 'btv', label: 'BTV', color: '#2563eb' },
+                        ].map(co => {
+                            const isChecked = (activeCompanies || []).includes(co.key);
+                            const toggle = () => {
+                                setActiveCompanies(prev => {
+                                    const next = prev.includes(co.key)
+                                        ? prev.filter(c => c !== co.key)
+                                        : [...prev, co.key];
+                                    return next.length === 0 ? [co.key] : next; // at least 1
+                                });
+                            };
+                            return (
+                                <button key={co.key} onClick={toggle}
+                                    className={`flex items-center gap-2 py-1.5 w-full transition-colors ${sidebarOpen ? '' : 'justify-center'}`}
+                                    style={{ color: '#6c757d', fontSize: '11px' }}>
+                                    <span className="w-4 h-4 rounded border flex items-center justify-center shrink-0"
+                                        style={{ borderColor: co.color, backgroundColor: isChecked ? co.color : 'transparent' }}>
+                                        {isChecked && <span className="text-white text-[9px] font-black">✓</span>}
+                                    </span>
+                                    {sidebarOpen && <span style={{ color: isChecked ? co.color : '#adb5bd', fontWeight: isChecked ? 700 : 400 }}>{co.label}</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
                 )}
 
                 {/* Dark mode */}

@@ -3,7 +3,7 @@ import { fetchAllOrders, fetchInventory, fetchWaves, fetchInvoices, fetchProduct
 
 const POLL_INTERVAL = 10000; // 10 seconds
 
-const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId }) => {
+const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId, companyIds }) => {
     const [isOnline, setIsOnline] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState(null);
@@ -27,11 +27,12 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
 
         try {
             // Fetch all data in parallel (products only on first sync)
+            const cid = companyIds?.length === 1 ? companyIds[0] : (companyIds?.length > 1 ? companyIds : companyId);
             const [ordersData, inventoryData, wavesData, invoicesData, productsData] = await Promise.all([
-                fetchAllOrders(odooConfig, companyId).catch(() => null),
-                fetchInventory(odooConfig, companyId).catch(() => null),
+                fetchAllOrders(odooConfig, cid).catch(() => null),
+                fetchInventory(odooConfig, cid).catch(() => null),
                 fetchWaves(odooConfig).catch(() => null),
-                fetchInvoices(odooConfig, companyId).catch(() => null),
+                fetchInvoices(odooConfig, cid).catch(() => null),
                 isFirstSync.current ? fetchProducts(odooConfig).catch(() => null) : Promise.resolve(null),
             ]);
 
@@ -122,7 +123,7 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
             syncingRef.current = false;
             setIsSyncing(false);
         }
-    }, [odooConfig, companyId, setSalesOrders, setInventory, setWaves, setInvoices, addToast]);
+    }, [odooConfig, companyId, companyIds, setSalesOrders, setInventory, setWaves, setInvoices, addToast]);
 
     // Initial sync on mount
     const initialSyncDone = useRef(false);
@@ -133,14 +134,15 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
         }
     }, [syncNow]);
 
-    // Re-sync when company changes
-    const prevCompanyRef = useRef(companyId);
+    // Re-sync when company selection changes
+    const prevCompanyRef = useRef(JSON.stringify(companyIds));
     useEffect(() => {
-        if (prevCompanyRef.current !== companyId) {
-            prevCompanyRef.current = companyId;
-            syncNow(false); // visible sync when switching company
+        const key = JSON.stringify(companyIds);
+        if (prevCompanyRef.current !== key) {
+            prevCompanyRef.current = key;
+            syncNow(false);
         }
-    }, [companyId, syncNow]);
+    }, [companyIds, syncNow]);
 
     // Polling interval
     useEffect(() => {

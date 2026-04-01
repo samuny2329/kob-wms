@@ -206,7 +206,8 @@ export const fetchAllOrders = async (odooConfig, companyId) => {
         ['state', 'in', ['assigned', 'confirmed', 'waiting']],
         ['write_date', '>=', cutoff],
     ];
-    if (companyId) domain.push(['company_id', '=', companyId]);
+    if (Array.isArray(companyId)) domain.push(['company_id', 'in', companyId]);
+    else if (companyId) domain.push(['company_id', '=', companyId]);
     const pickings = await odooCallKw(odooConfig, 'stock.picking', 'search_read',
         [domain],
         { fields: ['id', 'name', 'partner_id', 'state', 'move_ids', 'origin', 'note',
@@ -685,22 +686,20 @@ export const fetchInventory = async (odooConfig, companyId) => {
         const stored = JSON.parse(localStorage.getItem('wms_inventory') || 'null');
         return stored || [];
     }
-    // Live mode: fetch stock.quant from configured allowed locations
+    // Live mode: fetch stock.quant ONLY from WH2 (Online) warehouse locations
+    // KOB = K-On/Stock, BTV = B-On/Stock (Online warehouse prefixes)
     const allowedLoc = getStoredAllowedLocations();
-    // Build OR domain for each keyword
-    let locDomain;
-    if (allowedLoc.length === 0) {
-        locDomain = [['location_id.usage', '=', 'internal']];
-    } else if (allowedLoc.length === 1) {
-        locDomain = [['location_id.complete_name', 'ilike', allowedLoc[0]], ['location_id.usage', '=', 'internal']];
-    } else {
-        // Odoo domain OR: ['|', cond1, cond2, ...] — chain ORs
-        const ors = [];
-        for (let i = 0; i < allowedLoc.length - 1; i++) ors.push('|');
-        const conds = allowedLoc.map(kw => ['location_id.complete_name', 'ilike', kw]);
-        locDomain = [...ors, ...conds, ['location_id.usage', '=', 'internal']];
-    }
-    if (companyId) locDomain.push(['company_id', '=', companyId]);
+    // Override: filter by warehouse that contains "(Online)" via location path
+    // K-On/Stock/... for KOB, B-On/Stock/... for BTV
+    // Filter by warehouse location that belongs to WH2 (Online)
+    // Use location_id.warehouse_id.name to ensure only Online warehouse
+    let locDomain = [
+        ['location_id.usage', '=', 'internal'],
+        ['location_id.warehouse_id.name', 'ilike', '(Online)'],
+        ['quantity', '!=', 0],
+    ];
+    if (Array.isArray(companyId)) locDomain.push(['company_id', 'in', companyId]);
+    else if (companyId) locDomain.push(['company_id', '=', companyId]);
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
         [locDomain],
         { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'] }
@@ -936,7 +935,8 @@ export const fetchInvoices = async (odooConfig, companyId) => {
         ['partner_id.name', 'ilike', 'ECOMMERCE'],
         ['invoice_date', '>=', invCutoff],
     ];
-    if (companyId) invDomain.push(['company_id', '=', companyId]);
+    if (Array.isArray(companyId)) invDomain.push(['company_id', 'in', companyId]);
+    else if (companyId) invDomain.push(['company_id', '=', companyId]);
     const moves = await odooCallKw(odooConfig, 'account.move', 'search_read',
         [invDomain],
         {
