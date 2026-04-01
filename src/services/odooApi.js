@@ -66,6 +66,7 @@
 // ──────────────────────────────────────────────────────────────────────
 
 import { getCSRFToken, auditLog } from '../utils/security';
+import { nextRequestId } from './requestManager';
 
 const API_TIMEOUT = 8000;
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -374,14 +375,14 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
             // and set full demand quantity
             await odooCallKw(odooConfig, 'stock.move.line', 'write',
                 [[existingLines[0].id], { location_id: newLocId, quantity: demandQty }]
-            ).catch(() => {});
+            );
         } else {
             // Create new move line with correct company location
             await odooCallKw(odooConfig, 'stock.move.line', 'create',
                 [{ move_id: move.id, picking_id: pickingId, product_id: productId,
                    location_id: newLocId, location_dest_id: pickingDestId || move.location_dest_id?.[0] || move.location_id[0],
                    quantity: demandQty, product_uom_id: 1 }]
-            ).catch(() => {});
+            );
         }
     }
 
@@ -493,7 +494,7 @@ const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => 
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-            jsonrpc: '2.0', method: 'call', id: Date.now(),
+            jsonrpc: '2.0', method: 'call', id: nextRequestId(),
             params: { model, method, args, kwargs }
         })
     });
@@ -676,11 +677,12 @@ export const fetchInventory = async (odooConfig) => {
     } else if (allowedLoc.length === 1) {
         locDomain = [['location_id.complete_name', 'ilike', allowedLoc[0]], ['location_id.usage', '=', 'internal']];
     } else {
-        // Odoo domain OR: ['|', cond1, cond2, ...] — chain ORs
+        // Odoo domain: '&' AND( OR(loc1, loc2, ...), usage=internal )
+        // OR chain: N-1 '|' operators before N conditions (prefix notation)
         const ors = [];
         for (let i = 0; i < allowedLoc.length - 1; i++) ors.push('|');
         const conds = allowedLoc.map(kw => ['location_id.complete_name', 'ilike', kw]);
-        locDomain = [...ors, ...conds, ['location_id.usage', '=', 'internal']];
+        locDomain = ['&', ...ors, ...conds, ['location_id.usage', '=', 'internal']];
     }
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
         [locDomain],
@@ -1183,14 +1185,16 @@ export const fetchStockHistory = async (odooConfig, productId, locationKeywords 
         ['product_id', '=', productId],
         ['state', '=', 'done'],
     ];
-    // If location filter is provided, add it
+    // If location filter is provided, add OR domain for all keywords
     if (locationKeywords.length > 0) {
-        const locDomain = locationKeywords.flatMap(kw => [
-            ['location_id.complete_name', 'ilike', kw],
-        ]);
-        // OR all location conditions
-        domain.push('|');
-        domain.push(...locDomain.slice(0, 2)); // basic: first two
+        const conds = locationKeywords.map(kw => ['location_id.complete_name', 'ilike', kw]);
+        if (conds.length === 1) {
+            domain.push(conds[0]);
+        } else {
+            // OR chain: N-1 '|' operators in prefix notation
+            for (let i = 0; i < conds.length - 1; i++) domain.push('|');
+            domain.push(...conds);
+        }
     }
     try {
         const lines = await odooCallKw(odooConfig, 'stock.move.line', 'search_read',
