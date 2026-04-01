@@ -11,11 +11,10 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
     });
     const [reqItems, setReqItems] = useState({});
     const [countInputs, setCountInputs] = useState({});
-    const [countMode, setCountMode] = useState(null); // null | 'start' | 'end'
+    const [showCountForm, setShowCountForm] = useState(false);
 
     const today = new Date().toISOString().split('T')[0];
-    const todayCount = counts.find(c => c.date === today && c.status !== 'cancelled');
-    const isShiftOpen = todayCount?.status === 'open';
+    const todayCount = counts.find(c => c.date === today && c.status === 'completed');
 
     // Calculate expected usage from boxUsageLog today
     const todayUsage = useMemo(() => {
@@ -44,43 +43,23 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
         localStorage.setItem('wms_station_counts', JSON.stringify(updated));
     };
 
-    const handleStartCount = () => {
-        const startCount = {};
-        ALL_ITEMS.forEach(item => { startCount[item.id] = parseInt(countInputs[item.id] || '0', 10); });
+    const handleEndDayCount = () => {
+        const remaining = {};
+        ALL_ITEMS.forEach(item => { remaining[item.id] = parseInt(countInputs[item.id] || '0', 10); });
         const newCount = {
             id: `SC-${today}-${Date.now()}`,
             date: today,
-            shift: new Date().getHours() < 12 ? 'AM' : 'PM',
             user: user?.username || 'admin',
-            startCount,
-            endCount: null,
-            used: null,
-            expectedUsed: null,
-            status: 'open',
+            remaining,
+            todayUsage: { ...todayUsage },
+            status: 'completed',
             createdAt: new Date().toISOString(),
         };
-        saveCounts([newCount, ...counts.filter(c => c.date !== today || c.status === 'completed')]);
+        saveCounts([newCount, ...counts.filter(c => c.date !== today)]);
         setCountInputs({});
-        setCountMode(null);
-        addToast?.('Station count started — shift is open', 'success');
-        logActivity?.('station-start', { date: today, shift: newCount.shift });
-    };
-
-    const handleEndCount = () => {
-        if (!todayCount) return;
-        const endCount = {};
-        ALL_ITEMS.forEach(item => { endCount[item.id] = parseInt(countInputs[item.id] || '0', 10); });
-        const used = {};
-        const expectedUsed = { ...todayUsage };
-        ALL_ITEMS.forEach(item => {
-            used[item.id] = Math.max(0, (todayCount.startCount[item.id] || 0) - (endCount[item.id] || 0));
-        });
-        const updated = counts.map(c => c.id === todayCount.id ? { ...c, endCount, used, expectedUsed, status: 'completed', closedAt: new Date().toISOString() } : c);
-        saveCounts(updated);
-        setCountInputs({});
-        setCountMode(null);
-        addToast?.('Station count completed — shift closed', 'success');
-        logActivity?.('station-end', { date: today, totalUsed: Object.values(used).reduce((a, b) => a + b, 0) });
+        setShowCountForm(false);
+        addToast?.('End-of-day count saved', 'success');
+        logActivity?.('station-count', { date: today, items: Object.entries(remaining).filter(([,v]) => v > 0).length });
     };
 
     const handleRequisition = () => {
@@ -164,32 +143,30 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
                 {/* ── TAB: STATION COUNT ── */}
                 {tab === 'count' && (
                     <div className="space-y-4">
-                        {/* Status bar */}
+                        {/* Action bar */}
                         <div className="flex items-center gap-3 flex-wrap">
-                            {!isShiftOpen && !completedCount && (
-                                <button onClick={() => { setCountMode('start'); setCountInputs({}); }}
+                            {!todayCount && (
+                                <button onClick={() => { setShowCountForm(true); setCountInputs({}); }}
                                     className="odoo-btn odoo-btn-primary text-xs">
-                                    <Package className="w-3.5 h-3.5" /> Start Shift Count
+                                    <Package className="w-3.5 h-3.5" /> End-of-Day Count
                                 </button>
                             )}
-                            {isShiftOpen && (
-                                <button onClick={() => { setCountMode('end'); setCountInputs({}); }}
-                                    className="odoo-btn text-xs" style={{ backgroundColor: '#28a745', color: '#fff', borderColor: '#28a745' }}>
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> End Shift Count
-                                </button>
-                            )}
-                            {completedCount && (
+                            {todayCount && (
                                 <div className="flex items-center gap-2 text-xs text-green-600 font-medium">
-                                    <CheckCircle2 className="w-4 h-4" /> Shift completed today
+                                    <CheckCircle2 className="w-4 h-4" /> Counted today
+                                    <button onClick={() => { setShowCountForm(true); setCountInputs({}); }}
+                                        className="odoo-btn odoo-btn-secondary text-[10px] ml-2">
+                                        <RotateCcw className="w-3 h-3" /> Recount
+                                    </button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Count input form */}
-                        {countMode && (
+                        {/* Count form — just count remaining */}
+                        {showCountForm && (
                             <div className="border rounded-lg overflow-hidden" style={{ borderColor: '#dee2e6' }}>
                                 <div className="px-4 py-2 text-xs font-bold uppercase" style={{ backgroundColor: '#f8f9fa', color: '#6c757d', borderBottom: '1px solid #dee2e6' }}>
-                                    {countMode === 'start' ? 'Enter Starting Stock' : 'Enter Remaining Stock'}
+                                    Count Remaining Stock at Station
                                 </div>
                                 <div className="divide-y" style={{ borderColor: '#f1f3f5' }}>
                                     {ALL_ITEMS.map(item => (
@@ -208,50 +185,50 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
                                     ))}
                                 </div>
                                 <div className="px-4 py-3 flex gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                                    <button onClick={countMode === 'start' ? handleStartCount : handleEndCount}
-                                        className="odoo-btn odoo-btn-primary text-xs">
-                                        {countMode === 'start' ? 'Confirm Start' : 'Confirm End & Close Shift'}
+                                    <button onClick={handleEndDayCount} className="odoo-btn odoo-btn-primary text-xs">
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> Save Count
                                     </button>
-                                    <button onClick={() => setCountMode(null)} className="odoo-btn odoo-btn-secondary text-xs">Cancel</button>
+                                    <button onClick={() => setShowCountForm(false)} className="odoo-btn odoo-btn-secondary text-xs">Cancel</button>
                                 </div>
                             </div>
                         )}
 
-                        {/* Reconcile view */}
-                        {completedCount && (
+                        {/* Today's result */}
+                        {todayCount && (
                             <div className="border rounded-lg overflow-hidden" style={{ borderColor: '#dee2e6' }}>
                                 <div className="px-4 py-2 text-xs font-bold uppercase" style={{ backgroundColor: '#f8f9fa', color: '#6c757d', borderBottom: '1px solid #dee2e6' }}>
-                                    Shift Reconciliation — {completedCount.date} {completedCount.shift}
+                                    Today's Count — {todayCount.date}
                                 </div>
                                 <table className="w-full text-xs">
                                     <thead>
                                         <tr style={{ backgroundColor: '#f8f9fa' }}>
                                             <th className="px-3 py-2 text-left font-semibold" style={{ color: '#6c757d' }}>Item</th>
-                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Start</th>
-                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>End</th>
-                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Used</th>
-                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Expected</th>
-                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Variance</th>
+                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Remaining</th>
+                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Used Today</th>
+                                            <th className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {ALL_ITEMS.map(item => {
-                                            const start = completedCount.startCount?.[item.id] || 0;
-                                            const end = completedCount.endCount?.[item.id] || 0;
-                                            const used = completedCount.used?.[item.id] || 0;
-                                            const expected = completedCount.expectedUsed?.[item.id] || 0;
-                                            const variance = used - expected;
-                                            if (start === 0 && end === 0 && used === 0 && expected === 0) return null;
+                                            const remaining = todayCount.remaining?.[item.id] || 0;
+                                            const used = todayCount.todayUsage?.[item.id] || 0;
+                                            const isLow = remaining > 0 && remaining < (item.reorderPoint || 10);
+                                            if (remaining === 0 && used === 0) return null;
                                             return (
                                                 <tr key={item.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
                                                     <td className="px-3 py-2 font-medium" style={{ color: '#212529' }}>{item.icon} {item.name}</td>
-                                                    <td className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>{start}</td>
-                                                    <td className="px-3 py-2 text-center font-bold" style={{ color: '#212529' }}>{end}</td>
-                                                    <td className="px-3 py-2 text-center" style={{ color: '#212529' }}>{used}</td>
-                                                    <td className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>{expected}</td>
-                                                    <td className={`px-3 py-2 text-center font-bold ${variance > 0 ? 'text-red-600' : variance < 0 ? 'text-blue-600' : 'text-green-600'}`}>
-                                                        {variance === 0 ? '0' : variance > 0 ? `+${variance}` : variance}
-                                                        {variance > 0 && <TrendingDown className="w-3 h-3 inline ml-1 text-red-400" />}
+                                                    <td className="px-3 py-2 text-center font-bold" style={{ color: '#212529' }}>{remaining}</td>
+                                                    <td className="px-3 py-2 text-center" style={{ color: '#6c757d' }}>{used}</td>
+                                                    <td className="px-3 py-2 text-center">
+                                                        {isLow ? (
+                                                            <span className="text-[10px] font-bold text-amber-600 flex items-center justify-center gap-0.5">
+                                                                <AlertTriangle className="w-3 h-3" /> Low
+                                                            </span>
+                                                        ) : remaining > 0 ? (
+                                                            <span className="text-[10px] font-bold text-green-600">OK</span>
+                                                        ) : (
+                                                            <span className="text-[10px] text-gray-400">—</span>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             );
@@ -260,19 +237,19 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
                                 </table>
                                 {/* Low stock alerts */}
                                 {ALL_ITEMS.filter(item => {
-                                    const end = completedCount.endCount?.[item.id] || 0;
-                                    return end > 0 && end < (item.reorderPoint || 10);
+                                    const r = todayCount.remaining?.[item.id] || 0;
+                                    return r > 0 && r < (item.reorderPoint || 10);
                                 }).length > 0 && (
                                     <div className="px-4 py-2 bg-amber-50 border-t border-amber-200">
                                         <p className="text-xs font-bold text-amber-700 flex items-center gap-1 mb-1">
-                                            <AlertTriangle className="w-3.5 h-3.5" /> Low Stock Alerts
+                                            <AlertTriangle className="w-3.5 h-3.5" /> Low Stock — Reorder Needed
                                         </p>
                                         {ALL_ITEMS.filter(item => {
-                                            const end = completedCount.endCount?.[item.id] || 0;
-                                            return end > 0 && end < (item.reorderPoint || 10);
+                                            const r = todayCount.remaining?.[item.id] || 0;
+                                            return r > 0 && r < (item.reorderPoint || 10);
                                         }).map(item => (
                                             <p key={item.id} className="text-[10px] text-amber-600">
-                                                {item.name}: {completedCount.endCount[item.id]} remaining (reorder at {item.reorderPoint || 10})
+                                                {item.name}: {todayCount.remaining[item.id]} remaining (reorder at {item.reorderPoint || 10})
                                             </p>
                                         ))}
                                     </div>
