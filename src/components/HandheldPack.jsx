@@ -384,33 +384,33 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                         </div>
                         {(() => {
                             const rec = suggestBox(selectedOrder?.items || []);
+                            const recBox = BOX_TYPES.find(b => b.id === rec);
+                            const recSpec = PACKING_SPEC[rec];
                             return (
-                            <>
-                            <h3 className="text-sm font-black text-slate-500 mb-4 uppercase">Select Box</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                {BOX_TYPES.map(box => {
-                                    const isRec = box.id === rec;
-                                    const spec = PACKING_SPEC[box.id];
-                                    return (
-                                    <button
-                                        key={box.id}
-                                        onClick={() => completePack(box)}
-                                        className={`p-4 rounded-xl border-2 active:scale-[0.97] transition-all text-center flex flex-col items-center gap-1 shadow-sm relative ${isRec ? 'border-[#00A09D] bg-emerald-50 ring-1 ring-emerald-200' : 'border-slate-50 dark:border-zinc-800 hover:border-[#00A09D] bg-slate-50/50'}`}
-                                    >
-                                        {isRec && <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[8px] font-black text-white bg-[#00A09D] px-2 py-0.5 rounded-full uppercase">Best</span>}
-                                        <span className="text-2xl">{box.icon}</span>
-                                        <p className="font-black text-xs uppercase tracking-tight mt-1">{box.name}</p>
-                                        <p className="text-[9px] font-mono text-slate-400">{box.size}</p>
-                                        {spec && (spec.bubble > 0 || spec.tape > 0) && (
-                                            <p className="text-[8px] text-slate-400 mt-0.5">
-                                                {spec.bubble > 0 && `B${spec.bubble}`}{spec.tape > 0 && ` T${spec.tape}`}{spec.stretch > 0 && ` S${spec.stretch}`}
-                                            </p>
-                                        )}
-                                    </button>
-                                    );
-                                })}
+                            <div className="flex flex-col items-center">
+                                <button
+                                    onClick={() => completePack(recBox)}
+                                    className="p-6 rounded-2xl border-3 border-[#00A09D] bg-emerald-50 active:scale-[0.95] transition-all text-center flex flex-col items-center gap-2 shadow-lg w-full max-w-[260px]"
+                                >
+                                    <span className="text-5xl">{recBox?.icon || '📦'}</span>
+                                    <p className="font-black text-lg text-[#00A09D] uppercase">{recBox?.name}</p>
+                                    <p className="text-[10px] font-mono text-slate-400">{recBox?.size}</p>
+                                    {recSpec && (
+                                        <div className="flex gap-2 text-[9px] text-[#00A09D] font-bold mt-1">
+                                            {recSpec.bubble > 0 && <span>Bubble x{recSpec.bubble}</span>}
+                                            {recSpec.tape > 0 && <span>Tape x{recSpec.tape}</span>}
+                                            {recSpec.stretch > 0 && <span>Stretch x{recSpec.stretch}</span>}
+                                        </div>
+                                    )}
+                                    <div className="mt-2 px-6 py-2 bg-[#00A09D] text-white rounded-xl text-sm font-black uppercase">
+                                        Confirm & Print AWB
+                                    </div>
+                                </button>
+                                <button onClick={() => { /* toggle override */ }}
+                                    className="mt-4 text-xs text-slate-400 underline">
+                                    Change box
+                                </button>
                             </div>
-                            </>
                             );
                         })()}
                     </div>

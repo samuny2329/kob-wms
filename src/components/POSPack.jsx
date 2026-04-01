@@ -376,30 +376,34 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                         <p style={{ fontSize: '13px', fontWeight: 600 }}>Generating AWB...</p>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex gap-3 justify-center flex-wrap">
-                                                        {(() => { const rec = suggestBox(selectedOrder?.items || []); return BOX_TYPES.map(box => {
-                                                            const isRec = box.id === rec;
-                                                            const spec = PACKING_SPEC[box.id];
-                                                            return (
+                                                    {(() => {
+                                                        const rec = suggestBox(selectedOrder?.items || []);
+                                                        const recBox = BOX_TYPES.find(b => b.id === rec);
+                                                        const recSpec = PACKING_SPEC[rec];
+                                                        return (
+                                                        <div className="flex flex-col items-center">
                                                             <button
-                                                                key={box.id}
-                                                                onClick={() => handleBoxSelect(box)}
-                                                                className="relative"
-                                                                style={{ padding: '14px 20px', border: isRec ? '2px solid #017E84' : '2px solid #dee2e6', borderRadius: '4px', fontSize: '13px', fontWeight: 700, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backgroundColor: isRec ? '#e0f5f5' : '#ffffff', transition: 'all 0.15s' }}
-                                                                onMouseEnter={e => { if (!isRec) { e.currentTarget.style.borderColor = '#017E84'; e.currentTarget.style.backgroundColor = '#e0f5f5'; }}}
-                                                                onMouseLeave={e => { if (!isRec) { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}}
+                                                                onClick={() => handleBoxSelect(recBox)}
+                                                                style={{ padding: '24px 40px', border: '3px solid #017E84', borderRadius: '10px', backgroundColor: '#e0f5f5', cursor: 'pointer', transition: 'all 0.15s', boxShadow: '0 4px 12px rgba(1,126,132,0.2)', maxWidth: '280px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                                                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#ccefef'; }}
+                                                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#e0f5f5'; }}
                                                             >
-                                                                {isRec && <span style={{ position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 800, color: '#fff', backgroundColor: '#017E84', padding: '1px 6px', borderRadius: '8px' }}>Best</span>}
-                                                                <span style={{ fontSize: '24px' }}>{box.icon}</span>
-                                                                <span style={{ color: '#212529' }}>{box.name}</span>
-                                                                <span style={{ fontSize: '10px', color: '#adb5bd', fontFamily: 'monospace' }}>{box.size}</span>
-                                                                {spec && (spec.bubble > 0 || spec.tape > 0) && (
-                                                                    <span style={{ fontSize: '8px', color: '#adb5bd' }}>{spec.bubble > 0 ? `B${spec.bubble} ` : ''}{spec.tape > 0 ? `T${spec.tape}` : ''}</span>
+                                                                <span style={{ fontSize: '40px', marginBottom: '6px' }}>{recBox?.icon || '📦'}</span>
+                                                                <span style={{ fontWeight: 800, fontSize: '16px', color: '#017E84' }}>{recBox?.name}</span>
+                                                                <span style={{ fontSize: '11px', color: '#6c757d', marginTop: '2px' }}>{recBox?.size}</span>
+                                                                {recSpec && (
+                                                                    <div style={{ marginTop: '8px', fontSize: '10px', color: '#017E84', display: 'flex', gap: '8px' }}>
+                                                                        {recSpec.bubble > 0 && <span>Bubble x{recSpec.bubble}</span>}
+                                                                        {recSpec.tape > 0 && <span>Tape x{recSpec.tape}</span>}
+                                                                    </div>
                                                                 )}
+                                                                <div style={{ marginTop: '12px', padding: '6px 20px', backgroundColor: '#017E84', color: '#fff', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                                                                    Confirm & Print AWB
+                                                                </div>
                                                             </button>
-                                                            );
-                                                        }); })()}
-                                                    </div>
+                                                        </div>
+                                                        );
+                                                    })()}
                                                 )}
                                             </div>
                                         /* Stage: Item scan */

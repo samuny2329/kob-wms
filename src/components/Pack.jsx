@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, ChevronLeft, ChevronRight, CheckSquare, Lock, Package, RefreshCw, Barcode, Printer } from 'lucide-react';
-import { BOX_TYPES, PACKING_SPEC, suggestBox } from '../constants.jsx';
+import { BOX_TYPES, PACKING_SPEC, PRODUCT_CATALOG, suggestBox } from '../constants.jsx';
 
 const Pack = ({
     salesOrders, selectedPackOrder, setSelectedPackOrder,
@@ -9,6 +9,7 @@ const Pack = ({
     packAwbInput, setPackAwbInput, packAwbRef, handleAwbConfirmScan,
     printAwbLabel, stockFrozen,
 }) => {
+    const [showBoxOverride, setShowBoxOverride] = useState(false);
     const readyOrders = salesOrders.filter(o => ['picked', 'packing', 'packed'].includes(o.status));
 
     if (!selectedPackOrder) {
@@ -169,67 +170,88 @@ const Pack = ({
                     <div className="p-8">
                         {(() => {
                             const recommended = suggestBox(selectedPackOrder?.items || []);
+                            const recBox = BOX_TYPES.find(b => b.id === recommended);
                             const recSpec = PACKING_SPEC[recommended];
+                            const totalItems = (selectedPackOrder?.items || []).reduce((s, i) => s + (i.picked || i.qty || 1), 0);
+                            const totalWeight = (selectedPackOrder?.items || []).reduce((s, i) => {
+                                const cat = PRODUCT_CATALOG?.[i.sku];
+                                return s + (cat?.weight || 0.2) * (i.picked || i.qty || 1);
+                            }, 0);
                             return (
                             <>
-                            <div className="text-center mb-4">
-                                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>Select Box Type</h3>
-                                <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>AWB will be generated automatically after selecting box</p>
-                            </div>
                             {isProcessingAPI ? (
                                 <div className="flex flex-col items-center py-10" style={{ gap: '12px', color: '#6c757d' }}>
                                     <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#714B67' }} />
                                     <p style={{ fontSize: '13px', fontWeight: 500 }}>Generating AWB...</p>
                                 </div>
-                            ) : (
-                                <>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {BOX_TYPES.map(box => {
-                                        const isRec = box.id === recommended;
-                                        const spec = PACKING_SPEC[box.id];
-                                        return (
-                                        <button
-                                            key={box.id}
-                                            onClick={() => handleBoxSelect(selectedPackOrder, box.id)}
-                                            className="flex flex-col items-center relative"
-                                            style={{
-                                                padding: '16px 12px 12px', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s',
-                                                border: isRec ? '2px solid #714B67' : '2px solid #dee2e6',
-                                                backgroundColor: isRec ? '#f3edf7' : '#ffffff',
-                                                boxShadow: isRec ? '0 2px 8px rgba(113,75,103,0.15)' : 'none',
-                                            }}
-                                            onMouseEnter={e => { if (!isRec) { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.backgroundColor = '#f3edf7'; }}}
-                                            onMouseLeave={e => { if (!isRec) { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}}
-                                        >
-                                            {isRec && <span style={{ position: 'absolute', top: '-8px', left: '50%', transform: 'translateX(-50%)', fontSize: '9px', fontWeight: 700, color: '#fff', backgroundColor: '#714B67', padding: '1px 8px', borderRadius: '8px', whiteSpace: 'nowrap' }}>Recommended</span>}
-                                            <span style={{ fontSize: '28px', marginBottom: '6px' }}>{box.icon}</span>
-                                            <span style={{ fontWeight: 700, fontSize: '13px', color: '#212529' }}>{box.name}</span>
-                                            <span style={{ fontSize: '11px', color: '#6c757d', marginTop: '2px' }}>{box.size}</span>
-                                            <span style={{ fontSize: '11px', color: '#6c757d' }}>{box.maxWeight} kg max</span>
-                                            {spec && (
-                                                <div style={{ marginTop: '6px', fontSize: '9px', color: '#868e96', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                                    {spec.bubble > 0 && <span>Bubble x{spec.bubble}</span>}
-                                                    {spec.tape > 0 && <span>Tape x{spec.tape}</span>}
-                                                    {spec.stretch > 0 && <span>Stretch x{spec.stretch}</span>}
-                                                    {spec.fill > 0 && <span>Fill x{spec.fill}</span>}
-                                                </div>
-                                            )}
-                                        </button>
-                                        );
-                                    })}
-                                </div>
-                                {recSpec && (
-                                    <div style={{ marginTop: '12px', padding: '10px 14px', backgroundColor: '#f3edf7', borderRadius: '4px', border: '1px solid #e0d4e8' }}>
-                                        <p style={{ fontSize: '11px', fontWeight: 600, color: '#714B67', marginBottom: '4px' }}>Materials needed for {BOX_TYPES.find(b=>b.id===recommended)?.name}:</p>
-                                        <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#495057' }}>
-                                            {recSpec.bubble > 0 && <span>Bubble Wrap: {recSpec.bubble} sheet{recSpec.bubble>1?'s':''}</span>}
-                                            {recSpec.tape > 0 && <span>Tape: {recSpec.tape} strip{recSpec.tape>1?'s':''}</span>}
-                                            {recSpec.stretch > 0 && <span>Stretch: {recSpec.stretch} wrap{recSpec.stretch>1?'s':''}</span>}
-                                            {recSpec.fill > 0 && <span>Fill Paper: {recSpec.fill} sheet{recSpec.fill>1?'s':''}</span>}
+                            ) : !showBoxOverride ? (
+                                <div className="flex flex-col items-center">
+                                    <p style={{ fontSize: '11px', color: '#6c757d', marginBottom: '16px' }}>
+                                        {totalItems} item{totalItems > 1 ? 's' : ''} / {totalWeight.toFixed(2)} kg
+                                    </p>
+                                    <button
+                                        onClick={() => handleBoxSelect(selectedPackOrder, recommended)}
+                                        style={{ padding: '28px 48px', border: '3px solid #714B67', borderRadius: '12px', backgroundColor: '#f3edf7', cursor: 'pointer', transition: 'all 0.15s', boxShadow: '0 4px 16px rgba(113,75,103,0.2)', maxWidth: '320px', width: '100%' }}
+                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#e8ddf0'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(113,75,103,0.3)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f3edf7'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(113,75,103,0.2)'; }}
+                                    >
+                                        <span style={{ fontSize: '48px', display: 'block', marginBottom: '8px' }}>{recBox?.icon || '📦'}</span>
+                                        <span style={{ fontWeight: 800, fontSize: '18px', color: '#714B67', display: 'block' }}>{recBox?.name || recommended}</span>
+                                        <span style={{ fontSize: '12px', color: '#6c757d', display: 'block', marginTop: '4px' }}>{recBox?.size} / {recBox?.maxWeight} kg max</span>
+                                        {recSpec && (
+                                            <div style={{ marginTop: '12px', fontSize: '11px', color: '#714B67', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                                {recSpec.bubble > 0 && <span>Bubble x{recSpec.bubble}</span>}
+                                                {recSpec.tape > 0 && <span>Tape x{recSpec.tape}</span>}
+                                                {recSpec.stretch > 0 && <span>Stretch x{recSpec.stretch}</span>}
+                                                {recSpec.fill > 0 && <span>Fill x{recSpec.fill}</span>}
+                                            </div>
+                                        )}
+                                        <div style={{ marginTop: '16px', padding: '8px 24px', backgroundColor: '#714B67', color: '#fff', borderRadius: '6px', fontSize: '13px', fontWeight: 700 }}>
+                                            Confirm & Print AWB
                                         </div>
+                                    </button>
+                                    <button
+                                        onClick={() => setShowOverride(true)}
+                                        style={{ marginTop: '16px', fontSize: '12px', color: '#6c757d', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                                    >
+                                        Change box type
+                                    </button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>Select Box Type</h3>
+                                        <button onClick={() => setShowOverride(false)} style={{ fontSize: '12px', color: '#714B67', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                            Back to recommended
+                                        </button>
                                     </div>
-                                )}
-                                </>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {BOX_TYPES.map(box => {
+                                            const isRec = box.id === recommended;
+                                            const spec = PACKING_SPEC[box.id];
+                                            return (
+                                            <button
+                                                key={box.id}
+                                                onClick={() => handleBoxSelect(selectedPackOrder, box.id)}
+                                                className="flex flex-col items-center relative"
+                                                style={{ padding: '14px 10px', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.15s', border: isRec ? '2px solid #714B67' : '2px solid #dee2e6', backgroundColor: isRec ? '#f3edf7' : '#ffffff' }}
+                                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.backgroundColor = '#f3edf7'; }}
+                                                onMouseLeave={e => { if (!isRec) { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.backgroundColor = '#ffffff'; }}}
+                                            >
+                                                {isRec && <span style={{ position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', fontWeight: 700, color: '#fff', backgroundColor: '#714B67', padding: '1px 6px', borderRadius: '8px' }}>Best</span>}
+                                                <span style={{ fontSize: '24px', marginBottom: '4px' }}>{box.icon}</span>
+                                                <span style={{ fontWeight: 700, fontSize: '12px', color: '#212529' }}>{box.name}</span>
+                                                <span style={{ fontSize: '10px', color: '#6c757d' }}>{box.size}</span>
+                                                {spec && (spec.bubble > 0 || spec.tape > 0) && (
+                                                    <span style={{ fontSize: '8px', color: '#adb5bd', marginTop: '2px' }}>
+                                                        {spec.bubble > 0 ? `B${spec.bubble} ` : ''}{spec.tape > 0 ? `T${spec.tape}` : ''}{spec.stretch > 0 ? ` S${spec.stretch}` : ''}
+                                                    </span>
+                                                )}
+                                            </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             )}
                             </>
                             );
