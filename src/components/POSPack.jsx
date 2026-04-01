@@ -376,7 +376,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                         <p style={{ fontSize: '13px', fontWeight: 600 }}>Generating AWB...</p>
                                                     </div>
                                                 ) : (
-                                                    {(() => {
+                                                    (() => {
                                                         const rec = suggestBox(selectedOrder?.items || []);
                                                         const recBox = BOX_TYPES.find(b => b.id === rec);
                                                         const recSpec = PACKING_SPEC[rec];
@@ -403,7 +403,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                             </button>
                                                         </div>
                                                         );
-                                                    })()}
+                                                    })()
                                                 )}
                                             </div>
                                         /* Stage: Item scan */
