@@ -53,11 +53,20 @@ src/
 │   ├── HandheldPack.jsx / POSPack.jsx
 │   └── Login.jsx / ErrorBoundary.jsx / LoadingScreen.jsx
 ├── services/
-│   ├── odooApi.js             # Odoo JSON-RPC client
+│   ├── odooApi.js             # Odoo JSON-RPC client (bug-fixed)
 │   ├── claudeApi.js           # Claude AI API client
-│   └── platformApi.js         # Shopee/Lazada/TikTok/couriers
+│   ├── platformApi.js         # Shopee/Lazada/TikTok/couriers
+│   ├── syncEngine.js          # Smart polling orchestrator (15s/60s/backoff)
+│   ├── requestManager.js      # Request dedup, cancel, throttle, debounce
+│   ├── offlineQueue.js        # IndexedDB action queue (survives offline/crash)
+│   ├── productCache.js        # IndexedDB + memory Map product cache (<0.1ms lookup)
+│   ├── conflictResolver.js    # Field-level merge for concurrent edits
+│   ├── transactionRing.js     # SHA-256 hash-chained event ledger (ring buffer)
+│   ├── txSubscription.js      # Role-based TX notification routing
+│   └── txBroadcast.js         # BroadcastChannel cross-tab TX sync
 ├── hooks/
-│   └── useOdooSync.js         # Auto-sync hook
+│   ├── useOdooSync.js         # Auto-sync hook (powered by SyncEngine)
+│   └── useTransactionRing.js  # TX emit, subscribe, query, notifications
 └── utils/
     ├── security.js            # Auth, session, sanitize, audit
     └── index.js               # Helpers (tracking URL, debounce)
@@ -72,6 +81,18 @@ src/
 - **No backend server** — Odoo is the backend; frontend handles auth client-side
 - **Inline styles** — Odoo 18 design system uses inline styles + Tailwind utilities
 - **localStorage** — primary data persistence (orders, users, configs, chat history)
+- **IndexedDB** — offline queue, product cache, transaction ring (crash-safe)
+- **SyncEngine** — adaptive polling (15s active / 60s idle / pause hidden tab / backoff on error)
+- **Transaction Ring** — SHA-256 hash-chained event ledger with cross-tab broadcast
+
+---
+
+## Architecture Docs
+
+| Document | Path | Content |
+|----------|------|---------|
+| Sync Architecture | `docs/SYNC-ARCHITECTURE.md` | SyncEngine, OfflineQueue, ProductCache, RequestManager, ConflictResolver — flow diagrams + performance |
+| Transaction Ring | `docs/TRANSACTION-RING.md` | Hash chain, ring buffer, subscription routing, cross-tab broadcast — flow diagrams + API examples |
 
 ---
 
