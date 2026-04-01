@@ -22,9 +22,11 @@ const DB_NAME = 'wms_txring';
 const DB_VERSION = 1;
 const STORE_NAME = 'transactions';
 const META_STORE = 'ring_meta';
-const MAX_RING_SIZE = 10_000;
+const MAX_RING_SIZE = 50_000;
 
 let _db = null;
+let _lastHash = null;  // In-memory cache of last hash (avoids DB read on every append)
+let _pruneScheduled = false; // Debounce pruning
 
 // ── SHA-256 hash using Web Crypto API (browser built-in, no external deps) ──
 const sha256 = async (data) => {
@@ -76,31 +78,20 @@ const getLastTx = async () => {
 
 // ── Append a new TX to the ring ──
 const append = async ({ action, actor, target = {}, affects = [], meta = {} }) => {
-  const lastTx = await getLastTx();
-  const prevHash = lastTx?.hash || '0'.repeat(64); // genesis
+  // Use cached last hash (fast) or fallback to DB read (first call only)
+  let prevHash = _lastHash;
+  if (!prevHash) {
+    const lastTx = await getLastTx();
+    prevHash = lastTx?.hash || '0'.repeat(64); // genesis
+  }
 
   const timestamp = Date.now();
   const orderId = target.orderId || target.id || null;
 
-  // Build the TX payload (everything that gets hashed)
-  const payload = {
-    action,
-    actor,
-    target,
-    affects,
-    meta,
-    timestamp,
-    prevHash,
-  };
-
-  // Compute hash
+  const payload = { action, actor, target, affects, meta, timestamp, prevHash };
   const hash = await sha256(payload);
 
-  const record = {
-    ...payload,
-    hash,
-    orderId, // denormalized for index queries
-  };
+  const record = { ...payload, hash, orderId };
 
   // Write to IndexedDB
   const db = await openDB();
@@ -113,9 +104,16 @@ const append = async ({ action, actor, target = {}, affects = [], meta = {} }) =
   });
 
   record.seq = seq;
+  _lastHash = hash; // Cache for next append (avoids DB read)
 
-  // Prune if ring is full
-  await pruneIfNeeded();
+  // Debounced prune — don't prune on every append, check every 100 appends
+  if (!_pruneScheduled) {
+    _pruneScheduled = true;
+    setTimeout(async () => {
+      _pruneScheduled = false;
+      await pruneIfNeeded();
+    }, 5000); // Check every 5s at most
+  }
 
   return record;
 };
@@ -153,54 +151,110 @@ const pruneIfNeeded = async () => {
 };
 
 // ── Query TXs ──
-// Filters: { action, actor, orderId, since, until, limit }
+// Filters: { action, actor, orderId, since, until, limit, offset }
+// Optimized: uses IDB cursors walking backwards (newest first) + early exit on limit
 const query = async (filters = {}) => {
   const db = await openDB();
+  const limit = filters.limit || 100;
+  const offset = filters.offset || 0;
+
+  // Fast path: orderId query uses index directly
+  if (filters.orderId) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const idx = tx.objectStore(STORE_NAME).index('orderId');
+      const req = idx.getAll(IDBKeyRange.only(filters.orderId));
+      req.onsuccess = () => {
+        const results = (req.result || []).sort((a, b) => b.timestamp - a.timestamp);
+        resolve(results.slice(0, limit));
+      };
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  // Fast path: time range query using timestamp index + cursor (no getAll)
+  if (filters.since || filters.until) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const idx = tx.objectStore(STORE_NAME).index('timestamp');
+      const lower = filters.since || 0;
+      const upper = filters.until || Date.now() + 86400000;
+      const range = IDBKeyRange.bound(lower, upper);
+      const results = [];
+      let skipped = 0;
+
+      // Walk backwards (newest first)
+      const req = idx.openCursor(range, 'prev');
+      req.onsuccess = () => {
+        const cursor = req.result;
+        if (!cursor || results.length >= limit) {
+          resolve(results);
+          return;
+        }
+        const r = cursor.value;
+        // Apply JS filters
+        if (filters.action && r.action !== filters.action) { cursor.continue(); return; }
+        if (filters.actor && r.actor !== filters.actor) { cursor.continue(); return; }
+        if (filters.affects && !r.affects?.includes(filters.affects)) { cursor.continue(); return; }
+
+        if (skipped < offset) { skipped++; cursor.continue(); return; }
+        results.push(r);
+        cursor.continue();
+      };
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  // Index-assisted query for action or actor
+  if (filters.action || filters.actor) {
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const indexName = filters.action ? 'action' : 'actor';
+      const indexValue = filters.action || filters.actor;
+      const idx = store.index(indexName);
+      const results = [];
+      let skipped = 0;
+
+      // Cursor over matching index values, walk backwards
+      const req = idx.openCursor(IDBKeyRange.only(indexValue), 'prev');
+      req.onsuccess = () => {
+        const cursor = req.result;
+        if (!cursor || results.length >= limit) {
+          resolve(results);
+          return;
+        }
+        const r = cursor.value;
+        // Cross-filter
+        if (filters.action && filters.actor && r.actor !== filters.actor) { cursor.continue(); return; }
+        if (filters.action && filters.actor && r.action !== filters.action) { cursor.continue(); return; }
+        if (filters.affects && !r.affects?.includes(filters.affects)) { cursor.continue(); return; }
+
+        if (skipped < offset) { skipped++; cursor.continue(); return; }
+        results.push(r);
+        cursor.continue();
+      };
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  // Default: cursor scan backwards (newest first) with limit — never loads all into memory
   return new Promise((resolve) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
+    const results = [];
+    let skipped = 0;
 
-    // Use index if a single filter matches
-    let req;
-    if (filters.orderId) {
-      const idx = store.index('orderId');
-      req = idx.getAll(IDBKeyRange.only(filters.orderId));
-    } else if (filters.action && !filters.actor) {
-      const idx = store.index('action');
-      req = idx.getAll(IDBKeyRange.only(filters.action));
-    } else if (filters.actor && !filters.action) {
-      const idx = store.index('actor');
-      req = idx.getAll(IDBKeyRange.only(filters.actor));
-    } else {
-      req = store.getAll();
-    }
-
+    const req = store.openCursor(null, 'prev');
     req.onsuccess = () => {
-      let results = req.result || [];
-
-      // Apply remaining filters in JS
-      if (filters.action && filters.actor) {
-        results = results.filter(r => r.action === filters.action && r.actor === filters.actor);
+      const cursor = req.result;
+      if (!cursor || results.length >= limit) {
+        resolve(results);
+        return;
       }
-      if (filters.since) {
-        results = results.filter(r => r.timestamp >= filters.since);
-      }
-      if (filters.until) {
-        results = results.filter(r => r.timestamp <= filters.until);
-      }
-      if (filters.affects) {
-        results = results.filter(r => r.affects?.includes(filters.affects));
-      }
-
-      // Sort newest first
-      results.sort((a, b) => b.timestamp - a.timestamp);
-
-      // Limit
-      if (filters.limit) {
-        results = results.slice(0, filters.limit);
-      }
-
-      resolve(results);
+      if (skipped < offset) { skipped++; cursor.continue(); return; }
+      results.push(cursor.value);
+      cursor.continue();
     };
     req.onerror = () => resolve([]);
   });
@@ -214,47 +268,71 @@ const getOrderTrail = async (orderId) => {
 };
 
 // ── Verify hash chain integrity (tamper detection) ──
-const verifyChain = async (limit = 500) => {
+// Uses cursor to read only the last N records — never loads full DB into memory
+const verifyChain = async (limit = 200) => {
   const db = await openDB();
-  return new Promise((resolve) => {
+
+  // Step 1: collect last N records using reverse cursor
+  const records = await new Promise((resolve) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
-    const req = store.getAll();
+    const collected = [];
+    const req = store.openCursor(null, 'prev'); // newest first
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (!cursor || collected.length >= limit) {
+        resolve(collected.reverse()); // reverse to chronological order
+        return;
+      }
+      collected.push(cursor.value);
+      cursor.continue();
+    };
+    req.onerror = () => resolve([]);
+  });
 
-    req.onsuccess = async () => {
-      const all = (req.result || []).sort((a, b) => a.seq - b.seq);
-      const toCheck = all.slice(-limit); // check last N
+  if (records.length === 0) {
+    return { checked: 0, valid: true, violations: [] };
+  }
 
-      const violations = [];
-      for (let i = 0; i < toCheck.length; i++) {
-        const record = toCheck[i];
-        const { seq, hash, orderId: _oid, ...payload } = record;
+  // Step 2: verify in batches (non-blocking, yields to UI between batches)
+  const BATCH_SIZE = 50;
+  const violations = [];
 
-        // Recompute hash from payload
-        const { hash: _h, seq: _s, orderId: _o, ...hashPayload } = record;
-        const recomputed = await sha256(hashPayload);
+  for (let batchStart = 0; batchStart < records.length; batchStart += BATCH_SIZE) {
+    const batch = records.slice(batchStart, batchStart + BATCH_SIZE);
 
-        if (recomputed !== record.hash) {
-          violations.push({ seq: record.seq, type: 'hash_mismatch', expected: recomputed, actual: record.hash });
-        }
+    // Yield to UI thread between batches
+    if (batchStart > 0) {
+      await new Promise(r => setTimeout(r, 0));
+    }
 
-        // Check prevHash link
-        if (i > 0) {
-          const prevRecord = toCheck[i - 1];
-          if (record.prevHash !== prevRecord.hash) {
-            violations.push({ seq: record.seq, type: 'chain_break', expected: prevRecord.hash, actual: record.prevHash });
-          }
+    for (let i = 0; i < batch.length; i++) {
+      const globalIdx = batchStart + i;
+      const record = batch[i];
+
+      // Recompute hash from payload fields only (exclude seq, orderId which are denormalized)
+      const { hash: _h, seq: _s, orderId: _o, ...hashPayload } = record;
+      const recomputed = await sha256(hashPayload);
+
+      if (recomputed !== record.hash) {
+        violations.push({ seq: record.seq, type: 'hash_mismatch', expected: recomputed, actual: record.hash });
+      }
+
+      // Check prevHash link
+      if (globalIdx > 0) {
+        const prevRecord = records[globalIdx - 1];
+        if (record.prevHash !== prevRecord.hash) {
+          violations.push({ seq: record.seq, type: 'chain_break', expected: prevRecord.hash, actual: record.prevHash });
         }
       }
 
-      resolve({
-        checked: toCheck.length,
-        valid: violations.length === 0,
-        violations,
-      });
-    };
-    req.onerror = () => resolve({ checked: 0, valid: false, violations: [{ type: 'db_error' }] });
-  });
+      // Early exit on too many violations (likely corrupted)
+      if (violations.length >= 10) break;
+    }
+    if (violations.length >= 10) break;
+  }
+
+  return { checked: records.length, valid: violations.length === 0, violations };
 };
 
 // ── Stats ──

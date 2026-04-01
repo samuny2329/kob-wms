@@ -55,26 +55,30 @@ const TxDebugPanel = ({ notifications = [], unreadCount = 0, onVerifyChain }) =>
   const [showNotifications, setShowNotifications] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  // Load TXs
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 50;
+
+  // Load TXs — cursor-based pagination, never loads all
   const loadTxs = useCallback(async () => {
     const filters = {};
     if (filterAction) filters.action = filterAction;
     if (filterOrder) filters.orderId = Number(filterOrder) || undefined;
-    filters.limit = 100;
+    filters.limit = PAGE_SIZE;
+    filters.offset = page * PAGE_SIZE;
     const results = await txRing.query(filters);
     setTxList(results);
     const s = await txRing.getStats();
     setStats(s);
-  }, [filterAction, filterOrder]);
+  }, [filterAction, filterOrder, page]);
 
   useEffect(() => {
     loadTxs();
   }, [loadTxs]);
 
-  // Auto-refresh every 3s
+  // Auto-refresh every 10s (was 3s — reduces IndexedDB reads by 70%)
   useEffect(() => {
     if (!autoRefresh) return;
-    const timer = setInterval(loadTxs, 3000);
+    const timer = setInterval(loadTxs, 10000);
     return () => clearInterval(timer);
   }, [autoRefresh, loadTxs]);
 
@@ -305,9 +309,18 @@ const TxDebugPanel = ({ notifications = [], unreadCount = 0, onVerifyChain }) =>
         )}
       </div>
 
+      {/* Pagination */}
+      {stats && stats.count > PAGE_SIZE && (
+        <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+          <button style={{ ...btnStyle(), opacity: page === 0 ? 0.4 : 1 }} disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>← Newer</button>
+          <span style={{ fontSize: '13px', color: '#495057' }}>Page {page + 1} / {Math.ceil(stats.count / PAGE_SIZE)}</span>
+          <button style={{ ...btnStyle(), opacity: txList.length < PAGE_SIZE ? 0.4 : 1 }} disabled={txList.length < PAGE_SIZE} onClick={() => setPage(p => p + 1)}>Older →</button>
+        </div>
+      )}
+
       {/* Footer Stats */}
       {stats && stats.count > 0 && (
-        <div style={{ marginTop: '16px', padding: '10px 14px', background: '#f8f9fa', borderRadius: '8px', fontSize: '12px', color: '#868e96', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+        <div style={{ marginTop: '12px', padding: '10px 14px', background: '#f8f9fa', borderRadius: '8px', fontSize: '12px', color: '#868e96', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
           <span>Total: {stats.count} TXs</span>
           <span>Ring: {stats.count}/{stats.maxSize}</span>
           <span>Oldest: {formatDate(stats.oldest)}</span>
