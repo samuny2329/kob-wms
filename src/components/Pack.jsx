@@ -208,7 +208,7 @@ const Pack = ({
                                         </div>
                                     </button>
                                     <button
-                                        onClick={() => setShowOverride(true)}
+                                        onClick={() => setShowBoxOverride(true)}
                                         style={{ marginTop: '16px', fontSize: '12px', color: '#6c757d', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                                     >
                                         Change box type
@@ -218,7 +218,7 @@ const Pack = ({
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#212529' }}>Select Box Type</h3>
-                                        <button onClick={() => setShowOverride(false)} style={{ fontSize: '12px', color: '#714B67', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                        <button onClick={() => setShowBoxOverride(false)} style={{ fontSize: '12px', color: '#714B67', background: 'none', border: 'none', cursor: 'pointer' }}>
                                             Back to recommended
                                         </button>
                                     </div>
