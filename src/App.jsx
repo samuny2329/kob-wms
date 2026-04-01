@@ -32,7 +32,7 @@ import WorkerPerformance from './components/WorkerPerformance';
 import SLATracker from './components/SLATracker';
 import CycleCount from './components/CycleCount';
 import ProcedurePanel from './components/ProcedurePanel';
-import TimeAttendance from './components/TimeAttendance';
+import TimeAttendance, { autoClockIn } from './components/TimeAttendance';
 import KPIAssessment from './components/KPIAssessment';
 import GWPManager from './components/GWPManager';
 import ClaudeChat from './components/ClaudeChat';
@@ -366,6 +366,8 @@ const App = () => {
                     setUserRole(foundUser.role);
                     auditLog('login_success', { username, role: foundUser.role }, username);
                     playSound('success');
+                    // Auto clock-in on first login of the day
+                    autoClockIn(foundUser.username, foundUser.name);
                     // Force password change on first login
                     if (foundUser.isFirstLogin) {
                         setShowPasswordChange(true);

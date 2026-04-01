@@ -274,7 +274,7 @@ const HandheldLayout = ({
                             <div className="text-center">
                                 <p className="font-black text-base text-white">CLOCK</p>
                                 <p className="text-[9px]">
-                                    {isClockedIn(user?.username) ? <span className="text-emerald-400">Clocked In</span> : <span className="text-zinc-500">Not Clocked</span>}
+                                    {isClockedIn(user?.username) ? <span className="text-emerald-400">Auto ✓</span> : <span className="text-zinc-500">Auto on login</span>}
                                 </p>
                             </div>
                         </button>
