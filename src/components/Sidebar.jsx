@@ -13,7 +13,8 @@ const avatarColor = (name = '') => {
 };
 
 const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInfo,
-    isDarkMode, setIsDarkMode, handleLogout, sidebarOpen, setSidebarOpen, syncStatus }) => {
+    isDarkMode, setIsDarkMode, handleLogout, sidebarOpen, setSidebarOpen, syncStatus,
+    activeCompany, setActiveCompany }) => {
 
     const allowedTabs = rolesInfo[userRole]?.tabs || [];
 
@@ -151,6 +152,23 @@ const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInf
                         </div>
                     )}
                 </div>
+
+                {/* Company switch */}
+                {setActiveCompany && (
+                    <button
+                        onClick={() => setActiveCompany(activeCompany === 'kob' ? 'btv' : 'kob')}
+                        className={`flex items-center gap-2 py-2 w-full transition-colors ${sidebarOpen ? 'px-3' : 'justify-center px-0'}`}
+                        style={{ color: '#6c757d', fontSize: '12px' }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f8f9fa'; e.currentTarget.style.color = '#212529'; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6c757d'; }}
+                        title={activeCompany === 'kob' ? 'Kiss of Beauty' : 'Beautyville'}
+                    >
+                        <span className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{ backgroundColor: activeCompany === 'kob' ? '#714B67' : '#2563eb' }}>
+                            {activeCompany === 'kob' ? 'K' : 'B'}
+                        </span>
+                        {sidebarOpen && <span>{activeCompany === 'kob' ? 'KOB' : 'BTV'}</span>}
+                    </button>
+                )}
 
                 {/* Dark mode */}
                 <button

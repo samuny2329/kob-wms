@@ -93,15 +93,29 @@ const isMock = (odooConfig) => odooConfig?.useMock === true;
 
 // Use Vite proxy: requests to /wms/* are forwarded to Odoo by the dev server
 // No CORS issues, no credentials needed
-const getOdooBase = (odooConfig) => odooConfig?.url || import.meta.env.VITE_ODOO_URL || '';
+const getOdooBase = (odooConfig) => {
+    const url = odooConfig?.url || import.meta.env.VITE_ODOO_URL || '';
+    // In dev mode, route cross-origin requests through Vite proxy to avoid CORS
+    if (import.meta.env.DEV && url && !url.startsWith('/') && !url.startsWith(window.location.origin)) {
+        return '/odoo-proxy';
+    }
+    return url;
+};
+const isCrossOrigin = (odooConfig) => {
+    const base = getOdooBase(odooConfig);
+    try { return !base.startsWith(window.location.origin) && !base.startsWith('/'); } catch { return true; }
+};
+const getCredentials = (odooConfig) => isCrossOrigin(odooConfig) ? 'omit' : 'include';
 
 export const authenticateOdoo = async (odooConfig) => {
     if (isMock(odooConfig)) return { status: 'success', uid: 1 };
     try {
         // Use Odoo's standard JSONRPC auth endpoint (proxied via Vite /web/session/*)
-        const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/web/session/authenticate`, {
+        const base = getOdooBase(odooConfig);
+        const isSameOrigin = base.startsWith(window.location.origin) || base.startsWith('/');
+        const response = await fetchWithTimeout(`${base}/web/session/authenticate`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
+            headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
                 jsonrpc: '2.0',
@@ -177,19 +191,26 @@ export const fetchPackableOrders = async (odooConfig) => {
     return odooPost(odooConfig, '/wms/orders/picked');
 };
 
-export const fetchAllOrders = async (odooConfig) => {
+export const fetchAllOrders = async (odooConfig, companyId) => {
     if (isMock(odooConfig)) {
         await delay(300);
         return JSON.parse(localStorage.getItem('wms_sales_orders') || '[]');
     }
 
-    // Live: fetch outgoing pickings — active ones + recently done (last 30 days for RTS display)
-    const cutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 10) + ' 00:00:00';
+    // Live: fetch ONLY KOB-WH2 (Online) / BTV-WH2 (Online) Delivery Orders
+    const cutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10) + ' 00:00:00';
+    // Filter: warehouse name contains "(Online)" → matches KOB-WH2 (Online) and BTV-WH2 (Online)
+    const domain = [
+        ['picking_type_id.warehouse_id.name', 'ilike', '(Online)'],
+        ['picking_type_code', '=', 'outgoing'],
+        ['state', 'in', ['assigned', 'confirmed', 'waiting']],
+        ['write_date', '>=', cutoff],
+    ];
+    if (companyId) domain.push(['company_id', '=', companyId]);
     const pickings = await odooCallKw(odooConfig, 'stock.picking', 'search_read',
-        [[['picking_type_code', '=', 'outgoing'], ['state', 'not in', ['cancel']],
-          ['write_date', '>=', cutoff]]],
+        [domain],
         { fields: ['id', 'name', 'partner_id', 'state', 'move_ids', 'origin', 'note',
-                   'scheduled_date', 'sale_id'], order: 'id asc', limit: 500 }
+                   'scheduled_date', 'sale_id', 'company_id'], order: 'id desc', limit: 2000 }
     );
     if (!pickings || pickings.length === 0) return [];
 
@@ -217,7 +238,7 @@ export const fetchAllOrders = async (odooConfig) => {
     const pickingIds = pickings.map(p => p.id);
     const moves = await odooCallKw(odooConfig, 'stock.move', 'search_read',
         [[['picking_id', 'in', pickingIds], ['state', 'not in', ['cancel']]]],
-        { fields: ['id', 'picking_id', 'product_id', 'product_uom_qty', 'quantity'] }
+        { fields: ['id', 'picking_id', 'product_id', 'product_uom_qty', 'quantity', 'location_id', 'location_dest_id'] }
     );
 
     // Fetch product details (sku/barcode/name)
@@ -225,10 +246,14 @@ export const fetchAllOrders = async (odooConfig) => {
     let productMap = {};
     if (productIds.length > 0) {
         const products = await odooCallKw(odooConfig, 'product.product', 'read',
-            [productIds], { fields: ['id', 'name', 'default_code', 'barcode'] }
+            [productIds], { fields: ['id', 'name', 'default_code', 'barcode', 'image_128', 'weight'] }
         );
         for (const p of products) {
-            productMap[p.id] = { name: p.name, sku: p.default_code || '', barcode: p.barcode || '' };
+            productMap[p.id] = {
+                name: p.name, sku: p.default_code || '', barcode: p.barcode || '',
+                image: p.image_128 ? `data:image/png;base64,${p.image_128}` : null,
+                weight: p.weight || 0,
+            };
         }
     }
 
@@ -282,15 +307,22 @@ export const fetchAllOrders = async (odooConfig) => {
             odooOrigin: p.origin || '',
             scheduledDate: p.scheduled_date ? p.scheduled_date.split(' ')[0] : null,
             createdAt,
-            items: pMoves.map(m => ({
-                sku: productMap[m.product_id[0]]?.sku || m.product_id[1],
-                name: productMap[m.product_id[0]]?.name || m.product_id[1],
-                barcode: productMap[m.product_id[0]]?.barcode || '',
-                expected: m.product_uom_qty,
-                picked: 0,
-                packed: 0,
-                moveId: m.id,
-            })),
+            items: pMoves.map(m => {
+                const prod = productMap[m.product_id[0]] || {};
+                return {
+                    sku: prod.sku || m.product_id[1],
+                    name: prod.name || m.product_id[1],
+                    barcode: prod.barcode || '',
+                    image: prod.image || null,
+                    weight: prod.weight || 0,
+                    expected: m.product_uom_qty,
+                    picked: 0,
+                    packed: 0,
+                    moveId: m.id,
+                    location: m.location_id ? m.location_id[1] : '',
+                    locationDest: m.location_dest_id ? m.location_dest_id[1] : '',
+                };
+            }),
         };
     });
 };
@@ -425,43 +457,7 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
         throw new Error(`Stock deduction failed: ${pickingCheck[0]?.name} — ${reason}`);
     }
 
-    // 3. Find sale order linked to this picking, then create + post invoice
-    let invoiceId = null;
-    try {
-        const pickingData = await odooCallKw(odooConfig, 'stock.picking', 'read',
-            [[pickingId]], { fields: ['origin', 'sale_id'] }
-        );
-        const pd = pickingData[0];
-        let saleOrderId = pd?.sale_id?.[0];
-
-        if (!saleOrderId && pd?.origin) {
-            const soSearch = await odooCallKw(odooConfig, 'sale.order', 'search_read',
-                [[['name', '=', pd.origin]]],
-                { fields: ['id'], limit: 1 }
-            );
-            saleOrderId = soSearch[0]?.id;
-        }
-
-        if (saleOrderId) {
-            // Create invoice via sale.advance.payment.inv wizard
-            const wizardId = await odooCallKw(odooConfig, 'sale.advance.payment.inv', 'create',
-                [{ advance_payment_method: 'delivered', sale_order_ids: [[6, 0, [saleOrderId]]] }]
-            );
-            await odooCallKw(odooConfig, 'sale.advance.payment.inv', 'create_invoices', [[wizardId]]);
-
-            // Find the created draft invoice and post it
-            const invoices = await odooCallKw(odooConfig, 'account.move', 'search_read',
-                [[['invoice_origin', 'ilike', pd.origin || ''], ['state', '=', 'draft'], ['move_type', '=', 'out_invoice']]],
-                { fields: ['id'], limit: 1, order: 'id desc' }
-            );
-            if (invoices.length > 0) {
-                invoiceId = invoices[0].id;
-                await odooCallKw(odooConfig, 'account.move', 'action_post', [[invoiceId]]);
-            }
-        }
-    } catch (invoiceErr) {
-        console.warn('Auto-invoice failed (picking already validated):', invoiceErr.message);
-    }
+    // Invoice is NOT created here — it's created separately when AWB is scanned (outbound scan)
 
     // Generate AWB tracking number
     const platformPrefixes = {
@@ -488,17 +484,39 @@ export const PICKFACE_LOCATION_NAME = 'PICKFACE';
 const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => {
     const url = `${getOdooBase(odooConfig)}/web/dataset/call_kw`;
     if (!_sessionAuthenticated) await authenticateOdoo(odooConfig);
-    const response = await fetchWithTimeout(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-            jsonrpc: '2.0', method: 'call', id: Date.now(),
-            params: { model, method, args, kwargs }
-        })
-    });
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.data?.message || data.error.message || 'Odoo Error');
+    const doCall = async () => {
+        const response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                jsonrpc: '2.0', method: 'call', id: Date.now(),
+                params: { model, method, args, kwargs }
+            })
+        });
+        return response;
+    };
+    let response = await doCall();
+    let data;
+    try { data = await response.json(); } catch {
+        // Got HTML instead of JSON — session expired, re-auth and retry
+        _sessionAuthenticated = false;
+        await authenticateOdoo(odooConfig);
+        response = await doCall();
+        data = await response.json();
+    }
+    if (data.error) {
+        // Session error — retry once
+        if (data.error.message?.includes('Session') || data.error.data?.name?.includes('SessionExpired')) {
+            _sessionAuthenticated = false;
+            await authenticateOdoo(odooConfig);
+            response = await doCall();
+            data = await response.json();
+            if (data.error) throw new Error(data.error.data?.message || data.error.message || 'Odoo Error');
+        } else {
+            throw new Error(data.error.data?.message || data.error.message || 'Odoo Error');
+        }
+    }
     return data.result;
 };
 
@@ -661,7 +679,7 @@ export const createTestSalesOrders = async (odooConfig, count = 5) => {
 
 // ============ INVENTORY ============
 
-export const fetchInventory = async (odooConfig) => {
+export const fetchInventory = async (odooConfig, companyId) => {
     if (isMock(odooConfig)) {
         await delay(250);
         const stored = JSON.parse(localStorage.getItem('wms_inventory') || 'null');
@@ -682,6 +700,7 @@ export const fetchInventory = async (odooConfig) => {
         const conds = allowedLoc.map(kw => ['location_id.complete_name', 'ilike', kw]);
         locDomain = [...ors, ...conds, ['location_id.usage', '=', 'internal']];
     }
+    if (companyId) locDomain.push(['company_id', '=', companyId]);
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
         [locDomain],
         { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'] }
@@ -840,23 +859,92 @@ export const closeWave = async (odooConfig, waveId) => {
     return odooPost(odooConfig, '/wms/waves/close', { wave_id: waveId });
 };
 
+// ============ AUTO-INVOICE (called after AWB scan) ============
+
+export const createInvoiceFromPicking = async (odooConfig, pickingRef) => {
+    if (isMock(odooConfig)) {
+        await delay(300);
+        return { status: 'success', invoiceId: null };
+    }
+
+    // Resolve picking
+    let pickingId = Number(pickingRef);
+    if (!pickingId || pickingId < 10) {
+        const found = await odooCallKw(odooConfig, 'stock.picking', 'search_read',
+            [[['name', '=', String(pickingRef)]]],
+            { fields: ['id'], limit: 1 }
+        ).catch(() => []);
+        pickingId = found[0]?.id;
+    }
+    if (!pickingId) throw new Error('Picking not found: ' + pickingRef);
+
+    // Find linked sale order
+    const pickingData = await odooCallKw(odooConfig, 'stock.picking', 'read',
+        [[pickingId]], { fields: ['origin', 'sale_id', 'state'] }
+    );
+    const pd = pickingData[0];
+
+    let saleOrderId = pd?.sale_id?.[0];
+    if (!saleOrderId && pd?.origin) {
+        const soSearch = await odooCallKw(odooConfig, 'sale.order', 'search_read',
+            [[['name', '=', pd.origin]]], { fields: ['id'], limit: 1 }
+        );
+        saleOrderId = soSearch[0]?.id;
+    }
+
+    if (!saleOrderId) {
+        return { status: 'warning', message: 'No sale order linked to picking' };
+    }
+
+    // Create invoice via wizard
+    const wizardId = await odooCallKw(odooConfig, 'sale.advance.payment.inv', 'create',
+        [{ advance_payment_method: 'delivered', sale_order_ids: [[6, 0, [saleOrderId]]] }]
+    );
+    await odooCallKw(odooConfig, 'sale.advance.payment.inv', 'create_invoices', [[wizardId]]);
+
+    // Find and post the created draft invoice
+    const invoices = await odooCallKw(odooConfig, 'account.move', 'search_read',
+        [[['invoice_origin', 'ilike', pd.origin || ''], ['state', '=', 'draft'], ['move_type', '=', 'out_invoice']]],
+        { fields: ['id', 'name'], limit: 1, order: 'id desc' }
+    );
+
+    let invoiceId = null;
+    let invoiceName = '';
+    if (invoices.length > 0) {
+        invoiceId = invoices[0].id;
+        invoiceName = invoices[0].name;
+        await odooCallKw(odooConfig, 'account.move', 'action_post', [[invoiceId]]);
+    }
+
+    return { status: 'success', invoiceId, invoiceName, saleOrderId };
+};
+
 // ============ INVOICES ============
 
-export const fetchInvoices = async (odooConfig) => {
+export const fetchInvoices = async (odooConfig, companyId) => {
     if (isMock(odooConfig)) {
         await delay(250);
         return JSON.parse(localStorage.getItem('wms_invoices') || '[]');
     }
 
-    // Live: fetch from Odoo account.move (customer invoices only)
+    // Live: fetch E-commerce invoices for selected company
+    const invCutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const invDomain = [
+        ['move_type', '=', 'out_invoice'],
+        ['state', 'not in', ['cancel']],
+        ['invoice_origin', '!=', false],
+        ['partner_id.name', 'ilike', 'ECOMMERCE'],
+        ['invoice_date', '>=', invCutoff],
+    ];
+    if (companyId) invDomain.push(['company_id', '=', companyId]);
     const moves = await odooCallKw(odooConfig, 'account.move', 'search_read',
-        [[['move_type', '=', 'out_invoice'], ['state', 'not in', ['cancel']]]],
+        [invDomain],
         {
             fields: ['id', 'name', 'partner_id', 'invoice_date', 'invoice_date_due',
                      'state', 'payment_state', 'amount_untaxed', 'amount_tax',
-                     'amount_total', 'invoice_origin', 'invoice_line_ids'],
+                     'amount_total', 'invoice_origin', 'invoice_line_ids', 'company_id'],
             order: 'id desc',
-            limit: 200,
+            limit: 500,
         }
     );
     if (!moves || moves.length === 0) return [];
@@ -982,36 +1070,11 @@ export const testConnection = async (odooConfig) => {
         return { status: 'success', version: 'Odoo 18.0 (Not Connected)', database: odooConfig.db || 'No database configured' };
     }
     try {
-        // All requests go through Vite proxy → no CORS issues
-        const response = await fetchWithTimeout(`${getOdooBase(odooConfig)}/wms/connection/test`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-        });
-        const data = await response.json();
-        if (data.result) {
-            try {
-                await authenticateOdoo(odooConfig);
-                return { ...data.result, authenticated: true };
-            } catch {
-                return { ...data.result, authenticated: false, authError: 'Could not authenticate - check credentials' };
-            }
-        }
-        return { status: 'error', message: 'Unexpected response' };
+        // Authenticate directly — this is the most reliable test
+        const auth = await authenticateOdoo(odooConfig);
+        return { status: 'success', version: 'Odoo 18', database: odooConfig.db, authenticated: true, uid: auth.uid, message: `Connected as ${auth.username || 'admin'} (UID: ${auth.uid})` };
     } catch (err) {
-        // Fallback: standard Odoo session info (also proxied)
-        try {
-            const response = await fetchWithTimeout(`/web/session/get_session_info`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ jsonrpc: '2.0', params: {} })
-            });
-            const data = await response.json();
-            return { status: 'success', version: data.result?.server_version || 'Odoo', database: data.result?.db || odooConfig.db };
-        } catch (fallbackErr) {
-            return { status: 'error', message: `Cannot reach Odoo: ${err.message}` };
-        }
+        return { status: 'error', message: `Cannot reach Odoo: ${err.message}` };
     }
 };
 
@@ -1022,13 +1085,16 @@ export const fetchProducts = async (odooConfig) => {
     try {
         const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
             [[['active', '=', true], ['default_code', '!=', false]]],
-            { fields: ['id', 'name', 'default_code', 'barcode'], limit: 500 }
+            { fields: ['id', 'name', 'default_code', 'barcode', 'image_128', 'lst_price', 'weight'], limit: 500 }
         );
         return products.map(p => ({
             id: p.id,
             sku: p.default_code || '',
             name: p.name,
             barcode: p.barcode || '',
+            image: p.image_128 ? `data:image/png;base64,${p.image_128}` : null,
+            price: p.lst_price || 0,
+            weight: p.weight || 0,
         }));
     } catch {
         return null;

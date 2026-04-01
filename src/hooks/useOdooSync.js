@@ -3,7 +3,7 @@ import { fetchAllOrders, fetchInventory, fetchWaves, fetchInvoices, fetchProduct
 
 const POLL_INTERVAL = 10000; // 10 seconds
 
-const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast }) => {
+const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId }) => {
     const [isOnline, setIsOnline] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState(null);
@@ -28,10 +28,10 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
         try {
             // Fetch all data in parallel (products only on first sync)
             const [ordersData, inventoryData, wavesData, invoicesData, productsData] = await Promise.all([
-                fetchAllOrders(odooConfig).catch(() => null),
-                fetchInventory(odooConfig).catch(() => null),
+                fetchAllOrders(odooConfig, companyId).catch(() => null),
+                fetchInventory(odooConfig, companyId).catch(() => null),
                 fetchWaves(odooConfig).catch(() => null),
-                fetchInvoices(odooConfig).catch(() => null),
+                fetchInvoices(odooConfig, companyId).catch(() => null),
                 isFirstSync.current ? fetchProducts(odooConfig).catch(() => null) : Promise.resolve(null),
             ]);
 
@@ -122,7 +122,7 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
             syncingRef.current = false;
             setIsSyncing(false);
         }
-    }, [odooConfig, setSalesOrders, setInventory, setWaves, setInvoices, addToast]);
+    }, [odooConfig, companyId, setSalesOrders, setInventory, setWaves, setInvoices, addToast]);
 
     // Initial sync on mount
     const initialSyncDone = useRef(false);
@@ -132,6 +132,15 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
             syncNow(true);
         }
     }, [syncNow]);
+
+    // Re-sync when company changes
+    const prevCompanyRef = useRef(companyId);
+    useEffect(() => {
+        if (prevCompanyRef.current !== companyId) {
+            prevCompanyRef.current = companyId;
+            syncNow(false); // visible sync when switching company
+        }
+    }, [companyId, syncNow]);
 
     // Polling interval
     useEffect(() => {

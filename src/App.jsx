@@ -43,7 +43,7 @@ import ActivityHistory from './components/ActivityHistory';
 // Hooks & Services
 import useOdooSync from './hooks/useOdooSync';
 import { secureSet } from './utils/crypto';
-import { confirmRTS, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
+import { confirmRTS, createInvoiceFromPicking, syncAllPlatforms as apiSyncAllPlatforms, createSalesOrder } from './services/odooApi';
 import { hashPassword, verifyPassword, createSession, getSession, refreshSession, destroySession, isSessionExpiringSoon, getSessionTimeRemaining, isAccountLocked, recordLoginAttempt, auditLog, validateFileUpload, validatePasswordStrength } from './utils/security';
 import { addActivity } from './utils/activityDB';
 
@@ -78,7 +78,7 @@ const App = () => {
     const [activityLogs, setActivityLogs] = useState(() => safeParse('wms_logs', []));
     const [apiConfigs, setApiConfigs] = useState(() => {
         const stored = safeParse('wms_apis', {});
-        const odooDefaults = { enabled: false, url: 'http://localhost:8070', db: 'odoo18', username: 'admin', password: '' };
+        const odooDefaults = { enabled: true, useMock: false, url: 'https://odoo-uat.kissgroupbim.work', db: 'kiss-production_2026-03-09', username: 'admin', password: 'admin' };
         return {
             odoo: { ...odooDefaults, ...stored.odoo, url: stored.odoo?.url || odooDefaults.url, db: stored.odoo?.db || odooDefaults.db, username: stored.odoo?.username || odooDefaults.username },
             shopee: stored.shopee || { enabled: false, shopId: '', partnerId: '', partnerKey: '' },
@@ -163,13 +163,28 @@ const App = () => {
     useEffect(() => { localStorage.setItem('activeTab', activeTab); }, [activeTab]);
     useEffect(() => { localStorage.setItem('wms_active_company', activeCompany); }, [activeCompany]);
     useEffect(() => { localStorage.setItem('wms_orders', JSON.stringify(orderData)); }, [orderData]);
-    useEffect(() => { localStorage.setItem('wms_sales_orders', JSON.stringify(salesOrders)); }, [salesOrders]);
+    useEffect(() => {
+        try {
+            // Strip images before saving to localStorage to avoid QuotaExceededError
+            const stripped = salesOrders.map(o => ({
+                ...o,
+                items: o.items?.map(({ image, ...rest }) => rest) || [],
+            }));
+            localStorage.setItem('wms_sales_orders', JSON.stringify(stripped.slice(0, 500)));
+        } catch (e) {
+            console.warn('localStorage quota exceeded, clearing old data');
+            localStorage.removeItem('wms_sales_orders');
+        }
+    }, [salesOrders]);
     useEffect(() => { localStorage.setItem('wms_users', JSON.stringify(users)); }, [users]);
     useEffect(() => { localStorage.setItem('wms_history', JSON.stringify(historyData)); }, [historyData]);
     useEffect(() => { localStorage.setItem('wms_logs', JSON.stringify(activityLogs)); }, [activityLogs]);
     useEffect(() => { secureSet('wms_apis', apiConfigs); }, [apiConfigs]);
     useEffect(() => { localStorage.setItem('wms_box_usage', JSON.stringify(boxUsageLog)); }, [boxUsageLog]);
-    useEffect(() => { if (inventory) localStorage.setItem('wms_inventory', JSON.stringify(inventory)); }, [inventory]);
+    useEffect(() => {
+        try { if (inventory) localStorage.setItem('wms_inventory', JSON.stringify(inventory)); }
+        catch { localStorage.removeItem('wms_inventory'); }
+    }, [inventory]);
     useEffect(() => { localStorage.setItem('wms_waves', JSON.stringify(waves)); }, [waves]);
     useEffect(() => { localStorage.setItem('wms_invoices', JSON.stringify(invoices)); }, [invoices]);
 
@@ -244,7 +259,8 @@ const App = () => {
     };
 
     // Odoo Sync Hook
-    const syncStatus = useOdooSync({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast });
+    const companyId = COMPANIES[activeCompany]?.id || 1;
+    const syncStatus = useOdooSync({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId });
 
     // HTML escape to prevent XSS in print windows
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -505,6 +521,16 @@ const App = () => {
                 return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch) && i.picked < i.expected;
             });
             if (item) {
+                // Check stock — use onHand (not available = onHand - reserved, because reserved includes all pending picks)
+                const invItems = Array.isArray(inventory) ? inventory : (inventory?.items || []);
+                const stockItem = invItems.find(inv => (inv.sku || inv.default_code) === item.sku);
+                const onHand = stockItem?.onHand ?? stockItem?.quantity ?? 0;
+                if (onHand <= 0 && invItems.length > 0) {
+                    playSound('error');
+                    addToast(`Out of Stock: ${item.sku} — on hand: ${onHand}`, 'error');
+                    setPickScanInput('');
+                    return;
+                }
                 item.picked++;
                 const isFinished = items.every(i => i.picked >= i.expected);
                 const updatedOrder = { ...selectedPickOrder, items, status: isFinished ? 'picked' : 'picking' };
@@ -610,7 +636,7 @@ const App = () => {
         if (!win) { addToast('Popup blocked by browser', 'error'); return; }
         win.document.write(`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>AWB-${esc(awbCode)}</title>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" integrity="sha256-mMXrFxRHV5dn8UjLJCHr28yBH+RrKGgpcqKl1YpJOE0=" crossorigin="anonymous"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
 <style>
   @page{size:100mm 150mm;margin:0}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -725,7 +751,9 @@ window.onload=function(){
             const newOutbound = { barcode: awbCode, courier: order.courier || order.platform, expectedQty: 1, scannedQty: 0, orderNumber: order.ref, shopName: order.platform };
             updateAndSyncData([...orderData, newOutbound]);
         } catch (err) {
-            // Odoo can't find the picking (local/mock order) — generate AWB locally
+            // Odoo validate failed — generate AWB locally but warn user
+            addToast(`Odoo: ${err.message} — AWB generated locally`, 'warning');
+            console.warn('confirmRTS failed:', err);
             const platformPrefixes = { 'Shopee Express': 'SPXTH', 'Lazada Express': 'LZTH', 'Flash Express': 'FLTH', 'Kerry Express': 'KETH', 'J&T Express': 'JTTH', 'Thai Post': 'TPTH', 'TikTok Shop': 'TTTH' };
             const prefix = platformPrefixes[order.courier || order.platform] || 'TH';
             const awbCode = prefix + Math.floor(Math.random() * 88888888 + 10000000);
@@ -825,6 +853,21 @@ window.onload=function(){
         setLastScans(prev => [{ barcode, status: 'OK', time: new Date().toLocaleTimeString() }, ...prev].slice(0, 5));
         playSound('success');
         logActivity('scan', { barcode });
+
+        // Auto create + post invoice after AWB scan
+        const scannedOrder = salesOrders.find(o => o.awb?.toUpperCase() === barcode);
+        if (scannedOrder && apiConfigs?.odoo?.enabled && !apiConfigs?.odoo?.useMock) {
+            const pickingRef = scannedOrder.odooPickingId || scannedOrder.ref;
+            createInvoiceFromPicking(apiConfigs.odoo, pickingRef)
+                .then(result => {
+                    if (result.status === 'success' && result.invoiceName) {
+                        addToast(`Invoice ${result.invoiceName} created & posted`, 'success');
+                    }
+                })
+                .catch(err => {
+                    console.warn('Auto-invoice after scan failed:', err.message);
+                });
+        }
     };
 
     // Dispatch & Signature
@@ -1049,7 +1092,7 @@ window.onload=function(){
 
     return (
         <div className="flex h-screen font-sans" style={{ backgroundColor: '#f8f9fa', color: '#212529' }}>
-            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} />
+            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} activeCompany={activeCompany} setActiveCompany={setActiveCompany} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 {/* Odoo 18 Top Navbar — white bg, 46px, matches kissgroupdatacenter.com style */}
