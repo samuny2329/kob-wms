@@ -77,8 +77,14 @@ export async function verifyPassword(password, storedHash) {
 
 // ── Session Management ──
 const SESSION_KEY = 'wms_session';
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
-const SESSION_WARNING_MS = 25 * 60 * 1000; // Warning at 25 minutes
+// Session lasts until end of day (auto-login same day, re-login next day)
+const getEndOfDay = () => {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  return d.getTime();
+};
+const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // fallback 24h
+const SESSION_WARNING_MS = 23 * 60 * 60 * 1000; // warning near end
 
 export function createSession(user) {
   // Store session WITHOUT password
@@ -87,7 +93,7 @@ export function createSession(user) {
     user: safeUser,
     createdAt: Date.now(),
     lastActivity: Date.now(),
-    expiresAt: Date.now() + SESSION_TIMEOUT_MS,
+    expiresAt: getEndOfDay(), // session expires at midnight
   };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
@@ -113,7 +119,7 @@ export function refreshSession() {
   const session = getSession();
   if (!session) return null;
   session.lastActivity = Date.now();
-  session.expiresAt = Date.now() + SESSION_TIMEOUT_MS;
+  session.expiresAt = getEndOfDay();
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
 }

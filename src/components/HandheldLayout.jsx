@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift, Truck, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift, Truck, CheckCircle2, AlertTriangle, Activity, Zap, Award } from 'lucide-react';
 import Pick from './Pick';
 import HandheldPack from './HandheldPack';
 import CycleCount from './CycleCount';
@@ -280,7 +280,55 @@ const HandheldLayout = ({
                         </button>
                     </div>
 
-                    {/* Stats */}
+                    {/* My Performance */}
+                    {(() => {
+                        const today = new Date().toISOString().split('T')[0];
+                        const myLogs = (activityLogs || []).filter(l => l.username === user?.username && new Date(l.timestamp).toISOString().split('T')[0] === today);
+                        const pick = myLogs.filter(l => l.action === 'pick').length;
+                        const pack = myLogs.filter(l => ['pack','box-handheld','box-pos'].includes(l.action)).length;
+                        const scan = myLogs.filter(l => l.action === 'scan').length;
+                        const total = pick + pack + scan;
+                        const first = myLogs.length ? Math.min(...myLogs.map(l => l.timestamp)) : null;
+                        const last = myLogs.length ? Math.max(...myLogs.map(l => l.timestamp)) : null;
+                        let hrs = first && last ? (last - first) / 3600000 : 0;
+                        if (hrs < 0.016) hrs = 0.016;
+                        const myUph = total > 0 ? Math.round(total / hrs) : 0;
+                        const target = 50;
+                        return (
+                        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Activity className="w-4 h-4 text-[#714B67]" />
+                                <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">My Performance</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2 text-center">
+                                <div>
+                                    <p className={`text-2xl font-black ${myUph >= target ? 'text-emerald-400' : myUph > 0 ? 'text-amber-400' : 'text-zinc-600'}`}>{myUph}</p>
+                                    <p className="text-[8px] text-zinc-500 uppercase">UPH</p>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black text-white">{total}</p>
+                                    <p className="text-[8px] text-zinc-500 uppercase">Done</p>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black text-[#714B67]">{pick}</p>
+                                    <p className="text-[8px] text-zinc-500 uppercase">Pick</p>
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black text-[#00A09D]">{pack}</p>
+                                    <p className="text-[8px] text-zinc-500 uppercase">Pack</p>
+                                </div>
+                            </div>
+                            {total === 0 && (
+                                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-800">
+                                    <Zap className="w-3.5 h-3.5 text-zinc-600" />
+                                    <p className="text-[10px] text-zinc-600">Start your first task!</p>
+                                </div>
+                            )}
+                        </div>
+                        );
+                    })()}
+
+                    {/* Order Stats */}
                     <div className="grid grid-cols-3 gap-2">
                         {[
                             { label: 'Pending', val: salesOrders.filter(o => o.status === 'pending').length, color: 'text-amber-400' },
