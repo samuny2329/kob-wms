@@ -1106,7 +1106,11 @@ window.onload=function(){
 
     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isHandheld = isMobileDevice || (window.innerWidth < 768 && 'ontouchstart' in window);
-    if (isHandheld) return <HandheldLayout user={user} handleLogout={handleLogout} salesOrders={salesOrders} setSalesOrders={setSalesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} inventory={inventory} printAwbLabel={printAwbLabel} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} syncStatus={syncStatus} syncNow={syncStatus.syncNow} activityLogs={activityLogs} />;
+    // Handheld: send max 200 active orders (strip images) + total count for display
+    const activeOrders = salesOrders.filter(o => ['pending','picking','picked','packing','packed'].includes(o.status));
+    const handheldOrders = activeOrders.slice(0, 200).map(o => ({ ...o, items: o.items?.map(({ image, ...rest }) => rest) }));
+    const handheldTotalCount = activeOrders.length;
+    if (isHandheld) return <HandheldLayout user={user} handleLogout={handleLogout} salesOrders={handheldOrders} setSalesOrders={setSalesOrders} totalOrderCount={handheldTotalCount} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} inventory={inventory} printAwbLabel={printAwbLabel} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} syncStatus={syncStatus} syncNow={syncStatus.syncNow} activityLogs={activityLogs} />;
 
     return (
         <div className="flex h-screen font-sans" style={{ backgroundColor: '#f8f9fa', color: '#212529' }}>

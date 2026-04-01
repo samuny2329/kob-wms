@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchAllOrders, fetchInventory, fetchWaves, fetchInvoices, fetchProducts } from '../services/odooApi';
 
-const POLL_INTERVAL = 10000;
+// Handheld devices get slower poll to reduce lag
+const IS_MOBILE = /Android|iPhone|iPad/i.test(navigator.userAgent) || (window.innerWidth < 768);
+const POLL_INTERVAL = IS_MOBILE ? 30000 : 10000; // 30s mobile, 10s desktop
 
 const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setInventory, waves, setWaves, invoices, setInvoices, addToast, companyId, companyIds }) => {
     const [isOnline, setIsOnline] = useState(true);
