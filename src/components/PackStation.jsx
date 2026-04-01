@@ -125,7 +125,7 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
                 <div className="flex items-center gap-2">
                     <ClipboardList className="w-5 h-5" style={{ color: '#714B67' }} />
                     <h2 className="text-sm font-bold" style={{ color: '#212529' }}>Pack Station</h2>
-                    {isShiftOpen && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Shift Open</span>}
+                    {todayCount && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Counted</span>}
                 </div>
                 <div className="flex items-center gap-2">
                     {/* Tabs */}
