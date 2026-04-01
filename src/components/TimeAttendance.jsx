@@ -46,6 +46,54 @@ export const isClockedIn = (username) => {
     return status?.clockedIn === true;
 };
 
+// Auto clock-in: call on first login of the day
+export const autoClockIn = (username, name) => {
+    if (!username) return;
+    const today = _localToday();
+    const status = getClockStatus(username);
+    if (status?.clockedIn && status?.date === today) return; // already clocked in today
+    const time = new Date().toISOString();
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    // Update clock status
+    const allStatus = safeParse(LS_CLOCK, {});
+    allStatus[username] = { clockedIn: true, date: today, clockInTime: time, clockInStr: timeStr };
+    localStorage.setItem(LS_CLOCK, JSON.stringify(allStatus));
+    // Save attendance record
+    const attendance = safeParse(LS_ATTENDANCE, []);
+    const filtered = attendance.filter(a => !(a.username === username && a.date === today));
+    const [sh, sm] = '08:00'.split(':').map(Number);
+    const shiftStart = new Date(); shiftStart.setHours(sh, sm, 0, 0);
+    const isLate = new Date() > shiftStart;
+    const lateMinutes = isLate ? Math.round((Date.now() - shiftStart.getTime()) / 60000) : 0;
+    filtered.unshift({ username, name: name || username, date: today, clockIn: time, clockInStr: timeStr, clockOut: null, status: isLate ? 'late' : 'present', lateMinutes, hoursWorked: 0, shift: 'morning' });
+    localStorage.setItem(LS_ATTENDANCE, JSON.stringify(filtered));
+};
+
+// Auto clock-out: call on end-of-day actions
+export const autoClockOut = (username) => {
+    if (!username) return;
+    const today = _localToday();
+    const status = getClockStatus(username);
+    if (!status?.clockedIn || status?.date !== today) return; // not clocked in
+    const time = new Date().toISOString();
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    // Update clock status
+    const allStatus = safeParse(LS_CLOCK, {});
+    allStatus[username] = { ...allStatus[username], clockedIn: false, clockOutTime: time, clockOutStr: timeStr };
+    localStorage.setItem(LS_CLOCK, JSON.stringify(allStatus));
+    // Update attendance record
+    const attendance = safeParse(LS_ATTENDANCE, []);
+    const updated = attendance.map(a => {
+        if (a.username === username && a.date === today && !a.clockOut) {
+            const clockIn = new Date(a.clockIn);
+            const hoursWorked = Math.round((Date.now() - clockIn.getTime()) / 3600000 * 10) / 10;
+            return { ...a, clockOut: time, clockOutStr: timeStr, hoursWorked };
+        }
+        return a;
+    });
+    localStorage.setItem(LS_ATTENDANCE, JSON.stringify(updated));
+};
+
 const _localToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
 export const getTodayAttendance = () => {
@@ -307,24 +355,18 @@ const TimeAttendance = ({ users = [], user, userRole: userRoleProp, addToast }) 
                     <p className="text-sm text-gray-500 dark:text-gray-400">Clock in/out, shifts, and attendance tracking</p>
                 </div>
 
-                {/* Clock In/Out button */}
+                {/* Clock status (auto clock-in on login, auto clock-out on end-of-day) */}
                 <div className="flex items-center gap-3">
                     {amIClockedIn ? (
-                        <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                Clocked In ({myClockStatus?.clockInStr})
-                            </span>
-                            <button onClick={handleClockOut}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">
-                                <LogOut className="w-4 h-4" /> Clock Out
-                            </button>
-                        </div>
+                        <span className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            Clocked In ({myClockStatus?.clockInStr}) — auto
+                        </span>
                     ) : (
-                        <button onClick={handleClockIn}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors">
-                            <LogIn className="w-4 h-4" /> Clock In
-                        </button>
+                        <span className="flex items-center gap-1.5 text-sm text-gray-400">
+                            <span className="w-2 h-2 rounded-full bg-gray-400" />
+                            Not clocked in (auto on login)
+                        </span>
                     )}
                 </div>
             </div>

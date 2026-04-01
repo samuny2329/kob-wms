@@ -84,6 +84,7 @@ const Pack = ({
                         )}
                     </div>
                 </div>
+                <PackStation isOpen={showStation} onClose={() => setShowStation(false)} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} user={user} />
             </div>
         );
     }

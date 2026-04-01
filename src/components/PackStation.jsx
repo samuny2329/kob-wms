@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { X, ClipboardList, Package, Printer, AlertTriangle, CheckCircle2, ArrowRight, RotateCcw, TrendingDown } from 'lucide-react';
 import { BOX_TYPES, PACKING_MATERIALS, PACKING_SPEC } from '../constants';
+import { autoClockOut } from './TimeAttendance';
 
 const ALL_ITEMS = [...BOX_TYPES.map(b => ({ ...b, category: 'box' })), ...PACKING_MATERIALS];
 
 export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToast, logActivity, user }) {
     const [tab, setTab] = useState('count'); // 'count' | 'requisition' | 'history'
     const [counts, setCounts] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('wms_station_counts') || '[]'); } catch { return []; }
+        try { return JSON.parse(localStorage.getItem('wms_station_counts') || '[]'); } catch (e) { return []; }
     });
     const [reqItems, setReqItems] = useState({});
     const [countInputs, setCountInputs] = useState({});
@@ -58,8 +59,10 @@ export default function PackStation({ isOpen, onClose, boxUsageLog = [], addToas
         saveCounts([newCount, ...counts.filter(c => c.date !== today)]);
         setCountInputs({});
         setShowCountForm(false);
-        addToast?.('End-of-day count saved', 'success');
+        addToast?.('End-of-day count saved — clocked out', 'success');
         logActivity?.('station-count', { date: today, items: Object.entries(remaining).filter(([,v]) => v > 0).length });
+        // Auto clock-out on end-of-day count
+        autoClockOut(user?.username);
     };
 
     const handleRequisition = () => {
