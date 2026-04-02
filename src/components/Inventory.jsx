@@ -175,7 +175,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
             r.sku.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) ||
             r.shortName.toLowerCase().includes(q) || r.lotNumber.toLowerCase().includes(q) ||
             r.location.toLowerCase().includes(q));
-        if (warehouseFilter !== 'All') rows = rows.filter(r => (r.location || '').startsWith(warehouseFilter));
+        if (warehouseFilter !== 'All') rows = rows.filter(r => (r.location || '').includes(warehouseFilter));
         if (categoryFilter  !== 'All') rows = rows.filter(r => r.category === categoryFilter);
         if (activeFilters.includes('low_stock')) rows = rows.filter(r => r.available <= r.reorderPoint);
         if (activeFilters.includes('negative'))  rows = rows.filter(r => r.onHand < 0);
