@@ -1413,9 +1413,9 @@ export const fetchFullInventory = async (odooConfig) => {
         await delay(300);
         return [];
     }
-    // Live: fetch ALL stock.quant without location whitelist
+    // Live: fetch ALL stock.quant — restricted to KOB (1) + BTV (2), Online warehouse only
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
-        [[['location_id.usage', '=', 'internal']]],
+        [[['location_id.usage', '=', 'internal'], ['company_id', 'in', [1, 2]], ['location_id.warehouse_id.name', 'ilike', '(Online)']]],
         { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'], limit: 5000 }
     );
     // Group by product + location (preserve per-location rows)
