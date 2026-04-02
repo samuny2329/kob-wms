@@ -78,7 +78,14 @@ const App = () => {
 
     const [orderData, setOrderData] = useState(() => safeParse('wms_orders', []));
     const [salesOrders, setSalesOrders] = useState(() => safeParse('wms_sales_orders', INITIAL_SALES_ORDERS));
-    const [users, setUsers] = useState(() => safeParse('wms_users', [{ name: 'Admin User', username: 'admin', password: '$wms$default$setup', role: 'admin', isFirstLogin: true }]));
+    const [users, setUsers] = useState(() => safeParse('wms_users', [
+        { name: 'Admin User', username: 'admin', password: '$wms$default$setup', role: 'admin', isFirstLogin: true },
+        { name: 'Picker 01', username: 'pick01', password: '$wms$default$setup', role: 'picker', isFirstLogin: true },
+        { name: 'Picker 02', username: 'pick02', password: '$wms$default$setup', role: 'picker', isFirstLogin: true },
+        { name: 'Packer 01', username: 'pack01', password: '$wms$default$setup', role: 'packer', isFirstLogin: true },
+        { name: 'Packer 02', username: 'pack02', password: '$wms$default$setup', role: 'packer', isFirstLogin: true },
+        { name: 'Outbound 01', username: 'out01', password: '$wms$default$setup', role: 'outbound', isFirstLogin: true },
+    ]));
     const [historyData, setHistoryData] = useState(() => safeParse('wms_history', []));
     const [activityLogs, setActivityLogs] = useState(() => safeParse('wms_logs', []));
     const [apiConfigs, setApiConfigs] = useState(() => {
