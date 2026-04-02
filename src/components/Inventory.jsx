@@ -121,8 +121,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
     const isLocationAllowed = (loc) => {
         if (viewMode === VIEW_MODES.ALL) return true;
         if (!loc) return true;
-        if (allowedLocations.length === 0) return true;
-        return allowedLocations.some(kw => loc.toLowerCase().includes(kw.toLowerCase()));
+        // PICKFACE mode: show only locations containing "PICKFACE"
+        return loc.toLowerCase().includes('pickface');
     };
 
     // ── active inventory source based on view mode ──────────────────────────

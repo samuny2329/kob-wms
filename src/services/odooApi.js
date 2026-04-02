@@ -704,17 +704,41 @@ export const fetchInventory = async (odooConfig, companyId) => {
         [locDomain],
         { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'] }
     );
-    // Group by product
+
+    // Fetch lot expiry dates
+    const lotIds = [...new Set(quants.filter(q => q.lot_id).map(q => q.lot_id[0]))];
+    let lotExpiryMap = {};
+    if (lotIds.length > 0) {
+        try {
+            const lots = await odooCallKw(odooConfig, 'stock.lot', 'read',
+                [lotIds], { fields: ['id', 'expiration_date'] }
+            );
+            for (const lot of lots) {
+                if (lot.expiration_date) lotExpiryMap[lot.id] = lot.expiration_date;
+            }
+        } catch (e) { /* stock.lot may not have expiration_date field */ }
+    }
+
+    // Group by product + location (preserve per-location rows like PICKFACE vs R1 vs R2)
     const grouped = {};
     for (const q of quants) {
-        const key = q.product_id[0];
-        if (!grouped[key]) grouped[key] = { productId: key, name: q.product_id[1], location: q.location_id[1], onHand: 0, reserved: 0, lots: [] };
+        const key = `${q.product_id[0]}_${q.location_id[0]}`;
+        if (!grouped[key]) grouped[key] = {
+            productId: q.product_id[0], name: q.product_id[1],
+            location: q.location_id[1], locationId: q.location_id[0],
+            onHand: 0, reserved: 0, lots: [],
+        };
         grouped[key].onHand += q.quantity;
         grouped[key].reserved += q.reserved_quantity;
-        if (q.lot_id) grouped[key].lots.push({ lotNumber: q.lot_id[1], qty: q.quantity });
+        if (q.lot_id) {
+            grouped[key].lots.push({
+                lotNumber: q.lot_id[1], qty: q.quantity, lotId: q.lot_id[0],
+                expiryDate: lotExpiryMap[q.lot_id[0]] || null,
+            });
+        }
     }
     // Fetch SKU (default_code) for each product
-    const productIds = Object.keys(grouped).map(Number);
+    const productIds = [...new Set(Object.values(grouped).map(g => g.productId))];
     let skuMap = {};
     if (productIds.length > 0) {
         const products = await odooCallKw(odooConfig, 'product.product', 'read',
