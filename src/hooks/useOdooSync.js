@@ -38,29 +38,45 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
 
             if (productsData && Array.isArray(productsData) && productsData.length > 0) {
                 setOdooProducts(productsData);
-                setSalesOrders(prev => prev.map(order => ({
-                    ...order,
-                    items: order.items?.map(item => {
-                        const odooProduct = productsData.find(p => p.sku && p.sku === item.sku);
-                        if (odooProduct && odooProduct.barcode) return { ...item, barcode: odooProduct.barcode };
-                        return item;
-                    }) || order.items,
-                })));
+                // Build SKU→barcode map for O(1) lookup instead of O(n) .find()
+                const skuBarcodeMap = new Map();
+                productsData.forEach(p => { if (p.sku && p.barcode) skuBarcodeMap.set(p.sku, p.barcode); });
+                if (skuBarcodeMap.size > 0) {
+                    setSalesOrders(prev => prev.map(order => ({
+                        ...order,
+                        items: order.items?.map(item => {
+                            const barcode = skuBarcodeMap.get(item.sku);
+                            return barcode ? { ...item, barcode } : item;
+                        }) || order.items,
+                    })));
+                }
             }
 
             if ((isLiveMode || odooConfig.syncOrders) && ordersData && Array.isArray(ordersData)) {
                 setSalesOrders(prev => {
+                    // Use Map for O(1) lookups instead of O(n) .find() — critical for 2000+ orders
+                    const localMap = new Map(prev.map(lo => [lo.id, lo]));
+                    const mergedIds = new Set();
+
                     const merged = ordersData.map(remoteOrder => {
-                        const localOrder = prev.find(lo => lo.id === remoteOrder.id);
+                        mergedIds.add(remoteOrder.id);
+                        const localOrder = localMap.get(remoteOrder.id);
                         if (localOrder) {
                             if (remoteOrder.status === 'rts') return remoteOrder;
                             const localProgress = localOrder.items?.reduce((s, i) => s + (i.picked || 0) + (i.packed || 0), 0) || 0;
                             const remoteProgress = remoteOrder.items?.reduce((s, i) => s + (i.picked || 0) + (i.packed || 0), 0) || 0;
                             if (localProgress > remoteProgress) {
+                                // Build remote item lookup map for O(1) matching
+                                const remoteItemMap = new Map();
+                                remoteOrder.items?.forEach(ri => {
+                                    if (ri.moveId) remoteItemMap.set('move:' + ri.moveId, ri);
+                                    if (ri.sku) remoteItemMap.set('sku:' + ri.sku, ri);
+                                });
                                 return {
                                     ...localOrder,
                                     items: localOrder.items?.map(localItem => {
-                                        const remoteItem = remoteOrder.items?.find(ri => ri.moveId === localItem.moveId || ri.sku === localItem.sku);
+                                        const remoteItem = (localItem.moveId && remoteItemMap.get('move:' + localItem.moveId))
+                                            || (localItem.sku && remoteItemMap.get('sku:' + localItem.sku));
                                         return remoteItem ? { ...localItem, barcode: remoteItem.barcode } : localItem;
                                     }) || localOrder.items,
                                 };
@@ -69,7 +85,9 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
                         }
                         return remoteOrder;
                     });
-                    prev.forEach(lo => { if (!merged.find(m => m.id === lo.id)) merged.push(lo); });
+
+                    // Append local-only orders not in remote (O(n) instead of O(n²))
+                    prev.forEach(lo => { if (!mergedIds.has(lo.id)) merged.push(lo); });
                     return merged;
                 });
             }

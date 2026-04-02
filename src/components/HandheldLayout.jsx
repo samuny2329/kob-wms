@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ShoppingCart, Package, LogOut, ChevronLeft, ScanLine, User, RefreshCw, Wifi, WifiOff, Settings, X, Check, ClipboardCheck, Clock, Gift, Truck, CheckCircle2, AlertTriangle, Activity, Zap, Award } from 'lucide-react';
 import Pick from './Pick';
 import HandheldPack from './HandheldPack';
@@ -112,8 +112,15 @@ const HandheldLayout = ({
         setScreen('home');
     };
 
-    const pendingPick = salesOrders.filter(o => o.status === 'pending' || o.status === 'picking').length;
-    const readyPack = salesOrders.filter(o => ['picked', 'packing', 'packed'].includes(o.status)).length;
+    // Memoize order counts to avoid re-filtering 2000+ orders on every render
+    const { pendingPick, readyPack } = useMemo(() => {
+        let pick = 0, pack = 0;
+        for (const o of salesOrders) {
+            if (o.status === 'pending' || o.status === 'picking') pick++;
+            else if (o.status === 'picked' || o.status === 'packing' || o.status === 'packed') pack++;
+        }
+        return { pendingPick: pick, readyPack: pack };
+    }, [salesOrders]);
 
     return (
         <div className="h-screen flex flex-col bg-zinc-950 text-white overflow-hidden">

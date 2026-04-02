@@ -1,10 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, CheckCircle2, ChevronLeft, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Printer, Tag, PackageCheck, Smartphone, RefreshCw } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Box, CheckCircle2, ChevronLeft, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Printer, Tag, PackageCheck, Smartphone, RefreshCw, ChevronDown } from 'lucide-react';
 import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS, PACKING_SPEC, suggestBox } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 import { fetchAiSuggestion } from '../services/odooApi';
+import { sanitizeBarcode } from '../utils/barcode';
 
-const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast, boxUsageLog, setBoxUsageLog, handleFulfillmentAndAWB, isProcessingAPI, apiConfigs }) => {
+const PAGE_SIZE = 20;
+
+const HandheldPack = React.memo(({ salesOrders, setSalesOrders, playSound, logActivity, addToast, boxUsageLog, setBoxUsageLog, handleFulfillmentAndAWB, isProcessingAPI, apiConfigs }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [scanInput, setScanInput] = useState('');
     const [selectedBoxType, setSelectedBoxType] = useState(null);
@@ -14,13 +17,25 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
     const scanRef = useRef(null);
     const [aiSuggestion, setAiSuggestion] = useState(null);
     const [isAskingAi, setIsAskingAi] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-    const packableOrders = salesOrders.filter(o => o.status === 'picked' || o.status === 'packing');
+    const packableOrders = useMemo(() =>
+        salesOrders.filter(o => o.status === 'picked' || o.status === 'packing'),
+        [salesOrders]
+    );
+
+    const sortedOrders = useMemo(() =>
+        [...packableOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
+        [packableOrders]
+    );
+
+    // Reset pagination when order list changes significantly
+    useEffect(() => { setVisibleCount(PAGE_SIZE); }, [packableOrders.length]);
 
     useEffect(() => {
         if (selectedOrder) {
             const updated = salesOrders.find(o => o.id === selectedOrder.id);
-            if (updated) setSelectedOrder(updated);
+            if (updated && updated !== selectedOrder) setSelectedOrder(updated);
         }
     }, [salesOrders]);
 
@@ -45,7 +60,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
 
     const handleScanSubmit = (e) => {
         if (e.key !== 'Enter' || !scanInput.trim()) return;
-        const input = scanInput.trim();
+        const input = sanitizeBarcode(scanInput);
         const inputUpper = input.toUpperCase();
         const items = [...selectedOrder.items];
 
@@ -259,6 +274,30 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                             <Package className="w-3.5 h-3.5" /> {packableOrders.length} Ready
                         </span>
                     </div>
+                    {/* Quick scan to jump to any order — works even if order is not in visible page */}
+                    <div className="mt-3 relative">
+                        <input
+                            type="text"
+                            placeholder="Scan/search order ref..."
+                            className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-bold pl-10"
+                            onKeyDown={(e) => {
+                                if (e.key !== 'Enter') return;
+                                const q = e.target.value.trim().toUpperCase();
+                                if (!q) return;
+                                const match = packableOrders.find(o =>
+                                    o.ref?.toUpperCase() === q ||
+                                    o.ref?.toUpperCase().includes(q) ||
+                                    o.odooPickingId?.toString() === q
+                                );
+                                if (match) {
+                                    setSelectedOrder(match);
+                                    setLastScanStatus(null);
+                                }
+                                e.target.value = '';
+                            }}
+                        />
+                        <ScanLine className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+                    </div>
                 </div>
 
                 {packableOrders.length === 0 ? (
@@ -271,12 +310,11 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {packableOrders
-                            .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+                        {sortedOrders
+                            .slice(0, visibleCount)
                             .map(order => {
                                 const oTotal = order.items.reduce((s, i) => s + i.picked, 0);
                                 const oPacked = order.items.reduce((s, i) => s + i.packed, 0);
-                                const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                 return (
                                     <button
                                         key={order.id}
@@ -300,6 +338,15 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                                     </button>
                                 );
                             })}
+                        {visibleCount < sortedOrders.length && (
+                            <button
+                                onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                                className="w-full py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl text-sm font-bold text-[#714B67] flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                            >
+                                <ChevronDown className="w-4 h-4" />
+                                Load more ({sortedOrders.length - visibleCount} remaining)
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
@@ -455,6 +502,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
             </div>
         </div>
     );
-};
+});
 
+HandheldPack.displayName = 'HandheldPack';
 export default HandheldPack;

@@ -238,21 +238,33 @@ export const fetchAllOrders = async (odooConfig, companyId) => {
         }
     }
 
-    // Fetch all move lines for these pickings
+    // Fetch move lines in batches to avoid timeout on large datasets (2000+ pickings)
     const pickingIds = pickings.map(p => p.id);
-    const moves = await odooCallKw(odooConfig, 'stock.move', 'search_read',
-        [[['picking_id', 'in', pickingIds], ['state', 'not in', ['cancel']]]],
-        { fields: ['id', 'picking_id', 'product_id', 'product_uom_qty', 'quantity', 'location_id', 'location_dest_id'] }
-    );
+    const BATCH_SIZE = 500;
+    let moves = [];
+    for (let i = 0; i < pickingIds.length; i += BATCH_SIZE) {
+        const batch = pickingIds.slice(i, i + BATCH_SIZE);
+        const batchMoves = await odooCallKw(odooConfig, 'stock.move', 'search_read',
+            [[['picking_id', 'in', batch], ['state', 'not in', ['cancel']]]],
+            { fields: ['id', 'picking_id', 'product_id', 'product_uom_qty', 'quantity', 'location_id', 'location_dest_id'] }
+        );
+        if (batchMoves) moves = moves.concat(batchMoves);
+    }
 
     // Fetch product details (sku/barcode/name)
     const productIds = [...new Set(moves.map(m => m.product_id[0]))];
     let productMap = {};
     if (productIds.length > 0) {
-        const products = await odooCallKw(odooConfig, 'product.product', 'read',
-            [productIds], { fields: ['id', 'name', 'default_code', 'barcode', 'image_128', 'weight'] }
-        );
-        for (const p of products) {
+        // Batch product reads to avoid payload too large
+        let allProducts = [];
+        for (let i = 0; i < productIds.length; i += BATCH_SIZE) {
+            const batch = productIds.slice(i, i + BATCH_SIZE);
+            const products = await odooCallKw(odooConfig, 'product.product', 'read',
+                [batch], { fields: ['id', 'name', 'default_code', 'barcode', 'image_128', 'weight'] }
+            );
+            if (products) allProducts = allProducts.concat(products);
+        }
+        for (const p of allProducts) {
             productMap[p.id] = {
                 name: p.name, sku: p.default_code || '', barcode: p.barcode || '',
                 image: p.image_128 ? `data:image/png;base64,${p.image_128}` : null,
