@@ -9,7 +9,7 @@ import { fetchAllOrders, authenticateOdoo } from '../services/odooApi';
 
 const HandheldLayout = ({
     user, handleLogout,
-    salesOrders, setSalesOrders, totalOrderCount,
+    salesOrders, setSalesOrders, allSalesOrders, totalOrderCount,
     selectedPickOrder, setSelectedPickOrder,
     handlePickScanSubmit, pickScanInput, setPickScanInput, pickInputRef,
     playSound, logActivity, addToast,
@@ -348,7 +348,7 @@ const HandheldLayout = ({
             {screen === 'pick' && (
                 <div className="flex-1 overflow-y-auto">
                     <Pick
-                        salesOrders={salesOrders}
+                        salesOrders={allSalesOrders || salesOrders}
                         selectedPickOrder={selectedPickOrder}
                         setSelectedPickOrder={setSelectedPickOrder}
                         syncPlatformOrders={syncPlatformOrders}
