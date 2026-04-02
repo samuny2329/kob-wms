@@ -526,7 +526,18 @@ const SalesForecastPanel = ({ forecastData, language, company }) => {
 
     if (!forecastData) return null;
 
-    const { summary, stockForecasts, platforms, categories, alerts, aiInsights, salesHistory } = forecastData;
+    const { stockForecasts = [], platforms = [], categories = {}, aiInsights = [], salesHistory = [] } = forecastData;
+    const summary = {
+        totalRevenue30d: 0, totalOrders30d: 0, avgDailyOrders: 0, avgDailyRevenue: 0,
+        totalSKUs: 0, healthySKUs: 0, criticalSKUs: 0, totalStockValue: 0, avgTurnoverDays: 0,
+        revenueGrowth: 0, orderGrowth: 0, avgOrderValue: 0,
+        ...forecastData.summary,
+    };
+    const alerts = {
+        criticalCount: (forecastData.alerts || []).filter(a => a.severity === 'critical').length,
+        reorderCount: (forecastData.alerts || []).filter(a => a.severity === 'warning').length,
+        ...(Array.isArray(forecastData.alerts) ? {} : forecastData.alerts),
+    };
 
     const filteredStock = stockFilter === 'all' ? stockForecasts
         : stockFilter === 'alert' ? stockForecasts.filter(s => ['stockout', 'critical', 'warning', 'reorder'].includes(s.status))
@@ -539,8 +550,8 @@ const SalesForecastPanel = ({ forecastData, language, company }) => {
                 {[
                     { label: isEn ? 'Revenue (30d)' : 'รายได้ (30 วัน)', value: `${(summary.totalRevenue30d / 1000000).toFixed(1)}M`, sub: `+${summary.revenueGrowth}%`, color: '#059669', icon: DollarSign, trend: 'up' },
                     { label: isEn ? 'Orders (30d)' : 'ออเดอร์ (30 วัน)', value: summary.totalOrders30d.toLocaleString(), sub: `+${summary.orderGrowth}%`, color: '#3b82f6', icon: ShoppingCart, trend: 'up' },
-                    { label: isEn ? 'Avg Order Value' : 'ยอดเฉลี่ย/ออเดอร์', value: `${summary.avgOrderValue.toLocaleString()} THB`, sub: `${summary.avgDailyOrders}/day`, color: '#8b5cf6', icon: BarChart2 },
-                    { label: isEn ? 'Stock Alerts' : 'แจ้งเตือนสต็อค', value: alerts.criticalCount + alerts.reorderCount, sub: `${alerts.criticalCount} critical`, color: alerts.criticalCount > 0 ? '#dc2626' : '#d97706', icon: AlertOctagon },
+                    { label: isEn ? 'Avg Order Value' : 'ยอดเฉลี่ย/ออเดอร์', value: `${(summary.avgOrderValue || 0).toLocaleString()} THB`, sub: `${summary.avgDailyOrders || 0}/day`, color: '#8b5cf6', icon: BarChart2 },
+                    { label: isEn ? 'Stock Alerts' : 'แจ้งเตือนสต็อค', value: (alerts.criticalCount || 0) + (alerts.reorderCount || 0), sub: `${alerts.criticalCount || 0} critical`, color: (alerts.criticalCount || 0) > 0 ? '#dc2626' : '#d97706', icon: AlertOctagon },
                 ].map(card => {
                     const Icon = card.icon;
                     return (
