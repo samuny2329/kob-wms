@@ -207,8 +207,10 @@ export const fetchAllOrders = async (odooConfig, companyId) => {
         ['state', 'in', ['assigned', 'confirmed', 'waiting']],
         ['write_date', '>=', cutoff],
     ];
-    if (Array.isArray(companyId)) domain.push(['company_id', 'in', companyId]);
+    // Always restrict to KOB (1) + BTV (2) only
+    if (Array.isArray(companyId) && companyId.length > 0) domain.push(['company_id', 'in', companyId]);
     else if (companyId) domain.push(['company_id', '=', companyId]);
+    else domain.push(['company_id', 'in', [1, 2]]);
     const pickings = await odooCallKw(odooConfig, 'stock.picking', 'search_read',
         [domain],
         { fields: ['id', 'name', 'partner_id', 'state', 'move_ids', 'origin', 'note',
@@ -694,8 +696,10 @@ export const fetchInventory = async (odooConfig, companyId) => {
         ['location_id.warehouse_id.name', 'ilike', '(Online)'],
         ['quantity', '!=', 0],
     ];
-    if (Array.isArray(companyId)) locDomain.push(['company_id', 'in', companyId]);
+    // Always restrict to KOB (1) + BTV (2) only — exclude CMN and others
+    if (Array.isArray(companyId) && companyId.length > 0) locDomain.push(['company_id', 'in', companyId]);
     else if (companyId) locDomain.push(['company_id', '=', companyId]);
+    else locDomain.push(['company_id', 'in', [1, 2]]);
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
         [locDomain],
         { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'] }
@@ -931,8 +935,10 @@ export const fetchInvoices = async (odooConfig, companyId) => {
         ['partner_id.name', 'ilike', 'ECOMMERCE'],
         ['invoice_date', '>=', invCutoff],
     ];
-    if (Array.isArray(companyId)) invDomain.push(['company_id', 'in', companyId]);
+    // Always restrict to KOB (1) + BTV (2) only
+    if (Array.isArray(companyId) && companyId.length > 0) invDomain.push(['company_id', 'in', companyId]);
     else if (companyId) invDomain.push(['company_id', '=', companyId]);
+    else invDomain.push(['company_id', 'in', [1, 2]]);
     const moves = await odooCallKw(odooConfig, 'account.move', 'search_read',
         [invDomain],
         {
