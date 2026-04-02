@@ -1,31 +1,57 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Monitor, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Tag, X, Lock, ClipboardList } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Box, CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Monitor, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Tag, X, Lock, ClipboardList, ChevronDown } from 'lucide-react';
 import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS, PACKING_SPEC, suggestBox } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 import PackStation from './PackStation';
+import { sanitizeBarcode } from '../utils/barcode';
 
-const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast, handleFulfillmentAndAWB, isProcessingAPI, boxUsageLog, setBoxUsageLog, printAwbLabel }) => {
+const PAGE_SIZE = 30;
+
+const POSPack = React.memo(({ salesOrders, setSalesOrders, playSound, logActivity, addToast, handleFulfillmentAndAWB, isProcessingAPI, boxUsageLog, setBoxUsageLog, printAwbLabel }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [scanInput, setScanInput] = useState('');
     const [awbInput, setAwbInput] = useState('');
     const [lastScanStatus, setLastScanStatus] = useState(null);
     const [searchFilter, setSearchFilter] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const scanRef = useRef(null);
     const awbRef = useRef(null);
     const workOrderRef = useRef(null);
     const [workOrderInput, setWorkOrderInput] = useState('');
     const [showStation, setShowStation] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
+    // Debounce search filter (300ms)
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchFilter), 300);
+        return () => clearTimeout(timer);
+    }, [searchFilter]);
 
-    const packableOrders = salesOrders.filter(o => ['picked', 'packing', 'packed', 'rts'].includes(o.status));
-    const filteredOrders = searchFilter
-        ? packableOrders.filter(o => o.ref.toLowerCase().includes(searchFilter.toLowerCase()) || (o.customer || '').toLowerCase().includes(searchFilter.toLowerCase()))
-        : packableOrders;
+    const packableOrders = useMemo(() =>
+        salesOrders.filter(o => ['picked', 'packing', 'packed', 'rts'].includes(o.status)),
+        [salesOrders]
+    );
+
+    const filteredOrders = useMemo(() => {
+        const q = debouncedSearch.toLowerCase();
+        if (!q) return packableOrders;
+        return packableOrders.filter(o =>
+            o.ref.toLowerCase().includes(q) || (o.customer || '').toLowerCase().includes(q)
+        );
+    }, [packableOrders, debouncedSearch]);
+
+    const sortedOrders = useMemo(() =>
+        [...filteredOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
+        [filteredOrders]
+    );
+
+    // Reset pagination when filter changes
+    useEffect(() => { setVisibleCount(PAGE_SIZE); }, [debouncedSearch]);
 
     useEffect(() => {
         if (selectedOrder) {
             const updated = salesOrders.find(o => o.id === selectedOrder.id);
-            if (updated) setSelectedOrder(updated);
+            if (updated && updated !== selectedOrder) setSelectedOrder(updated);
         }
     }, [salesOrders]);
 
@@ -70,7 +96,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
 
     const handleScanSubmit = (e) => {
         if (e.key !== 'Enter' || !scanInput.trim()) return;
-        const input = scanInput.trim();
+        const input = sanitizeBarcode(scanInput);
         const inputUpper = input.toUpperCase();
         const items = [...selectedOrder.items];
 
@@ -232,8 +258,8 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                             </div>
                         ) : (
                             <div>
-                                {filteredOrders
-                                    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+                                {sortedOrders
+                                    .slice(0, visibleCount)
                                     .map(order => {
                                         const oTotal = order.items.reduce((s, i) => s + i.picked, 0);
                                         const oPacked = order.items.reduce((s, i) => s + i.packed, 0);
@@ -263,6 +289,18 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                             </button>
                                         );
                                     })}
+                                {visibleCount < sortedOrders.length && (
+                                    <button
+                                        onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                                        className="w-full p-3 text-center"
+                                        style={{ borderBottom: '1px solid #dee2e6', fontSize: '12px', fontWeight: 700, color: '#714B67', cursor: 'pointer', backgroundColor: '#f8f9fa' }}
+                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f3edf7'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                                    >
+                                        <ChevronDown className="w-4 h-4 inline mr-1" style={{ verticalAlign: 'middle' }} />
+                                        Load more ({sortedOrders.length - visibleCount} remaining)
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -538,6 +576,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
             <PackStation isOpen={showStation} onClose={() => setShowStation(false)} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} />
         </div>
     );
-};
+});
 
+POSPack.displayName = 'POSPack';
 export default POSPack;
