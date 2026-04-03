@@ -9,7 +9,7 @@ import { fetchAllOrders, authenticateOdoo } from '../services/odooApi';
 
 const HandheldLayout = ({
     user, handleLogout,
-    salesOrders, setSalesOrders,
+    salesOrders, setSalesOrders, allSalesOrders, totalOrderCount,
     selectedPickOrder, setSelectedPickOrder,
     handlePickScanSubmit, pickScanInput, setPickScanInput, pickInputRef,
     playSound, logActivity, addToast,
@@ -333,7 +333,7 @@ const HandheldLayout = ({
                         {[
                             { label: 'Pending', val: salesOrders.filter(o => o.status === 'pending').length, color: 'text-amber-400' },
                             { label: 'Picking', val: salesOrders.filter(o => o.status === 'picking').length, color: 'text-blue-400' },
-                            { label: 'Shipped', val: salesOrders.filter(o => ['rts','locked'].includes(o.status)).length, color: 'text-emerald-400' },
+                            { label: 'Total', val: totalOrderCount || salesOrders.length, color: 'text-zinc-300' },
                         ].map(s => (
                             <div key={s.label} className="bg-zinc-900 rounded-xl p-3 text-center border border-zinc-800">
                                 <p className={`text-xl font-black ${s.color}`}>{s.val}</p>
@@ -348,7 +348,7 @@ const HandheldLayout = ({
             {screen === 'pick' && (
                 <div className="flex-1 overflow-y-auto">
                     <Pick
-                        salesOrders={salesOrders}
+                        salesOrders={allSalesOrders || salesOrders}
                         selectedPickOrder={selectedPickOrder}
                         setSelectedPickOrder={setSelectedPickOrder}
                         syncPlatformOrders={syncPlatformOrders}

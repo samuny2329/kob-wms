@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns, ArrowUpDown } from 'lucide-react';
+import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns, ArrowUpDown, AlertTriangle } from 'lucide-react';
 import { PRODUCT_CATALOG, PLATFORM_LABELS } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 
@@ -41,7 +41,7 @@ const statusLabel = (status) => ({
 
 // Platform config for Create SO
 const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatformOrders, isProcessingImport, handlePickScanSubmit, pickScanInput, setPickScanInput, pickInputRef, inventory, clearDummyOrders, isSyncingOrders, onSyncOrders, onCreateSOInOdoo, isCreatingSO, stockFrozen }) => {
-    const getLocation = (sku) => inventory?.find(i => i.sku === sku)?.location || PRODUCT_CATALOG[sku]?.location || null;
+    const getLocation = (sku, itemLoc) => itemLoc || inventory?.find(i => i.sku === sku)?.location || PRODUCT_CATALOG[sku]?.location || null;
     const [showPickingList, setShowPickingList] = useState(null);
     const [scanFlash, setScanFlash] = useState(null);
     const [debugScan, setDebugScan] = useState(null);
@@ -51,6 +51,18 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     const pendingOrdersRef = useRef([]);
 
     const pendingOrders = salesOrders.filter(o => o.status === 'pending' || o.status === 'picking');
+
+    // Check stock availability for an order
+    const invItems = Array.isArray(inventory) ? inventory : (inventory?.items || []);
+    const getOrderStockStatus = (order) => {
+        if (!invItems.length || !order?.items) return { ok: true, outOfStock: [] };
+        const outOfStock = order.items.filter(item => {
+            const stockItem = invItems.find(inv => (inv.sku || inv.default_code) === item.sku);
+            const onHand = stockItem?.onHand ?? stockItem?.quantity ?? 0;
+            return onHand <= 0;
+        });
+        return { ok: outOfStock.length === 0, outOfStock };
+    };
 
     // Keep pendingOrdersRef always fresh — avoids stale closure in handleListScan
     useEffect(() => { pendingOrdersRef.current = pendingOrders; }, [pendingOrders]);
@@ -226,7 +238,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     </tr></thead>
     <tbody>
       ${order.items.map((item, i) => {
-          const loc = getLocation(item.sku);
+          const loc = getLocation(item.sku, item.location);
           return `
       <tr>
         <td class="num">${i+1}</td>
@@ -466,15 +478,32 @@ window.onload=function(){
                                                     {colOrders.map(order => {
                                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                                         const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
+                                                        const stockStatus = getOrderStockStatus(order);
                                                         return (
                                                             <div key={order.id} onClick={() => setSelectedPickOrder(order)}
                                                                 className="rounded-lg p-3 cursor-pointer transition-all hover:shadow-md"
-                                                                style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderLeft: `3px solid ${col.borderColor}` }}>
+                                                                style={{ backgroundColor: stockStatus.ok ? '#ffffff' : '#fff8f0', border: '1px solid #dee2e6', borderLeft: `3px solid ${stockStatus.ok ? col.borderColor : '#dc3545'}` }}>
                                                                 <div className="flex items-center justify-between mb-2">
                                                                     <span className="text-xs font-bold" style={{ color: '#212529' }}>{order.ref}</span>
-                                                                    {pl && <PlatformBadge name={order.courier || order.platform} size={20} />}
+                                                                    <div className="flex items-center gap-1">
+                                                                        {!stockStatus.ok && (
+                                                                            <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#fee2e2', color: '#dc3545' }}>
+                                                                                <AlertTriangle className="w-2.5 h-2.5" /> {stockStatus.outOfStock.length} OOS
+                                                                            </span>
+                                                                        )}
+                                                                        {pl && <PlatformBadge name={order.courier || order.platform} size={20} />}
+                                                                    </div>
                                                                 </div>
-                                                                <p className="text-[11px] truncate mb-2" style={{ color: '#6c757d' }}>{order.customer}</p>
+                                                                <p className="text-[11px] truncate mb-1" style={{ color: '#6c757d' }}>{order.customer}</p>
+                                                                {!stockStatus.ok && (
+                                                                    <div className="mb-1">
+                                                                        {stockStatus.outOfStock.slice(0, 2).map(item => (
+                                                                            <p key={item.sku} className="text-[9px] font-medium" style={{ color: '#dc3545' }}>
+                                                                                {item.sku}: insufficient stock
+                                                                            </p>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-[10px] font-medium" style={{ color: '#714B67' }}>{itemCount} items &bull; {order.items.length} SKUs</span>
                                                                     <ChevronRight className="w-3 h-3" style={{ color: '#dee2e6' }} />
@@ -595,8 +624,8 @@ window.onload=function(){
                                         backgroundColor: isComplete ? '#f0fdf4' : '#ffffff',
                                     }}>
                                         <div className="w-11 h-11 rounded overflow-hidden shrink-0" style={{ border: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                                            {catalog?.image ? (
-                                                <img src={catalog.image} alt={item.name} className="w-full h-full object-cover" />
+                                            {(item.image || catalog?.image) ? (
+                                                <img src={item.image || catalog.image} alt={item.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center" style={{ color: '#dee2e6' }}><Box className="w-4 h-4" /></div>
                                             )}
@@ -604,14 +633,29 @@ window.onload=function(){
                                         <div className="flex-1 min-w-0">
                                             <p className="font-semibold text-sm truncate" style={{ color: isComplete ? '#28a745' : '#212529' }}>{catalog?.shortName || item.name}</p>
                                             <p className="text-[10px] font-mono uppercase" style={{ color: '#adb5bd' }}>{item.sku}</p>
-                                            {getLocation(item.sku) && (
+                                            {getLocation(item.sku, item.location) && (
                                                 <p className="text-[11px] font-bold flex items-center gap-1 mt-0.5" style={{ color: '#ffac00' }}>
-                                                    <MapPin className="w-3 h-3" />{getLocation(item.sku)}
+                                                    <MapPin className="w-3 h-3" />{getLocation(item.sku, item.location)}
                                                 </p>
                                             )}
-                                            {!getLocation(item.sku) && item.barcode && (
+                                            {!getLocation(item.sku, item.location) && item.barcode && (
                                                 <p className="text-[10px] font-mono" style={{ color: '#dee2e6' }}>{item.barcode}</p>
                                             )}
+                                            {(() => {
+                                                const si = invItems.find(inv => (inv.sku || inv.default_code) === item.sku);
+                                                const onHand = si?.onHand ?? si?.quantity ?? 0;
+                                                if (invItems.length > 0 && onHand <= 0) {
+                                                    return <p className="text-[10px] font-bold flex items-center gap-0.5 mt-0.5" style={{ color: '#dc3545' }}>
+                                                        <AlertTriangle className="w-3 h-3" /> Out of Stock
+                                                    </p>;
+                                                }
+                                                if (invItems.length > 0 && onHand > 0) {
+                                                    return <p className="text-[10px] flex items-center gap-0.5 mt-0.5" style={{ color: '#28a745' }}>
+                                                        Stock: {onHand}
+                                                    </p>;
+                                                }
+                                                return null;
+                                            })()}
                                         </div>
                                         <div className="text-right shrink-0 flex items-center gap-2">
                                             {isComplete && <CheckSquare className="w-4 h-4" style={{ color: '#28a745' }} />}
@@ -686,7 +730,7 @@ window.onload=function(){
                                             <div className="text-xs mt-1 mb-3" style={{ color: '#6c757d' }}>{order.customer && `Customer: ${order.customer}`}</div>
                                             <div className="space-y-1 mb-3">
                                                 {order.items.map((item, i) => {
-                                                    const loc = getLocation(item.sku);
+                                                    const loc = getLocation(item.sku, item.location);
                                                     return (
                                                     <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: '1px solid #f1f3f5' }}>
                                                         <span className="text-xs" style={{ color: '#495057' }}>
