@@ -101,18 +101,18 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
     // Odoo-style stat card
     const StatCard = ({ label, val, icon, borderColor, textColor }) => (
         <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #dee2e6',
+            backgroundColor: 'var(--odoo-surface)',
+            border: '1px solid var(--odoo-border-ghost)',
             borderLeft: `3px solid ${borderColor}`,
             borderRadius: '4px',
             padding: '1rem 1.25rem',
         }}>
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: '#6c757d' }}>{label}</p>
-                    <p className="text-2xl font-bold" style={{ color: textColor || '#212529' }}>{val}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--odoo-text-secondary)' }}>{label}</p>
+                    <p className="text-2xl font-bold" style={{ color: textColor || 'var(--odoo-text)' }}>{val}</p>
                 </div>
-                <div className="p-2.5 rounded" style={{ backgroundColor: '#f8f9fa', color: borderColor }}>
+                <div className="p-2.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', color: borderColor }}>
                     {icon}
                 </div>
             </div>
@@ -121,10 +121,10 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
 
     // Pipeline mini card
     const PipelineCard = ({ label, val, icon, color, bgColor }) => (
-        <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', padding: '0.875rem 1rem' }}>
+        <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', padding: '0.875rem 1rem' }}>
             <div className="flex items-center gap-2 mb-1.5">
                 <span style={{ color }}>{icon}</span>
-                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#6c757d' }}>{label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-secondary)' }}>{label}</span>
             </div>
             <p className="text-xl font-bold" style={{ color }}>{val}</p>
         </div>
@@ -135,20 +135,20 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
 
             {/* ── My Performance (worker roles) ── */}
             {isWorker && myPerf && (
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ backgroundColor: '#714B67' }}>
+                            <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ backgroundColor: 'var(--odoo-purple)' }}>
                                 <Activity className="w-4 h-4" />
                             </div>
                             <div>
-                                <h2 className="font-bold" style={{ fontSize: '14px', color: '#212529' }}>My Performance</h2>
-                                <p style={{ fontSize: '11px', color: '#6c757d' }}>Today — {user?.name || user?.username} ({userRole})</p>
+                                <h2 className="font-bold" style={{ fontSize: '14px', color: 'var(--odoo-text)' }}>My Performance</h2>
+                                <p style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)' }}>Today — {user?.name || user?.username} ({userRole})</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px]" style={{ color: '#6c757d' }}>Shift: {myPerf.shiftStart}</p>
-                            <p className="text-xs font-bold" style={{ color: '#714B67' }}>{myPerf.shiftDuration}</p>
+                            <p className="text-[10px]" style={{ color: 'var(--odoo-text-secondary)' }}>Shift: {myPerf.shiftStart}</p>
+                            <p className="text-xs font-bold" style={{ color: 'var(--odoo-purple)' }}>{myPerf.shiftDuration}</p>
                         </div>
                     </div>
                     <div className="p-5">
@@ -159,21 +159,21 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                                 <div className="relative w-20 h-20 mx-auto mb-2">
                                     <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
                                         <circle cx="18" cy="18" r="15.5" fill="none" stroke="#f0f0f0" strokeWidth="3" />
-                                        <circle cx="18" cy="18" r="15.5" fill="none" stroke={myPerf.uphPct >= 80 ? '#28a745' : myPerf.uphPct >= 50 ? '#ffac00' : '#dc3545'} strokeWidth="3"
+                                        <circle cx="18" cy="18" r="15.5" fill="none" stroke={myPerf.uphPct >= 80 ? 'var(--odoo-success)' : myPerf.uphPct >= 50 ? 'var(--odoo-warning)' : 'var(--odoo-danger)'} strokeWidth="3"
                                             strokeDasharray={`${myPerf.uphPct * 0.975} 97.5`} strokeLinecap="round" />
                                     </svg>
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-lg font-black" style={{ color: '#212529' }}>{myPerf.myUph}</span>
+                                        <span className="text-lg font-black" style={{ color: 'var(--odoo-text)' }}>{myPerf.myUph}</span>
                                     </div>
                                 </div>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: '#6c757d' }}>UPH</p>
-                                <p className="text-[10px]" style={{ color: '#adb5bd' }}>Target: {myPerf.target}</p>
+                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>UPH</p>
+                                <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Target: {myPerf.target}</p>
                             </div>
                             {/* Orders Done */}
                             <div className="text-center">
-                                <p className="text-3xl font-black mb-1" style={{ color: '#714B67' }}>{myPerf.total}</p>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: '#6c757d' }}>Orders Done</p>
-                                <div className="flex justify-center gap-3 mt-1 text-[10px]" style={{ color: '#adb5bd' }}>
+                                <p className="text-3xl font-black mb-1" style={{ color: 'var(--odoo-purple)' }}>{myPerf.total}</p>
+                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Orders Done</p>
+                                <div className="flex justify-center gap-3 mt-1 text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>
                                     {myPerf.pick > 0 && <span>Pick: {myPerf.pick}</span>}
                                     {myPerf.pack > 0 && <span>Pack: {myPerf.pack}</span>}
                                     {myPerf.scan > 0 && <span>Scan: {myPerf.scan}</span>}
@@ -181,24 +181,24 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                             </div>
                             {/* Rank */}
                             <div className="text-center">
-                                <p className="text-3xl font-black mb-1" style={{ color: myPerf.myRank <= 3 ? '#28a745' : '#212529' }}>
+                                <p className="text-3xl font-black mb-1" style={{ color: myPerf.myRank <= 3 ? 'var(--odoo-success)' : 'var(--odoo-text)' }}>
                                     {myPerf.myRank > 0 ? `#${myPerf.myRank}` : '—'}
                                 </p>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: '#6c757d' }}>Rank</p>
-                                <p className="text-[10px]" style={{ color: '#adb5bd' }}>of {myPerf.totalWorkers} workers</p>
+                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Rank</p>
+                                <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>of {myPerf.totalWorkers} workers</p>
                             </div>
                             {/* Count Tasks */}
                             <div className="text-center">
-                                <p className="text-3xl font-black mb-1" style={{ color: myPerf.count > 0 ? '#28a745' : '#adb5bd' }}>
+                                <p className="text-3xl font-black mb-1" style={{ color: myPerf.count > 0 ? 'var(--odoo-success)' : 'var(--odoo-text-muted)' }}>
                                     {myPerf.count}
                                 </p>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: '#6c757d' }}>Counts Done</p>
-                                <p className="text-[10px]" style={{ color: '#adb5bd' }}>Cycle Count tasks</p>
+                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Counts Done</p>
+                                <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Cycle Count tasks</p>
                             </div>
                         </div>
                         {/* 7-day trend */}
                         <div>
-                            <p className="text-[11px] font-bold uppercase mb-2" style={{ color: '#6c757d' }}>7-Day Trend</p>
+                            <p className="text-[11px] font-bold uppercase mb-2" style={{ color: 'var(--odoo-text-secondary)' }}>7-Day Trend</p>
                             <div className="flex items-end gap-1 h-12">
                                 {myPerf.trend.map((d, i) => {
                                     const maxVal = Math.max(...myPerf.trend.map(t => t.val), 1);
@@ -208,9 +208,9 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                                         <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                                             <div className="w-full rounded-t-sm transition-all" style={{
                                                 height: `${h}%`, minHeight: '2px',
-                                                backgroundColor: isToday ? '#714B67' : '#dee2e6',
+                                                backgroundColor: isToday ? 'var(--odoo-purple)' : 'var(--odoo-surface-high)',
                                             }} />
-                                            <span className="text-[8px]" style={{ color: isToday ? '#714B67' : '#adb5bd' }}>{d.day}</span>
+                                            <span className="text-[8px]" style={{ color: isToday ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)' }}>{d.day}</span>
                                         </div>
                                     );
                                 })}
@@ -218,9 +218,9 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                         </div>
                         {/* No activity message */}
                         {myPerf.total === 0 && (
-                            <div className="text-center py-4 mt-3" style={{ backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-                                <Zap className="w-6 h-6 mx-auto mb-2" style={{ color: '#adb5bd' }} />
-                                <p className="text-xs" style={{ color: '#6c757d' }}>No activity yet today — start your first task!</p>
+                            <div className="text-center py-4 mt-3" style={{ backgroundColor: 'var(--odoo-surface-low)', borderRadius: '4px' }}>
+                                <Zap className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--odoo-text-muted)' }} />
+                                <p className="text-xs" style={{ color: 'var(--odoo-text-secondary)' }}>No activity yet today — start your first task!</p>
                             </div>
                         )}
                     </div>
@@ -231,11 +231,11 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
             {salesOrders.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
                     {[
-                        { label: 'Pending', val: orderStats.pending, icon: <Clock className="w-4 h-4" />, color: '#ffac00' },
-                        { label: 'Picked', val: orderStats.picked, icon: <ShoppingCart className="w-4 h-4" />, color: '#17a2b8' },
-                        { label: 'Packed', val: orderStats.packed, icon: <PackageCheck className="w-4 h-4" />, color: '#714B67' },
-                        { label: 'RTS / Shipped', val: orderStats.rts, icon: <Truck className="w-4 h-4" />, color: '#017E84' },
-                        { label: 'Total Orders', val: orderStats.total, icon: <Package className="w-4 h-4" />, color: '#6c757d' },
+                        { label: 'Pending', val: orderStats.pending, icon: <Clock className="w-4 h-4" />, color: 'var(--odoo-warning)' },
+                        { label: 'Picked', val: orderStats.picked, icon: <ShoppingCart className="w-4 h-4" />, color: 'var(--odoo-info)' },
+                        { label: 'Packed', val: orderStats.packed, icon: <PackageCheck className="w-4 h-4" />, color: 'var(--odoo-purple)' },
+                        { label: 'RTS / Shipped', val: orderStats.rts, icon: <Truck className="w-4 h-4" />, color: 'var(--odoo-teal)' },
+                        { label: 'Total Orders', val: orderStats.total, icon: <Package className="w-4 h-4" />, color: 'var(--odoo-text-secondary)' },
                     ].map((stat, i) => (
                         <PipelineCard key={i} {...stat} />
                     ))}
@@ -246,10 +246,10 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
             {(inventory || waves.length > 0 || invoices.length > 0) && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                        { label: 'Stock Value', val: inventory ? `฿${inventory.reduce((s, i) => s + i.onHand * i.unitCost, 0).toLocaleString()}` : '—', icon: <Warehouse className="w-4 h-4" />, borderColor: '#714B67', textColor: '#714B67' },
-                        { label: 'Low Stock SKUs', val: inventory ? inventory.filter(i => i.available <= i.reorderPoint).length : '—', icon: <AlertTriangle className="w-4 h-4" />, borderColor: '#dc3545', textColor: '#dc3545' },
-                        { label: 'Active Waves', val: waves.filter(w => w.status === 'active').length, icon: <Layers className="w-4 h-4" />, borderColor: '#17a2b8', textColor: '#17a2b8' },
-                        { label: 'Invoiced Today', val: invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).length, icon: <Receipt className="w-4 h-4" />, borderColor: '#28a745', textColor: '#28a745' },
+                        { label: 'Stock Value', val: inventory ? `฿${inventory.reduce((s, i) => s + i.onHand * i.unitCost, 0).toLocaleString()}` : '—', icon: <Warehouse className="w-4 h-4" />, borderColor: 'var(--odoo-purple)', textColor: 'var(--odoo-purple)' },
+                        { label: 'Low Stock SKUs', val: inventory ? inventory.filter(i => i.available <= i.reorderPoint).length : '—', icon: <AlertTriangle className="w-4 h-4" />, borderColor: 'var(--odoo-danger)', textColor: 'var(--odoo-danger)' },
+                        { label: 'Active Waves', val: waves.filter(w => w.status === 'active').length, icon: <Layers className="w-4 h-4" />, borderColor: 'var(--odoo-info)', textColor: 'var(--odoo-info)' },
+                        { label: 'Invoiced Today', val: invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).length, icon: <Receipt className="w-4 h-4" />, borderColor: 'var(--odoo-success)', textColor: 'var(--odoo-success)' },
                     ].map((stat, i) => (
                         <StatCard key={i} {...stat} />
                     ))}
@@ -259,10 +259,10 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
             {/* Outbound KPI Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
                 {[
-                    { label: t('statExpected'), val: totalExpected, icon: <Package className="w-4 h-4" />, borderColor: '#714B67' },
-                    { label: t('statScanned'), val: totalScanned, icon: <CheckCircle2 className="w-4 h-4" />, borderColor: '#017E84' },
-                    { label: t('statUPH'), val: uph, icon: <TrendingUp className="w-4 h-4" />, borderColor: '#17a2b8' },
-                    { label: t('statSLA'), val: totalDelayed, icon: <AlertTriangle className="w-4 h-4" />, borderColor: '#dc3545', textColor: totalDelayed > 0 ? '#dc3545' : '#212529' }
+                    { label: t('statExpected'), val: totalExpected, icon: <Package className="w-4 h-4" />, borderColor: 'var(--odoo-purple)' },
+                    { label: t('statScanned'), val: totalScanned, icon: <CheckCircle2 className="w-4 h-4" />, borderColor: 'var(--odoo-teal)' },
+                    { label: t('statUPH'), val: uph, icon: <TrendingUp className="w-4 h-4" />, borderColor: 'var(--odoo-info)' },
+                    { label: t('statSLA'), val: totalDelayed, icon: <AlertTriangle className="w-4 h-4" />, borderColor: 'var(--odoo-danger)', textColor: totalDelayed > 0 ? 'var(--odoo-danger)' : 'var(--odoo-text)' }
                 ].map((stat, i) => (
                     <StatCard key={i} {...stat} />
                 ))}
@@ -270,10 +270,10 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Distribution Chart */}
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                    <div className="px-5 py-3" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                            <PieChartIcon className="w-4 h-4" style={{ color: '#714B67' }} /> {t('chartCourier')}
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
+                    <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                            <PieChartIcon className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> {t('chartCourier')}
                         </h3>
                     </div>
                     <div className="p-5 h-64">
@@ -281,14 +281,14 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                             <ResponsiveContainer width="100%" height="100%">
                                 <RechartsPieChart>
                                     <Pie data={courierDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={2}>
-                                        {courierDistributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={['#714B67', '#017E84', '#00A09D', '#ffac00', '#dc3545'][index % 5]} />)}
+                                        {courierDistributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={['var(--odoo-purple)', 'var(--odoo-teal)', '#00A09D', 'var(--odoo-warning)', 'var(--odoo-danger)'][index % 5]} />)}
                                     </Pie>
                                     <RechartsTooltip />
                                     <Legend />
                                 </RechartsPieChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center" style={{ color: '#adb5bd' }}>
+                            <div className="h-full flex flex-col items-center justify-center" style={{ color: 'var(--odoo-text-muted)' }}>
                                 <PieChartIcon className="w-10 h-10 mb-2 opacity-20" />
                                 <span className="text-sm">{t('insufficientData')}</span>
                             </div>
@@ -297,27 +297,27 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                 </div>
 
                 {/* Delay Chart */}
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                    <div className="px-5 py-3" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                            <AlertTriangle className="w-4 h-4" style={{ color: '#dc3545' }} /> {t('chartDelayed')}
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
+                    <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                            <AlertTriangle className="w-4 h-4" style={{ color: 'var(--odoo-danger)' }} /> {t('chartDelayed')}
                         </h3>
                     </div>
                     <div className="p-5 h-64">
                         {delayedOrdersData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={delayedOrdersData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f3f5" />
-                                    <XAxis dataKey="platform" tick={{ fontSize: 11, fill: '#6c757d' }} axisLine={false} tickLine={false} />
-                                    <YAxis tick={{ fontSize: 11, fill: '#6c757d' }} axisLine={false} tickLine={false} />
-                                    <RechartsTooltip cursor={{ fill: '#f8f9fa' }} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--odoo-surface-high)" />
+                                    <XAxis dataKey="platform" tick={{ fontSize: 11, fill: 'var(--odoo-text-secondary)' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 11, fill: 'var(--odoo-text-secondary)' }} axisLine={false} tickLine={false} />
+                                    <RechartsTooltip cursor={{ fill: 'var(--odoo-surface-low)' }} />
                                     <Bar dataKey="count" radius={[2, 2, 0, 0]} maxBarSize={40}>
                                         {delayedOrdersData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center" style={{ color: '#017E84' }}>
+                            <div className="h-full flex flex-col items-center justify-center" style={{ color: 'var(--odoo-teal)' }}>
                                 <CheckCircle2 className="w-10 h-10 mb-2 opacity-20" />
                                 <span className="text-sm font-semibold italic">All clear!</span>
                             </div>
@@ -328,10 +328,10 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
 
             {/* Performance Table */}
             {userRole === 'admin' && (
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div className="px-5 py-3" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                            <Target className="w-4 h-4" style={{ color: '#714B67' }} /> {t('kpiSpeed')} — Team Performance
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                            <Target className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> {t('kpiSpeed')} — Team Performance
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
@@ -349,17 +349,17 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                             <tbody>
                                 {kpiPerformanceData.map(stat => (
                                     <tr key={stat.username}>
-                                        <td className="font-semibold" style={{ color: '#212529' }}>{stat.name}</td>
-                                        <td className="text-center" style={{ color: '#6c757d' }}>{stat.pick}</td>
-                                        <td className="text-center" style={{ color: '#6c757d' }}>{stat.pack}</td>
-                                        <td className="text-center" style={{ color: '#6c757d' }}>{stat.scan}</td>
-                                        <td className="text-center font-bold" style={{ color: '#714B67' }}>{stat.total}</td>
-                                        <td className="text-right font-bold" style={{ color: '#017E84' }}>{stat.uph}</td>
+                                        <td className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{stat.name}</td>
+                                        <td className="text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.pick}</td>
+                                        <td className="text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.pack}</td>
+                                        <td className="text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.scan}</td>
+                                        <td className="text-center font-bold" style={{ color: 'var(--odoo-purple)' }}>{stat.total}</td>
+                                        <td className="text-right font-bold" style={{ color: 'var(--odoo-teal)' }}>{stat.uph}</td>
                                     </tr>
                                 ))}
                                 {kpiPerformanceData.length === 0 && (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-10" style={{ color: '#adb5bd' }}>No data available for today.</td>
+                                        <td colSpan="6" className="text-center py-10" style={{ color: 'var(--odoo-text-muted)' }}>No data available for today.</td>
                                     </tr>
                                 )}
                             </tbody>

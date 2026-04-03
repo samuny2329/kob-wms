@@ -422,21 +422,21 @@ window.onload=function(){
                 </div>
             )}
             {!selectedPickOrder ? (
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
                     {/* Header */}
-                    <div className="px-5 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                    <div className="px-5 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                         <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ backgroundColor: '#714B67' }}>
+                            <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))' }}>
                                 <ShoppingCart className="w-4 h-4" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-semibold" style={{ color: '#212529' }}>Pick List</h2>
-                                <p className="text-[11px]" style={{ color: '#6c757d' }}>{pendingOrders.length} orders waiting</p>
+                                <h2 className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>Pick List</h2>
+                                <p className="text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>{pendingOrders.length} orders waiting</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
                             {/* Odoo-style view switcher */}
-                            <div className="flex items-center gap-0.5 rounded p-0.5" style={{ backgroundColor: '#e9ecef', border: '1px solid #dee2e6' }}>
+                            <div className="flex items-center gap-0.5 rounded p-0.5" style={{ backgroundColor: '#e9ecef', border: '1px solid var(--odoo-border-ghost)' }}>
                                 {[
                                     { mode: 'list', icon: <List className="w-3.5 h-3.5" />, label: 'List' },
                                     { mode: 'kanban', icon: <LayoutGrid className="w-3.5 h-3.5" />, label: 'Kanban' },
@@ -444,7 +444,7 @@ window.onload=function(){
                                 ].map(v => (
                                     <button key={v.mode} onClick={() => setViewMode(v.mode)} title={v.label}
                                         className="p-1.5 rounded transition-colors"
-                                        style={{ backgroundColor: viewMode === v.mode ? '#714B67' : 'transparent', color: viewMode === v.mode ? '#fff' : '#6c757d' }}>
+                                        style={{ backgroundColor: viewMode === v.mode ? 'var(--odoo-purple)' : 'transparent', color: viewMode === v.mode ? '#fff' : 'var(--odoo-text-secondary)' }}>
                                         {v.icon}
                                     </button>
                                 ))}
@@ -492,19 +492,19 @@ window.onload=function(){
                     {/* Sync loading banner */}
                     {isSyncingOrders && (
                         <div className="px-5 py-2 flex items-center gap-2" style={{ backgroundColor: '#e8f4fd', borderBottom: '1px solid #b8daff' }}>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" style={{ color: '#17a2b8' }} />
-                            <p className="text-xs font-medium" style={{ color: '#17a2b8' }}>Loading orders from Odoo...</p>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" style={{ color: 'var(--odoo-info)' }} />
+                            <p className="text-xs font-medium" style={{ color: 'var(--odoo-info)' }}>Loading orders from Odoo...</p>
                         </div>
                     )}
 
                     {/* Scan box */}
                     <div
                         className={`px-5 py-3 cursor-pointer transition-colors`}
-                        style={{ borderBottom: '1px solid #dee2e6', backgroundColor: scanFlash === 'notfound' ? '#fff5f5' : '#fafafa' }}
+                        style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: scanFlash === 'notfound' ? '#fff5f5' : '#fafafa' }}
                         onClick={() => listScanRef.current?.focus()}
                     >
                         <div className="relative">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#adb5bd' }} />
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--odoo-text-muted)' }} />
                             <input
                                 ref={listScanRef}
                                 type="text"
@@ -521,21 +521,21 @@ window.onload=function(){
                                 placeholder="Tap here, then scan Pick list barcode..."
                                 className="w-full pl-9 pr-4 py-2 text-sm font-mono outline-none transition-all"
                                 style={{
-                                    border: `1px solid ${scanFlash === 'notfound' ? '#dc3545' : '#dee2e6'}`,
+                                    border: `1px solid ${scanFlash === 'notfound' ? 'var(--odoo-danger)' : 'var(--odoo-border)'}`,
                                     borderRadius: '4px',
-                                    backgroundColor: '#ffffff',
-                                    color: '#212529',
+                                    backgroundColor: 'var(--odoo-surface)',
+                                    color: 'var(--odoo-text)',
                                 }}
                             />
-                            <ScanLine className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 animate-pulse" style={{ color: '#714B67' }} />
+                            <ScanLine className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 animate-pulse" style={{ color: 'var(--odoo-purple)' }} />
                         </div>
                         {scanFlash === 'notfound' && debugScan && (
                             <div className="mt-2 p-2 rounded" style={{ backgroundColor: '#fff5f5', border: '1px solid #f5c6cb' }}>
-                                <p className="text-xs font-semibold" style={{ color: '#dc3545' }}>Work order not found ({debugScan.count} orders)</p>
-                                <p className="text-[10px] font-mono mt-0.5" style={{ color: '#dc3545' }}>Scanned: <span className="font-bold">"{debugScan.val}"</span></p>
-                                <p className="text-[10px] font-mono" style={{ color: '#adb5bd' }}>First ref: "{debugScan.firstRef}"</p>
+                                <p className="text-xs font-semibold" style={{ color: 'var(--odoo-danger)' }}>Work order not found ({debugScan.count} orders)</p>
+                                <p className="text-[10px] font-mono mt-0.5" style={{ color: 'var(--odoo-danger)' }}>Scanned: <span className="font-bold">"{debugScan.val}"</span></p>
+                                <p className="text-[10px] font-mono" style={{ color: 'var(--odoo-text-muted)' }}>First ref: "{debugScan.firstRef}"</p>
                                 {onSyncOrders && (
-                                    <button onClick={onSyncOrders} className="mt-1.5 text-[10px] underline" style={{ color: '#17a2b8' }}>
+                                    <button onClick={onSyncOrders} className="mt-1.5 text-[10px] underline" style={{ color: 'var(--odoo-info)' }}>
                                         Sync Orders again
                                     </button>
                                 )}
@@ -545,7 +545,7 @@ window.onload=function(){
 
                     <div>
                         {pendingOrders.length === 0 ? (
-                            <div className="text-center py-16 flex flex-col items-center" style={{ color: '#adb5bd' }}>
+                            <div className="text-center py-16 flex flex-col items-center" style={{ color: 'var(--odoo-text-muted)' }}>
                                 <ClipboardList className="w-10 h-10 mb-3 opacity-30" />
                                 <p className="text-sm">No active picking tasks</p>
                             </div>
@@ -559,22 +559,22 @@ window.onload=function(){
                                         const isFlash = scanFlash === order.id;
                                         return (
                                             <div key={order.id} className="flex items-center justify-between px-4 py-3 cursor-pointer transition-colors"
-                                                style={{ borderBottom: '1px solid #f1f3f5', backgroundColor: isFlash ? '#f9f5f8' : '#ffffff' }}
-                                                onMouseEnter={e => { if (!isFlash) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
-                                                onMouseLeave={e => { if (!isFlash) e.currentTarget.style.backgroundColor = '#ffffff'; }}>
+                                                style={{ borderBottom: '1px solid var(--odoo-surface-high)', backgroundColor: isFlash ? '#f9f5f8' : 'var(--odoo-surface)' }}
+                                                onMouseEnter={e => { if (!isFlash) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
+                                                onMouseLeave={e => { if (!isFlash) e.currentTarget.style.backgroundColor = 'var(--odoo-surface)'; }}>
                                                 <div className="flex items-center gap-3 flex-1" onClick={() => setSelectedPickOrder(order)}>
                                                     {pl ? <PlatformBadge name={order.courier || order.platform} size={32} /> : (() => { const av = getAvatarColor(order.customer || order.ref); return <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold shrink-0" style={{ backgroundColor: av.bg, color: av.text }}>{(order.customer || order.ref || '?')[0].toUpperCase()}</div>; })()}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-1.5 mb-0.5">
-                                                            <h3 className="font-semibold text-sm" style={{ color: '#212529' }}>{order.ref}</h3>
+                                                            <h3 className="font-semibold text-sm" style={{ color: 'var(--odoo-text)' }}>{order.ref}</h3>
                                                             <span className={statusBadgeClass(order.status)}>{statusLabel(order.status)}</span>
                                                         </div>
-                                                        <p className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} pcs &bull; {order.items.length} SKU{order.items.length > 1 ? 's' : ''}</p>
+                                                        <p className="text-xs truncate" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} pcs &bull; {order.items.length} SKU{order.items.length > 1 ? 's' : ''}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <button onClick={(e) => { e.stopPropagation(); generatePickingList(order); }} className="p-1.5 rounded transition-colors" style={{ color: '#adb5bd' }} title="Print Picking List"><Printer className="w-4 h-4" /></button>
-                                                    <ChevronRight className="w-4 h-4" style={{ color: '#dee2e6' }} />
+                                                    <button onClick={(e) => { e.stopPropagation(); generatePickingList(order); }} className="p-1.5 rounded transition-colors" style={{ color: 'var(--odoo-text-muted)' }} title="Print Picking List"><Printer className="w-4 h-4" /></button>
+                                                    <ChevronRight className="w-4 h-4" style={{ color: 'var(--odoo-border)' }} />
                                                 </div>
                                             </div>
                                         );
@@ -586,17 +586,17 @@ window.onload=function(){
                             {viewMode === 'kanban' && (
                                 <div className="flex gap-3 p-4 overflow-x-auto" style={{ minHeight: '300px' }}>
                                     {[
-                                        { status: 'pending', label: 'Pending', color: '#ffac00', borderColor: '#ffac00' },
-                                        { status: 'picking', label: 'In Progress', color: '#17a2b8', borderColor: '#17a2b8' },
-                                        { status: 'picked', label: 'Picked', color: '#714B67', borderColor: '#714B67' },
+                                        { status: 'pending', label: 'Pending', color: 'var(--odoo-warning)', borderColor: 'var(--odoo-warning)' },
+                                        { status: 'picking', label: 'In Progress', color: 'var(--odoo-info)', borderColor: 'var(--odoo-info)' },
+                                        { status: 'picked', label: 'Picked', color: 'var(--odoo-purple)', borderColor: 'var(--odoo-purple)' },
                                     ].map(col => {
                                         const colOrders = pendingOrders.filter(o => o.status === col.status);
                                         return (
-                                            <div key={col.status} className="flex-1 min-w-[220px] rounded-lg flex flex-col" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+                                            <div key={col.status} className="flex-1 min-w-[220px] rounded-lg flex flex-col" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)' }}>
                                                 <div className="px-3 py-2.5 flex items-center gap-2 rounded-t-lg" style={{ borderBottom: `3px solid ${col.borderColor}` }}>
                                                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: col.color }} />
-                                                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#212529' }}>{col.label}</span>
-                                                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#dee2e6', color: '#6c757d' }}>{colOrders.length}</span>
+                                                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text)' }}>{col.label}</span>
+                                                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--odoo-border)', color: 'var(--odoo-text-secondary)' }}>{colOrders.length}</span>
                                                 </div>
                                                 <div className="flex-1 p-2 space-y-2 overflow-y-auto" style={{ maxHeight: '500px' }}>
                                                     {colOrders.map(order => {
@@ -606,36 +606,36 @@ window.onload=function(){
                                                         return (
                                                             <div key={order.id} onClick={() => setSelectedPickOrder(order)}
                                                                 className="rounded-lg p-3 cursor-pointer transition-all hover:shadow-md"
-                                                                style={{ backgroundColor: stockStatus.ok ? '#ffffff' : '#fff8f0', border: '1px solid #dee2e6', borderLeft: `3px solid ${stockStatus.ok ? col.borderColor : '#dc3545'}` }}>
+                                                                style={{ backgroundColor: stockStatus.ok ? 'var(--odoo-surface)' : '#fff8f0', border: '1px solid var(--odoo-border-ghost)', borderLeft: `3px solid ${stockStatus.ok ? col.borderColor : 'var(--odoo-danger)'}` }}>
                                                                 <div className="flex items-center justify-between mb-2">
-                                                                    <span className="text-xs font-bold" style={{ color: '#212529' }}>{order.ref}</span>
+                                                                    <span className="text-xs font-bold" style={{ color: 'var(--odoo-text)' }}>{order.ref}</span>
                                                                     <div className="flex items-center gap-1">
                                                                         {!stockStatus.ok && (
-                                                                            <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#fee2e2', color: '#dc3545' }}>
+                                                                            <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#fee2e2', color: 'var(--odoo-danger)' }}>
                                                                                 <AlertTriangle className="w-2.5 h-2.5" /> {stockStatus.outOfStock.length} OOS
                                                                             </span>
                                                                         )}
                                                                         {pl && <PlatformBadge name={order.courier || order.platform} size={20} />}
                                                                     </div>
                                                                 </div>
-                                                                <p className="text-[11px] truncate mb-1" style={{ color: '#6c757d' }}>{order.customer}</p>
+                                                                <p className="text-[11px] truncate mb-1" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer}</p>
                                                                 {!stockStatus.ok && (
                                                                     <div className="mb-1">
                                                                         {stockStatus.outOfStock.slice(0, 2).map(item => (
-                                                                            <p key={item.sku} className="text-[9px] font-medium" style={{ color: '#dc3545' }}>
+                                                                            <p key={item.sku} className="text-[9px] font-medium" style={{ color: 'var(--odoo-danger)' }}>
                                                                                 {item.sku}: insufficient stock
                                                                             </p>
                                                                         ))}
                                                                     </div>
                                                                 )}
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-[10px] font-medium" style={{ color: '#714B67' }}>{itemCount} items &bull; {order.items.length} SKUs</span>
-                                                                    <ChevronRight className="w-3 h-3" style={{ color: '#dee2e6' }} />
+                                                                    <span className="text-[10px] font-medium" style={{ color: 'var(--odoo-purple)' }}>{itemCount} items &bull; {order.items.length} SKUs</span>
+                                                                    <ChevronRight className="w-3 h-3" style={{ color: 'var(--odoo-border)' }} />
                                                                 </div>
                                                             </div>
                                                         );
                                                     })}
-                                                    {colOrders.length === 0 && <div className="text-center py-8 text-xs" style={{ color: '#adb5bd' }}>No orders</div>}
+                                                    {colOrders.length === 0 && <div className="text-center py-8 text-xs" style={{ color: 'var(--odoo-text-muted)' }}>No orders</div>}
                                                 </div>
                                             </div>
                                         );
@@ -651,37 +651,37 @@ window.onload=function(){
                                         const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
                                         const picked = order.items.reduce((s, i) => s + (i.picked || 0), 0);
                                         const progress = itemCount > 0 ? Math.round((picked / itemCount) * 100) : 0;
-                                        const statusColors = { pending: '#ffac00', picking: '#17a2b8', picked: '#714B67' };
+                                        const statusColors = { pending: 'var(--odoo-warning)', picking: 'var(--odoo-info)', picked: 'var(--odoo-purple)' };
                                         return (
                                             <div key={order.id} onClick={() => setSelectedPickOrder(order)}
                                                 className="rounded-lg cursor-pointer transition-all hover:shadow-md overflow-hidden"
-                                                style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6' }}>
-                                                <div className="h-1" style={{ backgroundColor: statusColors[order.status] || '#dee2e6' }} />
+                                                style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
+                                                <div className="h-1" style={{ backgroundColor: statusColors[order.status] || 'var(--odoo-border)' }} />
                                                 <div className="p-4">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <h3 className="text-sm font-bold" style={{ color: '#212529' }}>{order.ref}</h3>
+                                                        <h3 className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>{order.ref}</h3>
                                                         <span className={statusBadgeClass(order.status)}>{statusLabel(order.status)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 mb-3">
                                                         {pl ? <PlatformBadge name={order.courier || order.platform} size={24} /> : (() => { const av = getAvatarColor(order.customer || order.ref); return <div className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: av.bg, color: av.text }}>{(order.customer || '?')[0].toUpperCase()}</div>; })()}
-                                                        <span className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer}</span>
+                                                        <span className="text-xs truncate" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer}</span>
                                                     </div>
                                                     <div className="grid grid-cols-3 gap-2 mb-3">
-                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: '#f8f9fa' }}>
-                                                            <div className="text-sm font-bold" style={{ color: '#714B67' }}>{itemCount}</div>
-                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: '#adb5bd' }}>Items</div>
+                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                            <div className="text-sm font-bold" style={{ color: 'var(--odoo-purple)' }}>{itemCount}</div>
+                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Items</div>
                                                         </div>
-                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: '#f8f9fa' }}>
-                                                            <div className="text-sm font-bold" style={{ color: '#017E84' }}>{order.items.length}</div>
-                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: '#adb5bd' }}>SKUs</div>
+                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                            <div className="text-sm font-bold" style={{ color: 'var(--odoo-teal)' }}>{order.items.length}</div>
+                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>SKUs</div>
                                                         </div>
-                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: '#f8f9fa' }}>
-                                                            <div className="text-sm font-bold" style={{ color: progress === 100 ? '#28a745' : '#ffac00' }}>{progress}%</div>
-                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: '#adb5bd' }}>Done</div>
+                                                        <div className="text-center py-1.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                            <div className="text-sm font-bold" style={{ color: progress === 100 ? 'var(--odoo-success)' : 'var(--odoo-warning)' }}>{progress}%</div>
+                                                            <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Done</div>
                                                         </div>
                                                     </div>
                                                     <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#e9ecef' }}>
-                                                        <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: progress === 100 ? '#28a745' : '#714B67' }} />
+                                                        <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: progress === 100 ? 'var(--odoo-success)' : 'var(--odoo-purple)' }} />
                                                     </div>
                                                 </div>
                                             </div>
@@ -694,22 +694,22 @@ window.onload=function(){
                     </div>
                 </div>
             ) : (
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div className="px-5 py-3 flex justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                        <button onClick={() => setSelectedPickOrder(null)} className="text-sm font-medium flex items-center gap-1 transition-colors" style={{ color: '#714B67' }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#5a3d52'}
-                            onMouseLeave={e => e.currentTarget.style.color = '#714B67'}
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div className="px-5 py-3 flex justify-between items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                        <button onClick={() => setSelectedPickOrder(null)} className="text-sm font-medium flex items-center gap-1 transition-colors" style={{ color: 'var(--odoo-purple)' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'var(--odoo-purple-dark)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'var(--odoo-purple)'}
                         >
                             <ChevronLeft className="w-4 h-4" /> Pick List
                         </button>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => generatePickingList(selectedPickOrder)} className="p-1.5 rounded transition-colors" style={{ color: '#6c757d' }}
-                                onMouseEnter={e => { e.currentTarget.style.color = '#714B67'; e.currentTarget.style.backgroundColor = '#f0e8ed'; }}
-                                onMouseLeave={e => { e.currentTarget.style.color = '#6c757d'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                            <button onClick={() => generatePickingList(selectedPickOrder)} className="p-1.5 rounded transition-colors" style={{ color: 'var(--odoo-text-secondary)' }}
+                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--odoo-purple)'; e.currentTarget.style.backgroundColor = 'var(--odoo-purple-light)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--odoo-text-secondary)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                                 title="Print">
                                 <Printer className="w-4 h-4" />
                             </button>
-                            <span className="font-mono font-semibold text-sm px-2.5 py-1" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529' }}>
+                            <span className="font-mono font-semibold text-sm px-2.5 py-1" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', color: 'var(--odoo-text)' }}>
                                 {selectedPickOrder.ref}
                             </span>
                         </div>
@@ -734,9 +734,9 @@ window.onload=function(){
                                     placeholder="Scan Product Barcode..."
                                     className="industrial-input w-full text-center"
                                 />
-                                <ScanLine className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style={{ color: '#dee2e6' }} />
+                                <ScanLine className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--odoo-border)' }} />
                             </div>
-                            <p className="text-[10px] font-semibold uppercase tracking-widest mt-2 animate-pulse" style={{ color: '#adb5bd' }}>Waiting for barcode scan...</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-widest mt-2 animate-pulse" style={{ color: 'var(--odoo-text-muted)' }}>Waiting for barcode scan...</p>
                         </div>
                         <div className="space-y-1.5">
                             {(pickPathEnabled ? sortByPickPath(selectedPickOrder.items) : selectedPickOrder.items).map((item, idx) => {
@@ -744,37 +744,37 @@ window.onload=function(){
                                 const catalog = PRODUCT_CATALOG[item.sku];
                                 return (
                                     <div key={idx} className="p-3 flex items-center gap-3 transition-all rounded" style={{
-                                        border: `1px solid ${isComplete ? '#b8e0c4' : '#dee2e6'}`,
-                                        backgroundColor: isComplete ? '#f0fdf4' : '#ffffff',
+                                        border: `1px solid ${isComplete ? '#b8e0c4' : 'var(--odoo-border)'}`,
+                                        backgroundColor: isComplete ? '#f0fdf4' : 'var(--odoo-surface)',
                                     }}>
-                                        <div className="w-11 h-11 rounded overflow-hidden shrink-0" style={{ border: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                                        <div className="w-11 h-11 rounded overflow-hidden shrink-0" style={{ border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                             {(item.image || catalog?.image) ? (
                                                 <img src={item.image || catalog.image} alt={item.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center" style={{ color: '#dee2e6' }}><Box className="w-4 h-4" /></div>
+                                                <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--odoo-border)' }}><Box className="w-4 h-4" /></div>
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm truncate" style={{ color: isComplete ? '#28a745' : '#212529' }}>{catalog?.shortName || item.name}</p>
-                                            <p className="text-[10px] font-mono uppercase" style={{ color: '#adb5bd' }}>{item.sku}</p>
+                                            <p className="font-semibold text-sm truncate" style={{ color: isComplete ? 'var(--odoo-success)' : 'var(--odoo-text)' }}>{catalog?.shortName || item.name}</p>
+                                            <p className="text-[10px] font-mono uppercase" style={{ color: 'var(--odoo-text-muted)' }}>{item.sku}</p>
                                             {getLocation(item.sku, item.location) && (
-                                                <p className="text-[11px] font-bold flex items-center gap-1 mt-0.5" style={{ color: '#ffac00' }}>
+                                                <p className="text-[11px] font-bold flex items-center gap-1 mt-0.5" style={{ color: 'var(--odoo-warning)' }}>
                                                     <MapPin className="w-3 h-3" />{getLocation(item.sku, item.location)}
                                                 </p>
                                             )}
                                             {!getLocation(item.sku, item.location) && item.barcode && (
-                                                <p className="text-[10px] font-mono" style={{ color: '#dee2e6' }}>{item.barcode}</p>
+                                                <p className="text-[10px] font-mono" style={{ color: 'var(--odoo-border)' }}>{item.barcode}</p>
                                             )}
                                             {(() => {
                                                 const si = invItems.find(inv => (inv.sku || inv.default_code) === item.sku);
                                                 const onHand = si?.onHand ?? si?.quantity ?? 0;
                                                 if (invItems.length > 0 && onHand <= 0) {
-                                                    return <p className="text-[10px] font-bold flex items-center gap-0.5 mt-0.5" style={{ color: '#dc3545' }}>
+                                                    return <p className="text-[10px] font-bold flex items-center gap-0.5 mt-0.5" style={{ color: 'var(--odoo-danger)' }}>
                                                         <AlertTriangle className="w-3 h-3" /> Out of Stock
                                                     </p>;
                                                 }
                                                 if (invItems.length > 0 && onHand > 0) {
-                                                    return <p className="text-[10px] flex items-center gap-0.5 mt-0.5" style={{ color: '#28a745' }}>
+                                                    return <p className="text-[10px] flex items-center gap-0.5 mt-0.5" style={{ color: 'var(--odoo-success)' }}>
                                                         Stock: {onHand}
                                                     </p>;
                                                 }
@@ -782,11 +782,11 @@ window.onload=function(){
                                             })()}
                                         </div>
                                         <div className="text-right shrink-0 flex items-center gap-2">
-                                            {isComplete && <CheckSquare className="w-4 h-4" style={{ color: '#28a745' }} />}
+                                            {isComplete && <CheckSquare className="w-4 h-4" style={{ color: 'var(--odoo-success)' }} />}
                                             <div>
-                                                <span className="text-xl font-bold tabular-nums" style={{ color: isComplete ? '#28a745' : '#212529' }}>{item.picked}</span>
-                                                <span className="mx-0.5" style={{ color: '#dee2e6' }}>/</span>
-                                                <span className="text-sm font-semibold" style={{ color: '#6c757d' }}>{item.expected}</span>
+                                                <span className="text-xl font-bold tabular-nums" style={{ color: isComplete ? 'var(--odoo-success)' : 'var(--odoo-text)' }}>{item.picked}</span>
+                                                <span className="mx-0.5" style={{ color: 'var(--odoo-border)' }}>/</span>
+                                                <span className="text-sm font-semibold" style={{ color: 'var(--odoo-text-secondary)' }}>{item.expected}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -912,12 +912,12 @@ window.onload=function(){
             {/* Print Picking List Modal */}
             {showPickingList && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.55)' }}>
-                    <div className="w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                        <div className="px-5 py-3 flex justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                                <Printer className="w-4 h-4" style={{ color: '#714B67' }} /> Picking List (BiM Format)
+                    <div className="w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3 flex justify-between items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                                <Printer className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> Picking List (BiM Format)
                             </h2>
-                            <button onClick={() => setShowPickingList(null)} className="p-1 rounded transition-colors hover:bg-gray-200" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                            <button onClick={() => setShowPickingList(null)} className="p-1 rounded transition-colors hover:bg-gray-200" style={{ color: 'var(--odoo-text-secondary)' }}><X className="w-4 h-4" /></button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-5 custom-scrollbar font-mono text-sm">
@@ -959,26 +959,26 @@ window.onload=function(){
                                 return <>{summarySection}{orders.map((order, idx) => {
                                     const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
                                     return (
-                                        <div key={idx} className="mb-6 pb-5 last:border-0" style={{ borderBottom: '2px dashed #dee2e6' }}>
-                                            <div className="font-bold text-sm" style={{ color: '#212529' }}>[Picking List] {pl?.name || order.platform}_KissMyBody</div>
-                                            <div className="text-xs mt-0.5" style={{ color: '#6c757d' }}>Set_NO No.{idx+1} / Total {total}</div>
-                                            <div className="mt-2 px-3 py-1.5 rounded inline-block text-xs tracking-widest font-mono" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#212529' }}>{order.ref}</div>
-                                            <div className="text-xs mt-1 mb-3" style={{ color: '#6c757d' }}>{order.customer && `Customer: ${order.customer}`}</div>
+                                        <div key={idx} className="mb-6 pb-5 last:border-0" style={{ borderBottom: '2px dashed var(--odoo-border)' }}>
+                                            <div className="font-bold text-sm" style={{ color: 'var(--odoo-text)' }}>[Picking List] {pl?.name || order.platform}_KissMyBody</div>
+                                            <div className="text-xs mt-0.5" style={{ color: 'var(--odoo-text-secondary)' }}>Set_NO No.{idx+1} / Total {total}</div>
+                                            <div className="mt-2 px-3 py-1.5 rounded inline-block text-xs tracking-widest font-mono" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text)' }}>{order.ref}</div>
+                                            <div className="text-xs mt-1 mb-3" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer && `Customer: ${order.customer}`}</div>
                                             <div className="space-y-1 mb-3">
                                                 {order.items.map((item, i) => {
                                                     const loc = getLocation(item.sku, item.location);
                                                     return (
-                                                    <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: '1px solid #f1f3f5' }}>
-                                                        <span className="text-xs" style={{ color: '#495057' }}>
+                                                    <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: '1px solid var(--odoo-surface-high)' }}>
+                                                        <span className="text-xs" style={{ color: 'var(--odoo-text)' }}>
                                                             {PRODUCT_CATALOG[item.sku]?.shortName || item.name}
-                                                            {loc && <span className="ml-2 font-bold" style={{ color: '#ffac00' }}>[{loc}]</span>}
+                                                            {loc && <span className="ml-2 font-bold" style={{ color: 'var(--odoo-warning)' }}>[{loc}]</span>}
                                                         </span>
-                                                        <span className="font-bold text-sm ml-4" style={{ color: '#212529' }}>{item.sku}~{item.expected}</span>
+                                                        <span className="font-bold text-sm ml-4" style={{ color: 'var(--odoo-text)' }}>{item.sku}~{item.expected}</span>
                                                     </div>
                                                     );
                                                 })}
                                             </div>
-                                            <div className="text-[10px] text-center italic mt-3" style={{ color: '#adb5bd' }}>
+                                            <div className="text-[10px] text-center italic mt-3" style={{ color: 'var(--odoo-text-muted)' }}>
                                                 [Operation Date {dateStr}]<br/>Power By WMS Pro @ Since {Date.now()} UnixTimeStamp
                                             </div>
                                         </div>
@@ -987,7 +987,7 @@ window.onload=function(){
                             })()}
                         </div>
 
-                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <button onClick={() => setShowPickingList(null)} className="odoo-btn odoo-btn-secondary">Close</button>
                             <button onClick={handlePrint} className="odoo-btn odoo-btn-primary flex items-center gap-1.5">
                                 <Printer className="w-3.5 h-3.5" /> Print

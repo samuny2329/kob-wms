@@ -78,15 +78,15 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
     return (
         <div className="w-full animate-slide-up">
             {/* Header */}
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden', marginBottom: '1rem' }}>
-                <div className="px-5 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+            <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden', marginBottom: '1rem' }}>
+                <div className="px-5 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: 'var(--odoo-surface-low)' }}>
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ backgroundColor: '#714B67' }}>
+                        <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ backgroundColor: 'var(--odoo-purple)' }}>
                             <Layers className="w-4 h-4" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-semibold" style={{ color: '#212529' }}>Wave Sorting</h2>
-                            <p className="text-[11px]" style={{ color: '#6c757d' }}>{(waves || []).filter(w => w.status === 'active').length} active waves</p>
+                            <h2 className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>Wave Sorting</h2>
+                            <p className="text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>{(waves || []).filter(w => w.status === 'active').length} active waves</p>
                         </div>
                     </div>
                     <button onClick={() => setShowCreateWave(true)} className="odoo-btn odoo-btn-primary flex items-center gap-1.5">
@@ -97,7 +97,7 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                 {/* Active Waves */}
                 <div>
                     {(!waves || waves.length === 0) ? (
-                        <div className="text-center py-14" style={{ color: '#adb5bd' }}>
+                        <div className="text-center py-14" style={{ color: 'var(--odoo-text-muted)' }}>
                             <Layers className="w-9 h-9 mx-auto mb-2.5 opacity-20" />
                             <p className="text-sm">No waves created yet</p>
                             <p className="text-xs mt-1">Create a wave to group orders by batch</p>
@@ -110,28 +110,28 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                             const packProgress = stats.total > 0 ? Math.round((stats.packed / stats.total) * 100) : 0;
 
                             return (
-                                <div key={wave.id} style={{ borderBottom: '1px solid #f1f3f5' }}>
+                                <div key={wave.id} style={{ borderBottom: '1px solid var(--odoo-surface-high)' }}>
                                     <div className="p-4 cursor-pointer transition-colors"
-                                        style={{ backgroundColor: '#ffffff' }}
+                                        style={{ backgroundColor: 'var(--odoo-surface)' }}
                                         onClick={() => setExpandedWave(isExpanded ? null : wave.id)}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = '#ffffff'}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
+                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface)'}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2.5">
                                                 <span className="text-xl">{wave.icon}</span>
                                                 <div>
                                                     <div className="flex items-center gap-2">
-                                                        <h3 className="font-semibold text-sm" style={{ color: '#212529' }}>{wave.name}</h3>
+                                                        <h3 className="font-semibold text-sm" style={{ color: 'var(--odoo-text)' }}>{wave.name}</h3>
                                                         <span className="odoo-badge text-[10px]" style={{
-                                                            backgroundColor: wave.status === 'active' ? '#e8f5e9' : '#f8f9fa',
-                                                            color: wave.status === 'active' ? '#28a745' : '#6c757d',
-                                                            border: `1px solid ${wave.status === 'active' ? '#b8e0c4' : '#dee2e6'}`,
+                                                            backgroundColor: wave.status === 'active' ? '#e8f5e9' : 'var(--odoo-surface-low)',
+                                                            color: wave.status === 'active' ? 'var(--odoo-success)' : 'var(--odoo-text-secondary)',
+                                                            border: `1px solid ${wave.status === 'active' ? '#b8e0c4' : 'var(--odoo-border-ghost)'}`,
                                                         }}>
                                                             {wave.status === 'active' ? 'Active' : 'Closed'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs" style={{ color: '#6c757d' }}>
+                                                    <p className="text-xs" style={{ color: 'var(--odoo-text-secondary)' }}>
                                                         <Clock className="w-3 h-3 inline mr-1" />{wave.timeRange} | {stats.total} orders
                                                     </p>
                                                 </div>
@@ -139,35 +139,35 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                                             <div className="flex items-center gap-4">
                                                 <div className="hidden sm:flex items-center gap-4 text-xs">
                                                     <div className="text-center">
-                                                        <p className="text-[10px] font-semibold uppercase" style={{ color: '#adb5bd' }}>Picked</p>
-                                                        <p className="font-bold" style={{ color: '#714B67' }}>{pickProgress}%</p>
+                                                        <p className="text-[10px] font-semibold uppercase" style={{ color: 'var(--odoo-text-muted)' }}>Picked</p>
+                                                        <p className="font-bold" style={{ color: 'var(--odoo-purple)' }}>{pickProgress}%</p>
                                                     </div>
                                                     <div className="text-center">
-                                                        <p className="text-[10px] font-semibold uppercase" style={{ color: '#adb5bd' }}>Packed</p>
-                                                        <p className="font-bold" style={{ color: '#017E84' }}>{packProgress}%</p>
+                                                        <p className="text-[10px] font-semibold uppercase" style={{ color: 'var(--odoo-text-muted)' }}>Packed</p>
+                                                        <p className="font-bold" style={{ color: 'var(--odoo-teal)' }}>{packProgress}%</p>
                                                     </div>
                                                 </div>
-                                                {isExpanded ? <ChevronDown className="w-4 h-4" style={{ color: '#dee2e6' }} /> : <ChevronRight className="w-4 h-4" style={{ color: '#dee2e6' }} />}
+                                                {isExpanded ? <ChevronDown className="w-4 h-4" style={{ color: 'var(--odoo-border-ghost)' }} /> : <ChevronRight className="w-4 h-4" style={{ color: 'var(--odoo-border-ghost)' }} />}
                                             </div>
                                         </div>
                                         {/* Progress bars */}
                                         <div className="mt-3 flex gap-2">
-                                            <div className="flex-1 h-1 rounded overflow-hidden" style={{ backgroundColor: '#f8f9fa' }}>
-                                                <div className="h-full rounded transition-all" style={{ width: `${pickProgress}%`, backgroundColor: '#714B67' }} />
+                                            <div className="flex-1 h-1 rounded overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                <div className="h-full rounded transition-all" style={{ width: `${pickProgress}%`, backgroundColor: 'var(--odoo-purple)' }} />
                                             </div>
-                                            <div className="flex-1 h-1 rounded overflow-hidden" style={{ backgroundColor: '#f8f9fa' }}>
-                                                <div className="h-full rounded transition-all" style={{ width: `${packProgress}%`, backgroundColor: '#017E84' }} />
+                                            <div className="flex-1 h-1 rounded overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                <div className="h-full rounded transition-all" style={{ width: `${packProgress}%`, backgroundColor: 'var(--odoo-teal)' }} />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Expanded: Courier Groups */}
                                     {isExpanded && (
-                                        <div className="px-5 pb-5 animate-slide-up" style={{ backgroundColor: '#f8f9fa', borderTop: '1px solid #dee2e6' }}>
+                                        <div className="px-5 pb-5 animate-slide-up" style={{ backgroundColor: 'var(--odoo-surface-low)', borderTop: '1px solid #dee2e6' }}>
                                             <div className="flex justify-between items-center py-3">
-                                                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#6c757d' }}>Courier Groups</p>
+                                                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--odoo-text-secondary)' }}>Courier Groups</p>
                                                 {wave.status === 'active' && (
-                                                    <button onClick={(e) => { e.stopPropagation(); handleCloseWave(wave.id); }} className="text-xs font-medium flex items-center gap-1" style={{ color: '#dc3545' }}>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleCloseWave(wave.id); }} className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--odoo-danger)' }}>
                                                         <X className="w-3 h-3" /> Close Wave
                                                     </button>
                                                 )}
@@ -177,21 +177,21 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                                                     const pl = PLATFORM_LABELS[courier];
                                                     const done = orders.filter(o => ['packed', 'rts'].includes(o.status)).length;
                                                     return (
-                                                        <div key={courier} className="p-3" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                                                        <div key={courier} className="p-3" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid #dee2e6', borderRadius: '4px' }}>
                                                             <div className="flex items-center gap-2 mb-2">
                                                                 <PlatformBadge name={order.courier || order.platform} size={28} />
                                                                 <div className="flex-1">
-                                                                    <p className="font-semibold text-xs" style={{ color: '#212529' }}>{pl?.name || courier}</p>
-                                                                    <p className="text-[10px]" style={{ color: '#adb5bd' }}>{orders.length} orders | {done} done</p>
+                                                                    <p className="font-semibold text-xs" style={{ color: 'var(--odoo-text)' }}>{pl?.name || courier}</p>
+                                                                    <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>{orders.length} orders | {done} done</p>
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 {orders.map(o => (
-                                                                    <div key={o.id} className="flex justify-between items-center text-xs px-2 py-1 rounded" style={{ backgroundColor: '#f8f9fa' }}>
-                                                                        <span className="font-mono font-semibold" style={{ color: '#212529' }}>{o.ref}</span>
+                                                                    <div key={o.id} className="flex justify-between items-center text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                                        <span className="font-mono font-semibold" style={{ color: 'var(--odoo-text)' }}>{o.ref}</span>
                                                                         <span className="odoo-badge text-[10px]" style={{
                                                                             backgroundColor: o.status === 'rts' ? '#e8f5e9' : o.status === 'packed' ? '#e0f4f3' : o.status === 'picked' ? '#e8f4fd' : '#fff8e1',
-                                                                            color: o.status === 'rts' ? '#28a745' : o.status === 'packed' ? '#017E84' : o.status === 'picked' ? '#17a2b8' : '#856404',
+                                                                            color: o.status === 'rts' ? 'var(--odoo-success)' : o.status === 'packed' ? 'var(--odoo-teal)' : o.status === 'picked' ? 'var(--odoo-info)' : '#856404',
                                                                         }}>{o.status}</span>
                                                                     </div>
                                                                 ))}
@@ -212,30 +212,30 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
             {/* Create Wave Modal */}
             {showCreateWave && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.55)' }}>
-                    <div className="w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                        <div className="px-5 py-3.5 flex justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                                <Layers className="w-4 h-4" style={{ color: '#714B67' }} /> Create Wave
+                    <div className="w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3.5 flex justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                                <Layers className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> Create Wave
                             </h3>
-                            <button onClick={() => setShowCreateWave(false)} className="p-1 rounded hover:bg-gray-200" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                            <button onClick={() => setShowCreateWave(false)} className="p-1 rounded hover:bg-gray-200" style={{ color: 'var(--odoo-text-secondary)' }}><X className="w-4 h-4" /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: '#6c757d' }}>Wave Name</label>
+                                    <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--odoo-text-secondary)' }}>Wave Name</label>
                                     <input type="text" value={newWaveName} onChange={e => setNewWaveName(e.target.value)} placeholder="e.g., Morning Wave 14-Mar" className="odoo-input w-full" />
                                 </div>
                                 <div>
-                                    <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: '#6c757d' }}>Wave Type</label>
+                                    <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--odoo-text-secondary)' }}>Wave Type</label>
                                     <div className="flex gap-2">
                                         {WAVE_TEMPLATES.map(t => (
                                             <button key={t.id} onClick={() => { setNewWaveType(t.id); if (!newWaveName) setNewWaveName(t.name); }}
                                                 className="flex-1 p-2 text-center text-xs font-semibold transition-all"
                                                 style={{
-                                                    border: `2px solid ${newWaveType === t.id ? '#714B67' : '#dee2e6'}`,
+                                                    border: `2px solid ${newWaveType === t.id ? 'var(--odoo-purple)' : 'var(--odoo-border-ghost)'}`,
                                                     borderRadius: '4px',
-                                                    backgroundColor: newWaveType === t.id ? '#f9f5f8' : '#ffffff',
-                                                    color: '#212529',
+                                                    backgroundColor: newWaveType === t.id ? '#f9f5f8' : 'var(--odoo-surface)',
+                                                    color: 'var(--odoo-text)',
                                                 }}
                                             >
                                                 <span className="text-base block mb-0.5">{t.icon}</span>
@@ -248,13 +248,13 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
 
                             <div>
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#6c757d' }}>Select Orders ({selectedOrderIds.length} selected)</label>
-                                    <button onClick={selectAllOrders} className="text-xs font-medium underline" style={{ color: '#714B67' }}>
+                                    <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--odoo-text-secondary)' }}>Select Orders ({selectedOrderIds.length} selected)</label>
+                                    <button onClick={selectAllOrders} className="text-xs font-medium underline" style={{ color: 'var(--odoo-purple)' }}>
                                         {selectedOrderIds.length === assignableOrders.length ? 'Deselect All' : 'Select All'}
                                     </button>
                                 </div>
                                 {assignableOrders.length === 0 ? (
-                                    <div className="text-center py-8 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#adb5bd' }}>
+                                    <div className="text-center py-8 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid #dee2e6', color: 'var(--odoo-text-muted)' }}>
                                         <p className="text-sm">No orders available to assign</p>
                                     </div>
                                 ) : (
@@ -266,28 +266,28 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                                                 <button key={order.id} onClick={() => toggleOrderSelect(order.id)}
                                                     className="w-full p-2.5 flex items-center gap-2.5 transition-all text-left"
                                                     style={{
-                                                        border: `1px solid ${isSelected ? '#714B67' : '#dee2e6'}`,
+                                                        border: `1px solid ${isSelected ? 'var(--odoo-purple)' : 'var(--odoo-border-ghost)'}`,
                                                         borderRadius: '4px',
-                                                        backgroundColor: isSelected ? '#f9f5f8' : '#ffffff',
+                                                        backgroundColor: isSelected ? '#f9f5f8' : 'var(--odoo-surface)',
                                                     }}
-                                                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
-                                                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                                                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
+                                                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--odoo-surface)'; }}
                                                 >
                                                     <div className="w-4 h-4 rounded flex items-center justify-center shrink-0" style={{
-                                                        border: `2px solid ${isSelected ? '#714B67' : '#dee2e6'}`,
-                                                        backgroundColor: isSelected ? '#714B67' : '#ffffff',
-                                                        color: '#ffffff',
+                                                        border: `2px solid ${isSelected ? 'var(--odoo-purple)' : 'var(--odoo-border-ghost)'}`,
+                                                        backgroundColor: isSelected ? 'var(--odoo-purple)' : 'var(--odoo-surface)',
+                                                        color: 'var(--odoo-surface)',
                                                     }}>
                                                         {isSelected && <Check className="w-2.5 h-2.5" />}
                                                     </div>
                                                     <PlatformBadge name={order.courier || order.platform} size={24} />
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-semibold text-sm" style={{ color: '#212529' }}>{order.ref}</p>
-                                                        <p className="text-xs truncate" style={{ color: '#6c757d' }}>{order.customer} | {order.items?.reduce((s, i) => s + i.expected, 0)} items</p>
+                                                        <p className="font-semibold text-sm" style={{ color: 'var(--odoo-text)' }}>{order.ref}</p>
+                                                        <p className="text-xs truncate" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer} | {order.items?.reduce((s, i) => s + i.expected, 0)} items</p>
                                                     </div>
                                                     <span className="odoo-badge text-[10px] shrink-0" style={{
                                                         backgroundColor: order.status === 'picked' ? '#e8f4fd' : '#fff8e1',
-                                                        color: order.status === 'picked' ? '#17a2b8' : '#856404',
+                                                        color: order.status === 'picked' ? 'var(--odoo-info)' : '#856404',
                                                     }}>{order.status}</span>
                                                 </button>
                                             );
@@ -296,7 +296,7 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                                 )}
                             </div>
                         </div>
-                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <button onClick={() => setShowCreateWave(false)} className="odoo-btn odoo-btn-secondary">Cancel</button>
                             <button onClick={handleCreateWave} disabled={!newWaveName.trim() || selectedOrderIds.length === 0} className="odoo-btn odoo-btn-primary disabled:opacity-50 flex items-center gap-1.5">
                                 <Layers className="w-3.5 h-3.5" /> Create Wave ({selectedOrderIds.length})

@@ -175,16 +175,16 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
         <div className="w-full animate-slide-up h-full relative">
             <div className="flex gap-4 h-full">
                 {/* LEFT: Order List Panel - Odoo style */}
-                <div className="w-80 shrink-0 flex flex-col overflow-hidden" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                <div className="w-80 shrink-0 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
                     {/* Header */}
-                    <div className="p-4" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                    <div className="p-4" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                         <div className="flex items-center gap-2 mb-3">
-                            <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: '#714B67', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: 'var(--odoo-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--odoo-surface)' }}>
                                 <Monitor className="w-4 h-4" />
                             </div>
                             <div>
-                                <h2 style={{ fontWeight: 700, fontSize: '13px', color: '#212529' }}>Pack Station (POS)</h2>
-                                <p style={{ fontSize: '11px', color: '#6c757d' }}>{packableOrders.length} orders to pack</p>
+                                <h2 style={{ fontWeight: 700, fontSize: '13px', color: 'var(--odoo-text)' }}>Pack Station (POS)</h2>
+                                <p style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)' }}>{packableOrders.length} orders to pack</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -194,9 +194,9 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                             </button>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2" style={{ borderBottom: '1px solid #dee2e6' }}>
+                    <div className="flex items-center gap-2 px-4 py-2" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                         <div className="relative flex-1">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#adb5bd' }} />
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--odoo-text-muted)' }} />
                             <input
                                 type="text"
                                 value={searchFilter}
@@ -226,7 +226,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {filteredOrders.length === 0 ? (
-                            <div className="text-center py-16" style={{ color: '#adb5bd' }}>
+                            <div className="text-center py-16" style={{ color: 'var(--odoo-text-muted)' }}>
                                 <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
                                 <p style={{ fontSize: '12px', fontWeight: 600 }}>No orders</p>
                             </div>
@@ -244,20 +244,20 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                 key={order.id}
                                                 onClick={() => { setSelectedOrder(order); setLastScanStatus(null); setScanInput(''); setAwbInput(''); }}
                                                 className="w-full p-3 text-left"
-                                                style={{ borderBottom: '1px solid #dee2e6', borderLeft: `3px solid ${isActive ? '#714B67' : 'transparent'}`, backgroundColor: isActive ? '#f3edf7' : 'transparent', cursor: 'pointer' }}
-                                                onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                                                style={{ borderBottom: '1px solid var(--odoo-border-ghost)', borderLeft: `3px solid ${isActive ? 'var(--odoo-purple)' : 'transparent'}`, backgroundColor: isActive ? '#f3edf7' : 'transparent', cursor: 'pointer' }}
+                                                onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
                                                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
                                             >
                                                 <div className="flex items-center gap-2.5">
                                                     <PlatformBadge name={order.courier || order.platform} size={32} />
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between items-center">
-                                                            <p style={{ fontWeight: 700, fontSize: '13px', color: '#212529' }} className="truncate">{order.ref}</p>
-                                                            <span className="odoo-badge ml-2 shrink-0" style={order.status === 'packing' ? { backgroundColor: '#fff8e1', color: '#856404', border: '1px solid #ffc107' } : { backgroundColor: '#f3edf7', color: '#714B67', border: '1px solid #c9a8bc' }}>
+                                                            <p style={{ fontWeight: 700, fontSize: '13px', color: 'var(--odoo-text)' }} className="truncate">{order.ref}</p>
+                                                            <span className="odoo-badge ml-2 shrink-0" style={order.status === 'packing' ? { backgroundColor: '#fff8e1', color: '#856404', border: '1px solid var(--odoo-warning)' } : { backgroundColor: '#f3edf7', color: 'var(--odoo-purple)', border: '1px solid #c9a8bc' }}>
                                                                 {oPacked}/{oTotal}
                                                             </span>
                                                         </div>
-                                                        <p style={{ fontSize: '11px', color: '#6c757d' }} className="truncate">{order.customer}</p>
+                                                        <p style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)' }} className="truncate">{order.customer}</p>
                                                     </div>
                                                 </div>
                                             </button>
@@ -271,10 +271,10 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                 {/* RIGHT: Pack Detail Panel */}
                 <div className="flex-1 flex flex-col min-w-0">
                     {!selectedOrder ? (
-                        <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            <div className="text-center max-w-sm w-full px-8" style={{ color: '#adb5bd' }}>
+                        <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
+                            <div className="text-center max-w-sm w-full px-8" style={{ color: 'var(--odoo-text-muted)' }}>
                                 <ScanLine className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#212529', marginBottom: '4px' }}>Scan work order to start packing</p>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--odoo-text)', marginBottom: '4px' }}>Scan work order to start packing</p>
                                 <p style={{ fontSize: '12px', marginBottom: '20px' }}>Scan work order ref (e.g. WH/OUT/00050)</p>
                                 <div className="relative">
                                     <input
@@ -292,9 +292,9 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                        <div className="flex-1 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
                             {/* Order header - Odoo Dark Style */}
-                            <div className="px-5 py-4 bg-[#714B67] text-white flex justify-between items-center shadow-lg relative z-10">
+                            <div className="px-5 py-4 bg-[var(--odoo-purple)] text-white flex justify-between items-center shadow-lg relative z-10">
                                 <button
                                     onClick={() => setSelectedOrder(null)}
                                     className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -323,12 +323,12 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                 <div className="flex-1 flex items-center justify-center p-8">
                                     <div className="text-center animate-fade-in max-w-sm">
                                         <div style={{ width: '80px', height: '80px', backgroundColor: '#fff5f5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                                            <Lock className="w-10 h-10" style={{ color: '#dc3545' }} />
+                                            <Lock className="w-10 h-10" style={{ color: 'var(--odoo-danger)' }} />
                                         </div>
-                                        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#212529', marginBottom: '4px' }}>Order Locked</h2>
-                                        <p style={{ fontSize: '13px', color: '#6c757d', marginBottom: '4px' }}>{selectedOrder.ref} • AWB confirmed</p>
-                                        <p style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '13px', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px', padding: '4px 12px', display: 'inline-block', marginBottom: '6px', color: '#212529' }}>{selectedOrder.awb}</p>
-                                        <p style={{ fontSize: '12px', color: '#adb5bd', marginBottom: '20px' }}>{selectedOrder.boxType} • {selectedOrder.courier}</p>
+                                        <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--odoo-text)', marginBottom: '4px' }}>Order Locked</h2>
+                                        <p style={{ fontSize: '13px', color: 'var(--odoo-text-secondary)', marginBottom: '4px' }}>{selectedOrder.ref} • AWB confirmed</p>
+                                        <p style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '13px', backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', padding: '4px 12px', display: 'inline-block', marginBottom: '6px', color: 'var(--odoo-text)' }}>{selectedOrder.awb}</p>
+                                        <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', marginBottom: '20px' }}>{selectedOrder.boxType} • {selectedOrder.courier}</p>
                                         <button onClick={() => { setSelectedOrder(null); setLastScanStatus(null); }} className="odoo-btn odoo-btn-secondary">
                                             Next Order
                                         </button>
@@ -337,17 +337,17 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                             ) : (
                                 <>
                                     {/* Scan area */}
-                                    <div className={`px-8 py-10 flex flex-col items-center ${flashStatus === 'success' ? 'animate-scan-flash' : flashStatus === 'error' ? 'animate-scan-error' : ''}`} style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #dee2e6' }}>
+                                    <div className={`px-8 py-10 flex flex-col items-center ${flashStatus === 'success' ? 'animate-scan-flash' : flashStatus === 'error' ? 'animate-scan-error' : ''}`} style={{ backgroundColor: 'var(--odoo-surface)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                         {/* Stage: AWB confirm scan */}
                                         {hasAwb ? (
                                             <div className="w-full max-w-xl text-center space-y-5">
-                                                <div className="inline-flex items-center gap-2" style={{ padding: '6px 14px', backgroundColor: '#e0f5f5', color: '#017E84', borderRadius: '4px', fontSize: '12px', fontWeight: 700, border: '1px solid #00A09D' }}>
+                                                <div className="inline-flex items-center gap-2" style={{ padding: '6px 14px', backgroundColor: '#e0f5f5', color: 'var(--odoo-teal)', borderRadius: '4px', fontSize: '12px', fontWeight: 700, border: '1px solid #00A09D' }}>
                                                     <PackageCheck className="w-4 h-4" /> AWB ready — scan label to confirm
                                                 </div>
-                                                <div style={{ border: '2px dashed #dee2e6', borderRadius: '4px', padding: '16px 32px', display: 'inline-block' }}>
-                                                    <Barcode className="w-6 h-6 mx-auto mb-1" style={{ color: '#adb5bd' }} />
-                                                    <p style={{ fontSize: '18px', fontWeight: 800, fontFamily: 'monospace', color: '#212529', letterSpacing: '0.1em' }}>{selectedOrder.awb}</p>
-                                                    <p style={{ fontSize: '12px', color: '#6c757d', marginTop: '4px' }}>{selectedOrder.boxType} • {selectedOrder.courier}</p>
+                                                <div style={{ border: '2px dashed var(--odoo-border-ghost)', borderRadius: '4px', padding: '16px 32px', display: 'inline-block' }}>
+                                                    <Barcode className="w-6 h-6 mx-auto mb-1" style={{ color: 'var(--odoo-text-muted)' }} />
+                                                    <p style={{ fontSize: '18px', fontWeight: 800, fontFamily: 'monospace', color: 'var(--odoo-text)', letterSpacing: '0.1em' }}>{selectedOrder.awb}</p>
+                                                    <p style={{ fontSize: '12px', color: 'var(--odoo-text-secondary)', marginTop: '4px' }}>{selectedOrder.boxType} • {selectedOrder.courier}</p>
                                                 </div>
                                                 <div className="relative group">
                                                     <input
@@ -378,11 +378,11 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                 <div className="inline-flex items-center gap-2 mb-5" style={{ padding: '6px 14px', backgroundColor: '#d4edda', color: '#155724', borderRadius: '4px', fontSize: '12px', fontWeight: 700, border: '1px solid #c3e6cb' }}>
                                                     <PackageCheck className="w-4 h-4" /> ALL ITEMS VERIFIED
                                                 </div>
-                                                <h4 style={{ fontSize: '12px', fontWeight: 700, color: '#6c757d', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Select box type</h4>
-                                                <p style={{ fontSize: '12px', color: '#adb5bd', marginBottom: '20px' }}>System will generate AWB automatically after selecting box</p>
+                                                <h4 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--odoo-text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Select box type</h4>
+                                                <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', marginBottom: '20px' }}>System will generate AWB automatically after selecting box</p>
                                                 {isProcessingAPI ? (
-                                                    <div className="flex flex-col items-center gap-3 py-4" style={{ color: '#6c757d' }}>
-                                                        <RefreshCw className="w-8 h-8 animate-spin" style={{ color: '#017E84' }} />
+                                                    <div className="flex flex-col items-center gap-3 py-4" style={{ color: 'var(--odoo-text-secondary)' }}>
+                                                        <RefreshCw className="w-8 h-8 animate-spin" style={{ color: 'var(--odoo-teal)' }} />
                                                         <p style={{ fontSize: '13px', fontWeight: 600 }}>Generating AWB...</p>
                                                     </div>
                                                 ) : (
@@ -394,20 +394,20 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                         <div className="flex flex-col items-center">
                                                             <button
                                                                 onClick={() => handleBoxSelect(recBox)}
-                                                                style={{ padding: '24px 40px', border: '3px solid #017E84', borderRadius: '10px', backgroundColor: '#e0f5f5', cursor: 'pointer', transition: 'all 0.15s', boxShadow: '0 4px 12px rgba(1,126,132,0.2)', maxWidth: '280px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                                                                style={{ padding: '24px 40px', border: '3px solid var(--odoo-teal)', borderRadius: '10px', backgroundColor: '#e0f5f5', cursor: 'pointer', transition: 'all 0.15s', boxShadow: '0 4px 12px rgba(1,126,132,0.2)', maxWidth: '280px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                                                                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#ccefef'; }}
                                                                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#e0f5f5'; }}
                                                             >
                                                                 <span style={{ fontSize: '40px', marginBottom: '6px' }}>{recBox?.icon || '📦'}</span>
-                                                                <span style={{ fontWeight: 800, fontSize: '16px', color: '#017E84' }}>{recBox?.name}</span>
-                                                                <span style={{ fontSize: '11px', color: '#6c757d', marginTop: '2px' }}>{recBox?.size}</span>
+                                                                <span style={{ fontWeight: 800, fontSize: '16px', color: 'var(--odoo-teal)' }}>{recBox?.name}</span>
+                                                                <span style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)', marginTop: '2px' }}>{recBox?.size}</span>
                                                                 {recSpec && (
-                                                                    <div style={{ marginTop: '8px', fontSize: '10px', color: '#017E84', display: 'flex', gap: '8px' }}>
+                                                                    <div style={{ marginTop: '8px', fontSize: '10px', color: 'var(--odoo-teal)', display: 'flex', gap: '8px' }}>
                                                                         {recSpec.bubble > 0 && <span>Bubble x{recSpec.bubble}</span>}
                                                                         {recSpec.tape > 0 && <span>Tape x{recSpec.tape}</span>}
                                                                     </div>
                                                                 )}
-                                                                <div style={{ marginTop: '12px', padding: '6px 20px', backgroundColor: '#017E84', color: '#fff', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                                                                <div style={{ marginTop: '12px', padding: '6px 20px', backgroundColor: 'var(--odoo-teal)', color: 'var(--odoo-surface)', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
                                                                     Confirm & Print AWB
                                                                 </div>
                                                             </button>
@@ -428,7 +428,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                          onChange={e => setScanInput(e.target.value)}
                                                          onKeyDown={handleScanSubmit}
                                                          placeholder="SCAN PRODUCT BARCODE..."
-                                                         className="industrial-input w-full focus:ring-0 caret-[#714B67]"
+                                                         className="industrial-input w-full focus:ring-0 caret-[var(--odoo-purple)]"
                                                      />
                                                      <ScanLine className="w-8 h-8 absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 group-hover:text-primary-500 transition-colors duration-500" />
                                                  </div>
@@ -455,7 +455,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                         )}
                                     </div>
 
-                                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6" style={{ backgroundColor: '#f8f9fa' }}>
+                                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
                                         <div className="grid grid-cols-1 gap-3">
                                             {selectedOrder.items.map((item, idx) => {
                                                 const done = item.packed === item.picked;
@@ -464,32 +464,32 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                     <div
                                                         key={idx}
                                                         className="flex items-center gap-4"
-                                                        style={{ backgroundColor: '#ffffff', padding: '14px 16px', border: `2px solid ${done ? '#00A09D' : '#dee2e6'}`, borderRadius: '4px', borderLeft: done ? '3px solid #017E84' : '2px solid #dee2e6' }}
+                                                        style={{ backgroundColor: 'var(--odoo-surface)', padding: '14px 16px', border: `2px solid ${done ? '#00A09D' : 'var(--odoo-border-ghost)'}`, borderRadius: '4px', borderLeft: done ? '3px solid var(--odoo-teal)' : '2px solid var(--odoo-border-ghost)' }}
                                                     >
-                                                        <div className="flex-shrink-0" style={{ width: '56px', height: '56px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                                                        <div className="flex-shrink-0" style={{ width: '56px', height: '56px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                                             {catalog?.image ? (
                                                                 <img src={catalog.image} alt="" className="w-full h-full object-cover" />
                                                             ) : (
-                                                                <div className="w-full h-full flex items-center justify-center" style={{ color: '#dee2e6' }}><Box className="w-8 h-8" /></div>
+                                                                <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--odoo-border-ghost)' }}><Box className="w-8 h-8" /></div>
                                                             )}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex justify-between items-start">
                                                                 <div>
-                                                                    <p style={{ fontWeight: 800, fontSize: '14px', color: '#212529', marginBottom: '2px' }}>{catalog?.shortName || item.name}</p>
-                                                                    <p style={{ fontFamily: 'monospace', fontSize: '10px', fontWeight: 700, color: '#adb5bd', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                    <p style={{ fontWeight: 800, fontSize: '14px', color: 'var(--odoo-text)', marginBottom: '2px' }}>{catalog?.shortName || item.name}</p>
+                                                                    <p style={{ fontFamily: 'monospace', fontSize: '10px', fontWeight: 700, color: 'var(--odoo-text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                         <Barcode className="w-3 h-3" /> {item.sku}
                                                                         {catalog?.barcode && <span style={{ opacity: 0.6 }}>• EAN: {catalog.barcode}</span>}
                                                                         {catalog?.variant && <span style={{ opacity: 0.6 }}>• {catalog.variant}</span>}
                                                                     </p>
                                                                 </div>
                                                                 <div style={{ textAlign: 'right' }}>
-                                                                    <div style={{ fontSize: '22px', fontWeight: 800, color: done ? '#017E84' : '#212529' }}>
+                                                                    <div style={{ fontSize: '22px', fontWeight: 800, color: done ? 'var(--odoo-teal)' : 'var(--odoo-text)' }}>
                                                                         {item.packed}
-                                                                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#dee2e6', margin: '0 4px' }}>/</span>
-                                                                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#adb5bd' }}>{item.picked}</span>
+                                                                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--odoo-border-ghost)', margin: '0 4px' }}>/</span>
+                                                                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--odoo-text-muted)' }}>{item.picked}</span>
                                                                     </div>
-                                                                    <p style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px', color: done ? '#017E84' : '#adb5bd' }}>
+                                                                    <p style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px', color: done ? 'var(--odoo-teal)' : 'var(--odoo-text-muted)' }}>
                                                                         {done ? 'VERIFIED' : 'PENDING'}
                                                                     </p>
                                                                 </div>
@@ -500,24 +500,24 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
                                                                     <button
                                                                         onClick={() => handleManualAdjust(idx, -1)}
                                                                         disabled={item.packed <= 0}
-                                                                        style={{ width: '32px', height: '28px', borderRadius: '4px', border: '1px solid #dee2e6', backgroundColor: '#f8f9fa', cursor: item.packed <= 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d', opacity: item.packed <= 0 ? 0.3 : 1 }}
-                                                                        onMouseEnter={e => { if (item.packed > 0) { e.currentTarget.style.backgroundColor = '#fff5f5'; e.currentTarget.style.color = '#dc3545'; } }}
-                                                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f8f9fa'; e.currentTarget.style.color = '#6c757d'; }}
+                                                                        style={{ width: '32px', height: '28px', borderRadius: '4px', border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)', cursor: item.packed <= 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--odoo-text-secondary)', opacity: item.packed <= 0 ? 0.3 : 1 }}
+                                                                        onMouseEnter={e => { if (item.packed > 0) { e.currentTarget.style.backgroundColor = '#fff5f5'; e.currentTarget.style.color = 'var(--odoo-danger)'; } }}
+                                                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; e.currentTarget.style.color = 'var(--odoo-text-secondary)'; }}
                                                                     >
                                                                         <Minus className="w-4 h-4" />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleManualAdjust(idx, 1)}
                                                                         disabled={item.packed >= item.picked}
-                                                                        style={{ width: '32px', height: '28px', borderRadius: '4px', border: '1px solid #dee2e6', backgroundColor: '#f8f9fa', cursor: item.packed >= item.picked ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d', opacity: item.packed >= item.picked ? 0.3 : 1 }}
-                                                                        onMouseEnter={e => { if (item.packed < item.picked) { e.currentTarget.style.backgroundColor = '#d4edda'; e.currentTarget.style.color = '#28a745'; } }}
-                                                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#f8f9fa'; e.currentTarget.style.color = '#6c757d'; }}
+                                                                        style={{ width: '32px', height: '28px', borderRadius: '4px', border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)', cursor: item.packed >= item.picked ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--odoo-text-secondary)', opacity: item.packed >= item.picked ? 0.3 : 1 }}
+                                                                        onMouseEnter={e => { if (item.packed < item.picked) { e.currentTarget.style.backgroundColor = '#d4edda'; e.currentTarget.style.color = 'var(--odoo-success)'; } }}
+                                                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; e.currentTarget.style.color = 'var(--odoo-text-secondary)'; }}
                                                                     >
                                                                         <Plus className="w-4 h-4" />
                                                                     </button>
                                                                 </div>
                                                                 {done && (
-                                                                    <div className="flex items-center gap-1 ml-auto" style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: '#017E84' }}>
+                                                                    <div className="flex items-center gap-1 ml-auto" style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--odoo-teal)' }}>
                                                                         <CheckSquare className="w-4 h-4" /> Line Complete
                                                                     </div>
                                                                 )}

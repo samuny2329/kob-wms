@@ -165,12 +165,12 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
 
     // Shipping label popup
     if (showLabel) {
-        const pl = showLabel.platform || { color: '#714B67', logo: '?', name: 'Unknown' };
+        const pl = showLabel.platform || { color: 'var(--odoo-purple)', logo: '?', name: 'Unknown' };
         return (
             <div className="max-w-lg mx-auto w-full animate-slide-up pb-20">
                 <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden">
                     {/* Label header */}
-                    <div className="text-center py-3 font-bold text-sm text-white flex items-center justify-center gap-2" style={{ backgroundColor: pl.color, color: pl.textColor || '#fff' }}>
+                    <div className="text-center py-3 font-bold text-sm text-white flex items-center justify-center gap-2" style={{ backgroundColor: pl.color, color: pl.textColor || 'var(--odoo-surface)' }}>
                         <Printer className="w-4 h-4" />
                         Shipping Label - {pl.name}
                     </div>
@@ -225,7 +225,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                         <button 
                             onClick={handlePrintLabel} 
                             disabled={isPrinting}
-                            className="flex-1 bg-[#714B67] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-all disabled:opacity-50"
+                            className="flex-1 bg-[var(--odoo-purple)] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-all disabled:opacity-50"
                         >
                             {isPrinting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
                             Print Label
@@ -246,7 +246,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                 {/* Odoo-style breadcrumb header */}
                 <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-5 mb-4 shadow-sm">
                     <div className="flex items-center gap-4 mb-1">
-                        <div className="w-12 h-12 rounded-xl bg-[#714B67] flex items-center justify-center text-white shadow-lg shadow-[#714B67]/20">
+                        <div className="w-12 h-12 rounded-xl bg-[var(--odoo-purple)] flex items-center justify-center text-white shadow-lg shadow-[var(--odoo-purple-light)]">
                             <Smartphone className="w-6 h-6" />
                         </div>
                         <div>
@@ -255,7 +255,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                         </div>
                     </div>
                     <div className="mt-4 flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-black bg-[#714B67]/10 text-[#714B67] px-3 py-1.5 rounded-lg uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-black bg-[var(--odoo-purple-light)] text-[var(--odoo-purple)] px-3 py-1.5 rounded-lg uppercase tracking-wider">
                             <Package className="w-3.5 h-3.5" /> {packableOrders.length} Ready
                         </span>
                     </div>
@@ -292,7 +292,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className={`text-xs font-black px-2 py-1 rounded-lg uppercase tracking-wider mb-2 ${order.status === 'packing' ? 'bg-amber-100 text-amber-700' : 'bg-[#714B67]/10 text-[#714B67]'}`}>
+                                            <div className={`text-xs font-black px-2 py-1 rounded-lg uppercase tracking-wider mb-2 ${order.status === 'packing' ? 'bg-amber-100 text-amber-700' : 'bg-[var(--odoo-purple-light)] text-[var(--odoo-purple)]'}`}>
                                                 {order.status === 'packing' ? 'Packing' : 'Ready'}
                                             </div>
                                             <p className="text-sm font-black tabular-nums">{oPacked}/{oTotal}</p>
@@ -311,7 +311,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
     return (
         <div className="max-w-lg mx-auto w-full animate-slide-up pb-20 px-4">
             {/* Odoo Dark Header */}
-            <div className="bg-[#714B67] rounded-2xl p-4 mb-4 shadow-lg shadow-[#714B67]/20 flex items-center justify-between text-white">
+            <div className="bg-[var(--odoo-purple)] rounded-2xl p-4 mb-4 shadow-lg shadow-[var(--odoo-purple-light)] flex items-center justify-between text-white">
                 <button onClick={() => { setSelectedOrder(null); setLastScanStatus(null); setSelectedBoxType(null); }} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
                     <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -322,7 +322,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                 <button 
                     onClick={askAiBrain}
                     disabled={isAskingAi}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all active:scale-90 ${isAskingAi ? 'bg-zinc-800 animate-pulse' : 'bg-amber-400 text-[#714B67] hover:bg-amber-300'}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all active:scale-90 ${isAskingAi ? 'bg-zinc-800 animate-pulse' : 'bg-amber-400 text-[var(--odoo-purple)] hover:bg-amber-300'}`}
                 >
                     {isAskingAi ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Box className="w-5 h-5" />}
                 </button>
@@ -333,7 +333,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 mb-4 shadow-sm animate-fade-in relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-16 h-16 bg-amber-200/20 rounded-bl-full -mr-4 -mt-4" />
                     <div className="flex items-start gap-3 relative">
-                        <div className="bg-amber-400 p-2 rounded-lg text-[#714B67] shrink-0">
+                        <div className="bg-amber-400 p-2 rounded-lg text-[var(--odoo-purple)] shrink-0">
                             <Smartphone className="w-4 h-4" />
                         </div>
                         <div className="flex-1">
@@ -373,7 +373,7 @@ const HandheldPack = ({ salesOrders, setSalesOrders, playSound, logActivity, add
                                 placeholder="SCAN SKU..."
                                 className="industrial-input w-full md:text-3xl text-2xl focus:ring-0"
                             />
-                            <ScanLine className="w-8 h-8 absolute right-4 top-1/2 -translate-y-1/2 text-slate-100 group-focus-within:text-[#714B67] transition-colors" />
+                            <ScanLine className="w-8 h-8 absolute right-4 top-1/2 -translate-y-1/2 text-slate-100 group-focus-within:text-[var(--odoo-purple)] transition-colors" />
                         </div>
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] animate-pulse">Waiting for scan...</p>
                     </div>

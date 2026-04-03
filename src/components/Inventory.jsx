@@ -239,7 +239,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
 
     const SortIcon = ({ col }) => (
         <ArrowUpDown className="w-3 h-3 inline ml-1 opacity-60"
-            style={{ color: sortBy.col === col ? '#017E84' : '#dee2e6' }} />
+            style={{ color: sortBy.col === col ? 'var(--odoo-teal)' : 'var(--odoo-border)' }} />
     );
 
     // ── Open history ──────────────────────────────────────────────────────────
@@ -325,7 +325,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
             <div style={{ borderBottom: '1px solid #f0f0f0' }}>
                 <button onClick={() => setOpen(o => !o)}
                     className="w-full flex items-center justify-between px-4 py-2.5"
-                    style={{ color: '#6c757d', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    style={{ color: 'var(--odoo-text-secondary)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     {title}
                     <ChevronDown className={`w-3 h-3 transition-transform ${open ? '' : '-rotate-90'}`} />
                 </button>
@@ -336,10 +336,10 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                             return (
                                 <button key={opt} onClick={() => { onChange(opt); setPage(1); }}
                                     className="w-full text-left px-4 py-1.5 text-xs transition-colors"
-                                    style={{ color: isActive ? '#714B67' : '#495057', fontWeight: isActive ? 600 : 400,
+                                    style={{ color: isActive ? 'var(--odoo-purple)' : 'var(--odoo-text)', fontWeight: isActive ? 600 : 400,
                                         backgroundColor: isActive ? '#f5f0f4' : 'transparent',
-                                        borderLeft: isActive ? '3px solid #714B67' : '3px solid transparent' }}
-                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                                        borderLeft: isActive ? '3px solid var(--odoo-purple)' : '3px solid transparent' }}
+                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
                                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}>
                                     {opt}
                                 </button>
@@ -356,27 +356,27 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
 
             {/* ── LEFT PANEL ─────────────────────────────────────────────── */}
             {leftPanelOpen && (
-                <div className="shrink-0 flex flex-col" style={{ width: '180px', backgroundColor: '#ffffff', borderRight: '1px solid #dee2e6', overflowY: 'auto' }}>
-                    <div className="px-4 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid #dee2e6' }}>
-                        <span className="text-xs font-semibold" style={{ color: '#212529' }}>Filters</span>
-                        <button onClick={() => setLeftPanelOpen(false)} style={{ color: '#adb5bd' }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#495057'}
-                            onMouseLeave={e => e.currentTarget.style.color = '#adb5bd'}>
+                <div className="shrink-0 flex flex-col" style={{ width: '180px', backgroundColor: 'var(--odoo-surface)', borderRight: '1px solid var(--odoo-border-ghost)', overflowY: 'auto' }}>
+                    <div className="px-4 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--odoo-text)' }}>Filters</span>
+                        <button onClick={() => setLeftPanelOpen(false)} style={{ color: 'var(--odoo-text-muted)' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'var(--odoo-text)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'var(--odoo-text-muted)'}>
                             <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
                     </div>
 
                     {/* View Mode Switcher */}
                     <div style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 12px' }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#6c757d' }}>View Mode</p>
-                        <div className="flex rounded overflow-hidden" style={{ border: '1px solid #dee2e6' }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--odoo-text-secondary)' }}>View Mode</p>
+                        <div className="flex rounded overflow-hidden" style={{ border: '1px solid var(--odoo-border-ghost)' }}>
                             {[{ key: VIEW_MODES.PICKFACE, label: 'PICKFACE' }, { key: VIEW_MODES.ALL, label: 'All Loc.' }].map(v => (
                                 <button key={v.key}
                                     onClick={() => { setViewMode(v.key); setPage(1); }}
                                     className="flex-1 py-1.5 text-[10px] font-semibold transition-colors"
                                     style={{
-                                        backgroundColor: viewMode === v.key ? '#714B67' : '#ffffff',
-                                        color: viewMode === v.key ? '#ffffff' : '#6c757d',
+                                        backgroundColor: viewMode === v.key ? 'var(--odoo-purple)' : 'var(--odoo-surface)',
+                                        color: viewMode === v.key ? 'var(--odoo-surface)' : 'var(--odoo-text-secondary)',
                                         border: 'none',
                                     }}>
                                     {v.label}
@@ -392,29 +392,29 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
 
                     {/* Location summary */}
                     <div style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 12px' }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6c757d' }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--odoo-text-secondary)' }}>
                             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Locations</span>
                         </p>
-                        <p className="text-[10px]" style={{ color: isLiveMode ? '#28a745' : '#adb5bd' }}>
+                        <p className="text-[10px]" style={{ color: isLiveMode ? 'var(--odoo-success)' : 'var(--odoo-text-muted)' }}>
                             {isLiveMode ? '● Online warehouse (live)' : '○ Mock mode'}
                         </p>
-                        <p className="text-[10px] font-mono mt-1" style={{ color: '#714B67' }}>
+                        <p className="text-[10px] font-mono mt-1" style={{ color: 'var(--odoo-purple)' }}>
                             {invItems.length} products loaded
                         </p>
                     </div>
 
                     {/* Quick filters */}
                     <div style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <p className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: '#6c757d' }}>Quick Filters</p>
+                        <p className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-secondary)' }}>Quick Filters</p>
                         {filterOptions.map(f => {
                             const isActive = activeFilters.includes(f.key);
                             return (
                                 <button key={f.key} onClick={() => { toggleFilter(f.key); setPage(1); }}
                                     className="w-full text-left px-4 py-1.5 flex items-center gap-2 text-xs transition-colors"
-                                    style={{ color: isActive ? '#714B67' : '#495057', fontWeight: isActive ? 600 : 400,
+                                    style={{ color: isActive ? 'var(--odoo-purple)' : 'var(--odoo-text)', fontWeight: isActive ? 600 : 400,
                                         backgroundColor: isActive ? '#f5f0f4' : 'transparent',
-                                        borderLeft: isActive ? '3px solid #714B67' : '3px solid transparent' }}
-                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                                        borderLeft: isActive ? '3px solid var(--odoo-purple)' : '3px solid transparent' }}
+                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
                                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}>
                                     {f.icon} {f.label}
                                 </button>
@@ -424,18 +424,18 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
 
                     {/* Tools */}
                     <div style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <p className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: '#6c757d' }}>Tools</p>
+                        <p className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-secondary)' }}>Tools</p>
                         <button onClick={() => { setShowReorderPanel(true); loadReorderRules(); }}
                             className="w-full text-left px-4 py-1.5 flex items-center gap-2 text-xs transition-colors"
-                            style={{ color: '#495057' }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                            style={{ color: 'var(--odoo-text)' }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                             <Shield className="w-3.5 h-3.5" /> Min/Max Rules
                         </button>
                         <button onClick={() => openTransfer(null)}
                             className="w-full text-left px-4 py-1.5 flex items-center gap-2 text-xs transition-colors"
-                            style={{ color: '#495057' }}
-                            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                            style={{ color: 'var(--odoo-text)' }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
                             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                             <ArrowRightLeft className="w-3.5 h-3.5" /> Internal Transfer
                         </button>
@@ -449,16 +449,16 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                 {/* ── Dashboard Summary Cards ── */}
                 <div className="grid grid-cols-4 gap-3 mb-3" style={{ padding: '0' }}>
                     {[
-                        { label: 'Total SKUs', value: dashStats.uniqueSkus.toLocaleString(), icon: <Package className="w-4 h-4" />, color: '#714B67', bg: '#f9f5f8' },
-                        { label: 'Stock Value', value: `${(dashStats.totalValue / 1000).toFixed(0)}K`, icon: <DollarSign className="w-4 h-4" />, color: '#017E84', bg: '#e8f8fb' },
-                        { label: 'Low Stock', value: dashStats.lowStock.toLocaleString(), icon: <TrendingDown className="w-4 h-4" />, color: dashStats.lowStock > 0 ? '#dc3545' : '#28a745', bg: dashStats.lowStock > 0 ? '#fff5f5' : '#f0fdf4' },
-                        { label: 'Expiring (<30d)', value: dashStats.expiringLots.toLocaleString(), icon: <AlertTriangle className="w-4 h-4" />, color: dashStats.expiringLots > 0 ? '#ffac00' : '#28a745', bg: dashStats.expiringLots > 0 ? '#fff8e6' : '#f0fdf4' },
+                        { label: 'Total SKUs', value: dashStats.uniqueSkus.toLocaleString(), icon: <Package className="w-4 h-4" />, color: 'var(--odoo-purple)', bg: '#f9f5f8' },
+                        { label: 'Stock Value', value: `${(dashStats.totalValue / 1000).toFixed(0)}K`, icon: <DollarSign className="w-4 h-4" />, color: 'var(--odoo-teal)', bg: '#e8f8fb' },
+                        { label: 'Low Stock', value: dashStats.lowStock.toLocaleString(), icon: <TrendingDown className="w-4 h-4" />, color: dashStats.lowStock > 0 ? 'var(--odoo-danger)' : 'var(--odoo-success)', bg: dashStats.lowStock > 0 ? '#fff5f5' : '#f0fdf4' },
+                        { label: 'Expiring (<30d)', value: dashStats.expiringLots.toLocaleString(), icon: <AlertTriangle className="w-4 h-4" />, color: dashStats.expiringLots > 0 ? 'var(--odoo-warning)' : 'var(--odoo-success)', bg: dashStats.expiringLots > 0 ? '#fff8e6' : '#f0fdf4' },
                     ].map((c, i) => (
-                        <div key={i} className="rounded p-3 flex items-center gap-3" style={{ backgroundColor: c.bg, border: '1px solid #dee2e6' }}>
+                        <div key={i} className="rounded p-3 flex items-center gap-3" style={{ backgroundColor: c.bg, border: '1px solid var(--odoo-border-ghost)' }}>
                             <div className="p-2 rounded" style={{ backgroundColor: `${c.color}15`, color: c.color }}>{c.icon}</div>
                             <div>
                                 <p className="text-lg font-bold tabular-nums" style={{ color: c.color }}>{c.value}</p>
-                                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#adb5bd' }}>{c.label}</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--odoo-text-muted)' }}>{c.label}</p>
                             </div>
                         </div>
                     ))}
@@ -467,28 +467,28 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                 {/* Second row: PICKFACE / Bulk / Reserved / Available */}
                 <div className="grid grid-cols-4 gap-3 mb-3">
                     {[
-                        { label: 'PICKFACE', value: dashStats.pickfaceUnits.toLocaleString(), color: '#714B67' },
-                        { label: 'Bulk / WH', value: dashStats.bulkUnits.toLocaleString(), color: '#495057' },
-                        { label: 'Reserved', value: dashStats.totalReserved.toLocaleString(), color: '#ffac00' },
-                        { label: 'Available', value: dashStats.available.toLocaleString(), color: '#017E84' },
+                        { label: 'PICKFACE', value: dashStats.pickfaceUnits.toLocaleString(), color: 'var(--odoo-purple)' },
+                        { label: 'Bulk / WH', value: dashStats.bulkUnits.toLocaleString(), color: 'var(--odoo-text)' },
+                        { label: 'Reserved', value: dashStats.totalReserved.toLocaleString(), color: 'var(--odoo-warning)' },
+                        { label: 'Available', value: dashStats.available.toLocaleString(), color: 'var(--odoo-teal)' },
                     ].map((c, i) => (
-                        <div key={i} className="rounded px-3 py-2 text-center" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6' }}>
+                        <div key={i} className="rounded px-3 py-2 text-center" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
                             <p className="text-base font-bold tabular-nums" style={{ color: c.color }}>{c.value}</p>
-                            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#adb5bd' }}>{c.label}</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--odoo-text-muted)' }}>{c.label}</p>
                         </div>
                     ))}
                 </div>
 
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', margin: '0 0 1rem 0', overflow: 'visible' }}>
+                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', margin: '0 0 1rem 0', overflow: 'visible' }}>
 
                     {/* ── Toolbar ── */}
-                    <div className="px-4 py-2.5 flex flex-wrap gap-2 items-center" style={{ borderBottom: '1px solid #dee2e6' }}>
+                    <div className="px-4 py-2.5 flex flex-wrap gap-2 items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                         {!leftPanelOpen && (
                             <button onClick={() => setLeftPanelOpen(true)}
                                 className="p-1.5 rounded transition-colors"
-                                style={{ color: '#6c757d', border: '1px solid #dee2e6' }} title="Show Filters Panel"
-                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.color = '#714B67'; }}
-                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#dee2e6'; e.currentTarget.style.color = '#6c757d'; }}>
+                                style={{ color: 'var(--odoo-text-secondary)', border: '1px solid var(--odoo-border-ghost)' }} title="Show Filters Panel"
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--odoo-purple)'; e.currentTarget.style.color = 'var(--odoo-purple)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--odoo-border)'; e.currentTarget.style.color = 'var(--odoo-text-secondary)'; }}>
                                 <Filter className="w-3.5 h-3.5" />
                             </button>
                         )}
@@ -496,7 +496,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                         {/* View mode badge */}
                         <span className="text-[10px] font-semibold px-2 py-1 rounded" style={{
                             backgroundColor: viewMode === VIEW_MODES.ALL ? '#e8f8fb' : '#f9f5f8',
-                            color: viewMode === VIEW_MODES.ALL ? '#017E84' : '#714B67',
+                            color: viewMode === VIEW_MODES.ALL ? 'var(--odoo-teal)' : 'var(--odoo-purple)',
                             border: `1px solid ${viewMode === VIEW_MODES.ALL ? '#b2e0e4' : '#d9c0d3'}`,
                         }}>
                             {viewMode === VIEW_MODES.ALL ? 'ALL LOCATIONS' : 'PICKFACE'}
@@ -504,36 +504,36 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
 
                         {/* Search */}
                         <div className="relative flex-1 min-w-[160px] max-w-xs">
-                            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: '#adb5bd' }} />
+                            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--odoo-text-muted)' }} />
                             <input type="text" value={searchQuery}
                                 onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
                                 placeholder="Search products, lots, locations..."
                                 className="w-full pl-8 pr-3 py-1.5 text-sm outline-none"
-                                style={{ border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529', backgroundColor: '#ffffff' }}
-                                onFocus={e => e.currentTarget.style.borderColor = '#017E84'}
-                                onBlur={e => e.currentTarget.style.borderColor = '#dee2e6'} />
+                                style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', color: 'var(--odoo-text)', backgroundColor: 'var(--odoo-surface)' }}
+                                onFocus={e => e.currentTarget.style.borderColor = 'var(--odoo-teal)'}
+                                onBlur={e => e.currentTarget.style.borderColor = 'var(--odoo-border)'} />
                         </div>
 
                         {/* Filters dropdown */}
                         <div className="relative">
                             <button onClick={() => { setShowFilters(s => !s); setShowGroupBy(false); }}
                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded transition-colors"
-                                style={{ border: '1px solid #dee2e6', color: '#495057', backgroundColor: 'transparent',
-                                    ...(activeFilters.length > 0 ? { color: '#714B67', borderColor: '#714B67', backgroundColor: '#f9f5f8' } : {}) }}>
+                                style={{ border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text)', backgroundColor: 'transparent',
+                                    ...(activeFilters.length > 0 ? { color: 'var(--odoo-purple)', borderColor: 'var(--odoo-purple)', backgroundColor: '#f9f5f8' } : {}) }}>
                                 Filters
                                 {activeFilters.length > 0 && (
-                                    <span className="text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center" style={{ backgroundColor: '#714B67' }}>{activeFilters.length}</span>
+                                    <span className="text-white text-[9px] rounded-full w-3.5 h-3.5 flex items-center justify-center" style={{ backgroundColor: 'var(--odoo-purple)' }}>{activeFilters.length}</span>
                                 )}
                                 <ChevronDown className="w-3 h-3" />
                             </button>
                             {showFilters && (
-                                <div className="absolute top-full mt-1 left-0 z-50 min-w-[180px] py-1" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5" style={{ color: '#adb5bd' }}>Filters</p>
+                                <div className="absolute top-full mt-1 left-0 z-50 min-w-[180px] py-1" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5" style={{ color: 'var(--odoo-text-muted)' }}>Filters</p>
                                     {filterOptions.map(f => (
                                         <button key={f.key} onClick={() => { toggleFilter(f.key); setPage(1); }}
                                             className="w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors"
-                                            style={{ backgroundColor: activeFilters.includes(f.key) ? '#f9f5f8' : 'transparent', color: activeFilters.includes(f.key) ? '#714B67' : '#212529', fontWeight: activeFilters.includes(f.key) ? 600 : 400 }}
-                                            onMouseEnter={e => { if (!activeFilters.includes(f.key)) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                                            style={{ backgroundColor: activeFilters.includes(f.key) ? '#f9f5f8' : 'transparent', color: activeFilters.includes(f.key) ? 'var(--odoo-purple)' : 'var(--odoo-text)', fontWeight: activeFilters.includes(f.key) ? 600 : 400 }}
+                                            onMouseEnter={e => { if (!activeFilters.includes(f.key)) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
                                             onMouseLeave={e => { if (!activeFilters.includes(f.key)) e.currentTarget.style.backgroundColor = 'transparent'; }}>
                                             {f.icon} {f.label}
                                             {activeFilters.includes(f.key) && <Check className="w-3 h-3 ml-auto" />}
@@ -547,18 +547,18 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                         <div className="relative">
                             <button onClick={() => { setShowGroupBy(s => !s); setShowFilters(false); }}
                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded transition-colors"
-                                style={{ border: '1px solid #dee2e6', color: '#495057', backgroundColor: 'transparent',
-                                    ...(groupBy !== 'none' ? { color: '#017E84', borderColor: '#017E84', backgroundColor: '#e8f8fb' } : {}) }}>
+                                style={{ border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text)', backgroundColor: 'transparent',
+                                    ...(groupBy !== 'none' ? { color: 'var(--odoo-teal)', borderColor: 'var(--odoo-teal)', backgroundColor: '#e8f8fb' } : {}) }}>
                                 Group By{groupBy !== 'none' && <span className="font-semibold">: {groupOptions.find(g => g.key === groupBy)?.label}</span>}
                                 <ChevronDown className="w-3 h-3" />
                             </button>
                             {showGroupBy && (
-                                <div className="absolute top-full mt-1 left-0 z-50 min-w-[160px] py-1" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5" style={{ color: '#adb5bd' }}>Group By</p>
+                                <div className="absolute top-full mt-1 left-0 z-50 min-w-[160px] py-1" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5" style={{ color: 'var(--odoo-text-muted)' }}>Group By</p>
                                     {groupOptions.map(g => (
                                         <button key={g.key} onClick={() => { setGroupBy(g.key); setShowGroupBy(false); }}
                                             className="w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors"
-                                            style={{ backgroundColor: groupBy === g.key ? '#e8f8fb' : 'transparent', color: groupBy === g.key ? '#017E84' : '#212529', fontWeight: groupBy === g.key ? 600 : 400 }}>
+                                            style={{ backgroundColor: groupBy === g.key ? '#e8f8fb' : 'transparent', color: groupBy === g.key ? 'var(--odoo-teal)' : 'var(--odoo-text)', fontWeight: groupBy === g.key ? 600 : 400 }}>
                                             {g.label} {groupBy === g.key && <Check className="w-3 h-3 ml-auto" />}
                                         </button>
                                     ))}
@@ -567,54 +567,54 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                         </div>
 
                         {/* Right side */}
-                        <div className="ml-auto flex items-center gap-3 text-xs" style={{ color: '#6c757d' }}>
+                        <div className="ml-auto flex items-center gap-3 text-xs" style={{ color: 'var(--odoo-text-secondary)' }}>
                             {selected.length > 0 && (
-                                <span className="px-2 py-0.5 font-semibold rounded" style={{ backgroundColor: '#f9f5f8', color: '#714B67', border: '1px solid #e0cfe0' }}>{selected.length} selected</span>
+                                <span className="px-2 py-0.5 font-semibold rounded" style={{ backgroundColor: '#f9f5f8', color: 'var(--odoo-purple)', border: '1px solid #e0cfe0' }}>{selected.length} selected</span>
                             )}
                             <span className="tabular-nums">
                                 {totalRecords === 0 ? '0' : `${pageStart + 1}-${pageEnd}`}{' / '}
-                                <span className="font-semibold" style={{ color: '#212529' }}>{totalRecords}</span>
+                                <span className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{totalRecords}</span>
                             </span>
                             <div className="flex items-center gap-1">
                                 <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
-                                    className="p-1 rounded disabled:opacity-30 transition-colors" style={{ color: '#6c757d' }}>
+                                    className="p-1 rounded disabled:opacity-30 transition-colors" style={{ color: 'var(--odoo-text-secondary)' }}>
                                     <ChevronLeft className="w-3 h-3" />
                                 </button>
                                 <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
-                                    className="p-1 rounded disabled:opacity-30 transition-colors" style={{ color: '#6c757d' }}>
+                                    className="p-1 rounded disabled:opacity-30 transition-colors" style={{ color: 'var(--odoo-text-secondary)' }}>
                                     <ChevronRight className="w-3 h-3" />
                                 </button>
                             </div>
-                            {(syncStatus?.isSyncing || loadingAllLoc) && <RefreshCw className="w-3.5 h-3.5 animate-spin" style={{ color: '#714B67' }} />}
+                            {(syncStatus?.isSyncing || loadingAllLoc) && <RefreshCw className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--odoo-purple)' }} />}
                         </div>
                     </div>
 
                     {/* Active filter chips */}
                     {(activeFilters.length > 0 || warehouseFilter !== 'All' || categoryFilter !== 'All') && (
-                        <div className="px-4 py-2 flex flex-wrap gap-1.5 items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-4 py-2 flex flex-wrap gap-1.5 items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             {activeFilters.map(f => {
                                 const opt = filterOptions.find(o => o.key === f);
                                 return (
-                                    <span key={f} className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded" style={{ backgroundColor: '#f0e8ed', color: '#714B67', border: '1px solid #d9c0d3' }}>
+                                    <span key={f} className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded" style={{ backgroundColor: '#f0e8ed', color: 'var(--odoo-purple)', border: '1px solid #d9c0d3' }}>
                                         {opt?.icon} {opt?.label}
                                         <button onClick={() => toggleFilter(f)} className="ml-0.5 opacity-60 hover:opacity-100"><X className="w-2.5 h-2.5" /></button>
                                     </span>
                                 );
                             })}
                             {warehouseFilter !== 'All' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded" style={{ backgroundColor: '#e8f8fb', color: '#017E84', border: '1px solid #b2e0e4' }}>
+                                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded" style={{ backgroundColor: '#e8f8fb', color: 'var(--odoo-teal)', border: '1px solid #b2e0e4' }}>
                                     {warehouseFilter}
                                     <button onClick={() => setWarehouseFilter('All')} className="ml-0.5 opacity-60 hover:opacity-100"><X className="w-2.5 h-2.5" /></button>
                                 </span>
                             )}
                             {categoryFilter !== 'All' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded" style={{ backgroundColor: '#e8f8fb', color: '#017E84', border: '1px solid #b2e0e4' }}>
+                                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded" style={{ backgroundColor: '#e8f8fb', color: 'var(--odoo-teal)', border: '1px solid #b2e0e4' }}>
                                     {categoryFilter}
                                     <button onClick={() => setCategoryFilter('All')} className="ml-0.5 opacity-60 hover:opacity-100"><X className="w-2.5 h-2.5" /></button>
                                 </span>
                             )}
                             <button onClick={() => { setActiveFilters([]); setWarehouseFilter('All'); setCategoryFilter('All'); setPage(1); }}
-                                className="text-xs underline ml-1" style={{ color: '#6c757d' }}>Clear all</button>
+                                className="text-xs underline ml-1" style={{ color: 'var(--odoo-text-secondary)' }}>Clear all</button>
                         </div>
                     )}
 
@@ -622,10 +622,10 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                     <div className="overflow-x-auto" onClick={() => { setShowFilters(false); setShowGroupBy(false); }}>
                         <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                <tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                     <th className="w-10 px-4 py-2.5">
-                                        <button onClick={toggleAll} style={{ color: allSelected ? '#714B67' : '#adb5bd' }}>
-                                            {allSelected ? <CheckSquare className="w-4 h-4" style={{ color: '#714B67' }} /> : <Square className="w-4 h-4" />}
+                                        <button onClick={toggleAll} style={{ color: allSelected ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)' }}>
+                                            {allSelected ? <CheckSquare className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> : <Square className="w-4 h-4" />}
                                         </button>
                                     </th>
                                     {[
@@ -638,27 +638,27 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                         { label: 'Expiry',    col: 'expiryDate',align: 'right' },
                                     ].map(h => (
                                         <th key={h.col} className={`px-3 py-2.5 text-${h.align} cursor-pointer select-none`}
-                                            style={{ color: '#6c757d', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap' }}
+                                            style={{ color: 'var(--odoo-text-secondary)', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap' }}
                                             onClick={() => toggleSort(h.col)}>
                                             {h.label}<SortIcon col={h.col} />
                                         </th>
                                     ))}
-                                    <th className="px-4 py-2.5" style={{ color: '#6c757d', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap', minWidth: '160px' }}></th>
+                                    <th className="px-4 py-2.5" style={{ color: 'var(--odoo-text-secondary)', fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap', minWidth: '160px' }}></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {Object.entries(grouped).map(([groupKey, rows]) => (
                                     <React.Fragment key={groupKey}>
                                         {groupBy !== 'none' && (
-                                            <tr className="cursor-pointer" style={{ backgroundColor: '#f8f9fa' }}
+                                            <tr className="cursor-pointer" style={{ backgroundColor: 'var(--odoo-surface-low)' }}
                                                 onClick={() => toggleGroup(groupKey)}>
                                                 <td></td>
                                                 <td colSpan={7} className="px-3 py-2">
                                                     <div className="flex items-center gap-2">
-                                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isGroupExpanded(groupKey) ? '' : '-rotate-90'}`} style={{ color: '#6c757d' }} />
-                                                        <span className="font-semibold text-xs" style={{ color: '#212529' }}>{groupKey}</span>
-                                                        <span className="text-xs" style={{ color: '#adb5bd' }}>({rows.length})</span>
-                                                        <span className="ml-auto text-xs tabular-nums font-mono" style={{ color: '#6c757d' }}>
+                                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isGroupExpanded(groupKey) ? '' : '-rotate-90'}`} style={{ color: 'var(--odoo-text-secondary)' }} />
+                                                        <span className="font-semibold text-xs" style={{ color: 'var(--odoo-text)' }}>{groupKey}</span>
+                                                        <span className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>({rows.length})</span>
+                                                        <span className="ml-auto text-xs tabular-nums font-mono" style={{ color: 'var(--odoo-text-secondary)' }}>
                                                             {rows.reduce((s, r) => s + r.onHand, 0).toLocaleString()} on hand
                                                         </span>
                                                     </div>
@@ -673,54 +673,54 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                             const isSel = selected.includes(row.id);
                                             return (
                                                 <tr key={row.id}
-                                                    style={{ backgroundColor: isSel ? '#f9f5f8' : '#ffffff', borderBottom: '1px solid #f0f0f0',
-                                                        borderLeft: isLow ? '2px solid #dc3545' : '2px solid transparent' }}
-                                                    onMouseEnter={e => { if (!isSel) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
-                                                    onMouseLeave={e => { if (!isSel) e.currentTarget.style.backgroundColor = '#ffffff'; }}>
+                                                    style={{ backgroundColor: isSel ? '#f9f5f8' : 'var(--odoo-surface)', borderBottom: '1px solid #f0f0f0',
+                                                        borderLeft: isLow ? '2px solid var(--odoo-danger)' : '2px solid transparent' }}
+                                                    onMouseEnter={e => { if (!isSel) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
+                                                    onMouseLeave={e => { if (!isSel) e.currentTarget.style.backgroundColor = 'var(--odoo-surface)'; }}>
                                                     <td className="px-4 py-2.5">
-                                                        <button onClick={() => toggleRow(row.id)} style={{ color: isSel ? '#714B67' : '#adb5bd' }}>
-                                                            {isSel ? <CheckSquare className="w-4 h-4" style={{ color: '#714B67' }} /> : <Square className="w-4 h-4" />}
+                                                        <button onClick={() => toggleRow(row.id)} style={{ color: isSel ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)' }}>
+                                                            {isSel ? <CheckSquare className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> : <Square className="w-4 h-4" />}
                                                         </button>
                                                     </td>
                                                     <td className="px-3 py-2.5">
                                                         <div className="flex items-center gap-2.5">
-                                                            <div className="w-7 h-7 rounded overflow-hidden shrink-0" style={{ border: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                                                            <div className="w-7 h-7 rounded overflow-hidden shrink-0" style={{ border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                                                 {catalog?.image ? <img src={catalog.image} alt="" className="w-full h-full object-cover" />
-                                                                    : <div className="w-full h-full flex items-center justify-center" style={{ color: '#dee2e6' }}><Package className="w-3 h-3" /></div>}
+                                                                    : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--odoo-border)' }}><Package className="w-3 h-3" /></div>}
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs font-medium leading-tight cursor-pointer hover:underline"
-                                                                    style={{ color: '#017E84' }}
+                                                                    style={{ color: 'var(--odoo-teal)' }}
                                                                     onClick={e => { e.stopPropagation(); openProductDetail(row._item); }}>
                                                                     {row.shortName || row.name}
                                                                 </p>
-                                                                {row.sku && <p className="text-[10px] font-mono leading-tight" style={{ color: '#adb5bd' }}>[{row.sku}]</p>}
+                                                                {row.sku && <p className="text-[10px] font-mono leading-tight" style={{ color: 'var(--odoo-text-muted)' }}>[{row.sku}]</p>}
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-2.5">
                                                         <span className="inline-flex items-center gap-1 text-xs font-mono px-1.5 py-0.5 rounded"
-                                                            style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#6c757d' }}>
+                                                            style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-secondary)' }}>
                                                             <MapPin className="w-2.5 h-2.5" />{row.location}
                                                         </span>
                                                     </td>
                                                     <td className="px-3 py-2.5">
                                                         {row.lotNumber
                                                             ? <span className="inline-flex items-center gap-1 text-xs font-mono px-1.5 py-0.5 rounded"
-                                                                style={{ backgroundColor: '#f0e8ed', color: '#714B67' }}>
+                                                                style={{ backgroundColor: '#f0e8ed', color: 'var(--odoo-purple)' }}>
                                                                 <Hash className="w-2.5 h-2.5" />{row.lotNumber}</span>
-                                                            : <span style={{ color: '#dee2e6' }}>—</span>}
+                                                            : <span style={{ color: 'var(--odoo-border)' }}>—</span>}
                                                     </td>
                                                     <td className="px-3 py-2.5 text-right">
-                                                        <span className="font-semibold tabular-nums text-xs" style={{ color: '#212529' }}>{row.onHand.toLocaleString()}</span>
+                                                        <span className="font-semibold tabular-nums text-xs" style={{ color: 'var(--odoo-text)' }}>{row.onHand.toLocaleString()}</span>
                                                     </td>
                                                     <td className="px-3 py-2.5 text-right">
                                                         {row.reserved > 0
-                                                            ? <span className="font-semibold tabular-nums text-xs" style={{ color: '#ffac00' }}>{row.reserved.toLocaleString()}</span>
-                                                            : <span className="text-xs" style={{ color: '#dee2e6' }}>0</span>}
+                                                            ? <span className="font-semibold tabular-nums text-xs" style={{ color: 'var(--odoo-warning)' }}>{row.reserved.toLocaleString()}</span>
+                                                            : <span className="text-xs" style={{ color: 'var(--odoo-border)' }}>0</span>}
                                                     </td>
                                                     <td className="px-3 py-2.5 text-right">
-                                                        <span className="font-semibold tabular-nums text-xs" style={{ color: isLow ? '#dc3545' : '#017E84' }}>
+                                                        <span className="font-semibold tabular-nums text-xs" style={{ color: isLow ? 'var(--odoo-danger)' : 'var(--odoo-teal)' }}>
                                                             {row.available.toLocaleString()}
                                                             {isLow && <AlertTriangle className="w-3 h-3 inline ml-1" />}
                                                         </span>
@@ -728,28 +728,28 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                                     <td className="px-3 py-2.5 text-right">
                                                         {row.expiryDate
                                                             ? <span className="text-xs font-mono"
-                                                                style={{ color: isExpiring ? '#ffac00' : '#adb5bd', fontWeight: isExpiring ? 600 : 400 }}>
+                                                                style={{ color: isExpiring ? 'var(--odoo-warning)' : 'var(--odoo-text-muted)', fontWeight: isExpiring ? 600 : 400 }}>
                                                                 {row.expiryDate}{isExpiring && <AlertTriangle className="w-2.5 h-2.5 inline ml-1" />}</span>
-                                                            : <span className="text-xs" style={{ color: '#dee2e6' }}>—</span>}
+                                                            : <span className="text-xs" style={{ color: 'var(--odoo-border)' }}>—</span>}
                                                     </td>
                                                     <td className="px-3 py-2.5">
                                                         <div className="flex items-center gap-2 justify-end">
                                                             <button onClick={e => { e.stopPropagation(); openProductDetail(row._item); }}
-                                                                className="text-[11px] flex items-center gap-1 transition-colors" style={{ color: '#6c757d' }} title="Details"
-                                                                onMouseEnter={e => e.currentTarget.style.color = '#017E84'}
-                                                                onMouseLeave={e => e.currentTarget.style.color = '#6c757d'}>
+                                                                className="text-[11px] flex items-center gap-1 transition-colors" style={{ color: 'var(--odoo-text-secondary)' }} title="Details"
+                                                                onMouseEnter={e => e.currentTarget.style.color = 'var(--odoo-teal)'}
+                                                                onMouseLeave={e => e.currentTarget.style.color = 'var(--odoo-text-secondary)'}>
                                                                 <Eye className="w-3 h-3" /> Detail
                                                             </button>
                                                             <button onClick={e => { e.stopPropagation(); openHistory(row._item); }}
-                                                                className="text-[11px] flex items-center gap-1 transition-colors" style={{ color: '#6c757d' }} title="History"
-                                                                onMouseEnter={e => e.currentTarget.style.color = '#017E84'}
-                                                                onMouseLeave={e => e.currentTarget.style.color = '#6c757d'}>
+                                                                className="text-[11px] flex items-center gap-1 transition-colors" style={{ color: 'var(--odoo-text-secondary)' }} title="History"
+                                                                onMouseEnter={e => e.currentTarget.style.color = 'var(--odoo-teal)'}
+                                                                onMouseLeave={e => e.currentTarget.style.color = 'var(--odoo-text-secondary)'}>
                                                                 <History className="w-3 h-3" /> History
                                                             </button>
                                                             <button onClick={e => { e.stopPropagation(); openTransfer(row._item); }}
-                                                                className="text-[11px] flex items-center gap-1 transition-colors" style={{ color: '#6c757d' }} title="Transfer"
-                                                                onMouseEnter={e => e.currentTarget.style.color = '#017E84'}
-                                                                onMouseLeave={e => e.currentTarget.style.color = '#6c757d'}>
+                                                                className="text-[11px] flex items-center gap-1 transition-colors" style={{ color: 'var(--odoo-text-secondary)' }} title="Transfer"
+                                                                onMouseEnter={e => e.currentTarget.style.color = 'var(--odoo-teal)'}
+                                                                onMouseLeave={e => e.currentTarget.style.color = 'var(--odoo-text-secondary)'}>
                                                                 <ArrowRightLeft className="w-3 h-3" /> Transfer
                                                             </button>
                                                         </div>
@@ -761,7 +761,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 ))}
                                 {filteredRows.length === 0 && (
                                     <tr>
-                                        <td colSpan={9} className="px-5 py-16 text-center" style={{ color: '#adb5bd' }}>
+                                        <td colSpan={9} className="px-5 py-16 text-center" style={{ color: 'var(--odoo-text-muted)' }}>
                                             <Boxes className="w-9 h-9 mx-auto mb-2.5 opacity-20" />
                                             <p className="text-sm">{loadingAllLoc ? 'Loading all locations...' : 'No inventory records found'}</p>
                                         </td>
@@ -773,17 +773,17 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
 
                     {/* Bottom pagination */}
                     {totalRecords > PAGE_SIZE && (
-                        <div className="px-4 py-2.5 flex items-center justify-between text-xs" style={{ borderTop: '1px solid #dee2e6', color: '#6c757d' }}>
+                        <div className="px-4 py-2.5 flex items-center justify-between text-xs" style={{ borderTop: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-secondary)' }}>
                             <span>{pageStart + 1}–{pageEnd} of {totalRecords} records</span>
                             <div className="flex items-center gap-1">
                                 {[{ label: '«', p: 1 }, { label: '‹', p: Math.max(1, safePage - 1) }].map((b, i) => (
                                     <button key={i} onClick={() => setPage(b.p)} disabled={safePage === 1}
-                                        className="px-2 py-1 rounded disabled:opacity-30 transition-colors" style={{ border: '1px solid #dee2e6' }}>{b.label}</button>
+                                        className="px-2 py-1 rounded disabled:opacity-30 transition-colors" style={{ border: '1px solid var(--odoo-border-ghost)' }}>{b.label}</button>
                                 ))}
-                                <span className="px-3 py-1 rounded font-semibold" style={{ border: '1px solid #017E84', color: '#017E84' }}>{safePage}</span>
+                                <span className="px-3 py-1 rounded font-semibold" style={{ border: '1px solid var(--odoo-teal)', color: 'var(--odoo-teal)' }}>{safePage}</span>
                                 {[{ label: '›', p: Math.min(totalPages, safePage + 1) }, { label: '»', p: totalPages }].map((b, i) => (
                                     <button key={i} onClick={() => setPage(b.p)} disabled={safePage === totalPages}
-                                        className="px-2 py-1 rounded disabled:opacity-30 transition-colors" style={{ border: '1px solid #dee2e6' }}>{b.label}</button>
+                                        className="px-2 py-1 rounded disabled:opacity-30 transition-colors" style={{ border: '1px solid var(--odoo-border-ghost)' }}>{b.label}</button>
                                 ))}
                             </div>
                         </div>
@@ -812,48 +812,48 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                     <div className="fixed inset-0 flex items-start justify-center z-[110] pt-8 px-4"
                         style={{ backgroundColor: 'rgba(33,37,41,0.55)' }} onClick={() => setProductModal(null)}>
                         <div className="w-full max-w-3xl overflow-y-auto"
-                            style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '85vh' }}
+                            style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '85vh' }}
                             onClick={e => e.stopPropagation()}>
 
                             {/* Header */}
-                            <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                                <div className="flex items-center gap-2 text-xs" style={{ color: '#6c757d' }}>
-                                    <span style={{ color: '#adb5bd' }}>Inventory</span>
-                                    <span style={{ color: '#dee2e6' }}>/</span>
-                                    <span className="font-semibold" style={{ color: '#212529' }}>{pm.shortName || pm.name}</span>
-                                    {pm.sku && <span className="font-mono text-[10px]" style={{ color: '#adb5bd' }}>[{pm.sku}]</span>}
+                            <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--odoo-text-secondary)' }}>
+                                    <span style={{ color: 'var(--odoo-text-muted)' }}>Inventory</span>
+                                    <span style={{ color: 'var(--odoo-border)' }}>/</span>
+                                    <span className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{pm.shortName || pm.name}</span>
+                                    {pm.sku && <span className="font-mono text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>[{pm.sku}]</span>}
                                 </div>
-                                <button onClick={() => setProductModal(null)} className="p-1.5 rounded transition-colors" style={{ color: '#6c757d' }}
-                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#e9ecef'}
+                                <button onClick={() => setProductModal(null)} className="p-1.5 rounded transition-colors" style={{ color: 'var(--odoo-text-secondary)' }}
+                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-high)'}
                                     onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
                             {/* Product header */}
-                            <div className="px-5 py-4 flex gap-4 shrink-0" style={{ borderBottom: '1px solid #dee2e6' }}>
-                                <div className="w-20 h-20 rounded overflow-hidden shrink-0" style={{ border: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <div className="px-5 py-4 flex gap-4 shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                                <div className="w-20 h-20 rounded overflow-hidden shrink-0" style={{ border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                     {catalog.image ? <img src={catalog.image} alt="" className="w-full h-full object-cover" />
-                                        : <div className="w-full h-full flex items-center justify-center" style={{ color: '#dee2e6' }}><Package className="w-8 h-8" /></div>}
+                                        : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--odoo-border)' }}><Package className="w-8 h-8" /></div>}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h2 className="text-base font-semibold mb-1" style={{ color: '#212529' }}>{pm.name}</h2>
+                                    <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--odoo-text)' }}>{pm.name}</h2>
                                     <div className="flex flex-wrap gap-2">
-                                        {pm.sku && <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#6c757d' }}><Hash className="w-3 h-3" />{pm.sku}</span>}
-                                        {pm.location && <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#6c757d' }}><MapPin className="w-3 h-3" />{pm.location}</span>}
+                                        {pm.sku && <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-secondary)' }}><Hash className="w-3 h-3" />{pm.sku}</span>}
+                                        {pm.location && <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-secondary)' }}><MapPin className="w-3 h-3" />{pm.location}</span>}
                                         {isLow && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffc107' }}><AlertTriangle className="w-3 h-3" /> Low Stock</span>}
                                     </div>
                                     {/* Quick KPIs */}
                                     <div className="flex gap-4 mt-2">
                                         {[
-                                            { label: 'On Hand', value: (pm.onHand || 0).toLocaleString(), color: '#212529' },
-                                            { label: 'Reserved', value: (pm.reserved || 0).toLocaleString(), color: '#ffac00' },
-                                            { label: 'Available', value: ((pm.available ?? pm.onHand) || 0).toLocaleString(), color: '#017E84' },
-                                            { label: 'Value', value: `฿${stockValue.toLocaleString()}`, color: '#495057' },
+                                            { label: 'On Hand', value: (pm.onHand || 0).toLocaleString(), color: 'var(--odoo-text)' },
+                                            { label: 'Reserved', value: (pm.reserved || 0).toLocaleString(), color: 'var(--odoo-warning)' },
+                                            { label: 'Available', value: ((pm.available ?? pm.onHand) || 0).toLocaleString(), color: 'var(--odoo-teal)' },
+                                            { label: 'Value', value: `฿${stockValue.toLocaleString()}`, color: 'var(--odoo-text)' },
                                         ].map((k, i) => (
                                             <div key={i}>
                                                 <p className="text-sm font-bold tabular-nums" style={{ color: k.color }}>{k.value}</p>
-                                                <p className="text-[9px] font-semibold uppercase" style={{ color: '#adb5bd' }}>{k.label}</p>
+                                                <p className="text-[9px] font-semibold uppercase" style={{ color: 'var(--odoo-text-muted)' }}>{k.label}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -861,15 +861,15 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                             </div>
 
                             {/* Tabs */}
-                            <div className="flex shrink-0" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <div className="flex shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                 {tabs.map(t => (
                                     <button key={t.key}
                                         onClick={() => { setProductDetailTab(t.key); loadTabData(t.key, pm); }}
                                         className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors"
                                         style={{
-                                            color: productDetailTab === t.key ? '#714B67' : '#6c757d',
-                                            borderBottom: productDetailTab === t.key ? '2px solid #714B67' : '2px solid transparent',
-                                            backgroundColor: productDetailTab === t.key ? '#ffffff' : 'transparent',
+                                            color: productDetailTab === t.key ? 'var(--odoo-purple)' : 'var(--odoo-text-secondary)',
+                                            borderBottom: productDetailTab === t.key ? '2px solid var(--odoo-purple)' : '2px solid transparent',
+                                            backgroundColor: productDetailTab === t.key ? 'var(--odoo-surface)' : 'transparent',
                                         }}>
                                         {t.icon} {t.label}
                                     </button>
@@ -882,7 +882,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 {/* GENERAL TAB */}
                                 {productDetailTab === 'general' && (
                                     <div>
-                                        {productDetailData.loading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: '#017E84' }} /><p className="text-xs mt-2" style={{ color: '#adb5bd' }}>Loading from Odoo...</p></div>}
+                                        {productDetailData.loading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--odoo-teal)' }} /><p className="text-xs mt-2" style={{ color: 'var(--odoo-text-muted)' }}>Loading from Odoo...</p></div>}
                                         {!productDetailData.loading && (
                                             <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
                                                 {[
@@ -902,8 +902,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                                     { label: 'Product ID', value: pm.productId || detail.id || '—' },
                                                 ].map((f, i) => (
                                                     <div key={i} className="flex items-start gap-2">
-                                                        <span className="text-[11px] font-semibold uppercase tracking-wider shrink-0 pt-0.5" style={{ color: '#adb5bd', minWidth: '120px' }}>{f.label}</span>
-                                                        <span className="text-xs font-medium" style={{ color: '#212529' }}>{f.value}</span>
+                                                        <span className="text-[11px] font-semibold uppercase tracking-wider shrink-0 pt-0.5" style={{ color: 'var(--odoo-text-muted)', minWidth: '120px' }}>{f.label}</span>
+                                                        <span className="text-xs font-medium" style={{ color: 'var(--odoo-text)' }}>{f.value}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -911,12 +911,12 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                         {/* Lot table */}
                                         {pm.lots?.length > 0 && (
                                             <div className="mt-5">
-                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: '#adb5bd' }}>Lot / Serial Numbers</p>
-                                                <div style={{ border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
+                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--odoo-text-muted)' }}>Lot / Serial Numbers</p>
+                                                <div style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
                                                     <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                                        <thead><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                                        <thead><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                                             {['Lot / S/N', 'Qty', 'Received', 'Expiry'].map(h => (
-                                                                <th key={h} className={`px-3 py-2 ${h === 'Lot / S/N' ? 'text-left' : 'text-right'} font-semibold`} style={{ color: '#6c757d' }}>{h}</th>
+                                                                <th key={h} className={`px-3 py-2 ${h === 'Lot / S/N' ? 'text-left' : 'text-right'} font-semibold`} style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                                             ))}
                                                         </tr></thead>
                                                         <tbody>
@@ -924,10 +924,10 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                                                 const expiring = lot.expiryDate && new Date(lot.expiryDate) < new Date(Date.now() + 90 * 86400000);
                                                                 return (
                                                                     <tr key={li} style={{ borderBottom: li < pm.lots.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
-                                                                        <td className="px-3 py-2"><span className="font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f0e8ed', color: '#714B67' }}>{lot.lotNumber}</span></td>
-                                                                        <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: '#212529' }}>{(lot.qty || 0).toLocaleString()}</td>
-                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: '#adb5bd' }}>{lot.receivedDate || '—'}</td>
-                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: expiring ? '#ffac00' : '#adb5bd', fontWeight: expiring ? 600 : 400 }}>{lot.expiryDate || '—'}{expiring && <AlertTriangle className="w-3 h-3 inline ml-1" />}</td>
+                                                                        <td className="px-3 py-2"><span className="font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f0e8ed', color: 'var(--odoo-purple)' }}>{lot.lotNumber}</span></td>
+                                                                        <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: 'var(--odoo-text)' }}>{(lot.qty || 0).toLocaleString()}</td>
+                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--odoo-text-muted)' }}>{lot.receivedDate || '—'}</td>
+                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: expiring ? 'var(--odoo-warning)' : 'var(--odoo-text-muted)', fontWeight: expiring ? 600 : 400 }}>{lot.expiryDate || '—'}{expiring && <AlertTriangle className="w-3 h-3 inline ml-1" />}</td>
                                                                     </tr>
                                                                 );
                                                             })}
@@ -942,24 +942,24 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 {/* PURCHASE TAB */}
                                 {productDetailTab === 'purchase' && (
                                     <div>
-                                        {productDetailData.purchaseLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: '#017E84' }} /></div>}
+                                        {productDetailData.purchaseLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--odoo-teal)' }} /></div>}
                                         {!productDetailData.purchaseLoading && productDetailData.purchase && (
                                             <div>
-                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: '#adb5bd' }}>Vendors / Suppliers</p>
+                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--odoo-text-muted)' }}>Vendors / Suppliers</p>
                                                 {productDetailData.purchase.length === 0
-                                                    ? <p className="text-sm" style={{ color: '#adb5bd' }}>No supplier info found</p>
-                                                    : <div style={{ border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
+                                                    ? <p className="text-sm" style={{ color: 'var(--odoo-text-muted)' }}>No supplier info found</p>
+                                                    : <div style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
                                                         <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                                            <thead><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                                            <thead><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                                                 {['Vendor', 'Price', 'Min Qty', 'Lead Time'].map(h => (
-                                                                    <th key={h} className="px-3 py-2 text-left font-semibold" style={{ color: '#6c757d' }}>{h}</th>
+                                                                    <th key={h} className="px-3 py-2 text-left font-semibold" style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                                                 ))}
                                                             </tr></thead>
                                                             <tbody>
                                                                 {productDetailData.purchase.map((v, i) => (
                                                                     <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                                                        <td className="px-3 py-2 font-medium" style={{ color: '#212529' }}>{v.partner_id?.[1] || '—'}</td>
-                                                                        <td className="px-3 py-2 font-mono" style={{ color: '#017E84' }}>฿{(v.price || 0).toLocaleString()}</td>
+                                                                        <td className="px-3 py-2 font-medium" style={{ color: 'var(--odoo-text)' }}>{v.partner_id?.[1] || '—'}</td>
+                                                                        <td className="px-3 py-2 font-mono" style={{ color: 'var(--odoo-teal)' }}>฿{(v.price || 0).toLocaleString()}</td>
                                                                         <td className="px-3 py-2 tabular-nums">{v.min_qty || 0}</td>
                                                                         <td className="px-3 py-2">{v.delay || 0} days</td>
                                                                     </tr>
@@ -970,7 +970,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                             </div>
                                         )}
                                         {!productDetailData.purchaseLoading && !productDetailData.purchase && (
-                                            <p className="text-sm text-center py-4" style={{ color: '#adb5bd' }}>Click to load purchase data</p>
+                                            <p className="text-sm text-center py-4" style={{ color: 'var(--odoo-text-muted)' }}>Click to load purchase data</p>
                                         )}
                                     </div>
                                 )}
@@ -978,7 +978,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 {/* SALES TAB */}
                                 {productDetailTab === 'sale' && (
                                     <div>
-                                        {productDetailData.saleLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: '#017E84' }} /></div>}
+                                        {productDetailData.saleLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--odoo-teal)' }} /></div>}
                                         {!productDetailData.saleLoading && productDetailData.sale && (
                                             <div>
                                                 {/* Sales summary */}
@@ -988,33 +988,33 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                                         const totalQty = sales.reduce((s, o) => s + (o.product_uom_qty || 0), 0);
                                                         const totalRev = sales.reduce((s, o) => s + (o.price_subtotal || 0), 0);
                                                         return [
-                                                            { label: 'Total Orders', value: sales.length, color: '#714B67' },
-                                                            { label: 'Total Qty Sold', value: totalQty.toLocaleString(), color: '#017E84' },
-                                                            { label: 'Total Revenue', value: `฿${totalRev.toLocaleString()}`, color: '#28a745' },
+                                                            { label: 'Total Orders', value: sales.length, color: 'var(--odoo-purple)' },
+                                                            { label: 'Total Qty Sold', value: totalQty.toLocaleString(), color: 'var(--odoo-teal)' },
+                                                            { label: 'Total Revenue', value: `฿${totalRev.toLocaleString()}`, color: 'var(--odoo-success)' },
                                                         ].map((k, i) => (
-                                                            <div key={i} className="rounded p-3 text-center" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
+                                                            <div key={i} className="rounded p-3 text-center" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)' }}>
                                                                 <p className="text-lg font-bold tabular-nums" style={{ color: k.color }}>{k.value}</p>
-                                                                <p className="text-[10px] font-semibold uppercase" style={{ color: '#adb5bd' }}>{k.label}</p>
+                                                                <p className="text-[10px] font-semibold uppercase" style={{ color: 'var(--odoo-text-muted)' }}>{k.label}</p>
                                                             </div>
                                                         ));
                                                     })()}
                                                 </div>
-                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: '#adb5bd' }}>Recent Sales</p>
-                                                <div style={{ border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
+                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--odoo-text-muted)' }}>Recent Sales</p>
+                                                <div style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
                                                     <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                                        <thead><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                                        <thead><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                                             {['Order', 'Date', 'Qty', 'Unit Price', 'Subtotal'].map(h => (
-                                                                <th key={h} className={`px-3 py-2 ${h === 'Order' || h === 'Date' ? 'text-left' : 'text-right'} font-semibold`} style={{ color: '#6c757d' }}>{h}</th>
+                                                                <th key={h} className={`px-3 py-2 ${h === 'Order' || h === 'Date' ? 'text-left' : 'text-right'} font-semibold`} style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                                             ))}
                                                         </tr></thead>
                                                         <tbody>
                                                             {productDetailData.sale.map((s, i) => (
                                                                 <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                                                    <td className="px-3 py-2 font-mono" style={{ color: '#017E84' }}>{s.order_id?.[1] || '—'}</td>
-                                                                    <td className="px-3 py-2 font-mono" style={{ color: '#6c757d' }}>{s.create_date ? new Date(s.create_date).toLocaleDateString() : '—'}</td>
+                                                                    <td className="px-3 py-2 font-mono" style={{ color: 'var(--odoo-teal)' }}>{s.order_id?.[1] || '—'}</td>
+                                                                    <td className="px-3 py-2 font-mono" style={{ color: 'var(--odoo-text-secondary)' }}>{s.create_date ? new Date(s.create_date).toLocaleDateString() : '—'}</td>
                                                                     <td className="px-3 py-2 text-right tabular-nums font-semibold">{s.product_uom_qty || 0}</td>
                                                                     <td className="px-3 py-2 text-right tabular-nums">฿{(s.price_unit || 0).toLocaleString()}</td>
-                                                                    <td className="px-3 py-2 text-right tabular-nums font-semibold" style={{ color: '#28a745' }}>฿{(s.price_subtotal || 0).toLocaleString()}</td>
+                                                                    <td className="px-3 py-2 text-right tabular-nums font-semibold" style={{ color: 'var(--odoo-success)' }}>฿{(s.price_subtotal || 0).toLocaleString()}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -1028,34 +1028,34 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 {/* INVENTORY TAB (Stock by Location) */}
                                 {productDetailTab === 'inventory' && (
                                     <div>
-                                        {productDetailData.inventoryLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: '#017E84' }} /></div>}
+                                        {productDetailData.inventoryLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--odoo-teal)' }} /></div>}
                                         {!productDetailData.inventoryLoading && productDetailData.inventory && (
                                             <div>
-                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: '#adb5bd' }}>Stock by Location (All Warehouses)</p>
-                                                <div style={{ border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
+                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--odoo-text-muted)' }}>Stock by Location (All Warehouses)</p>
+                                                <div style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
                                                     <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                                        <thead><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                                        <thead><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                                             {['Location', 'Lot', 'On Hand', 'Reserved', 'Available'].map(h => (
-                                                                <th key={h} className={`px-3 py-2 ${h === 'Location' || h === 'Lot' ? 'text-left' : 'text-right'} font-semibold`} style={{ color: '#6c757d' }}>{h}</th>
+                                                                <th key={h} className={`px-3 py-2 ${h === 'Location' || h === 'Lot' ? 'text-left' : 'text-right'} font-semibold`} style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                                             ))}
                                                         </tr></thead>
                                                         <tbody>
                                                             {productDetailData.inventory.map((q, i) => (
                                                                 <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                                                    <td className="px-3 py-2"><span className="inline-flex items-center gap-1 font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#6c757d' }}><MapPin className="w-2.5 h-2.5" />{q.location_id?.[1] || '—'}</span></td>
-                                                                    <td className="px-3 py-2">{q.lot_id ? <span className="font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f0e8ed', color: '#714B67' }}>{q.lot_id[1]}</span> : <span style={{ color: '#dee2e6' }}>—</span>}</td>
+                                                                    <td className="px-3 py-2"><span className="inline-flex items-center gap-1 font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-secondary)' }}><MapPin className="w-2.5 h-2.5" />{q.location_id?.[1] || '—'}</span></td>
+                                                                    <td className="px-3 py-2">{q.lot_id ? <span className="font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f0e8ed', color: 'var(--odoo-purple)' }}>{q.lot_id[1]}</span> : <span style={{ color: 'var(--odoo-border)' }}>—</span>}</td>
                                                                     <td className="px-3 py-2 text-right font-semibold tabular-nums">{(q.quantity || 0).toLocaleString()}</td>
-                                                                    <td className="px-3 py-2 text-right tabular-nums" style={{ color: q.reserved_quantity > 0 ? '#ffac00' : '#dee2e6' }}>{(q.reserved_quantity || 0).toLocaleString()}</td>
-                                                                    <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: '#017E84' }}>{((q.quantity || 0) - (q.reserved_quantity || 0)).toLocaleString()}</td>
+                                                                    <td className="px-3 py-2 text-right tabular-nums" style={{ color: q.reserved_quantity > 0 ? 'var(--odoo-warning)' : 'var(--odoo-border)' }}>{(q.reserved_quantity || 0).toLocaleString()}</td>
+                                                                    <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: 'var(--odoo-teal)' }}>{((q.quantity || 0) - (q.reserved_quantity || 0)).toLocaleString()}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
                                                         <tfoot>
-                                                            <tr style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                                                                <td colSpan={2} className="px-3 py-2 font-semibold" style={{ color: '#6c757d' }}>Total</td>
-                                                                <td className="px-3 py-2 text-right font-bold tabular-nums" style={{ color: '#212529' }}>{productDetailData.inventory.reduce((s, q) => s + (q.quantity || 0), 0).toLocaleString()}</td>
-                                                                <td className="px-3 py-2 text-right font-bold tabular-nums" style={{ color: '#ffac00' }}>{productDetailData.inventory.reduce((s, q) => s + (q.reserved_quantity || 0), 0).toLocaleString()}</td>
-                                                                <td className="px-3 py-2 text-right font-bold tabular-nums" style={{ color: '#017E84' }}>{productDetailData.inventory.reduce((s, q) => s + (q.quantity || 0) - (q.reserved_quantity || 0), 0).toLocaleString()}</td>
+                                                            <tr style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                                <td colSpan={2} className="px-3 py-2 font-semibold" style={{ color: 'var(--odoo-text-secondary)' }}>Total</td>
+                                                                <td className="px-3 py-2 text-right font-bold tabular-nums" style={{ color: 'var(--odoo-text)' }}>{productDetailData.inventory.reduce((s, q) => s + (q.quantity || 0), 0).toLocaleString()}</td>
+                                                                <td className="px-3 py-2 text-right font-bold tabular-nums" style={{ color: 'var(--odoo-warning)' }}>{productDetailData.inventory.reduce((s, q) => s + (q.reserved_quantity || 0), 0).toLocaleString()}</td>
+                                                                <td className="px-3 py-2 text-right font-bold tabular-nums" style={{ color: 'var(--odoo-teal)' }}>{productDetailData.inventory.reduce((s, q) => s + (q.quantity || 0) - (q.reserved_quantity || 0), 0).toLocaleString()}</td>
                                                             </tr>
                                                         </tfoot>
                                                     </table>
@@ -1068,55 +1068,55 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 {/* FORECAST TAB */}
                                 {productDetailTab === 'forecast' && (
                                     <div>
-                                        {productDetailData.forecastLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: '#017E84' }} /></div>}
+                                        {productDetailData.forecastLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--odoo-teal)' }} /></div>}
                                         {!productDetailData.forecastLoading && productDetailData.forecast && (
                                             <div>
                                                 {/* Forecast KPI cards */}
                                                 <div className="grid grid-cols-4 gap-3 mb-4">
                                                     {[
-                                                        { label: 'On Hand', value: (productDetailData.forecast.qty_available || 0).toLocaleString(), color: '#212529', bg: '#f8f9fa' },
-                                                        { label: 'Incoming', value: `+${(productDetailData.forecast.incoming_qty || 0).toLocaleString()}`, color: '#28a745', bg: '#f0fdf4' },
-                                                        { label: 'Outgoing', value: `-${(productDetailData.forecast.outgoing_qty || 0).toLocaleString()}`, color: '#dc3545', bg: '#fff5f5' },
-                                                        { label: 'Forecasted', value: (productDetailData.forecast.virtual_available || 0).toLocaleString(), color: '#017E84', bg: '#e8f8fb' },
+                                                        { label: 'On Hand', value: (productDetailData.forecast.qty_available || 0).toLocaleString(), color: 'var(--odoo-text)', bg: 'var(--odoo-surface-low)' },
+                                                        { label: 'Incoming', value: `+${(productDetailData.forecast.incoming_qty || 0).toLocaleString()}`, color: 'var(--odoo-success)', bg: '#f0fdf4' },
+                                                        { label: 'Outgoing', value: `-${(productDetailData.forecast.outgoing_qty || 0).toLocaleString()}`, color: 'var(--odoo-danger)', bg: '#fff5f5' },
+                                                        { label: 'Forecasted', value: (productDetailData.forecast.virtual_available || 0).toLocaleString(), color: 'var(--odoo-teal)', bg: '#e8f8fb' },
                                                     ].map((k, i) => (
-                                                        <div key={i} className="rounded p-3 text-center" style={{ backgroundColor: k.bg, border: '1px solid #dee2e6' }}>
+                                                        <div key={i} className="rounded p-3 text-center" style={{ backgroundColor: k.bg, border: '1px solid var(--odoo-border-ghost)' }}>
                                                             <p className="text-lg font-bold tabular-nums" style={{ color: k.color }}>{k.value}</p>
-                                                            <p className="text-[10px] font-semibold uppercase" style={{ color: '#adb5bd' }}>{k.label}</p>
+                                                            <p className="text-[10px] font-semibold uppercase" style={{ color: 'var(--odoo-text-muted)' }}>{k.label}</p>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 {/* Upcoming moves */}
-                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: '#adb5bd' }}>Upcoming Moves</p>
+                                                <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--odoo-text-muted)' }}>Upcoming Moves</p>
                                                 {productDetailData.forecast.upcoming_moves?.length > 0 ? (
-                                                    <div style={{ border: '1px solid #dee2e6', borderRadius: '4px', overflow: 'hidden' }}>
+                                                    <div style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
                                                         <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                                            <thead><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                                            <thead><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                                                 {['Date', 'Direction', 'Reference', 'Qty', 'Status'].map(h => (
-                                                                    <th key={h} className={`px-3 py-2 ${h === 'Qty' ? 'text-right' : 'text-left'} font-semibold`} style={{ color: '#6c757d' }}>{h}</th>
+                                                                    <th key={h} className={`px-3 py-2 ${h === 'Qty' ? 'text-right' : 'text-left'} font-semibold`} style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                                                 ))}
                                                             </tr></thead>
                                                             <tbody>
                                                                 {productDetailData.forecast.upcoming_moves.map((m, i) => (
                                                                     <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                                                        <td className="px-3 py-2 font-mono" style={{ color: '#6c757d' }}>{m.date ? new Date(m.date).toLocaleDateString() : '—'}</td>
+                                                                        <td className="px-3 py-2 font-mono" style={{ color: 'var(--odoo-text-secondary)' }}>{m.date ? new Date(m.date).toLocaleDateString() : '—'}</td>
                                                                         <td className="px-3 py-2">
                                                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium"
-                                                                                style={{ backgroundColor: m.direction === 'in' ? '#f0fdf4' : '#fff5f5', color: m.direction === 'in' ? '#28a745' : '#dc3545' }}>
+                                                                                style={{ backgroundColor: m.direction === 'in' ? '#f0fdf4' : '#fff5f5', color: m.direction === 'in' ? 'var(--odoo-success)' : 'var(--odoo-danger)' }}>
                                                                                 {m.direction === 'in' ? <PackageCheck className="w-3 h-3" /> : <Truck className="w-3 h-3" />}
                                                                                 {m.direction === 'in' ? 'Incoming' : 'Outgoing'}
                                                                             </span>
                                                                         </td>
-                                                                        <td className="px-3 py-2 font-mono" style={{ color: '#017E84' }}>{m.origin || '—'}</td>
-                                                                        <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: m.direction === 'in' ? '#28a745' : '#dc3545' }}>
+                                                                        <td className="px-3 py-2 font-mono" style={{ color: 'var(--odoo-teal)' }}>{m.origin || '—'}</td>
+                                                                        <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: m.direction === 'in' ? 'var(--odoo-success)' : 'var(--odoo-danger)' }}>
                                                                             {m.direction === 'in' ? '+' : '-'}{m.product_uom_qty || 0}
                                                                         </td>
-                                                                        <td className="px-3 py-2"><span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: '#f8f9fa', color: '#6c757d' }}>{m.state}</span></td>
+                                                                        <td className="px-3 py-2"><span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: 'var(--odoo-surface-low)', color: 'var(--odoo-text-secondary)' }}>{m.state}</span></td>
                                                                     </tr>
                                                                 ))}
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                ) : <p className="text-sm" style={{ color: '#adb5bd' }}>No upcoming moves</p>}
+                                                ) : <p className="text-sm" style={{ color: 'var(--odoo-text-muted)' }}>No upcoming moves</p>}
                                             </div>
                                         )}
                                     </div>
@@ -1124,13 +1124,13 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                             </div>
 
                             {/* Footer actions */}
-                            <div className="px-5 py-3 flex items-center gap-4 shrink-0" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <div className="px-5 py-3 flex items-center gap-4 shrink-0" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                 <button onClick={() => { setProductModal(null); openHistory(pm); }}
-                                    className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#017E84' }}>
+                                    className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--odoo-teal)' }}>
                                     <History className="w-3.5 h-3.5" /> Stock History
                                 </button>
                                 <button onClick={() => { setProductModal(null); openTransfer(pm); }}
-                                    className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#017E84' }}>
+                                    className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--odoo-teal)' }}>
                                     <ArrowRightLeft className="w-3.5 h-3.5" /> Internal Transfer
                                 </button>
                             </div>
@@ -1144,51 +1144,51 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                 <div className="fixed inset-0 flex items-start justify-center z-[120] pt-16 px-4"
                     style={{ backgroundColor: 'rgba(33,37,41,0.55)' }} onClick={() => setHistoryModal(null)}>
                     <div className="w-full max-w-2xl overflow-hidden"
-                        style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
+                        style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
                         onClick={e => e.stopPropagation()}>
-                        <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <div className="flex items-center gap-2 text-xs" style={{ color: '#6c757d' }}>
-                                <span style={{ color: '#adb5bd' }}>Inventory</span><span style={{ color: '#dee2e6' }}>/</span>
-                                <span className="font-semibold" style={{ color: '#212529' }}>{historyModal.item.shortName || historyModal.item.name}</span>
-                                <span style={{ color: '#dee2e6' }}>/</span><span style={{ color: '#017E84' }}>Stock History</span>
+                        <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--odoo-text-secondary)' }}>
+                                <span style={{ color: 'var(--odoo-text-muted)' }}>Inventory</span><span style={{ color: 'var(--odoo-border)' }}>/</span>
+                                <span className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{historyModal.item.shortName || historyModal.item.name}</span>
+                                <span style={{ color: 'var(--odoo-border)' }}>/</span><span style={{ color: 'var(--odoo-teal)' }}>Stock History</span>
                             </div>
-                            <button onClick={() => setHistoryModal(null)} className="p-1.5 rounded" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                            <button onClick={() => setHistoryModal(null)} className="p-1.5 rounded" style={{ color: 'var(--odoo-text-secondary)' }}><X className="w-4 h-4" /></button>
                         </div>
-                        <div className="px-5 py-3 flex items-center gap-3 shrink-0" style={{ borderBottom: '1px solid #dee2e6' }}>
-                            <div className="w-9 h-9 rounded overflow-hidden shrink-0" style={{ border: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex items-center gap-3 shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                            <div className="w-9 h-9 rounded overflow-hidden shrink-0" style={{ border: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                                 {PRODUCT_CATALOG[historyModal.item.sku]?.image ? <img src={PRODUCT_CATALOG[historyModal.item.sku].image} alt="" className="w-full h-full object-cover" />
-                                    : <div className="w-full h-full flex items-center justify-center" style={{ color: '#dee2e6' }}><Package className="w-4 h-4" /></div>}
+                                    : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--odoo-border)' }}><Package className="w-4 h-4" /></div>}
                             </div>
                             <div>
-                                <p className="text-sm font-semibold" style={{ color: '#212529' }}>{historyModal.item.name}</p>
-                                <p className="text-[10px] font-mono" style={{ color: '#adb5bd' }}>{historyModal.item.sku} · On-hand: <span className="font-semibold" style={{ color: '#017E84' }}>{(historyModal.item.onHand || 0).toLocaleString()}</span></p>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>{historyModal.item.name}</p>
+                                <p className="text-[10px] font-mono" style={{ color: 'var(--odoo-text-muted)' }}>{historyModal.item.sku} · On-hand: <span className="font-semibold" style={{ color: 'var(--odoo-teal)' }}>{(historyModal.item.onHand || 0).toLocaleString()}</span></p>
                             </div>
                         </div>
                         <div style={{ overflowY: 'auto', flex: 1 }}>
-                            {historyModal.loading && <div className="flex items-center justify-center py-16" style={{ color: '#adb5bd' }}><RefreshCw className="w-5 h-5 animate-spin mr-2" style={{ color: '#017E84' }} /><span className="text-sm">Fetching from Odoo...</span></div>}
-                            {!historyModal.loading && historyModal.rows.length === 0 && <div className="py-16 text-center" style={{ color: '#adb5bd' }}><History className="w-8 h-8 mx-auto mb-2 opacity-20" /><p className="text-sm">No movement history found</p></div>}
+                            {historyModal.loading && <div className="flex items-center justify-center py-16" style={{ color: 'var(--odoo-text-muted)' }}><RefreshCw className="w-5 h-5 animate-spin mr-2" style={{ color: 'var(--odoo-teal)' }} /><span className="text-sm">Fetching from Odoo...</span></div>}
+                            {!historyModal.loading && historyModal.rows.length === 0 && <div className="py-16 text-center" style={{ color: 'var(--odoo-text-muted)' }}><History className="w-8 h-8 mx-auto mb-2 opacity-20" /><p className="text-sm">No movement history found</p></div>}
                             {!historyModal.loading && historyModal.rows.length > 0 && (
                                 <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                    <thead style={{ position: 'sticky', top: 0 }}><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                    <thead style={{ position: 'sticky', top: 0 }}><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                         {['Date', 'Type', 'Reference', 'Partner', 'Qty', 'Balance'].map(h => (
-                                            <th key={h} className={`px-4 py-2.5 ${h === 'Qty' || h === 'Balance' ? 'text-right' : 'text-left'} font-semibold`} style={{ color: '#6c757d' }}>{h}</th>
+                                            <th key={h} className={`px-4 py-2.5 ${h === 'Qty' || h === 'Balance' ? 'text-right' : 'text-left'} font-semibold`} style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                         ))}
                                     </tr></thead>
                                     <tbody>
                                         {historyModal.rows.map((mv, i) => {
-                                            const tc = { delivery: { label: 'Delivery', icon: <Truck className="w-3 h-3" />, color: '#dc3545', bg: '#fff5f5' },
-                                                receipt: { label: 'Receipt', icon: <PackageCheck className="w-3 h-3" />, color: '#28a745', bg: '#f0fdf4' },
-                                                adjustment: { label: 'Adjustment', icon: <Check className="w-3 h-3" />, color: '#6c757d', bg: '#f8f9fa' } }[mv.type] || { label: mv.type, icon: null, color: '#6c757d', bg: 'transparent' };
+                                            const tc = { delivery: { label: 'Delivery', icon: <Truck className="w-3 h-3" />, color: 'var(--odoo-danger)', bg: '#fff5f5' },
+                                                receipt: { label: 'Receipt', icon: <PackageCheck className="w-3 h-3" />, color: 'var(--odoo-success)', bg: '#f0fdf4' },
+                                                adjustment: { label: 'Adjustment', icon: <Check className="w-3 h-3" />, color: 'var(--odoo-text-secondary)', bg: 'var(--odoo-surface-low)' } }[mv.type] || { label: mv.type, icon: null, color: 'var(--odoo-text-secondary)', bg: 'transparent' };
                                             return (
                                                 <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}
-                                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
                                                     onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                                    <td className="px-4 py-2.5 font-mono" style={{ color: '#6c757d' }}>{mv.date}</td>
+                                                    <td className="px-4 py-2.5 font-mono" style={{ color: 'var(--odoo-text-secondary)' }}>{mv.date}</td>
                                                     <td className="px-4 py-2.5"><span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium" style={{ backgroundColor: tc.bg, color: tc.color }}>{tc.icon} {tc.label}</span></td>
-                                                    <td className="px-4 py-2.5 font-mono" style={{ color: '#017E84' }}>{mv.ref}</td>
-                                                    <td className="px-4 py-2.5" style={{ color: '#495057' }}>{mv.partner}</td>
-                                                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: mv.qty > 0 ? '#28a745' : '#dc3545' }}>{mv.qty > 0 ? '+' : ''}{mv.qty.toLocaleString()}</td>
-                                                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: '#212529' }}>{mv.balance.toLocaleString()}</td>
+                                                    <td className="px-4 py-2.5 font-mono" style={{ color: 'var(--odoo-teal)' }}>{mv.ref}</td>
+                                                    <td className="px-4 py-2.5" style={{ color: 'var(--odoo-text)' }}>{mv.partner}</td>
+                                                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: mv.qty > 0 ? 'var(--odoo-success)' : 'var(--odoo-danger)' }}>{mv.qty > 0 ? '+' : ''}{mv.qty.toLocaleString()}</td>
+                                                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: 'var(--odoo-text)' }}>{mv.balance.toLocaleString()}</td>
                                                 </tr>
                                             );
                                         })}
@@ -1196,8 +1196,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                                 </table>
                             )}
                         </div>
-                        <div className="px-5 py-2.5 text-xs shrink-0 flex items-center gap-2" style={{ borderTop: '1px solid #dee2e6', color: '#adb5bd', backgroundColor: '#f8f9fa' }}>
-                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: historyModal.isLive ? '#28a745' : '#ffac00' }} />
+                        <div className="px-5 py-2.5 text-xs shrink-0 flex items-center gap-2" style={{ borderTop: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-muted)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: historyModal.isLive ? 'var(--odoo-success)' : 'var(--odoo-warning)' }} />
                             {historyModal.isLive ? `Live from Odoo · ${historyModal.rows.length} movements` : `Mock data · ${historyModal.rows.length} movements`}
                         </div>
                     </div>
@@ -1209,20 +1209,20 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[120]"
                     style={{ backgroundColor: 'rgba(33,37,41,0.55)' }} onClick={() => setTransferModal(null)}>
                     <div className="w-full max-w-lg overflow-hidden"
-                        style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}
+                        style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}
                         onClick={e => e.stopPropagation()}>
-                        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                                <ArrowRightLeft className="w-4 h-4" style={{ color: '#017E84' }} /> Internal Transfer
+                        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                                <ArrowRightLeft className="w-4 h-4" style={{ color: 'var(--odoo-teal)' }} /> Internal Transfer
                             </h3>
-                            <button onClick={() => setTransferModal(null)} className="p-1.5 rounded" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                            <button onClick={() => setTransferModal(null)} className="p-1.5 rounded" style={{ color: 'var(--odoo-text-secondary)' }}><X className="w-4 h-4" /></button>
                         </div>
                         <div className="p-5 space-y-4">
                             {/* Source Location */}
                             <div>
-                                <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: '#6c757d' }}>Source Location</label>
+                                <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--odoo-text-secondary)' }}>Source Location</label>
                                 <select value={transferSrc} onChange={e => setTransferSrc(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm outline-none" style={{ border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529', backgroundColor: '#ffffff' }}>
+                                    className="w-full px-3 py-2 text-sm outline-none" style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', color: 'var(--odoo-text)', backgroundColor: 'var(--odoo-surface)' }}>
                                     <option value="">Select source...</option>
                                     {allOdooLocations.map(l => <option key={l.id} value={l.id}>{l.complete_name}</option>)}
                                     {allOdooLocations.length === 0 && <option value="" disabled>Connect Odoo to load locations</option>}
@@ -1230,9 +1230,9 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                             </div>
                             {/* Destination Location */}
                             <div>
-                                <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: '#6c757d' }}>Destination Location</label>
+                                <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--odoo-text-secondary)' }}>Destination Location</label>
                                 <select value={transferDest} onChange={e => setTransferDest(e.target.value)}
-                                    className="w-full px-3 py-2 text-sm outline-none" style={{ border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529', backgroundColor: '#ffffff' }}>
+                                    className="w-full px-3 py-2 text-sm outline-none" style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', color: 'var(--odoo-text)', backgroundColor: 'var(--odoo-surface)' }}>
                                     <option value="">Select destination...</option>
                                     {allOdooLocations.map(l => <option key={l.id} value={l.id}>{l.complete_name}</option>)}
                                     {allOdooLocations.length === 0 && <option value="" disabled>Connect Odoo to load locations</option>}
@@ -1240,28 +1240,28 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                             </div>
                             {/* Transfer lines */}
                             <div>
-                                <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: '#6c757d' }}>Products</label>
+                                <label className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--odoo-text-secondary)' }}>Products</label>
                                 {transferLines.map((line, i) => (
                                     <div key={i} className="flex items-center gap-2 mb-2">
-                                        <span className="flex-1 text-xs font-mono px-2 py-1.5 rounded truncate" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', color: '#495057' }}>
+                                        <span className="flex-1 text-xs font-mono px-2 py-1.5 rounded truncate" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text)' }}>
                                             {line.sku || line.name || 'Product'}
                                         </span>
                                         <input type="number" value={line.qty} onChange={e => {
                                             const lines = [...transferLines]; lines[i].qty = Math.max(1, parseInt(e.target.value) || 1); setTransferLines(lines);
-                                        }} className="w-20 text-center text-sm py-1.5 outline-none" style={{ border: '1px solid #dee2e6', borderRadius: '4px', color: '#212529' }} />
+                                        }} className="w-20 text-center text-sm py-1.5 outline-none" style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', color: 'var(--odoo-text)' }} />
                                         {transferLines.length > 1 && (
-                                            <button onClick={() => setTransferLines(transferLines.filter((_, j) => j !== i))} className="p-1" style={{ color: '#dc3545' }}><X className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => setTransferLines(transferLines.filter((_, j) => j !== i))} className="p-1" style={{ color: 'var(--odoo-danger)' }}><X className="w-3.5 h-3.5" /></button>
                                         )}
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <button onClick={() => setTransferModal(null)}
-                                className="px-4 py-1.5 text-xs rounded transition-colors" style={{ border: '1px solid #dee2e6', color: '#495057' }}>Cancel</button>
+                                className="px-4 py-1.5 text-xs rounded transition-colors" style={{ border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text)' }}>Cancel</button>
                             <button onClick={executeTransfer} disabled={transferLoading}
                                 className="px-4 py-1.5 text-xs font-semibold rounded flex items-center gap-1.5"
-                                style={{ backgroundColor: '#017E84', color: '#ffffff', border: 'none', opacity: transferLoading ? 0.7 : 1 }}>
+                                style={{ backgroundColor: 'var(--odoo-teal)', color: 'var(--odoo-surface)', border: 'none', opacity: transferLoading ? 0.7 : 1 }}>
                                 {transferLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                                 {transferLoading ? 'Processing...' : 'Create Transfer'}
                             </button>
@@ -1275,46 +1275,46 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                 <div className="fixed inset-0 flex items-start justify-center z-[120] pt-16 px-4"
                     style={{ backgroundColor: 'rgba(33,37,41,0.55)' }} onClick={() => setShowReorderPanel(false)}>
                     <div className="w-full max-w-2xl overflow-hidden"
-                        style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
+                        style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
                         onClick={e => e.stopPropagation()}>
-                        <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
-                                <Shield className="w-4 h-4" style={{ color: '#714B67' }} /> Min/Max Reorder Rules
+                        <div className="px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
+                                <Shield className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> Min/Max Reorder Rules
                             </h3>
-                            <button onClick={() => setShowReorderPanel(false)} className="p-1.5 rounded" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                            <button onClick={() => setShowReorderPanel(false)} className="p-1.5 rounded" style={{ color: 'var(--odoo-text-secondary)' }}><X className="w-4 h-4" /></button>
                         </div>
                         <div style={{ overflowY: 'auto', flex: 1 }}>
-                            {reorderLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: '#017E84' }} /></div>}
+                            {reorderLoading && <div className="text-center py-8"><RefreshCw className="w-5 h-5 animate-spin mx-auto" style={{ color: 'var(--odoo-teal)' }} /></div>}
                             {!reorderLoading && reorderRules.length === 0 && (
-                                <div className="py-16 text-center" style={{ color: '#adb5bd' }}>
+                                <div className="py-16 text-center" style={{ color: 'var(--odoo-text-muted)' }}>
                                     <Shield className="w-8 h-8 mx-auto mb-2 opacity-20" /><p className="text-sm">No reorder rules configured</p>
                                 </div>
                             )}
                             {!reorderLoading && reorderRules.length > 0 && (
                                 <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
-                                    <thead><tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                                    <thead><tr style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                                         {['Product', 'Location', 'Min', 'Max', 'To Order', 'Trigger'].map(h => (
-                                            <th key={h} className={`px-4 py-2.5 ${h === 'Min' || h === 'Max' || h === 'To Order' ? 'text-right' : 'text-left'} font-semibold`} style={{ color: '#6c757d' }}>{h}</th>
+                                            <th key={h} className={`px-4 py-2.5 ${h === 'Min' || h === 'Max' || h === 'To Order' ? 'text-right' : 'text-left'} font-semibold`} style={{ color: 'var(--odoo-text-secondary)' }}>{h}</th>
                                         ))}
                                     </tr></thead>
                                     <tbody>
                                         {reorderRules.map((r, i) => (
                                             <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}
-                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
                                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                                <td className="px-4 py-2.5 font-medium" style={{ color: '#212529' }}>{r.product_id?.[1] || r.sku || '—'}</td>
-                                                <td className="px-4 py-2.5 font-mono text-[11px]" style={{ color: '#6c757d' }}>{r.location_id?.[1] || 'PICKFACE'}</td>
-                                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: '#dc3545' }}>{r.product_min_qty || 0}</td>
-                                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: '#017E84' }}>{r.product_max_qty || 0}</td>
-                                                <td className="px-4 py-2.5 text-right tabular-nums" style={{ color: r.qty_to_order > 0 ? '#ffac00' : '#adb5bd' }}>{r.qty_to_order || 0}</td>
-                                                <td className="px-4 py-2.5"><span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f8f9fa', color: '#6c757d' }}>{r.trigger || 'auto'}</span></td>
+                                                <td className="px-4 py-2.5 font-medium" style={{ color: 'var(--odoo-text)' }}>{r.product_id?.[1] || r.sku || '—'}</td>
+                                                <td className="px-4 py-2.5 font-mono text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>{r.location_id?.[1] || 'PICKFACE'}</td>
+                                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: 'var(--odoo-danger)' }}>{r.product_min_qty || 0}</td>
+                                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums" style={{ color: 'var(--odoo-teal)' }}>{r.product_max_qty || 0}</td>
+                                                <td className="px-4 py-2.5 text-right tabular-nums" style={{ color: r.qty_to_order > 0 ? 'var(--odoo-warning)' : 'var(--odoo-text-muted)' }}>{r.qty_to_order || 0}</td>
+                                                <td className="px-4 py-2.5"><span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', color: 'var(--odoo-text-secondary)' }}>{r.trigger || 'auto'}</span></td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             )}
                         </div>
-                        <div className="px-5 py-2.5 text-xs shrink-0" style={{ borderTop: '1px solid #dee2e6', color: '#adb5bd', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-2.5 text-xs shrink-0" style={{ borderTop: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-muted)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             {reorderRules.length} rules · Odoo stock.warehouse.orderpoint
                         </div>
                     </div>

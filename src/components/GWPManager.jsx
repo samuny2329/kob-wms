@@ -437,7 +437,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <Gift className="w-6 h-6 text-[#714B67]" />
+                        <Gift className="w-6 h-6 text-[var(--odoo-purple)]" />
                         GWP Manager
                     </h2>
                     <p className="text-sm text-gray-500 mt-0.5">Gift With Purchase — Register, barcode & manage freebie items</p>
@@ -451,8 +451,8 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                 <Database className="w-3 h-3" /> Offline mode (local data)
                             </span>
                         )}
-                        {isLoadingOdoo && <Loader2 className="w-3.5 h-3.5 text-[#714B67] animate-spin" />}
-                        <button onClick={loadOdooData} className="p-1 text-gray-400 hover:text-[#714B67] transition-colors" title="Refresh Odoo data">
+                        {isLoadingOdoo && <Loader2 className="w-3.5 h-3.5 text-[var(--odoo-purple)] animate-spin" />}
+                        <button onClick={loadOdooData} className="p-1 text-gray-400 hover:text-[var(--odoo-purple)] transition-colors" title="Refresh Odoo data">
                             <RefreshCw className="w-3.5 h-3.5" />
                         </button>
                     </div>
@@ -470,7 +470,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
             {/* Stats Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                    { label: 'Total Items', value: items.length, icon: Package, color: '#714B67' },
+                    { label: 'Total Items', value: items.length, icon: Package, color: 'var(--odoo-purple)' },
                     { label: 'Total Qty', value: totalQty.toLocaleString(), icon: Hash, color: '#00A09D' },
                     { label: 'Categories', value: Object.keys(catCounts).length, icon: Tag, color: '#2563eb' },
                     { label: 'Low Stock (<10)', value: items.filter(i => i.qty < 10).length, icon: AlertTriangle, color: '#dc2626' },
@@ -495,7 +495,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                     { id: 'import', label: 'Batch Import', icon: Upload },
                 ].map(t => (
                     <button key={t.id} onClick={() => { setTab(t.id); if (t.id === 'add' && !editingId) resetForm(); }}
-                        className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-all ${tab === t.id ? 'bg-white shadow text-[#714B67]' : 'text-gray-600 hover:text-gray-800'}`}>
+                        className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-all ${tab === t.id ? 'bg-white shadow text-[var(--odoo-purple)]' : 'text-gray-600 hover:text-gray-800'}`}>
                         <t.icon className="w-4 h-4" /> {t.label}
                     </button>
                 ))}
@@ -509,10 +509,10 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, SKU, barcode..."
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-[#714B67] focus:ring-1 focus:ring-[#714B67] outline-none" />
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-[var(--odoo-purple)] focus:ring-1 focus:ring-[var(--odoo-purple)] outline-none" />
                         </div>
                         <select value={filterCat} onChange={e => setFilterCat(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:border-[#714B67] outline-none">
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:border-[var(--odoo-purple)] outline-none">
                             <option value="all">All Categories</option>
                             {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
                         </select>
@@ -530,7 +530,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                             <Gift className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                             <p className="text-gray-500 font-medium">No GWP items yet</p>
                             <p className="text-sm text-gray-400 mt-1">Use Quick Register or Batch Import to add items</p>
-                            <button onClick={() => setTab('add')} className="mt-4 px-4 py-2 bg-[#714B67] text-white rounded-lg text-sm font-medium hover:bg-[#5a3c53] transition-colors">
+                            <button onClick={() => setTab('add')} className="mt-4 px-4 py-2 bg-[var(--odoo-purple)] text-white rounded-lg text-sm font-medium hover:bg-[var(--odoo-purple-dark)] transition-colors">
                                 <Plus className="w-4 h-4 inline mr-1" /> Register First Item
                             </button>
                         </div>
@@ -541,7 +541,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                 <div>
                                     <input type="checkbox" checked={selectedIds.length === filtered.length && filtered.length > 0}
                                         onChange={e => setSelectedIds(e.target.checked ? filtered.map(i => i.id) : [])}
-                                        className="w-4 h-4 rounded accent-[#714B67]" />
+                                        className="w-4 h-4 rounded accent-[var(--odoo-purple)]" />
                                 </div>
                                 <button onClick={() => { setSortBy('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }} className="text-left flex items-center gap-1 hover:text-gray-700">
                                     Item {sortBy === 'name' && (sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
@@ -566,7 +566,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                             <div>
                                                 <input type="checkbox" checked={selectedIds.includes(item.id)}
                                                     onChange={e => setSelectedIds(prev => e.target.checked ? [...prev, item.id] : prev.filter(id => id !== item.id))}
-                                                    className="w-4 h-4 rounded accent-[#714B67]" />
+                                                    className="w-4 h-4 rounded accent-[var(--odoo-purple)]" />
                                             </div>
                                             <div className="flex items-center gap-2.5 min-w-0">
                                                 {item.photo ? (
@@ -583,7 +583,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                                 </div>
                                             </div>
                                             <div>
-                                                <span className="px-2 py-0.5 bg-[#714B67]/10 text-[#714B67] rounded font-mono text-xs font-bold">{item.sku}</span>
+                                                <span className="px-2 py-0.5 bg-[var(--odoo-purple-light)] text-[var(--odoo-purple)] rounded font-mono text-xs font-bold">{item.sku}</span>
                                             </div>
                                             <div className="text-xs text-gray-600">{cat?.icon} {cat?.label?.split(' ')[0] || item.category}</div>
                                             <div className={`text-sm font-bold ${item.qty < 10 ? 'text-red-500' : 'text-gray-800'}`}>
@@ -594,7 +594,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                                 <button onClick={() => handleEdit(item)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors" title="Edit">
                                                     <Edit3 className="w-3.5 h-3.5" />
                                                 </button>
-                                                <button onClick={() => printLabel(item)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#714B67] transition-colors" title="Print Label">
+                                                <button onClick={() => printLabel(item)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--odoo-purple)] transition-colors" title="Print Label">
                                                     <Printer className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors" title="Delete">
@@ -614,15 +614,15 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
             {tab === 'add' && (
                 <div className="bg-white rounded-xl border border-gray-200 p-5 max-w-2xl space-y-4">
                     <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                        {editingId ? <Edit3 className="w-5 h-5 text-blue-600" /> : <Plus className="w-5 h-5 text-[#714B67]" />}
+                        {editingId ? <Edit3 className="w-5 h-5 text-blue-600" /> : <Plus className="w-5 h-5 text-[var(--odoo-purple)]" />}
                         {editingId ? 'Edit GWP Item' : 'Quick Register'}
                     </h3>
 
                     {!editingId && (
-                        <div className="bg-[#714B67]/5 rounded-lg p-3 flex items-start gap-2">
-                            <Tag className="w-4 h-4 text-[#714B67] mt-0.5 shrink-0" />
+                        <div className="bg-[var(--odoo-purple-lighter)] rounded-lg p-3 flex items-start gap-2">
+                            <Tag className="w-4 h-4 text-[var(--odoo-purple)] mt-0.5 shrink-0" />
                             <div>
-                                <p className="text-sm font-medium text-[#714B67]">Auto-generated: SKU <span className="font-mono font-bold">{getNextSku(items)}</span></p>
+                                <p className="text-sm font-medium text-[var(--odoo-purple)]">Auto-generated: SKU <span className="font-mono font-bold">{getNextSku(items)}</span></p>
                                 <p className="text-xs text-gray-500 mt-0.5">Barcode will be generated automatically from SKU</p>
                             </div>
                         </div>
@@ -633,7 +633,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                         <label className="block text-sm font-medium text-gray-700 mb-1">Item Name *</label>
                         <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                             placeholder="e.g. Cream Sample 5ml, Fabric Bag, Sheet Mask 1pc"
-                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-[#714B67] focus:ring-1 focus:ring-[#714B67] outline-none" />
+                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-[var(--odoo-purple)] focus:ring-1 focus:ring-[var(--odoo-purple)] outline-none" />
                     </div>
 
                     {/* Brand + Category */}
@@ -643,7 +643,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                 Brand {odooConnected && <span className="text-[10px] text-green-600 font-normal">(Odoo)</span>}
                             </label>
                             <select value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))}
-                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:border-[#714B67] outline-none">
+                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:border-[var(--odoo-purple)] outline-none">
                                 {BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
                             </select>
                         </div>
@@ -652,7 +652,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                 Category {odooConnected && <span className="text-[10px] text-green-600 font-normal">(Odoo)</span>}
                             </label>
                             <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:border-[#714B67] outline-none">
+                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:border-[var(--odoo-purple)] outline-none">
                                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
                             </select>
                         </div>
@@ -664,7 +664,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                             <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
                             <input type="number" min="1" value={form.qty} onChange={e => setForm(f => ({ ...f, qty: e.target.value }))}
                                 placeholder="100"
-                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-[#714B67] focus:ring-1 focus:ring-[#714B67] outline-none" />
+                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-[var(--odoo-purple)] focus:ring-1 focus:ring-[var(--odoo-purple)] outline-none" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -675,14 +675,14 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                     const loc = LOCATIONS.find(l => l.id === parseInt(e.target.value));
                                     setForm(f => ({ ...f, locationId: loc?.id || null, location: loc?.name || '' }));
                                 }}
-                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:border-[#714B67] outline-none">
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:border-[var(--odoo-purple)] outline-none">
                                     <option value="">-- Select Location --</option>
                                     {LOCATIONS.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                                 </select>
                             ) : (
                                 <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
                                     placeholder="G-01-01 (auto if empty)"
-                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-[#714B67] focus:ring-1 focus:ring-[#714B67] outline-none" />
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:border-[var(--odoo-purple)] focus:ring-1 focus:ring-[var(--odoo-purple)] outline-none" />
                             )}
                         </div>
                     </div>
@@ -692,7 +692,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                         <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
                         <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                             rows={2} placeholder="Brief description for this GWP item..."
-                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm resize-none focus:border-[#714B67] focus:ring-1 focus:ring-[#714B67] outline-none" />
+                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm resize-none focus:border-[var(--odoo-purple)] focus:ring-1 focus:ring-[var(--odoo-purple)] outline-none" />
                     </div>
 
                     {/* Photo */}
@@ -708,7 +708,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                     </button>
                                 </div>
                             ) : (
-                                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-[#714B67] hover:bg-purple-50/30 transition-colors">
+                                <label className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-[var(--odoo-purple)] hover:bg-purple-50/30 transition-colors">
                                     <Camera className="w-5 h-5 text-gray-400" />
                                     <span className="text-[10px] text-gray-400 mt-1">Add Photo</span>
                                     <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} className="hidden" />
@@ -724,13 +724,13 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                     {/* Buttons */}
                     <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
                         <button onClick={handleSave} disabled={isSavingToOdoo}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-[#714B67] text-white rounded-lg text-sm font-bold hover:bg-[#5a3c53] transition-colors disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--odoo-purple)] text-white rounded-lg text-sm font-bold hover:bg-[var(--odoo-purple-dark)] transition-colors disabled:opacity-50">
                             {isSavingToOdoo ? <Loader2 className="w-4 h-4 animate-spin" /> : editingId ? <Save className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                             {editingId ? 'Save Changes' : 'Register & Create Barcode'}
                         </button>
                         {!editingId && (
                             <button onClick={() => { handleSave(); setTimeout(() => { setTab('list'); const last = items[0]; if (last) printLabel(last); }, 100); }}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#714B67] text-[#714B67] rounded-lg text-sm font-medium hover:bg-purple-50 transition-colors">
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[var(--odoo-purple)] text-[var(--odoo-purple)] rounded-lg text-sm font-medium hover:bg-purple-50 transition-colors">
                                 <Printer className="w-4 h-4" /> Register & Print
                             </button>
                         )}
@@ -777,7 +777,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                     {importRows.length > 0 && (
                         <div className="bg-white rounded-xl border border-gray-200 p-5">
                             <h3 className="text-base font-bold text-gray-800 flex items-center gap-2 mb-3">
-                                <Package className="w-5 h-5 text-[#714B67]" /> Step 3: Preview & Confirm ({importRows.length} items)
+                                <Package className="w-5 h-5 text-[var(--odoo-purple)]" /> Step 3: Preview & Confirm ({importRows.length} items)
                             </h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -794,7 +794,7 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                                     <tbody className="divide-y divide-gray-100">
                                         {importRows.map((row, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50">
-                                                <td className="py-2 pr-3 font-mono text-xs font-bold text-[#714B67]">{getNextSkuFrom(items, idx)}</td>
+                                                <td className="py-2 pr-3 font-mono text-xs font-bold text-[var(--odoo-purple)]">{getNextSkuFrom(items, idx)}</td>
                                                 <td className="py-2 pr-3 font-medium">{row.name}</td>
                                                 <td className="py-2 pr-3 text-gray-600">{row.brand || 'Other'}</td>
                                                 <td className="py-2 pr-3 text-gray-600">{row.category || 'other'}</td>
@@ -807,11 +807,11 @@ export default function GWPManager({ inventory, addToast, logActivity, user, api
                             </div>
                             <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
                                 <button onClick={handleImportConfirm}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-[#714B67] text-white rounded-lg text-sm font-bold hover:bg-[#5a3c53] transition-colors">
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-[var(--odoo-purple)] text-white rounded-lg text-sm font-bold hover:bg-[var(--odoo-purple-dark)] transition-colors">
                                     <Check className="w-4 h-4" /> Import {importRows.length} Items
                                 </button>
                                 <button onClick={() => { printBatchLabels(importRows.map((r, i) => ({ ...r, sku: getNextSkuFrom(items, i), qty: r.qty || 1, brand: r.brand || 'Other' }))); }}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#714B67] text-[#714B67] rounded-lg text-sm font-medium hover:bg-purple-50 transition-colors">
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[var(--odoo-purple)] text-[var(--odoo-purple)] rounded-lg text-sm font-medium hover:bg-purple-50 transition-colors">
                                     <Printer className="w-4 h-4" /> Import & Print All
                                 </button>
                                 <button onClick={() => { setImportRows([]); setImportFile(null); }}
@@ -860,7 +860,7 @@ export function HandheldGWPQuickAdd({ addToast, logActivity, user }) {
         <div className="space-y-4 p-1">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-[#714B67]" /> Quick Register GWP
+                    <Gift className="w-5 h-5 text-[var(--odoo-purple)]" /> Quick Register GWP
                 </h3>
                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg font-mono">
                     {items.length} items
@@ -868,9 +868,9 @@ export function HandheldGWPQuickAdd({ addToast, logActivity, user }) {
             </div>
 
             {/* Next SKU indicator */}
-            <div className="bg-[#714B67]/10 rounded-xl p-3 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-[#714B67]" />
-                <span className="text-sm font-bold text-[#714B67] font-mono">{getNextSku(items)}</span>
+            <div className="bg-[var(--odoo-purple-light)] rounded-xl p-3 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-[var(--odoo-purple)]" />
+                <span className="text-sm font-bold text-[var(--odoo-purple)] font-mono">{getNextSku(items)}</span>
                 <span className="text-xs text-gray-500">will be assigned</span>
             </div>
 
@@ -878,32 +878,32 @@ export function HandheldGWPQuickAdd({ addToast, logActivity, user }) {
             <div className="space-y-3">
                 <input value={name} onChange={e => setName(e.target.value)}
                     placeholder="Item name (e.g. Cream Sample 5ml)"
-                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-base focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67]/20 outline-none" />
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-base focus:border-[var(--odoo-purple)] focus:ring-2 focus:ring-[var(--odoo-purple-light)] outline-none" />
 
                 <div className="grid grid-cols-2 gap-2">
                     <select value={brand} onChange={e => setBrand(e.target.value)}
-                        className="px-3 py-3 border border-gray-300 rounded-xl text-sm bg-white focus:border-[#714B67] outline-none">
+                        className="px-3 py-3 border border-gray-300 rounded-xl text-sm bg-white focus:border-[var(--odoo-purple)] outline-none">
                         {FALLBACK_BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                     <select value={category} onChange={e => setCategory(e.target.value)}
-                        className="px-3 py-3 border border-gray-300 rounded-xl text-sm bg-white focus:border-[#714B67] outline-none">
+                        className="px-3 py-3 border border-gray-300 rounded-xl text-sm bg-white focus:border-[var(--odoo-purple)] outline-none">
                         {FALLBACK_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
                     </select>
                 </div>
 
                 <input type="number" min="1" value={qty} onChange={e => setQty(e.target.value)}
                     placeholder="Quantity"
-                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-base focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67]/20 outline-none" />
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl text-base focus:border-[var(--odoo-purple)] focus:ring-2 focus:ring-[var(--odoo-purple-light)] outline-none" />
             </div>
 
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-2">
                 <button onClick={handleRegister}
-                    className="flex items-center justify-center gap-2 py-3.5 bg-[#714B67] text-white rounded-xl text-sm font-bold active:scale-95 transition-all">
+                    className="flex items-center justify-center gap-2 py-3.5 bg-[var(--odoo-purple)] text-white rounded-xl text-sm font-bold active:scale-95 transition-all">
                     <Check className="w-5 h-5" /> Register
                 </button>
                 <button onClick={() => { handleRegister(); setTimeout(() => { if (saved) printLabel(saved); }, 200); }}
-                    className="flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-[#714B67] text-[#714B67] rounded-xl text-sm font-bold active:scale-95 transition-all">
+                    className="flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-[var(--odoo-purple)] text-[var(--odoo-purple)] rounded-xl text-sm font-bold active:scale-95 transition-all">
                     <Printer className="w-5 h-5" /> Register & Print
                 </button>
             </div>
@@ -933,12 +933,12 @@ export function HandheldGWPQuickAdd({ addToast, logActivity, user }) {
                     {items.slice(0, 5).map(item => (
                         <div key={item.id} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-3 py-2">
                             <div className="min-w-0 flex-1">
-                                <span className="text-xs font-mono font-bold text-[#714B67] mr-2">{item.sku}</span>
+                                <span className="text-xs font-mono font-bold text-[var(--odoo-purple)] mr-2">{item.sku}</span>
                                 <span className="text-xs text-gray-600 truncate">{item.name}</span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                                 <span className="text-xs font-bold text-gray-800">x{item.qty}</span>
-                                <button onClick={() => printLabel(item)} className="p-1 text-gray-400 active:text-[#714B67]">
+                                <button onClick={() => printLabel(item)} className="p-1 text-gray-400 active:text-[var(--odoo-purple)]">
                                     <Printer className="w-3.5 h-3.5" />
                                 </button>
                             </div>

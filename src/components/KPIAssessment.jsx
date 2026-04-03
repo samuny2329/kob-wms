@@ -60,7 +60,7 @@ const ScoreButtons = ({ value, onChange, disabled, color = '#3b82f6' }) => (
       <button key={n} onClick={() => !disabled && onChange(n)} title={SCORE_LABELS[n]} disabled={disabled}
         className="w-7 h-7 rounded text-xs font-bold border-2 transition-all disabled:opacity-50"
         style={value === n
-          ? { background: color, borderColor: color, color: '#fff', transform: 'scale(1.1)', boxShadow: `0 2px 6px ${color}66` }
+          ? { background: color, borderColor: color, color: 'var(--odoo-surface)', transform: 'scale(1.1)', boxShadow: `0 2px 6px ${color}66` }
           : { background: 'transparent', borderColor: '#d1d5db', color: '#6b7280' }}>
         {n}
       </button>

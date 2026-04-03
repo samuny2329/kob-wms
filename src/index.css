@@ -30,9 +30,22 @@
   --odoo-border-ghost:  rgba(209, 195, 202, 0.15);
   /* Semantic */
   --odoo-success:       #017E84;
+  --odoo-success-light: #f0faf4;
+  --odoo-success-bg:    #d4edda;
+  --odoo-success-border:#b8e0c4;
+  --odoo-success-dark:  #155724;
   --odoo-warning:       #E8A940;
+  --odoo-warning-light: #fff8e1;
+  --odoo-warning-dark:  #856404;
   --odoo-danger:        #E46F78;
+  --odoo-danger-light:  #fff5f5;
   --odoo-info:          #5BA8C8;
+  --odoo-info-light:    #e8f4fd;
+  --odoo-info-dark:     #0c5460;
+  /* Purple tints */
+  --odoo-purple-light:  #f3edf7;
+  --odoo-purple-lighter:#e8ddf0;
+  --odoo-purple-border: #c9a8bc;
   /* Layout */
   --odoo-navbar-h:      48px;
   --odoo-sidebar-w:     240px;

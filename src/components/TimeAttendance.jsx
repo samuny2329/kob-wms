@@ -461,7 +461,7 @@ const TimeAttendance = ({ users = [], user, userRole: userRoleProp, addToast }) 
                                         <tr key={u.username} className="border-t border-gray-100 dark:border-gray-700">
                                             <td className="px-3 py-1.5 sticky left-0 bg-white dark:bg-gray-800 z-10">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: '#714B67' }}>
+                                                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white" style={{ background: 'var(--odoo-purple)' }}>
                                                         {u.name?.charAt(0)}
                                                     </span>
                                                     <span className="font-medium text-gray-700 dark:text-gray-300 truncate">{u.name}</span>
