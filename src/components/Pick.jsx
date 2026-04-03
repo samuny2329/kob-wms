@@ -271,13 +271,32 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     const [showWavePlan, setShowWavePlan] = useState(false);
     const [wavePlan, setWavePlan] = useState(null); // array of waves
     const [expandedWave, setExpandedWave] = useState(0);
-    const [pickPathEnabled, setPickPathEnabled] = useState(true);
+    // Pick mode: 'off' → 'path' → 'wave' (cycle)
+    const [pickMode, setPickMode] = useState('path');
+    const pickPathEnabled = pickMode === 'path' || pickMode === 'wave';
+
+    const cyclePickMode = () => {
+        if (pickMode === 'off') {
+            setPickMode('path');
+        } else if (pickMode === 'path') {
+            // Switch to wave: also open the wave plan
+            setPickMode('wave');
+            const waves = autoWavePlan(pendingOrders);
+            setWavePlan(waves);
+            setShowWavePlan(true);
+            setExpandedWave(0);
+        } else {
+            setPickMode('off');
+            setShowWavePlan(false);
+        }
+    };
 
     const handleAutoWave = () => {
         const waves = autoWavePlan(pendingOrders);
         setWavePlan(waves);
         setShowWavePlan(true);
         setExpandedWave(0);
+        setPickMode('wave');
     };
 
     const printWave = (waveOrders, waveIdx) => {
@@ -473,25 +492,16 @@ window.onload=function(){
                             </div>
                             {pendingOrders.length > 0 && (
                                 <>
-                                <button onClick={() => setPickPathEnabled(!pickPathEnabled)}
+                                <button onClick={cyclePickMode}
                                     className="odoo-btn flex items-center gap-1.5"
                                     style={{
-                                        backgroundColor: pickPathEnabled ? '#017E84' : '#fff',
-                                        color: pickPathEnabled ? '#fff' : '#6c757d',
-                                        border: `1px solid ${pickPathEnabled ? '#017E84' : '#dee2e6'}`,
+                                        backgroundColor: pickMode === 'off' ? '#fff' : pickMode === 'path' ? '#017E84' : '#714B67',
+                                        color: pickMode === 'off' ? '#6c757d' : '#fff',
+                                        border: `1px solid ${pickMode === 'off' ? '#dee2e6' : pickMode === 'path' ? '#017E84' : '#714B67'}`,
                                     }}
-                                    title="Pick Path: sort items by shortest walking route (serpentine)">
-                                    <Route className="w-3.5 h-3.5" /> Path
-                                </button>
-                                <button onClick={handleAutoWave}
-                                    className="odoo-btn flex items-center gap-1.5"
-                                    style={{
-                                        backgroundColor: '#fff',
-                                        color: '#714B67',
-                                        border: '1px solid #714B67',
-                                    }}
-                                    title="Auto Wave: group orders by SKU overlap + courier cutoff">
-                                    <Zap className="w-3.5 h-3.5" /> Auto Wave
+                                    title="Cycle: Off → Path (sort by walk route) → Auto Wave (group + path)">
+                                    {pickMode === 'wave' ? <Zap className="w-3.5 h-3.5" /> : <Route className="w-3.5 h-3.5" />}
+                                    {pickMode === 'off' ? 'Off' : pickMode === 'path' ? 'Path' : 'Wave'}
                                 </button>
                                 <button onClick={() => setWaveSorted(!waveSorted)}
                                     className="odoo-btn flex items-center gap-1.5"
@@ -913,7 +923,7 @@ window.onload=function(){
                         </div>
                         <div className="px-5 py-3 flex justify-between items-center" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setPickPathEnabled(!pickPathEnabled)}
+                                <button onClick={() => setPickMode(pickMode === 'wave' ? 'off' : 'wave')}
                                     className="odoo-btn flex items-center gap-1.5 text-xs"
                                     style={{
                                         backgroundColor: pickPathEnabled ? '#017E84' : '#fff',
