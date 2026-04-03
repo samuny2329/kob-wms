@@ -11,6 +11,7 @@ export default defineConfig({
     plugins: [react()],
     server: {
         host: true,
+        port: parseInt(process.env.PORT) || 5173,
         proxy: {
             '/odoo-proxy': {
                 target: odooTarget,
