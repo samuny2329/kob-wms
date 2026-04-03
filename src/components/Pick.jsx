@@ -406,7 +406,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         }).join('');
 
         const barcodeInits = orders.map((order, idx) =>
-            `JsBarcode("#bc-${idx}","${order.ref}",{format:"CODE128",width:1.8,height:40,displayValue:false,margin:1});`
+            `JsBarcode("#bc-${idx}",${JSON.stringify(order.ref || '')},{format:"CODE128",width:1.8,height:40,displayValue:false,margin:1});`
         ).join('\n    ');
 
         const win = window.open('', '_blank', 'width=400,height=600');
@@ -549,7 +549,7 @@ window.onload=function(){
                                         setTimeout(() => e.target.removeAttribute('readonly'), 200);
                                     }
                                 }}
-                                onBlur={() => setTimeout(() => focusScanInput(listScanRef), 300)}
+                                onBlur={(e) => { if (!e.relatedTarget || e.relatedTarget.closest?.('[data-scan-area]')) setTimeout(() => focusScanInput(listScanRef), 300); }}
                                 placeholder="Tap here, then scan Pick list barcode..."
                                 className="w-full pl-9 pr-4 py-2 text-sm font-mono outline-none transition-all"
                                 style={{
@@ -601,7 +601,7 @@ window.onload=function(){
                                                             <h3 className="font-semibold text-sm" style={{ color: 'var(--odoo-text)' }}>{order.ref}</h3>
                                                             <span className={statusBadgeClass(order.status)}>{statusLabel(order.status)}</span>
                                                         </div>
-                                                        <p className="text-xs truncate" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer} &bull; {order.items.reduce((s, i) => s + i.expected, 0)} pcs &bull; {order.items.length} SKU{order.items.length > 1 ? 's' : ''}</p>
+                                                        <p className="text-xs truncate" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer} &bull; {(order.items || []).reduce((s, i) => s + i.expected, 0)} pcs &bull; {(order.items || []).length} SKU{(order.items || []).length > 1 ? 's' : ''}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
@@ -633,7 +633,7 @@ window.onload=function(){
                                                 <div className="flex-1 p-2 space-y-2 overflow-y-auto" style={{ maxHeight: '500px' }}>
                                                     {colOrders.map(order => {
                                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
-                                                        const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
+                                                        const itemCount = (order.items || []).reduce((s, i) => s + i.expected, 0);
                                                         const stockStatus = getOrderStockStatus(order);
                                                         return (
                                                             <div key={order.id} onClick={() => setSelectedPickOrder(order)}
@@ -680,8 +680,8 @@ window.onload=function(){
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
                                     {(waveSorted ? waveSort(pendingOrders) : [...pendingOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))).map(order => {
                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
-                                        const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
-                                        const picked = order.items.reduce((s, i) => s + (i.picked || 0), 0);
+                                        const itemCount = (order.items || []).reduce((s, i) => s + i.expected, 0);
+                                        const picked = (order.items || []).reduce((s, i) => s + (i.picked || 0), 0);
                                         const progress = itemCount > 0 ? Math.round((picked / itemCount) * 100) : 0;
                                         const statusColors = { pending: 'var(--odoo-warning)', picking: 'var(--odoo-info)', picked: 'var(--odoo-purple)' };
                                         return (
@@ -771,7 +771,7 @@ window.onload=function(){
                             <p className="text-[10px] font-semibold uppercase tracking-widest mt-2 animate-pulse" style={{ color: 'var(--odoo-text-muted)' }}>Waiting for barcode scan...</p>
                         </div>
                         <div className="space-y-1.5">
-                            {(pickPathEnabled ? sortByPickPath(selectedPickOrder.items) : selectedPickOrder.items).map((item, idx) => {
+                            {(pickPathEnabled ? sortByPickPath(selectedPickOrder.items || []) : (selectedPickOrder.items || [])).map((item, idx) => {
                                 const isComplete = item.picked === item.expected;
                                 const catalog = PRODUCT_CATALOG[item.sku];
                                 return (
@@ -910,7 +910,7 @@ window.onload=function(){
                                                                 <span className="text-[11px]" style={{ color: '#6c757d' }}>{order.customer}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-mono" style={{ color: '#495057' }}>{order.items.length} SKU · {pcs} pcs</span>
+                                                                <span className="text-xs font-mono" style={{ color: '#495057' }}>{(order.items || []).length} SKU · {pcs} pcs</span>
                                                             </div>
                                                         </div>
                                                     );

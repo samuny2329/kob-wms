@@ -179,7 +179,7 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                                                     return (
                                                         <div key={courier} className="p-3" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid #dee2e6', borderRadius: '4px' }}>
                                                             <div className="flex items-center gap-2 mb-2">
-                                                                <PlatformBadge name={order.courier || order.platform} size={28} />
+                                                                <PlatformBadge name={courier} size={28} />
                                                                 <div className="flex-1">
                                                                     <p className="font-semibold text-xs" style={{ color: 'var(--odoo-text)' }}>{pl?.name || courier}</p>
                                                                     <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>{orders.length} orders | {done} done</p>

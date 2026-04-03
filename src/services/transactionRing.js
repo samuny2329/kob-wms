@@ -37,9 +37,11 @@ const sha256 = async (data) => {
 };
 
 // ── Open DB ──
+const IDB_OPEN_TIMEOUT = 5000;
 const openDB = () => {
   if (_db) return Promise.resolve(_db);
   return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('IndexedDB open timeout (txRing)')), IDB_OPEN_TIMEOUT);
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
@@ -56,11 +58,12 @@ const openDB = () => {
       }
     };
     req.onsuccess = (e) => {
+      clearTimeout(timer);
       _db = e.target.result;
       _db.onclose = () => { _db = null; };
       resolve(_db);
     };
-    req.onerror = () => reject(req.error);
+    req.onerror = () => { clearTimeout(timer); reject(req.error); };
   });
 };
 
@@ -76,8 +79,15 @@ const getLastTx = async () => {
   });
 };
 
+// ── Simple async mutex for append serialization ──
+let _appendQueue = Promise.resolve();
+
 // ── Append a new TX to the ring ──
-const append = async ({ action, actor, target = {}, affects = [], meta = {} }) => {
+const append = (args) => {
+  _appendQueue = _appendQueue.then(() => _appendInner(args)).catch(() => _appendInner(args));
+  return _appendQueue;
+};
+const _appendInner = async ({ action, actor, target = {}, affects = [], meta = {} }) => {
   // Use cached last hash (fast) or fallback to DB read (first call only)
   let prevHash = _lastHash;
   if (!prevHash) {

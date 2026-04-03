@@ -487,7 +487,6 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
         status: 'success',
         awb,
         trackingUrl: `https://track.example.com/${awb}`,
-        invoiceId,
         pickingValidated: true,
     };
 };
@@ -506,22 +505,25 @@ const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => 
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-                jsonrpc: '2.0', method: 'call', id: Date.now(),
+                jsonrpc: '2.0', method: 'call', id: nextRequestId(),
                 params: { model, method, args, kwargs }
             })
         });
         return response;
     };
+    let retries = 0;
+    const MAX_AUTH_RETRIES = 2;
     let response = await doCall();
     let data;
     try { data = await response.json(); } catch {
+        if (retries++ >= MAX_AUTH_RETRIES) throw new Error('Odoo: max re-auth retries exceeded');
         _sessionAuthenticated = false;
         await authenticateOdoo(odooConfig);
         response = await doCall();
         data = await response.json();
     }
     if (data.error) {
-        if (data.error.message?.includes('Session') || data.error.data?.name?.includes('SessionExpired')) {
+        if ((data.error.message?.includes('Session') || data.error.data?.name?.includes('SessionExpired')) && retries++ < MAX_AUTH_RETRIES) {
             _sessionAuthenticated = false;
             await authenticateOdoo(odooConfig);
             response = await doCall();

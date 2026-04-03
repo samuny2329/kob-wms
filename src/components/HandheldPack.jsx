@@ -41,7 +41,7 @@ const HandheldPack = React.memo(({ salesOrders, setSalesOrders, playSound, logAc
 
     useEffect(() => {
         if (selectedOrder && selectedOrder.status !== 'packed') {
-            const allVerified = selectedOrder.items.every(i => i.packed === i.picked);
+            const allVerified = (selectedOrder.items || []).every(i => (i.packed || 0) >= (i.picked || 0));
             if (!allVerified) {
                 setTimeout(() => scanRef.current?.focus(), 100);
             }
@@ -62,7 +62,7 @@ const HandheldPack = React.memo(({ salesOrders, setSalesOrders, playSound, logAc
         if (e.key !== 'Enter' || !scanInput.trim()) return;
         const input = sanitizeBarcode(scanInput);
         const inputUpper = input.toUpperCase();
-        const items = [...selectedOrder.items];
+        const items = (selectedOrder.items || []).map(i => ({ ...i }));
 
         // Resolve SKU from barcode if input looks like a barcode (all digits)
         const isBarcode = /^\d{8,14}$/.test(input);
@@ -75,11 +75,11 @@ const HandheldPack = React.memo(({ salesOrders, setSalesOrders, playSound, logAc
             const catalogBarcodeMatch = catalog && catalog.barcode === input;
             const itemBarcodeMatch = i.barcode && i.barcode === input;
             const resolvedMatch = resolvedSku && i.sku === resolvedSku;
-            return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch || resolvedMatch) && i.packed < i.picked;
+            return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch || resolvedMatch) && (i.packed || 0) < (i.picked || 0);
         });
 
         if (item) {
-            item.packed++;
+            item.packed = (item.packed || 0) + 1;
             const updatedOrders = salesOrders.map(o =>
                 o.id === selectedOrder.id ? { ...o, items, status: 'packing' } : o
             );
@@ -199,7 +199,7 @@ const HandheldPack = React.memo(({ salesOrders, setSalesOrders, playSound, logAc
                                     <p className="text-sm font-bold">SKINOXY (Kiss of Beauty)</p>
                                     <p className="text-xs text-slate-500">Bangkok, Thailand</p>
                                 </div>
-                                <PlatformBadge name={order?.courier || order?.platform} size={56} rounded="lg" />
+                                <PlatformBadge name={showLabel.order?.courier || showLabel.order?.platform} size={56} rounded="lg" />
                             </div>
 
                             <div className="mb-4">

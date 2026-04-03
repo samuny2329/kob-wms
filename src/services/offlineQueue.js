@@ -20,10 +20,12 @@ const STORE_NAME = 'action_queue';
 let _db = null;
 
 // ── Open / Create DB ──
+const IDB_OPEN_TIMEOUT = 5000;
 const openDB = () => {
   if (_db) return Promise.resolve(_db);
 
   return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('IndexedDB open timeout (offlineQueue)')), IDB_OPEN_TIMEOUT);
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = (e) => {
@@ -37,6 +39,7 @@ const openDB = () => {
     };
 
     request.onsuccess = (e) => {
+      clearTimeout(timer);
       _db = e.target.result;
 
       // Handle DB connection lost (e.g., browser update)
@@ -46,7 +49,7 @@ const openDB = () => {
       resolve(_db);
     };
 
-    request.onerror = () => reject(request.error);
+    request.onerror = () => { clearTimeout(timer); reject(request.error); };
   });
 };
 

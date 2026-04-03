@@ -59,10 +59,11 @@ const POSPack = React.memo(({ salesOrders, setSalesOrders, playSound, logActivit
         if (!selectedOrder) return;
         if (selectedOrder.status === 'rts' && selectedOrder.awb) {
             setTimeout(() => awbRef.current?.focus(), 100);
-        } else if (!allVerified) {
-            setTimeout(() => scanRef.current?.focus(), 100);
+        } else {
+            const done = (selectedOrder.items || []).every(i => (i.packed || 0) >= (i.picked || i.expected || 0));
+            if (!done) setTimeout(() => scanRef.current?.focus(), 100);
         }
-    }, [selectedOrder?.status, selectedOrder?.awb]);
+    }, [selectedOrder?.status, selectedOrder?.awb, selectedOrder?.items]);
 
     const [flashStatus, setFlashStatus] = useState(null); // 'success' or 'error'
 
@@ -98,7 +99,7 @@ const POSPack = React.memo(({ salesOrders, setSalesOrders, playSound, logActivit
         if (e.key !== 'Enter' || !scanInput.trim()) return;
         const input = sanitizeBarcode(scanInput);
         const inputUpper = input.toUpperCase();
-        const items = [...selectedOrder.items];
+        const items = (selectedOrder.items || []).map(i => ({ ...i }));
 
         // Resolve SKU from barcode if input looks like a barcode (all digits)
         const isBarcode = /^\d{8,14}$/.test(input);
@@ -111,11 +112,11 @@ const POSPack = React.memo(({ salesOrders, setSalesOrders, playSound, logActivit
             const catalogBarcodeMatch = catalog && catalog.barcode === input;
             const itemBarcodeMatch = i.barcode && i.barcode === input;
             const resolvedMatch = resolvedSku && i.sku === resolvedSku;
-            return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch || resolvedMatch) && i.packed < i.picked;
+            return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch || resolvedMatch) && (i.packed || 0) < (i.picked || 0);
         });
 
         if (item) {
-            item.packed++;
+            item.packed = (item.packed || 0) + 1;
             const updatedOrders = salesOrders.map(o =>
                 o.id === selectedOrder.id ? { ...o, items, status: 'packing' } : o
             );

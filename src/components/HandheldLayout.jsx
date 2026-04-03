@@ -144,7 +144,7 @@ const HandheldLayout = ({
                         : <WifiOff className="w-3.5 h-3.5 text-amber-300" />
                     }
                     <div className="flex items-center gap-1.5 text-xs text-white/70">
-                        <User className="w-3.5 h-3.5" />{user.name}
+                        <User className="w-3.5 h-3.5" />{user?.name}
                     </div>
                     {screen === 'home' && (
                         <button onClick={() => setShowSetup(true)} className="p-2 rounded-lg bg-white/10 active:bg-white/20">
