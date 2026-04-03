@@ -192,12 +192,26 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     // ── Auto Wave Planner ──
     const WAVE_SIZE = 15; // max orders per wave
 
+    // Get zones touched by an order
+    const getOrderZones = (order) => {
+        const zones = new Set();
+        (order.items || []).forEach(i => {
+            const loc = getLocation(i.sku, i.location);
+            const parsed = parseLocation(loc);
+            if (parsed.zone !== 'ZZZ') zones.add(parsed.zone);
+            // Also track zone+aisle for finer proximity
+            if (parsed.zone !== 'ZZZ') zones.add(`${parsed.zone}-${String(parsed.aisle).padStart(2, '0')}`);
+        });
+        return zones;
+    };
+
     const autoWavePlan = (orders) => {
         if (orders.length === 0) return [];
-        // Build SKU set per order
+        // Build SKU set + zone set per order
         const remaining = orders.map((o, idx) => ({
             order: o, idx,
             skus: new Set((o.items || []).map(i => i.sku)),
+            zones: getOrderZones(o),
             urgent: o.courierCutoff ? new Date(o.courierCutoff).getTime() : Infinity,
         }));
         // Sort by urgency first (courier cutoff soonest first)
@@ -209,6 +223,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         while (used.size < orders.length) {
             const wave = [];
             const waveSkus = new Set();
+            const waveZones = new Set();
 
             // Seed: pick first unused order (most urgent)
             const seed = remaining.find(r => !used.has(r.idx));
@@ -216,21 +231,28 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
             wave.push(seed.order);
             used.add(seed.idx);
             seed.skus.forEach(s => waveSkus.add(s));
+            seed.zones.forEach(z => waveZones.add(z));
 
-            // Greedily add orders with highest SKU overlap
+            // Greedily add orders with highest combined score (SKU overlap + zone proximity)
             while (wave.length < WAVE_SIZE) {
                 let bestIdx = -1, bestScore = -1;
                 for (const r of remaining) {
                     if (used.has(r.idx)) continue;
-                    let overlap = 0;
-                    for (const s of r.skus) { if (waveSkus.has(s)) overlap++; }
-                    if (overlap > bestScore) { bestScore = overlap; bestIdx = r.idx; }
+                    // SKU overlap score (weight: 2 per match)
+                    let skuScore = 0;
+                    for (const s of r.skus) { if (waveSkus.has(s)) skuScore++; }
+                    // Zone proximity score (weight: 1 per zone/aisle match)
+                    let zoneScore = 0;
+                    for (const z of r.zones) { if (waveZones.has(z)) zoneScore++; }
+                    const totalScore = skuScore * 2 + zoneScore;
+                    if (totalScore > bestScore) { bestScore = totalScore; bestIdx = r.idx; }
                 }
-                if (bestIdx === -1 || bestScore === 0) break; // no more overlapping orders
+                if (bestIdx === -1 || bestScore === 0) break; // no overlapping orders
                 const picked = remaining.find(r => r.idx === bestIdx);
                 wave.push(picked.order);
                 used.add(picked.idx);
                 picked.skus.forEach(s => waveSkus.add(s));
+                picked.zones.forEach(z => waveZones.add(z));
             }
 
             // If wave didn't fill with overlaps, fill with remaining (by urgency)
@@ -818,6 +840,14 @@ window.onload=function(){
                                 }));
                                 const totalPcs = Object.values(waveSkus).reduce((s, v) => s + v, 0);
                                 const uniqueSkus = Object.keys(waveSkus).length;
+                                // Collect zones for this wave
+                                const waveZoneSet = new Set();
+                                wave.forEach(o => (o.items || []).forEach(i => {
+                                    const loc = getLocation(i.sku, i.location);
+                                    const p = parseLocation(loc);
+                                    if (p.zone !== 'ZZZ') waveZoneSet.add(p.zone);
+                                }));
+                                const waveZoneList = [...waveZoneSet].sort();
                                 const isExpanded = expandedWave === wIdx;
                                 return (
                                     <div key={wIdx} className="rounded-lg overflow-hidden" style={{ border: '1px solid #dee2e6' }}>
@@ -830,7 +860,10 @@ window.onload=function(){
                                                 </div>
                                                 <div>
                                                     <div className="text-sm font-semibold" style={{ color: '#212529' }}>Wave {wIdx + 1}</div>
-                                                    <div className="text-[11px]" style={{ color: '#6c757d' }}>{wave.length} orders · {uniqueSkus} SKUs · {totalPcs} pcs</div>
+                                                    <div className="text-[11px]" style={{ color: '#6c757d' }}>
+                                                        {wave.length} orders · {uniqueSkus} SKUs · {totalPcs} pcs
+                                                        {waveZoneList.length > 0 && <span style={{ color: '#017E84' }}> · Zone {waveZoneList.join(', ')}</span>}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
