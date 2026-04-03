@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns, ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, RefreshCw, ClipboardList, ChevronRight, ChevronLeft, CheckSquare, Box, Printer, X, ScanLine, Search, MapPin, List, LayoutGrid, Columns, ArrowUpDown, AlertTriangle, Route, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import { PRODUCT_CATALOG, PLATFORM_LABELS } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 
@@ -165,6 +165,107 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         return Object.values(map).sort((a, b) => a.sku.localeCompare(b.sku));
     };
 
+    // ── Pick Path Optimizer ──
+    // Parse location "A-01-03" → { zone: 'A', aisle: 1, shelf: 3 }
+    const parseLocation = (loc) => {
+        if (!loc) return { zone: 'ZZZ', aisle: 999, shelf: 999 }; // no-location items go last
+        const parts = loc.split('-');
+        if (parts.length >= 3) return { zone: parts[0], aisle: parseInt(parts[1]) || 0, shelf: parseInt(parts[2]) || 0 };
+        if (parts.length === 2) return { zone: parts[0], aisle: parseInt(parts[1]) || 0, shelf: 0 };
+        return { zone: loc, aisle: 0, shelf: 0 };
+    };
+
+    // Sort items by serpentine warehouse path: Zone → Aisle (serpentine) → Shelf
+    const sortByPickPath = (items) => {
+        return [...items].sort((a, b) => {
+            const la = parseLocation(getLocation(a.sku, a.location));
+            const lb = parseLocation(getLocation(b.sku, b.location));
+            // Zone first
+            if (la.zone !== lb.zone) return la.zone.localeCompare(lb.zone);
+            // Aisle next
+            if (la.aisle !== lb.aisle) return la.aisle - lb.aisle;
+            // Serpentine: odd aisles ascending, even aisles descending
+            return la.aisle % 2 === 1 ? la.shelf - lb.shelf : lb.shelf - la.shelf;
+        });
+    };
+
+    // ── Auto Wave Planner ──
+    const WAVE_SIZE = 15; // max orders per wave
+
+    const autoWavePlan = (orders) => {
+        if (orders.length === 0) return [];
+        // Build SKU set per order
+        const remaining = orders.map((o, idx) => ({
+            order: o, idx,
+            skus: new Set((o.items || []).map(i => i.sku)),
+            urgent: o.courierCutoff ? new Date(o.courierCutoff).getTime() : Infinity,
+        }));
+        // Sort by urgency first (courier cutoff soonest first)
+        remaining.sort((a, b) => a.urgent - b.urgent);
+
+        const waves = [];
+        const used = new Set();
+
+        while (used.size < orders.length) {
+            const wave = [];
+            const waveSkus = new Set();
+
+            // Seed: pick first unused order (most urgent)
+            const seed = remaining.find(r => !used.has(r.idx));
+            if (!seed) break;
+            wave.push(seed.order);
+            used.add(seed.idx);
+            seed.skus.forEach(s => waveSkus.add(s));
+
+            // Greedily add orders with highest SKU overlap
+            while (wave.length < WAVE_SIZE) {
+                let bestIdx = -1, bestScore = -1;
+                for (const r of remaining) {
+                    if (used.has(r.idx)) continue;
+                    let overlap = 0;
+                    for (const s of r.skus) { if (waveSkus.has(s)) overlap++; }
+                    if (overlap > bestScore) { bestScore = overlap; bestIdx = r.idx; }
+                }
+                if (bestIdx === -1 || bestScore === 0) break; // no more overlapping orders
+                const picked = remaining.find(r => r.idx === bestIdx);
+                wave.push(picked.order);
+                used.add(picked.idx);
+                picked.skus.forEach(s => waveSkus.add(s));
+            }
+
+            // If wave didn't fill with overlaps, fill with remaining (by urgency)
+            while (wave.length < WAVE_SIZE && used.size < orders.length) {
+                const next = remaining.find(r => !used.has(r.idx));
+                if (!next) break;
+                wave.push(next.order);
+                used.add(next.idx);
+            }
+
+            waves.push(wave);
+        }
+        return waves;
+    };
+
+    const [showWavePlan, setShowWavePlan] = useState(false);
+    const [wavePlan, setWavePlan] = useState(null); // array of waves
+    const [expandedWave, setExpandedWave] = useState(0);
+    const [pickPathEnabled, setPickPathEnabled] = useState(true);
+
+    const handleAutoWave = () => {
+        const waves = autoWavePlan(pendingOrders);
+        setWavePlan(waves);
+        setShowWavePlan(true);
+        setExpandedWave(0);
+    };
+
+    const printWave = (waveOrders, waveIdx) => {
+        const sorted = waveOrders.map(o => ({
+            ...o,
+            items: pickPathEnabled ? sortByPickPath(o.items) : o.items,
+        }));
+        setShowPickingList({ batch: true, orders: sorted, waveSorted: true, waveLabel: `Wave ${waveIdx + 1}` });
+    };
+
     // HTML escape to prevent XSS in print window
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -221,10 +322,13 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
             const platformName = pl?.name || order.platform || 'WMS';
             const storeName = 'KissMyBody';
             const orderTotal = order.items.reduce((s, i) => s + (i.expected || 0), 0);
+            const pathLabel = pickPathEnabled ? ' · Route' : '';
+            const waveLabel = showPickingList.waveLabel ? ` · ${esc(showPickingList.waveLabel)}` : '';
+            const sortedItems = pickPathEnabled ? sortByPickPath(order.items) : order.items;
             return `
 <div class="page">
   <div class="page-header">
-    <div class="page-title">[Pick] ${esc(platformName)} · ${esc(storeName)}</div>
+    <div class="page-title">[Pick] ${esc(platformName)} · ${esc(storeName)}${waveLabel}${pathLabel}</div>
     <div class="page-sub">${idx+1}/${total} &nbsp;|&nbsp; ${dateStr} &nbsp;|&nbsp; <strong>${esc(order.ref)}</strong>${order.customer ? ' · ' + esc(order.customer) : ''} &nbsp;|&nbsp; <strong>${orderTotal} pcs</strong></div>
   </div>
   <div class="bc-wrap"><svg id="bc-${idx}"></svg><div class="bc-label">${order.ref}</div></div>
@@ -237,7 +341,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
       <th style="text-align:center">✓</th>
     </tr></thead>
     <tbody>
-      ${order.items.map((item, i) => {
+      ${sortedItems.map((item, i) => {
           const loc = getLocation(item.sku, item.location);
           return `
       <tr>
@@ -347,6 +451,26 @@ window.onload=function(){
                             </div>
                             {pendingOrders.length > 0 && (
                                 <>
+                                <button onClick={() => setPickPathEnabled(!pickPathEnabled)}
+                                    className="odoo-btn flex items-center gap-1.5"
+                                    style={{
+                                        backgroundColor: pickPathEnabled ? '#017E84' : '#fff',
+                                        color: pickPathEnabled ? '#fff' : '#6c757d',
+                                        border: `1px solid ${pickPathEnabled ? '#017E84' : '#dee2e6'}`,
+                                    }}
+                                    title="Pick Path: sort items by shortest walking route (serpentine)">
+                                    <Route className="w-3.5 h-3.5" /> Path
+                                </button>
+                                <button onClick={handleAutoWave}
+                                    className="odoo-btn flex items-center gap-1.5"
+                                    style={{
+                                        backgroundColor: '#fff',
+                                        color: '#714B67',
+                                        border: '1px solid #714B67',
+                                    }}
+                                    title="Auto Wave: group orders by SKU overlap + courier cutoff">
+                                    <Zap className="w-3.5 h-3.5" /> Auto Wave
+                                </button>
                                 <button onClick={() => setWaveSorted(!waveSorted)}
                                     className="odoo-btn flex items-center gap-1.5"
                                     style={{
@@ -355,10 +479,10 @@ window.onload=function(){
                                         border: `1px solid ${waveSorted ? '#714B67' : '#dee2e6'}`,
                                     }}
                                     title="Wave Sort: group similar SKUs together, sorted by quantity">
-                                    <ArrowUpDown className="w-3.5 h-3.5" /> Wave Sort
+                                    <ArrowUpDown className="w-3.5 h-3.5" /> Sort
                                 </button>
                                 <button onClick={generateBatchPickingList} className="odoo-btn odoo-btn-secondary flex items-center gap-1.5">
-                                    <Printer className="w-3.5 h-3.5" /> Print List
+                                    <Printer className="w-3.5 h-3.5" /> Print
                                 </button>
                                 </>
                             )}
@@ -615,7 +739,7 @@ window.onload=function(){
                             <p className="text-[10px] font-semibold uppercase tracking-widest mt-2 animate-pulse" style={{ color: '#adb5bd' }}>Waiting for barcode scan...</p>
                         </div>
                         <div className="space-y-1.5">
-                            {selectedPickOrder.items.map((item, idx) => {
+                            {(pickPathEnabled ? sortByPickPath(selectedPickOrder.items) : selectedPickOrder.items).map((item, idx) => {
                                 const isComplete = item.picked === item.expected;
                                 const catalog = PRODUCT_CATALOG[item.sku];
                                 return (
@@ -668,6 +792,118 @@ window.onload=function(){
                                     </div>
                                 );
                             })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Auto Wave Plan Modal */}
+            {showWavePlan && wavePlan && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.55)' }}>
+                    <div className="w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3 flex justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
+                                <Zap className="w-4 h-4" style={{ color: '#714B67' }} /> Auto Wave Plan
+                                <span className="text-[10px] font-normal px-2 py-0.5 rounded-full" style={{ backgroundColor: '#e9ecef', color: '#6c757d' }}>
+                                    {wavePlan.length} waves · {pendingOrders.length} orders
+                                </span>
+                            </h2>
+                            <button onClick={() => setShowWavePlan(false)} className="p-1 rounded transition-colors hover:bg-gray-200" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
+                            {wavePlan.map((wave, wIdx) => {
+                                const waveSkus = {};
+                                wave.forEach(o => (o.items || []).forEach(i => {
+                                    waveSkus[i.sku] = (waveSkus[i.sku] || 0) + (i.expected || 0);
+                                }));
+                                const totalPcs = Object.values(waveSkus).reduce((s, v) => s + v, 0);
+                                const uniqueSkus = Object.keys(waveSkus).length;
+                                const isExpanded = expandedWave === wIdx;
+                                return (
+                                    <div key={wIdx} className="rounded-lg overflow-hidden" style={{ border: '1px solid #dee2e6' }}>
+                                        <div className="px-4 py-3 flex items-center justify-between cursor-pointer"
+                                            style={{ backgroundColor: isExpanded ? '#f0e8ed' : '#f8f9fa' }}
+                                            onClick={() => setExpandedWave(isExpanded ? -1 : wIdx)}>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded flex items-center justify-center text-sm font-bold" style={{ backgroundColor: '#714B67', color: '#fff' }}>
+                                                    {wIdx + 1}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-semibold" style={{ color: '#212529' }}>Wave {wIdx + 1}</div>
+                                                    <div className="text-[11px]" style={{ color: '#6c757d' }}>{wave.length} orders · {uniqueSkus} SKUs · {totalPcs} pcs</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={(e) => { e.stopPropagation(); printWave(wave, wIdx); }}
+                                                    className="odoo-btn odoo-btn-primary flex items-center gap-1 text-xs">
+                                                    <Printer className="w-3 h-3" /> Print
+                                                </button>
+                                                {isExpanded ? <ChevronUp className="w-4 h-4" style={{ color: '#6c757d' }} /> : <ChevronDown className="w-4 h-4" style={{ color: '#6c757d' }} />}
+                                            </div>
+                                        </div>
+                                        {isExpanded && (
+                                            <div style={{ borderTop: '1px solid #dee2e6' }}>
+                                                {/* SKU Summary for this wave */}
+                                                <div className="px-4 py-2" style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f1f3f5' }}>
+                                                    <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#714B67' }}>SKU Summary</div>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {Object.entries(waveSkus).sort((a, b) => a[0].localeCompare(b[0])).map(([sku, qty]) => (
+                                                            <span key={sku} className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: '#e9ecef', color: '#495057' }}>
+                                                                {sku} <strong style={{ color: '#714B67' }}>×{qty}</strong>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                {/* Order list */}
+                                                {wave.map((order, oIdx) => {
+                                                    const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
+                                                    const pcs = (order.items || []).reduce((s, i) => s + (i.expected || 0), 0);
+                                                    return (
+                                                        <div key={oIdx} className="px-4 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid #f1f3f5' }}>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-mono" style={{ color: '#adb5bd' }}>{oIdx + 1}</span>
+                                                                {pl && <PlatformBadge name={order.courier || order.platform} size={18} />}
+                                                                <span className="text-xs font-semibold" style={{ color: '#212529' }}>{order.ref}</span>
+                                                                <span className="text-[11px]" style={{ color: '#6c757d' }}>{order.customer}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-mono" style={{ color: '#495057' }}>{order.items.length} SKU · {pcs} pcs</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="px-5 py-3 flex justify-between items-center" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setPickPathEnabled(!pickPathEnabled)}
+                                    className="odoo-btn flex items-center gap-1.5 text-xs"
+                                    style={{
+                                        backgroundColor: pickPathEnabled ? '#017E84' : '#fff',
+                                        color: pickPathEnabled ? '#fff' : '#6c757d',
+                                        border: `1px solid ${pickPathEnabled ? '#017E84' : '#dee2e6'}`,
+                                    }}>
+                                    <Route className="w-3 h-3" /> {pickPathEnabled ? 'Path ON' : 'Path OFF'}
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setShowWavePlan(false)} className="odoo-btn odoo-btn-secondary">Close</button>
+                                <button onClick={() => {
+                                    // Print all waves as one batch
+                                    const allOrders = wavePlan.flat().map(o => ({
+                                        ...o,
+                                        items: pickPathEnabled ? sortByPickPath(o.items) : o.items,
+                                    }));
+                                    setShowWavePlan(false);
+                                    setShowPickingList({ batch: true, orders: allOrders, waveSorted: true, waveLabel: 'All Waves' });
+                                }} className="odoo-btn odoo-btn-primary flex items-center gap-1.5">
+                                    <Printer className="w-3.5 h-3.5" /> Print All Waves
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
