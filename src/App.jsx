@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { AlertCircle, CheckCircle2, RefreshCw, Upload, X, FileSpreadsheet, AlertTriangle, Unlock, Building2, ChevronDown } from 'lucide-react';
+import { AlertCircle, CheckCircle2, RefreshCw, Upload, X, FileSpreadsheet, AlertTriangle, Unlock, Building2, ChevronDown, Monitor } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import { TRANSLATIONS } from './translations';
@@ -1119,80 +1119,129 @@ window.onload=function(){
     const handheldTotalCount = activeOrders.length;
     if (isHandheld) return <HandheldLayout user={user} handleLogout={handleLogout} salesOrders={handheldOrders} setSalesOrders={setSalesOrders} allSalesOrders={salesOrders} totalOrderCount={handheldTotalCount} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} inventory={inventory} printAwbLabel={printAwbLabel} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} syncStatus={syncStatus} syncNow={syncStatus.syncNow} activityLogs={activityLogs} />;
 
+    // Find current section for breadcrumb
+    const currentTabInfo = tabInfo[activeTab];
+    const currentSection = currentTabInfo?.section || 'Operations';
     return (
-        <div className="flex h-screen font-sans" style={{ backgroundColor: '#f8f9fa', color: '#212529' }}>
-            <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} activeCompanies={activeCompanies} setActiveCompanies={setActiveCompanies} />
-
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                {/* Odoo 18 Top Navbar — white bg, 46px, matches kissgroupdatacenter.com style */}
-                <header className="shrink-0 flex items-center justify-between px-5 z-40"
-                    style={{ height: '46px', backgroundColor: '#ffffff', borderBottom: '1px solid #dee2e6' }}>
-                    <div className="flex items-center gap-2">
-                        {/* Breadcrumb: Apps > Page */}
-                        <span className="text-xs" style={{ color: '#adb5bd' }}>WMS Pro</span>
-                        <span style={{ color: '#dee2e6', fontSize: '12px' }}>/</span>
-                        <h2 className="text-sm font-semibold" style={{ color: '#212529' }}>
-                            {t('tab' + activeTab.charAt(0).toUpperCase() + activeTab.slice(1))}
-                        </h2>
-                        <div className="flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full" style={{ backgroundColor: syncStatus.isOnline ? '#d4edda' : '#f8d7da' }}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${syncStatus.isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
-                            <span className="text-[10px] font-medium" style={{ color: syncStatus.isOnline ? '#155724' : '#721c24' }}>
-                                {syncStatus.isOnline ? 'Connected' : 'Offline'}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {activeTab === 'scan' && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded" style={{ backgroundColor: '#d1ecf1', color: '#0c5460' }}>
-                                Live Outbound
-                            </span>
-                        )}
-                        {userRole === 'admin' && (
-                            <button
-                                onClick={() => setIsImportModalOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition-colors"
-                                style={{ backgroundColor: '#ffffff', color: '#714B67', border: '1px solid #dee2e6' }}
-                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f0e8ed'; e.currentTarget.style.borderColor = '#714B67'; }}
-                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.borderColor = '#dee2e6'; }}
-                            >
-                                <Upload className="w-3.5 h-3.5" /> Import
-                            </button>
-                        )}
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ color: '#adb5bd', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
-                            #{activeOrderId.split('-')[1]}
-                        </span>
-                    </div>
-                </header>
-
-                {/* Session timeout warning banner */}
-                {sessionWarning && (
-                    <div className="shrink-0 flex items-center justify-between px-4 py-2 text-xs font-medium"
-                        style={{ backgroundColor: '#fff3cd', color: '#856404', borderBottom: '1px solid #ffc107' }}>
-                        <div className="flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span>Session expires in {sessionWarning.minutesLeft} minute{sessionWarning.minutesLeft !== 1 ? 's' : ''}.</span>
-                        </div>
-                        <button onClick={() => { refreshSession(); setSessionWarning(null); }}
-                            className="px-3 py-1 rounded text-xs font-semibold"
-                            style={{ backgroundColor: '#ffc107', color: '#212529' }}>
-                            Stay logged in
-                        </button>
-                    </div>
-                )}
-
-                {/* Page breadcrumb / title bar */}
-                <div className="shrink-0 px-6 py-2.5 flex items-center gap-2 border-b" style={{ backgroundColor: '#ffffff', borderColor: '#dee2e6' }}>
-                    <h1 className="text-sm font-semibold" style={{ color: '#212529' }}>
-                        {t('tab' + activeTab.charAt(0).toUpperCase() + activeTab.slice(1))}
-                    </h1>
-                    {syncStatus.lastSyncTime && (
-                        <span className="text-[11px] ml-2" style={{ color: '#adb5bd' }}>
-                            {t('lastSync')}: {new Date(syncStatus.lastSyncTime).toLocaleTimeString()}
-                        </span>
-                    )}
+        <div className="flex flex-col h-screen font-sans" style={{ backgroundColor: 'var(--odoo-bg)', color: 'var(--odoo-text)' }}>
+            {/* ═══ Soft Odoo Navbar ═══ */}
+            <nav className="o_main_navbar shrink-0 flex items-center z-50"
+                style={{ height: '48px', background: 'linear-gradient(135deg, #57344F, #714B67)', borderBottom: 'none' }}>
+                {/* Left: Toggle + Brand */}
+                <div className="flex items-center h-full">
+                    {/* Sidebar toggle */}
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="h-full px-3 flex items-center justify-center transition-colors"
+                        style={{ color: 'rgba(255,255,255,0.9)' }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.08)'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                        <svg className="w-[18px] h-[18px]" viewBox="0 0 16 16" fill="currentColor">
+                            <circle cx="2.5" cy="2.5" r="1.8"/><circle cx="8" cy="2.5" r="1.8"/><circle cx="13.5" cy="2.5" r="1.8"/>
+                            <circle cx="2.5" cy="8" r="1.8"/><circle cx="8" cy="8" r="1.8"/><circle cx="13.5" cy="8" r="1.8"/>
+                            <circle cx="2.5" cy="13.5" r="1.8"/><circle cx="8" cy="13.5" r="1.8"/><circle cx="13.5" cy="13.5" r="1.8"/>
+                        </svg>
+                    </button>
+                    {/* Brand */}
+                    <span className="hidden md:flex items-center h-full px-3 text-white font-semibold"
+                        style={{ fontSize: '1.05em' }}>
+                        WMS Pro
+                    </span>
                 </div>
 
-                <main className="flex-1 overflow-y-auto p-5 custom-scrollbar relative z-30" style={{ backgroundColor: '#f8f9fa' }}>
+                {/* Center: Current section + page (breadcrumb in navbar) */}
+                <div className="flex items-center h-full flex-1 ml-1">
+                    <span className="text-[13px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        {t(`sec${currentSection.replace(/\s+/g, '')}`) || currentSection}
+                    </span>
+                    <svg className="w-4 h-4 mx-1" style={{ color: 'rgba(255,255,255,0.3)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    <span className="text-[13px] font-semibold text-white">
+                        {t('tab' + activeTab.charAt(0).toUpperCase() + activeTab.slice(1))}
+                    </span>
+                </div>
+
+                {/* Right: Systray */}
+                <div className="flex items-center h-full">
+                    {/* Sync */}
+                    <div className="h-full px-2.5 flex items-center gap-1.5"
+                        style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px' }}>
+                        <div className={`w-2 h-2 rounded-full ${syncStatus.isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
+                        <span className="hidden lg:inline">{syncStatus.isOnline ? 'Online' : 'Offline'}</span>
+                    </div>
+                    {/* Import */}
+                    {userRole === 'admin' && (
+                        <button onClick={() => setIsImportModalOpen(true)}
+                            className="h-full px-3 flex items-center gap-1.5 transition-colors"
+                            style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.08)'}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                            <Upload className="w-3.5 h-3.5" />
+                            <span className="hidden lg:inline">Import</span>
+                        </button>
+                    )}
+                    {/* User */}
+                    <button
+                        className="h-full px-3 flex items-center gap-2 transition-colors"
+                        style={{ color: 'rgba(255,255,255,0.9)', borderLeft: '1px solid rgba(255,255,255,0.12)' }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.08)'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        onClick={() => setIsRoleModalOpen(true)}
+                    >
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                            style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: '#fff' }}>
+                            {(user?.name || 'A')[0].toUpperCase()}
+                        </div>
+                        <div className="hidden lg:block text-left">
+                            <div className="text-xs font-medium leading-tight">{user?.name || 'Admin'}</div>
+                            <div className="text-[10px] leading-tight" style={{ color: 'rgba(255,255,255,0.6)' }}>{rolesInfo[userRole]?.label || userRole}</div>
+                        </div>
+                    </button>
+                </div>
+            </nav>
+
+            {/* ═══ Below navbar: Sidebar + Content ═══ */}
+            <div className="flex flex-1 min-h-0">
+                <Sidebar t={t} user={user} userRole={userRole} activeTab={activeTab} setActiveTab={setActiveTab} tabInfo={tabInfo} rolesInfo={rolesInfo} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} handleLogout={handleLogout} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} syncStatus={syncStatus} activeCompanies={activeCompanies} setActiveCompanies={setActiveCompanies} currentSection={currentSection} />
+
+                <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                    {/* Session timeout warning banner */}
+                    {sessionWarning && (
+                        <div className="shrink-0 flex items-center justify-between px-4 py-2 text-xs font-medium"
+                            style={{ backgroundColor: '#fff3cd', color: '#856404', borderBottom: '1px solid #ffc107' }}>
+                            <div className="flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                <span>Session expires in {sessionWarning.minutesLeft} minute{sessionWarning.minutesLeft !== 1 ? 's' : ''}.</span>
+                            </div>
+                            <button onClick={() => { refreshSession(); setSessionWarning(null); }}
+                                className="px-3 py-1 rounded text-xs font-semibold"
+                                style={{ backgroundColor: '#ffc107', color: 'var(--odoo-text)' }}>
+                                Stay logged in
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Soft Control Panel */}
+                    <div className="o_control_panel shrink-0 px-5 py-3 flex items-center justify-between z-40"
+                        style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-[13px]" style={{ color: 'var(--odoo-text-muted)' }}>{t(`sec${currentSection.replace(/\s+/g, '')}`) || currentSection}</span>
+                            <svg className="w-4 h-4" style={{ color: '#D5D0CC' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            <h1 className="text-[13px] font-bold" style={{ color: 'var(--odoo-text)' }}>
+                                {t('tab' + activeTab.charAt(0).toUpperCase() + activeTab.slice(1))}
+                            </h1>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {syncStatus.lastSyncTime && (
+                                <span className="text-[11px]" style={{ color: 'var(--odoo-text-muted)' }}>
+                                    {new Date(syncStatus.lastSyncTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                <main className="flex-1 overflow-y-auto p-5 custom-scrollbar relative z-30" style={{ backgroundColor: 'var(--odoo-bg)' }}>
                     {activeTab === 'dashboard' && <Dashboard t={t} totalExpected={totalExpected} totalScanned={totalScanned} uph={uph} dailyBoxUsage={dailyBoxUsage} totalDelayed={totalDelayed} courierDistributionData={courierDistributionData} progressPercent={progressPercent} delayedOrdersData={delayedOrdersData} userRole={userRole} activityLogs={activityLogs} isDarkMode={isDarkMode} salesOrders={salesOrders} inventory={inventory} waves={waves} invoices={invoices} user={user} />}
                     {activeTab === 'pick' && <Pick salesOrders={salesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} inventory={inventory} clearDummyOrders={clearDummyOrders} onCreateSOInOdoo={handleCreateSOInOdoo} isCreatingSO={isCreatingSO} stockFrozen={stockFrozen} />}
                     {activeTab === 'pack' && <Pack salesOrders={salesOrders} selectedPackOrder={selectedPackOrder} setSelectedPackOrder={setSelectedPackOrder} handlePackScanSubmit={handlePackScanSubmit} packScanInput={packScanInput} setPackScanInput={setPackScanInput} packInputRef={packInputRef} handleBoxSelect={handleBoxSelect} isProcessingAPI={isProcessingAPI} packAwbInput={packAwbInput} setPackAwbInput={setPackAwbInput} packAwbRef={packAwbRef} handleAwbConfirmScan={handleAwbConfirmScan} printAwbLabel={printAwbLabel} stockFrozen={stockFrozen} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} user={user} />}
@@ -1229,19 +1278,20 @@ window.onload=function(){
                 {/* Worker Performance Detail Panel */}
                 {selectedWorker && <WorkerPerformance activityLogs={activityLogs} worker={selectedWorker} users={users} onClose={() => setSelectedWorker(null)} t={t} />}
             </div>
+            </div>{/* end sidebar+content flex */}
 
             {/* Modals & Toasts */}
             {isImportModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.55)' }}>
-                    <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                        <div className="px-5 py-3.5 flex justify-between items-center" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: '#212529' }}>
+                    <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3.5 flex justify-between items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
                                 <Upload className="w-4 h-4" style={{ color: '#714B67' }} /> Import Master Data
                             </h2>
-                            <button onClick={() => setIsImportModalOpen(false)} className="p-1 rounded transition-colors hover:bg-gray-200" style={{ color: '#6c757d' }}><X className="w-4 h-4" /></button>
+                            <button onClick={() => setIsImportModalOpen(false)} className="p-1 rounded transition-colors hover:bg-gray-200" style={{ color: 'var(--odoo-text-muted)' }}><X className="w-4 h-4" /></button>
                         </div>
                         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
-                            <div className="relative border-2 border-dashed rounded p-8 text-center cursor-pointer transition-colors group" style={{ borderColor: '#dee2e6' }}
+                            <div className="relative border-2 border-dashed rounded p-8 text-center cursor-pointer transition-colors group" style={{ borderColor: 'var(--odoo-border)' }}
                                 onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}
                             >
@@ -1251,8 +1301,8 @@ window.onload=function(){
                                         <FileSpreadsheet className="w-7 h-7" style={{ color: '#714B67' }} />
                                     </div>
                                     <div>
-                                        <span className="text-sm font-semibold block mb-0.5" style={{ color: '#212529' }}>Drop Excel file here or click to browse</span>
-                                        <span className="text-xs" style={{ color: '#6c757d' }}>{uploadedFileName || 'Supports .xlsx, .xls, .csv'}</span>
+                                        <span className="text-sm font-semibold block mb-0.5" style={{ color: 'var(--odoo-text)' }}>Drop Excel file here or click to browse</span>
+                                        <span className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>{uploadedFileName || 'Supports .xlsx, .xls, .csv'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1260,19 +1310,19 @@ window.onload=function(){
                             {sheetNames.length > 0 && (
                                 <div className="space-y-4 animate-slide-up">
                                     <div>
-                                        <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: '#6c757d' }}>Select Sheet</label>
+                                        <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--odoo-text-muted)' }}>Select Sheet</label>
                                         <select value={selectedSheet} onChange={e => handleSheetSelect(e.target.value)} className="odoo-input w-full">
                                             {sheetNames.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </div>
 
                                     {excelHeaders.length > 0 && (
-                                        <div className="p-4 rounded" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' }}>
-                                            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#6c757d' }}>Column Mapping</h3>
+                                        <div className="p-4 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)' }}>
+                                            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--odoo-text-muted)' }}>Column Mapping</h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 {['barcode', 'courier', 'orderNumber', 'shopName'].map(field => (
                                                     <div key={field}>
-                                                        <label className="text-xs font-semibold mb-1 block capitalize" style={{ color: '#495057' }}>
+                                                        <label className="text-xs font-semibold mb-1 block capitalize" style={{ color: 'var(--odoo-text-secondary)' }}>
                                                             {field === 'barcode' ? 'Tracking / Barcode *' : field}
                                                         </label>
                                                         <select value={columnMapping[field]} onChange={e => setColumnMapping({ ...columnMapping, [field]: e.target.value })} className="odoo-input w-full">
@@ -1287,7 +1337,7 @@ window.onload=function(){
                                 </div>
                             )}
                         </div>
-                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <button onClick={() => setIsImportModalOpen(false)} className="odoo-btn odoo-btn-secondary">Cancel</button>
                             <button onClick={processImport} disabled={!columnMapping.barcode || isProcessingImport} className="odoo-btn odoo-btn-primary disabled:opacity-50 flex items-center gap-1.5">
                                 {isProcessingImport ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null} Start Import
@@ -1299,10 +1349,10 @@ window.onload=function(){
 
             {isRoleModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.55)' }}>
-                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                        <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h2 className="text-sm font-semibold" style={{ color: '#212529' }}>Switch Role</h2>
-                            <p className="text-xs mt-0.5" style={{ color: '#6c757d' }}>Select your operational department</p>
+                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h2 className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>Switch Role</h2>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--odoo-text-muted)' }}>Select your operational department</p>
                         </div>
                         <div className="p-4 space-y-1.5">
                             {Object.entries(rolesInfo).map(([roleKey, roleInfo]) => (
@@ -1311,9 +1361,9 @@ window.onload=function(){
                                     onClick={() => { setUserRole(roleKey); setIsRoleModalOpen(false); }}
                                     className="w-full p-3 flex items-center gap-3 rounded text-left transition-colors text-sm"
                                     style={{
-                                        border: `1px solid ${userRole === roleKey ? '#714B67' : '#dee2e6'}`,
+                                        border: `1px solid ${userRole === roleKey ? '#714B67' : '#E6E2DE'}`,
                                         backgroundColor: userRole === roleKey ? '#f9f5f8' : '#ffffff',
-                                        color: '#212529',
+                                        color: 'var(--odoo-text)',
                                     }}
                                     onMouseEnter={e => { if (userRole !== roleKey) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
                                     onMouseLeave={e => { if (userRole !== roleKey) e.currentTarget.style.backgroundColor = '#ffffff'; }}
@@ -1322,14 +1372,14 @@ window.onload=function(){
                                         <span className="[&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-[#714B67]">{roleInfo.icon}</span>
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-semibold text-xs" style={{ color: '#212529' }}>{roleInfo.label}</div>
-                                        <div className="text-[11px]" style={{ color: '#6c757d' }}>{roleInfo.desc}</div>
+                                        <div className="font-semibold text-xs" style={{ color: 'var(--odoo-text)' }}>{roleInfo.label}</div>
+                                        <div className="text-[11px]" style={{ color: 'var(--odoo-text-muted)' }}>{roleInfo.desc}</div>
                                     </div>
                                     {userRole === roleKey && <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#714B67' }} />}
                                 </button>
                             ))}
                         </div>
-                        <div className="px-4 py-3" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-4 py-3" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <button onClick={() => setIsRoleModalOpen(false)} className="odoo-btn odoo-btn-secondary w-full justify-center">Cancel</button>
                         </div>
                     </div>
@@ -1350,14 +1400,14 @@ window.onload=function(){
             {/* Password Change Modal (first login or forced reset) — cannot be bypassed when isFirstLogin */}
             {(showPasswordChange || user?.isFirstLogin) && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[120] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.75)' }}>
-                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                        <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                            <h2 className="text-sm font-semibold" style={{ color: '#212529' }}>Change Password Required</h2>
-                            <p className="text-xs mt-0.5" style={{ color: '#6c757d' }}>Please set a new password to continue</p>
+                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3.5" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
+                            <h2 className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>Change Password Required</h2>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--odoo-text-muted)' }}>Please set a new password to continue</p>
                         </div>
                         <div className="p-5 space-y-3">
                             <div>
-                                <label className="text-xs font-medium mb-1 block" style={{ color: '#495057' }}>New Password</label>
+                                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--odoo-text-secondary)' }}>New Password</label>
                                 <input type="password" value={newPwInput}
                                     onChange={e => { setNewPwInput(e.target.value); setPwStrength(validatePasswordStrength(e.target.value)); }}
                                     className="w-full px-3 py-2 text-sm rounded" placeholder="Minimum 8 characters"
@@ -1366,7 +1416,7 @@ window.onload=function(){
                                     onBlur={e => e.target.style.borderColor = '#ced4da'} />
                             </div>
                             <div>
-                                <label className="text-xs font-medium mb-1 block" style={{ color: '#495057' }}>Confirm Password</label>
+                                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--odoo-text-secondary)' }}>Confirm Password</label>
                                 <input type="password" value={confirmPwInput}
                                     onChange={e => setConfirmPwInput(e.target.value)}
                                     className="w-full px-3 py-2 text-sm rounded" placeholder="Re-enter password"
@@ -1383,7 +1433,7 @@ window.onload=function(){
                                                 backgroundColor: pwStrength.score >= i
                                                     ? pwStrength.strength === 'strong' ? '#28a745'
                                                     : pwStrength.strength === 'medium' ? '#ffc107' : '#dc3545'
-                                                    : '#dee2e6'
+                                                    : '#E6E2DE'
                                             }} />
                                         ))}
                                     </div>
@@ -1406,11 +1456,11 @@ window.onload=function(){
                                 <p className="text-[10px]" style={{ color: '#dc3545' }}>Passwords do not match</p>
                             )}
                         </div>
-                        <div className="px-5 py-3 flex justify-end" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex justify-end" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <button onClick={handlePasswordChange}
                                 disabled={!pwStrength?.valid || newPwInput !== confirmPwInput}
                                 className="px-4 py-2 text-xs font-semibold rounded transition-colors disabled:opacity-50"
-                                style={{ backgroundColor: '#714B67', color: '#ffffff', border: '1px solid #714B67' }}>
+                                style={{ background: 'linear-gradient(135deg, #57344F, #714B67)', color: '#ffffff', border: '1px solid #714B67' }}>
                                 Set Password
                             </button>
                         </div>
@@ -1420,17 +1470,17 @@ window.onload=function(){
 
             {confirmModal.open && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 z-[110] animate-fade-in" style={{ backgroundColor: 'rgba(33,37,41,0.55)' }}>
-                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                        <div className="px-5 py-3.5 flex items-center gap-3" style={{ borderBottom: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                    <div className="w-full max-w-sm font-sans" style={{ backgroundColor: '#ffffff', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                        <div className="px-5 py-3.5 flex items-center gap-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             {confirmModal.type === 'danger'
                                 ? <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: '#dc3545' }} />
                                 : <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: '#28a745' }} />}
-                            <h3 className="text-sm font-semibold" style={{ color: '#212529' }}>{confirmModal.title}</h3>
+                            <h3 className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>{confirmModal.title}</h3>
                         </div>
                         <div className="px-5 py-4">
-                            <p className="text-sm leading-relaxed" style={{ color: '#6c757d' }}>{confirmModal.message}</p>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--odoo-text-muted)' }}>{confirmModal.message}</p>
                         </div>
-                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
+                        <div className="px-5 py-3 flex justify-end gap-2" style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             {!confirmModal.isAlert && <button onClick={() => setConfirmModal({ open: false })} className="odoo-btn odoo-btn-secondary">Cancel</button>}
                             <button
                                 onClick={() => { if (confirmModal.onConfirm) confirmModal.onConfirm(); setConfirmModal({ open: false }); }}
