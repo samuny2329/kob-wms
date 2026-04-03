@@ -8,9 +8,7 @@ import {
     updateReorderRule, createInternalTransfer,
 } from '../services/odooApi';
 
-// ── Warehouse / Category filter data ──────────────────────────────────────────
-const WAREHOUSES = ['All', 'WH - Main', 'WH - Store B'];
-const CATEGORIES = ['All', 'Skincare', 'Serum', 'Toner', 'Sunscreen', 'Mask', 'Body Care'];
+// ── View modes ──
 const VIEW_MODES = { PICKFACE: 'pickface', ALL: 'all' };
 
 const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
@@ -25,6 +23,24 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
     const [leftPanelOpen, setLeftPanelOpen] = useState(true);
     const [warehouseFilter, setWarehouseFilter] = useState('All');
     const [categoryFilter, setCategoryFilter]   = useState('All');
+
+    // Dynamic warehouses + categories from actual inventory data
+    const invItems = useMemo(() => Array.isArray(inventory) ? inventory : [], [inventory]);
+    const dynamicWarehouses = useMemo(() => {
+        const whs = new Set();
+        invItems.forEach(i => {
+            const loc = i.location || '';
+            // Extract warehouse from location path: "K-On/Stock/PICKFACE" → "K-On"
+            const wh = loc.split('/')[0];
+            if (wh) whs.add(wh);
+        });
+        return ['All', ...Array.from(whs).sort()];
+    }, [invItems]);
+    const dynamicCategories = useMemo(() => {
+        const cats = new Set();
+        invItems.forEach(i => { if (i.category) cats.add(i.category); });
+        return ['All', ...Array.from(cats).sort()];
+    }, [invItems]);
     const [page, setPage]   = useState(1);
     // Modals
     const [productModal, setProductModal] = useState(null);
@@ -105,8 +121,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
     const isLocationAllowed = (loc) => {
         if (viewMode === VIEW_MODES.ALL) return true;
         if (!loc) return true;
-        if (allowedLocations.length === 0) return true;
-        return allowedLocations.some(kw => loc.toLowerCase().includes(kw.toLowerCase()));
+        // PICKFACE mode: show only locations containing "PICKFACE"
+        return loc.toLowerCase().includes('pickface');
     };
 
     // ── active inventory source based on view mode ──────────────────────────
@@ -159,7 +175,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
             r.sku.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) ||
             r.shortName.toLowerCase().includes(q) || r.lotNumber.toLowerCase().includes(q) ||
             r.location.toLowerCase().includes(q));
-        if (warehouseFilter !== 'All') rows = rows.filter(r => r.location.includes(warehouseFilter.replace('WH - ', '')));
+        if (warehouseFilter !== 'All') rows = rows.filter(r => (r.location || '').includes(warehouseFilter));
         if (categoryFilter  !== 'All') rows = rows.filter(r => r.category === categoryFilter);
         if (activeFilters.includes('low_stock')) rows = rows.filter(r => r.available <= r.reorderPoint);
         if (activeFilters.includes('negative'))  rows = rows.filter(r => r.onHand < 0);
@@ -369,65 +385,22 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                         </div>
                     </div>
 
-                    <LeftSection title="Warehouses" options={WAREHOUSES} value={warehouseFilter} onChange={setWarehouseFilter} />
-                    <LeftSection title="Category" options={CATEGORIES} value={categoryFilter} onChange={setCategoryFilter} />
+                    <LeftSection title="Warehouses" options={dynamicWarehouses} value={warehouseFilter} onChange={setWarehouseFilter} />
+                    {dynamicCategories.length > 1 && (
+                        <LeftSection title="Category" options={dynamicCategories} value={categoryFilter} onChange={setCategoryFilter} />
+                    )}
 
-                    {/* Location config */}
-                    <div style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <button onClick={() => setShowLocConfig(s => !s)}
-                            className="w-full flex items-center justify-between px-4 py-2.5"
-                            style={{ color: '#6c757d', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                            <span className="flex items-center gap-1.5"><Settings className="w-3 h-3" /> Locations</span>
-                            <ChevronDown className={`w-3 h-3 transition-transform ${showLocConfig ? '' : '-rotate-90'}`} />
-                        </button>
-                        {showLocConfig && (
-                            <div className="px-3 pb-3 space-y-1.5">
-                                <p className="text-[10px] mb-2" style={{ color: '#adb5bd' }}>
-                                    {isLiveMode ? 'Live — pulling from Odoo' : 'Mock mode'}
-                                </p>
-                                {allowedLocations.map((loc, i) => (
-                                    <div key={i} className="flex items-center gap-1.5 group">
-                                        <span className="flex-1 text-[11px] font-mono px-2 py-1 rounded truncate"
-                                            style={{ backgroundColor: '#f0e8ed', color: '#714B67', border: '1px solid #d9c0d3' }}>{loc}</span>
-                                        <button onClick={() => saveLocations(allowedLocations.filter((_, j) => j !== i))}
-                                            className="opacity-50 hover:opacity-100 shrink-0" style={{ color: '#dc3545' }} title="Remove">
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    </div>
-                                ))}
-                                {allOdooLocations.length > 0 && (
-                                    <div className="mt-2">
-                                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#adb5bd' }}>Add from Odoo</p>
-                                        <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
-                                            {allOdooLocations.filter(l => !allowedLocations.includes(l.complete_name)).map(l => (
-                                                <button key={l.id}
-                                                    onClick={() => saveLocations([...allowedLocations, l.complete_name])}
-                                                    className="w-full text-left text-[11px] font-mono px-2 py-1 rounded mb-0.5 transition-colors truncate"
-                                                    style={{ color: '#495057', backgroundColor: 'transparent' }}
-                                                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#e8f8fb'; e.currentTarget.style.color = '#017E84'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#495057'; }}>
-                                                    + {l.complete_name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="flex gap-1 mt-2">
-                                    <input value={newLocInput} onChange={e => setNewLocInput(e.target.value)}
-                                        placeholder="Type keyword..."
-                                        className="flex-1 text-[11px] px-2 py-1 outline-none font-mono"
-                                        style={{ border: '1px solid #dee2e6', borderRadius: '3px', color: '#212529' }}
-                                        onKeyDown={e => { if (e.key === 'Enter' && newLocInput.trim()) { saveLocations([...allowedLocations, newLocInput.trim()]); setNewLocInput(''); } }} />
-                                    <button onClick={() => { if (newLocInput.trim()) { saveLocations([...allowedLocations, newLocInput.trim()]); setNewLocInput(''); }}}
-                                        className="px-2 py-1 text-xs rounded" style={{ backgroundColor: '#017E84', color: '#fff', border: 'none' }}>
-                                        <Plus className="w-3 h-3" />
-                                    </button>
-                                </div>
-                                {allowedLocations.length > 0 && (
-                                    <button onClick={() => saveLocations([])} className="text-[10px] underline mt-1" style={{ color: '#dc3545' }}>Clear all (show everything)</button>
-                                )}
-                            </div>
-                        )}
+                    {/* Location summary */}
+                    <div style={{ borderBottom: '1px solid #f0f0f0', padding: '8px 12px' }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#6c757d' }}>
+                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Locations</span>
+                        </p>
+                        <p className="text-[10px]" style={{ color: isLiveMode ? '#28a745' : '#adb5bd' }}>
+                            {isLiveMode ? '● Online warehouse (live)' : '○ Mock mode'}
+                        </p>
+                        <p className="text-[10px] font-mono mt-1" style={{ color: '#714B67' }}>
+                            {invItems.length} products loaded
+                        </p>
                     </div>
 
                     {/* Quick filters */}
@@ -838,8 +811,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs }) => {
                 return (
                     <div className="fixed inset-0 flex items-start justify-center z-[110] pt-8 px-4"
                         style={{ backgroundColor: 'rgba(33,37,41,0.55)' }} onClick={() => setProductModal(null)}>
-                        <div className="w-full max-w-3xl overflow-hidden"
-                            style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+                        <div className="w-full max-w-3xl overflow-y-auto"
+                            style={{ backgroundColor: '#ffffff', border: '1px solid #dee2e6', borderRadius: '4px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', maxHeight: '85vh' }}
                             onClick={e => e.stopPropagation()}>
 
                             {/* Header */}

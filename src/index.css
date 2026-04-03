@@ -2,34 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Odoo 18 CSS Custom Properties ─── */
+/* ─── WMS Pro Design System — Stitch «The Architectural Ledger» ─── */
 :root {
+  /* Primary — Odoo Purple */
   --odoo-purple:        #714B67;
-  --odoo-purple-dark:   #5a3d52;
+  --odoo-purple-dark:   #57344F;
+  --odoo-purple-accent: #79526F;
+  --odoo-purple-light:  #E9B8D9;
+  /* Secondary — Teal */
   --odoo-teal:          #017E84;
-  --odoo-teal-light:    #00A09D;
-  --odoo-bg:            #f8f9fa;
-  --odoo-surface:       #ffffff;
-  --odoo-border:        #dee2e6;
-  --odoo-text:          #212529;
-  --odoo-text-secondary:#6c757d;
-  --odoo-text-muted:    #adb5bd;
-  --odoo-success:       #28a745;
-  --odoo-warning:       #ffac00;
-  --odoo-danger:        #dc3545;
-  --odoo-info:          #17a2b8;
-  --odoo-navbar-h:      46px;
-  --odoo-sidebar-w:     220px;
+  --odoo-teal-light:    #4DD9D4;
+  /* Tertiary — Coral */
+  --odoo-coral:         #E46F78;
+  --odoo-coral-dark:    #983540;
+  /* Surfaces — Tonal Layering (no borders, use bg shifts) */
+  --odoo-bg:            #F9F9F9;
+  --odoo-surface:       #FFFFFF;
+  --odoo-surface-low:   #F3F3F3;
+  --odoo-surface-high:  #E8E8E8;
+  --odoo-surface-dim:   #DADADA;
+  /* Text */
+  --odoo-text:          #1A1C1C;
+  --odoo-text-secondary:#4E444A;
+  --odoo-text-muted:    #80747A;
+  /* Borders — Ghost borders only (outline_variant at low opacity) */
+  --odoo-border:        #D1C3CA;
+  --odoo-border-ghost:  rgba(209, 195, 202, 0.15);
+  /* Semantic */
+  --odoo-success:       #017E84;
+  --odoo-warning:       #E8A940;
+  --odoo-danger:        #E46F78;
+  --odoo-info:          #5BA8C8;
+  /* Layout */
+  --odoo-navbar-h:      48px;
+  --odoo-sidebar-w:     240px;
+  --odoo-radius:        4px;
+  /* Shadows — tinted with primary, not black */
+  --odoo-shadow-sm:     0 1px 3px rgba(78, 68, 74, 0.04);
+  --odoo-shadow-md:     0 4px 12px rgba(78, 68, 74, 0.06);
+  --odoo-shadow-lg:     0 12px 32px rgba(113, 75, 103, 0.08);
+  --odoo-transition:    all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ─── Dark Mode CSS Variable Override ─── */
+/* ─── WMS Pro Dark Mode — Stitch Design Tokens ─── */
 html.dark {
-  --odoo-bg:            #0f1117;
-  --odoo-surface:       #1a1d27;
-  --odoo-border:        #2d3140;
-  --odoo-text:          #e2e8f0;
-  --odoo-text-secondary:#94a3b8;
-  --odoo-text-muted:    #64748b;
+  --odoo-purple:        #C994BB;
+  --odoo-purple-dark:   #E9B8D9;
+  --odoo-purple-accent: #79526F;
+  --odoo-teal:          #4DD9D4;
+  --odoo-coral:         #FFB3B6;
+  --odoo-bg:            #121212;
+  --odoo-surface:       #1E1E1E;
+  --odoo-surface-low:   #171717;
+  --odoo-surface-high:  #2A2A2A;
+  --odoo-surface-dim:   #0E0E0E;
+  --odoo-border:        #3A3A3A;
+  --odoo-border-ghost:  rgba(58, 58, 58, 0.3);
+  --odoo-text:          #E2E2E2;
+  --odoo-text-secondary:#A0A0A0;
+  --odoo-text-muted:    #6A6A6A;
+  --odoo-success:       #4DD9D4;
+  --odoo-danger:        #FFB3B6;
+  --odoo-shadow-sm:     0 1px 3px rgba(0,0,0,0.2);
+  --odoo-shadow-md:     0 4px 12px rgba(0,0,0,0.3);
+  --odoo-shadow-lg:     0 12px 32px rgba(0,0,0,0.4);
 }
 
 /* ─── Dark Mode Global Override for Inline Styles ───
@@ -123,7 +159,7 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, Sarabun, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, Sarabun, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     color: var(--odoo-text);
@@ -144,12 +180,16 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
 @layer components {
   /* ─── Odoo 18 Component Classes ─── */
 
-  /* Cards — flat white, thin border, 4px radius */
+  /* Cards — tonal layering, ghost borders, no heavy lines */
   .odoo-card {
     background: var(--odoo-surface);
-    border: 1px solid var(--odoo-border);
-    border-radius: 4px;
-    box-shadow: none;
+    border: 1px solid var(--odoo-border-ghost);
+    border-radius: var(--odoo-radius);
+    box-shadow: var(--odoo-shadow-sm);
+    transition: var(--odoo-transition);
+  }
+  .odoo-card:hover {
+    box-shadow: var(--odoo-shadow-md);
   }
 
   /* Odoo-style table headers */
@@ -173,41 +213,49 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
     background-color: var(--odoo-bg);
   }
 
-  /* Odoo-style buttons */
+  /* Odoo-style buttons — soft rounded */
   .odoo-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.375rem 0.875rem;
-    border-radius: 4px;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
     font-size: 0.8125rem;
     font-weight: 600;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    transition: var(--odoo-transition);
     line-height: 1.5;
   }
   .odoo-btn-primary {
-    background-color: var(--odoo-purple);
+    background: linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple));
     color: #ffffff;
     border-color: var(--odoo-purple);
+    box-shadow: 0 1px 2px rgba(113, 75, 103, 0.2);
   }
   .odoo-btn-primary:hover {
-    background-color: var(--odoo-purple-dark);
+    background: linear-gradient(135deg, var(--odoo-purple), var(--odoo-purple-dark));
     border-color: var(--odoo-purple-dark);
+    box-shadow: 0 2px 6px rgba(113, 75, 103, 0.3);
+    transform: translateY(-0.5px);
   }
   .odoo-btn-secondary {
-    background-color: var(--odoo-surface);
-    color: var(--odoo-purple);
-    border-color: var(--odoo-border);
+    background-color: var(--odoo-surface-high);
+    color: var(--odoo-text);
+    border-color: var(--odoo-border-ghost);
   }
   .odoo-btn-secondary:hover {
-    background-color: var(--odoo-bg);
+    background-color: var(--odoo-surface-dim);
+    border-color: var(--odoo-border);
   }
   .odoo-btn-danger {
     background-color: var(--odoo-danger);
     color: #ffffff;
     border-color: var(--odoo-danger);
+  }
+  .odoo-btn-danger:hover {
+    background-color: var(--odoo-coral-dark);
+    transform: translateY(-0.5px);
   }
 
   /* Odoo-style badges — subtle, no border */
@@ -217,36 +265,36 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
     padding: 0.15em 0.55em;
     font-size: 0.75em;
     font-weight: 500;
-    border-radius: 3px;
+    border-radius: 5px;
     line-height: 1.3;
     letter-spacing: 0.01em;
     white-space: nowrap;
   }
-  /* Status badge variants — Odoo pastel style */
-  .odoo-badge-pending  { background: #eaeaea; color: #555; }
-  .odoo-badge-picking  { background: #fff0cc; color: #7a5800; }
-  .odoo-badge-picked   { background: #d4edda; color: #155724; }
-  .odoo-badge-packing  { background: #cce5ff; color: #004085; }
-  .odoo-badge-packed   { background: #d1ecf1; color: #0c5460; }
-  .odoo-badge-rts      { background: #d4edda; color: #155724; }
-  .odoo-badge-cancelled{ background: #f8d7da; color: #721c24; }
+  /* Status badge variants — WMS Pro palette */
+  .odoo-badge-pending  { background: #E8E8E8; color: #4E444A; }
+  .odoo-badge-picking  { background: #FFF4E0; color: #8B6A20; }
+  .odoo-badge-picked   { background: #E0F5F5; color: #004F53; }
+  .odoo-badge-packing  { background: #F0E8ED; color: #5F3B56; }
+  .odoo-badge-packed   { background: #E0F5F5; color: #017E84; }
+  .odoo-badge-rts      { background: #E0F5F5; color: #004F53; }
+  .odoo-badge-cancelled{ background: #FFDAD6; color: #983540; }
   /* Courier/platform badge */
-  .odoo-badge-courier  { background: #f0e8ed; color: #714B67; font-size: 0.7em; }
+  .odoo-badge-courier  { background: #FFD7F1; color: #714B67; font-size: 0.7em; }
 
   /* Odoo form inputs */
   .odoo-input {
     border: 1px solid var(--odoo-border);
-    border-radius: 4px;
-    padding: 0.375rem 0.625rem;
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
     font-size: 0.875rem;
     outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: var(--odoo-transition);
     background: var(--odoo-surface);
     color: var(--odoo-text);
   }
   .odoo-input:focus {
     border-color: var(--odoo-purple);
-    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15);
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.12);
   }
 
   /* Odoo sidebar nav item */
@@ -286,12 +334,17 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
     border-radius: 0 2px 2px 0;
   }
 
-  /* Odoo-style stat card */
+  /* KPI stat card — tonal layering */
   .odoo-stat-card {
     background: var(--odoo-surface);
-    border: 1px solid var(--odoo-border);
-    border-radius: 4px;
+    border: 1px solid var(--odoo-border-ghost);
+    border-radius: var(--odoo-radius);
     padding: 1rem 1.25rem;
+    box-shadow: var(--odoo-shadow-sm);
+    transition: var(--odoo-transition);
+  }
+  .odoo-stat-card:hover {
+    box-shadow: var(--odoo-shadow-md);
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -317,15 +370,15 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
   }
 
   .glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--odoo-border-ghost);
   }
 
   .dark .glass-panel {
-    background: rgba(24, 24, 27, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(39, 39, 42, 0.8);
+    background: rgba(30, 30, 30, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(58, 58, 58, 0.3);
   }
 
 
@@ -344,14 +397,14 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
     padding-right: 1rem;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
-    border-radius: 4px;
-    border: 1px solid var(--odoo-border);
-    background-color: #ffffff;
+    border-radius: var(--odoo-radius);
+    border: 1px solid var(--odoo-border-ghost);
+    background-color: var(--odoo-surface);
     font-weight: 400;
     font-size: 0.875rem;
     color: var(--odoo-text);
     outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: var(--odoo-transition);
   }
 
   .dark .login-input {
@@ -361,33 +414,36 @@ html.dark .odoo-badge-courier { background: #2a2035; color: #c084fc; }
   }
 
   .login-input:focus {
-    border-color: #714B67;
-    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15);
+    border-color: var(--odoo-purple);
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.12);
   }
 
   .login-button {
     width: 100%;
-    background-color: #714B67;
-    border: 1px solid #714B67;
+    background: linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple));
+    border: 1px solid var(--odoo-purple);
     color: white;
     padding-top: 0.625rem;
     padding-bottom: 0.625rem;
-    border-radius: 4px;
+    border-radius: var(--odoo-radius);
     font-weight: 600;
     font-size: 0.875rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: background-color 0.15s, border-color 0.15s;
+    transition: var(--odoo-transition);
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    box-shadow: 0 1px 3px rgba(113, 75, 103, 0.2);
   }
 
   .login-button:hover {
-    background-color: #5a3d52;
-    border-color: #5a3d52;
+    background: linear-gradient(135deg, var(--odoo-purple), var(--odoo-purple-dark));
+    border-color: var(--odoo-purple-dark);
+    box-shadow: 0 2px 8px rgba(113, 75, 103, 0.3);
+    transform: translateY(-0.5px);
   }
 
   .dark .login-button {

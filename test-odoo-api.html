@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head><title>Odoo API Test</title></head>
+<body style="font-family:monospace;padding:20px;background:#1e1e1e;color:#0f0">
+<h2>Odoo API Connection Test</h2>
+<pre id="output">Testing...</pre>
+<script>
+const URL = 'https://odoo-uat.kissgroupbim.work';
+const DB = 'kiss-production_2026-03-09';
+const USER = 'admin';
+const PASS = 'admin';
+
+const out = document.getElementById('output');
+const log = (msg) => { out.textContent += '\n' + msg; };
+
+async function test() {
+    out.textContent = '=== Odoo API Test ===\n';
+    log('URL: ' + URL);
+    log('DB: ' + DB);
+    log('User: ' + USER);
+    log('');
+
+    // Test 1: Basic fetch
+    log('--- Test 1: Fetch /web/login ---');
+    try {
+        const r1 = await fetch(URL + '/web/login');
+        log('Status: ' + r1.status);
+        log('Content-Type: ' + r1.headers.get('content-type'));
+        const t1 = await r1.text();
+        log('Response (first 200 chars): ' + t1.substring(0, 200));
+    } catch(e) { log('ERROR: ' + e.message); }
+
+    log('');
+
+    // Test 2: JSON-RPC authenticate
+    log('--- Test 2: POST /web/session/authenticate ---');
+    try {
+        const r2 = await fetch(URL + '/web/session/authenticate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'call',
+                params: { db: DB, login: USER, password: PASS }
+            })
+        });
+        log('Status: ' + r2.status);
+        log('Content-Type: ' + r2.headers.get('content-type'));
+        const t2 = await r2.text();
+        log('Response (first 500 chars):');
+        log(t2.substring(0, 500));
+
+        // Try parse JSON
+        try {
+            const j = JSON.parse(t2);
+            if (j.result?.uid) {
+                log('');
+                log('SUCCESS! UID: ' + j.result.uid);
+                log('Name: ' + j.result.name);
+                log('DB: ' + j.result.db);
+            } else if (j.error) {
+                log('ODOO ERROR: ' + JSON.stringify(j.error));
+            }
+        } catch(e) {
+            log('NOT JSON - probably HTML redirect');
+        }
+    } catch(e) { log('ERROR: ' + e.message); }
+
+    log('');
+
+    // Test 3: Try /jsonrpc endpoint
+    log('--- Test 3: POST /jsonrpc ---');
+    try {
+        const r3 = await fetch(URL + '/jsonrpc', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'call',
+                id: 1,
+                params: {
+                    service: 'common',
+                    method: 'authenticate',
+                    args: [DB, USER, PASS, {}]
+                }
+            })
+        });
+        log('Status: ' + r3.status);
+        const t3 = await r3.text();
+        log('Response (first 500 chars):');
+        log(t3.substring(0, 500));
+    } catch(e) { log('ERROR: ' + e.message); }
+
+    log('');
+    log('=== DONE ===');
+}
+
+test();
+</script>
+</body>
+</html>
