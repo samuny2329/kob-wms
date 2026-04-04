@@ -3,7 +3,8 @@ import {
   Settings as SettingsIcon, Globe, Database, ToggleRight, ToggleLeft,
   ShoppingBag, Store, Link, Trash2, RotateCcw, Wifi, CheckCircle2,
   AlertCircle, RefreshCw, Monitor, Cloud, MapPin, Truck, Package,
-  ExternalLink, Zap, Shield, Sparkles, Info, Clock, Activity, ChevronDown
+  ExternalLink, Zap, Shield, Sparkles, Info, Clock, Activity, ChevronDown,
+  ClipboardCheck, Eye, EyeOff
 } from 'lucide-react';
 import { testConnection, resetOdooSession } from '../services/odooApi';
 import platformApi, { MARKETPLACES, COURIERS } from '../services/platformApi';
@@ -384,8 +385,78 @@ const SecurityAuditPanel = ({ triggerConfirm }) => {
   );
 };
 
+// ── Cycle Count Permissions Panel ────────────────────────
+const CycleCountSettingsPanel = ({ users, setUsers }) => {
+  const lowerRoleUsers = (users || []).filter(u => ['picker', 'packer', 'outbound'].includes(u.role));
+  const roleLabels = { picker: 'Picker', packer: 'Packer', outbound: 'Outbound' };
+  const roleColors = { picker: 'var(--odoo-teal)', packer: 'var(--odoo-purple)', outbound: 'var(--odoo-warning)' };
+
+  const togglePermission = (username) => {
+    setUsers(prev => prev.map(u => u.username === username ? { ...u, canSeeSystemQty: !u.canSeeSystemQty } : u));
+  };
+
+  return (
+    <section style={{ ...sectionStyle, gridColumn: '1 / -1' }} className="p-6">
+      <div className="flex items-center gap-3 mb-1">
+        <ClipboardCheck className="w-5 h-5" style={{ color: 'var(--odoo-purple)' }} />
+        <h3 className="text-lg font-bold tracking-tight" style={{ color: 'var(--odoo-text)' }}>Cycle Count Permissions</h3>
+      </div>
+      <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', marginBottom: '16px' }}>
+        Admin / Senior always see system quantities. Configure visibility for other users below.
+      </p>
+
+      {lowerRoleUsers.length === 0 ? (
+        <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', textAlign: 'center', padding: '24px 0' }}>No picker / packer / outbound users found.</p>
+      ) : (
+        <div style={{ border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                <th style={{ padding: '8px 16px', textAlign: 'left', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--odoo-text-muted)', letterSpacing: '0.05em' }}>User</th>
+                <th style={{ padding: '8px 16px', textAlign: 'left', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--odoo-text-muted)', letterSpacing: '0.05em' }}>Role</th>
+                <th style={{ padding: '8px 16px', textAlign: 'center', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--odoo-text-muted)', letterSpacing: '0.05em' }}>Can See System Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lowerRoleUsers.map((u, idx) => (
+                <tr key={u.username} style={{ borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: idx % 2 === 1 ? 'var(--odoo-surface-low)' : 'var(--odoo-surface)' }}>
+                  <td style={{ padding: '10px 16px' }}>
+                    <div className="flex items-center gap-2.5">
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: roleColors[u.role] || 'var(--odoo-purple)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>
+                        {(u.name || u.username || '?')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--odoo-text)' }}>{u.name || u.username}</p>
+                        <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>@{u.username}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '10px 16px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'var(--odoo-surface-high)', color: roleColors[u.role] || 'var(--odoo-text-secondary)' }}>
+                      {roleLabels[u.role] || u.role}
+                    </span>
+                  </td>
+                  <td style={{ padding: '10px 16px', textAlign: 'center' }}>
+                    <button onClick={() => togglePermission(u.username)} style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                      {u.canSeeSystemQty ? (
+                        <ToggleRight className="w-7 h-7" style={{ color: 'var(--odoo-success)' }} />
+                      ) : (
+                        <ToggleLeft className="w-7 h-7" style={{ color: 'var(--odoo-border)' }} />
+                      )}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+};
+
 // ── Main Settings Component ──────────────────────────────
-const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfigs, workDate, setWorkDate, triggerConfirm, updateAndSyncData, showAlert, syncStatus }) => {
+const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfigs, workDate, setWorkDate, triggerConfirm, updateAndSyncData, showAlert, syncStatus, users, setUsers }) => {
   const [testResult, setTestResult] = useState(null);
   const [isTesting, setIsTesting] = useState(false);
   const [isCreatingSO, setIsCreatingSO] = useState(false);
@@ -826,6 +897,9 @@ const Settings = ({ t, language, setLanguage, userRole, apiConfigs, setApiConfig
 
               {/* Platform API Configuration */}
               <PlatformApiSection />
+
+              {/* Cycle Count Permissions */}
+              <CycleCountSettingsPanel users={users} setUsers={setUsers} />
 
               {/* Security Audit Log */}
               <SecurityAuditPanel triggerConfirm={triggerConfirm} />

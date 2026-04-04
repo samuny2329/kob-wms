@@ -209,7 +209,13 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     const countRef = useRef(null);
     const locScanRef = useRef(null);
 
-    const [blindMode, setBlindMode] = useState(true);
+    // Blind mode: admin/senior always see system qty; lower roles default blind unless admin grants permission in Settings
+    const canSeeSystemQty = useMemo(() => {
+        if (user?.role === 'admin' || user?.role === 'senior') return true;
+        const currentUser = users.find(u => u.username === user?.username);
+        return currentUser?.canSeeSystemQty === true;
+    }, [user, users]);
+    const blindMode = !canSeeSystemQty;
 
     const LS_COUNTS = 'wms_cycle_counts';
     const safeParse = (key, fallback) => {
@@ -648,7 +654,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
             id: `FC-${Date.now()}`,
             name: fcForm.name || `Full Count ${period}`,
             status: 'planning',
-            settings: { blindCount: fcForm.blindCount, requireDoubleCount: fcForm.requireDoubleCount, freezeStock: fcForm.freezeStock },
+            settings: { blindCount: isAdmin ? fcForm.blindCount : true, requireDoubleCount: fcForm.requireDoubleCount, freezeStock: fcForm.freezeStock },
             scope: { type: fcForm.scopeType, zones: Object.keys(zoneMap) },
             zoneAssignments: Object.keys(zoneMap).map(z => ({ zone: z, assignees: [] })),
             frozenAt: null, frozenInventory: [],
@@ -1067,7 +1073,13 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 mb-4" style={{ padding: '12px', background: 'var(--odoo-surface-low)', borderRadius: '4px' }}>
+                        <div className={`grid ${blindMode ? 'grid-cols-2' : 'grid-cols-3'} gap-3 mb-4`} style={{ padding: '12px', background: 'var(--odoo-surface-low)', borderRadius: '4px' }}>
+                            {!blindMode && (
+                                <div>
+                                    <p style={{ ...labelStyle, fontSize: '10px' }}>System Qty</p>
+                                    <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--odoo-text-secondary)' }}>{activeRecount.systemQty}</p>
+                                </div>
+                            )}
                             <div>
                                 <p style={{ ...labelStyle, fontSize: '10px' }}>Original Count</p>
                                 <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--odoo-text)' }}>{activeRecount.countedQty}</p>
@@ -1082,7 +1094,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             </div>
                         </div>
 
-                        <label style={{ ...labelStyle, display: 'block', marginBottom: '8px' }}>Your Recount (Blind)</label>
+                        <label style={{ ...labelStyle, display: 'block', marginBottom: '8px' }}>Your Recount{blindMode ? ' (Blind)' : ''}</label>
                         <div className="flex gap-3">
                             <input type="number" min="0" value={recountInput}
                                 onChange={e => setRecountInput(e.target.value)}
@@ -1333,12 +1345,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 <ScanLine className="w-5 h-5" style={{ color: 'var(--odoo-purple)' }} />
                                 <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--odoo-purple)', letterSpacing: '-0.02em' }}>Active Cycle Count</h2>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer gap-2">
-                                <div onClick={() => setBlindMode(!blindMode)} style={{ width: '32px', height: '16px', borderRadius: '999px', background: blindMode ? 'var(--odoo-purple)' : 'var(--odoo-surface-dim)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', left: blindMode ? '18px' : '2px', transition: 'left 0.2s', border: '1px solid var(--odoo-border-ghost)' }} />
-                                </div>
-                                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--odoo-text-muted)', textTransform: 'uppercase' }}>Blind Count Mode</span>
-                            </label>
+                            <span style={{ fontSize: '10px', fontWeight: 700, color: blindMode ? 'var(--odoo-warning)' : 'var(--odoo-success)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {blindMode ? <><Eye className="w-3 h-3" /> Blind Mode</> : <><Unlock className="w-3 h-3" /> System Qty Visible</>}
+                            </span>
                         </div>
 
                         {/* Card body — centered content */}
@@ -1733,10 +1742,16 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                         style={{ ...inputStyle, paddingLeft: '12px', marginTop: '4px' }} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="flex items-center gap-2 cursor-pointer" style={{ fontSize: '12px', color: 'var(--odoo-text-secondary)' }}>
-                                        <input type="checkbox" checked={fcForm.blindCount} onChange={e => setFcForm(f => ({ ...f, blindCount: e.target.checked }))} style={{ borderRadius: '2px' }} />
-                                        Blind Count (hide system qty)
-                                    </label>
+                                    {isAdmin ? (
+                                        <label className="flex items-center gap-2 cursor-pointer" style={{ fontSize: '12px', color: 'var(--odoo-text-secondary)' }}>
+                                            <input type="checkbox" checked={fcForm.blindCount} onChange={e => setFcForm(f => ({ ...f, blindCount: e.target.checked }))} style={{ borderRadius: '2px' }} />
+                                            Blind Count (hide system qty)
+                                        </label>
+                                    ) : (
+                                        <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <Eye className="w-3.5 h-3.5" /> Blind Count: Enabled
+                                        </p>
+                                    )}
                                     <label className="flex items-center gap-2 cursor-pointer" style={{ fontSize: '12px', color: 'var(--odoo-text-secondary)' }}>
                                         <input type="checkbox" checked={fcForm.requireDoubleCount} onChange={e => setFcForm(f => ({ ...f, requireDoubleCount: e.target.checked }))} style={{ borderRadius: '2px' }} />
                                         Require Double Count
