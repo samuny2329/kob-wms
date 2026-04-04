@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LogOut, Moon, Sun, Wifi, WifiOff, ChevronDown } from 'lucide-react';
+import { COMPANIES } from '../constants';
 
 const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInfo,
     isDarkMode, setIsDarkMode, handleLogout, sidebarOpen, setSidebarOpen, syncStatus,
@@ -141,10 +142,7 @@ const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInf
                 {/* Company multi-select */}
                 {setActiveCompanies && (
                     <div className="px-3 pb-2 mb-1" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
-                        {[
-                            { key: 'kob', label: 'KOB', color: '#714B67' },
-                            { key: 'btv', label: 'BTV', color: '#2563eb' },
-                        ].map(co => {
+                        {Object.entries(COMPANIES).map(([key, comp]) => ({ key, label: comp.name, color: comp.color })).map(co => {
                             const isChecked = (activeCompanies || []).includes(co.key);
                             return (
                                 <button key={co.key}

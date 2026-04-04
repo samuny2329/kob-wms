@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { ShoppingCart, Package, PackageCheck, Truck, Clock, Zap, Activity, BarChart3, Filter, Download, MoreVertical, AlertTriangle, CheckCircle2, ScanLine, Search, Printer, ScanBarcode } from 'lucide-react';
 import { PRODUCT_CATALOG, PLATFORM_LABELS } from '../constants';
+import { formatTime } from '../utils/dateFormat';
 
 const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDelayed, courierDistributionData, progressPercent, delayedOrdersData, userRole, activityLogs, isDarkMode, salesOrders = [], inventory = null, waves = [], invoices = [], user }) => {
     const isWorker = ['picker', 'packer', 'outbound'].includes(userRole);
@@ -59,7 +60,7 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
             const dayTotal = dayLogs.filter(l => ['pick','pack','scan','box-handheld','box-pos'].includes(l.action)).length;
             trend.push({ day: ds.substring(5), val: dayTotal });
         }
-        const shiftStart = firstLog ? new Date(firstLog).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+        const shiftStart = firstLog ? formatTime(firstLog) : '--:--';
         const shiftDuration = firstLog ? `${Math.floor((Date.now() - firstLog) / 3600000)}h ${Math.floor(((Date.now() - firstLog) % 3600000) / 60000)}m` : '--';
         return { pick, pack, scan, count, total, myUph, target, uphPct, myRank, totalWorkers, trend, shiftStart, shiftDuration };
     }, [isWorker, user, activityLogs, userRole, kpiPerformanceData]);

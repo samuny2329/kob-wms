@@ -8,6 +8,7 @@ import {
     Star, PieChart,
 } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants';
+import { formatDate } from '../utils/dateFormat';
 import {
     fetchStockHistory, fetchAllLocations, getStoredAllowedLocations, saveAllowedLocations,
     fetchFullInventory, fetchProductDetail, fetchSupplierInfo, fetchSalesHistory,
@@ -36,20 +37,20 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs, activeCompanie
     // Company-aware filtering: filter by selected company first
     const companyFilteredItems = useMemo(() => {
         if (companyFilter === 'All') return invItems;
-        return invItems.filter(i => {
-            const loc = (i.location || i.complete_name || '').toUpperCase();
-            return loc.includes(companyFilter.toUpperCase());
-        });
+        return invItems.filter(i => i.companyName === companyFilter);
     }, [invItems, companyFilter]);
 
     const dynamicCompanies = useMemo(() => {
         const comps = new Set();
-        activeCompanies.forEach(c => {
-            const code = c === 'kob' ? 'KOB' : c === 'btv' ? 'BTV' : c.toUpperCase();
-            comps.add(code);
-        });
+        invItems.forEach(i => { if (i.companyName) comps.add(i.companyName); });
+        if (comps.size === 0) {
+            activeCompanies.forEach(c => {
+                const code = c === 'kob' ? 'KOB' : c === 'btv' ? 'BTV' : c.toUpperCase();
+                comps.add(code);
+            });
+        }
         return ['All', ...Array.from(comps).sort()];
-    }, [activeCompanies]);
+    }, [invItems, activeCompanies]);
 
     const dynamicWarehouses = useMemo(() => {
         const whs = new Set();
@@ -172,6 +173,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs, activeCompanie
                         productId: item.productId, sku: item.sku || '',
                         name: item.name || '', shortName: item.shortName || item.name || '',
                         location: item.location || 'PICKFACE', category: item.category || 'Skincare',
+                        companyName: item.companyName || '',
                         lotNumber: lot.lotNumber || '', expiryDate: lot.expiryDate || '',
                         receivedDate: lot.receivedDate || '',
                         onHand: lot.qty ?? item.onHand, reserved: item.reserved || 0,
@@ -187,6 +189,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs, activeCompanie
                     productId: item.productId, sku: item.sku || '',
                     name: item.name || '', shortName: item.shortName || item.name || '',
                     location: item.location || 'PICKFACE', category: item.category || 'Skincare',
+                    companyName: item.companyName || '',
                     lotNumber: '', expiryDate: '', receivedDate: '',
                     onHand: item.onHand || 0, reserved: item.reserved || 0,
                     available: item.available ?? (item.onHand - item.reserved),
@@ -207,7 +210,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs, activeCompanie
             r.sku.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) ||
             r.shortName.toLowerCase().includes(q) || r.lotNumber.toLowerCase().includes(q) ||
             r.location.toLowerCase().includes(q));
-        if (companyFilter !== 'All') rows = rows.filter(r => (r.location || '').toUpperCase().includes(companyFilter));
+        if (companyFilter !== 'All') rows = rows.filter(r => r.companyName === companyFilter);
         if (warehouseFilter !== 'All') rows = rows.filter(r => (r.location || '').includes(warehouseFilter));
         if (categoryFilter  !== 'All') rows = rows.filter(r => r.category === categoryFilter);
         if (activeFilters.includes('low_stock')) rows = rows.filter(r => r.available <= r.reorderPoint);
@@ -555,7 +558,7 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs, activeCompanie
                                     <div className="mt-1 space-y-0.5 px-2">
                                         {dynamicCompanies.map(comp => {
                                             const isActive = companyFilter === comp;
-                                            const count = comp === 'All' ? invItems.length : invItems.filter(i => (i.location || '').toUpperCase().includes(comp)).length;
+                                            const count = comp === 'All' ? invItems.length : invItems.filter(i => i.companyName === comp).length;
                                             return (
                                                 <button key={comp}
                                                     onClick={() => { setCompanyFilter(comp); setWarehouseFilter('All'); setPage(1); }}
@@ -1228,8 +1231,8 @@ const Inventory = ({ inventory, addToast, syncStatus, apiConfigs, activeCompanie
                                                                     <tr key={li} style={{ borderBottom: li < pm.lots.length - 1 ? '1px solid var(--odoo-border-ghost)' : 'none' }}>
                                                                         <td className="px-3 py-2"><span className="font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(113,75,103,0.08)', color: 'var(--odoo-purple)' }}>{lot.lotNumber}</span></td>
                                                                         <td className="px-3 py-2 text-right font-semibold tabular-nums" style={{ color: 'var(--odoo-text)' }}>{(lot.qty || 0).toLocaleString()}</td>
-                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--odoo-text-muted)' }}>{lot.receivedDate || '---'}</td>
-                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: expiring ? 'var(--odoo-warning)' : 'var(--odoo-text-muted)', fontWeight: expiring ? 600 : 400 }}>{lot.expiryDate || '---'}{expiring && <AlertTriangle className="w-3 h-3 inline ml-1" />}</td>
+                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--odoo-text-muted)' }}>{lot.receivedDate ? formatDate(lot.receivedDate) : '---'}</td>
+                                                                        <td className="px-3 py-2 text-right font-mono" style={{ color: expiring ? 'var(--odoo-warning)' : 'var(--odoo-text-muted)', fontWeight: expiring ? 600 : 400 }}>{lot.expiryDate ? formatDate(lot.expiryDate) : '---'}{expiring && <AlertTriangle className="w-3 h-3 inline ml-1" />}</td>
                                                                     </tr>
                                                                 );
                                                             })}

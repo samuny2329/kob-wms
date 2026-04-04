@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { formatDate, formatDateTime, formatTime } from '../utils/dateFormat';
 import {
     ClipboardCheck, BarChart3, Search, ScanLine, CheckCircle2, AlertTriangle,
     Package, RefreshCw, Calendar, Filter, ChevronDown, ChevronRight, Hash,
@@ -199,6 +200,8 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     const [filterAbc, setFilterAbc] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterAssignee, setFilterAssignee] = useState('mine');
+    const [recountInput, setRecountInput] = useState('');
+    const [recountTask, setRecountTask] = useState(null);
     const [sortBy, setSortBy] = useState({ col: 'location', dir: 'asc' });
     const [expandedDate, setExpandedDate] = useState(null);
     const [showNotifications, setShowNotifications] = useState(false);
@@ -227,6 +230,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     const [fcForm, setFcForm] = useState({ name: '', blindCount: true, requireDoubleCount: false, freezeStock: true, scopeType: 'full', zones: [] });
     const [fcCountInput, setFcCountInput] = useState('');
     const [fcSelectedItem, setFcSelectedItem] = useState(null);
+    const [fcScannedLot, setFcScannedLot] = useState('');
 
     useEffect(() => {
         localStorage.setItem(LS_FULL_COUNTS, JSON.stringify(fullCountSessions));
@@ -241,11 +245,12 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         const items = [];
         if (inventory?.items || (Array.isArray(inventory) && inventory.length > 0)) {
             const invItems = inventory?.items || inventory;
-            invItems.forEach(item => {
+            invItems.forEach((item, idx) => {
                 const sku = item.sku || item.default_code;
                 if (!sku) return;
                 const cat = PRODUCT_CATALOG[sku];
                 items.push({
+                    _key: `${sku}-${item.location || idx}`,
                     sku, name: cat?.shortName || item.name || sku,
                     barcode: cat?.barcode || item.barcode || '',
                     location: cat?.location || item.location || '',
@@ -356,9 +361,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     }, [assignedTasks, pickers, countDate]);
 
     const myTasks = useMemo(() => {
-        if (isAdmin && filterAssignee === 'all') return assignedTasks;
+        if (isAdmin) return assignedTasks;
         return assignedTasks.filter(t => t.assignedTo === user?.username);
-    }, [assignedTasks, isAdmin, filterAssignee, user]);
+    }, [assignedTasks, isAdmin, user]);
 
     const assignmentSummary = useMemo(() => {
         const summary = {};
@@ -609,18 +614,25 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                 countedQty: null, variance: null, countedBy: null, countedAt: null,
                 secondCountQty: null, secondCountBy: null,
                 status: 'pending', needsRecount: false, note: '',
+                lotTracking: cat?.lotTracking ?? !!invItem?.lot_id,
+                lots: invItem?.lots || [],
+                lot: '',
             });
             seenLocations.add(cat.location);
         });
         invItems.forEach(item => {
             const loc = item.location;
             if (!loc || seenLocations.has(loc)) return;
+            const cat = PRODUCT_CATALOG[item.sku || item.default_code];
             allBins.push({
                 binId: loc, sku: item.sku || item.default_code || '', name: item.name || '', location: loc,
                 systemQty: item.onHand ?? item.quantity ?? 0,
                 countedQty: null, variance: null, countedBy: null, countedAt: null,
                 secondCountQty: null, secondCountBy: null,
                 status: 'pending', needsRecount: false, note: '',
+                lotTracking: cat?.lotTracking ?? !!item.lot_id,
+                lots: item.lots || [],
+                lot: '',
             });
         });
 
@@ -670,7 +682,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         addToast?.('Stock unfrozen — operations resumed', 'success');
     }, [addToast]);
 
-    const submitFullCount = useCallback((sessionId, binId, qty) => {
+    const submitFullCount = useCallback((sessionId, binId, qty, lot = '') => {
         setFullCountSessions(prev => prev.map(s => {
             if (s.id !== sessionId) return s;
             const counts = s.counts.map(c => {
@@ -681,7 +693,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                 return {
                     ...c, countedQty: qty, variance, countedBy: user?.username, countedAt: new Date().toISOString(),
                     status: needsRecount ? 'needs-recount' : (variance === 0 ? 'matched' : 'variance-approved'),
-                    needsRecount,
+                    needsRecount, lot: lot || c.lot || '',
                 };
             });
             const counted = counts.filter(c => c.countedQty !== null).length;
@@ -926,12 +938,15 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 />
                                 {selectedTask.lots?.length > 0 && (
                                     <div className="flex gap-1 mt-1 flex-wrap">
-                                        {selectedTask.lots.map(l => (
-                                            <button key={l} onClick={() => setScannedLot(l)}
-                                                style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', border: scannedLot === l ? '1px solid var(--odoo-purple)' : '1px solid var(--odoo-border-ghost)', background: scannedLot === l ? 'var(--odoo-purple-light)' : 'var(--odoo-surface-low)', color: scannedLot === l ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)', cursor: 'pointer' }}>
-                                                {l}
-                                            </button>
-                                        ))}
+                                        {selectedTask.lots.map((l, li) => {
+                                            const lotName = typeof l === 'string' ? l : l.lotNumber || `Lot-${li + 1}`;
+                                            return (
+                                                <button key={lotName + li} onClick={() => setScannedLot(lotName)}
+                                                    style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', border: scannedLot === lotName ? '1px solid var(--odoo-purple)' : '1px solid var(--odoo-border-ghost)', background: scannedLot === lotName ? 'var(--odoo-purple-light)' : 'var(--odoo-surface-low)', color: scannedLot === lotName ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)', cursor: 'pointer' }}>
+                                                    {lotName}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
@@ -996,7 +1011,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                     <h3 style={sectionHeaderStyle}>Remaining ({pendingList.length})</h3>
                     <div style={{ maxHeight: '160px', overflowY: 'auto' }} className="space-y-1">
                         {pendingList.map(t => (
-                            <button key={t.sku} onClick={() => {
+                            <button key={t._key || t.sku} onClick={() => {
                                 setSelectedTask(t); setScanStep('scan-location'); setScannedLocation(null);
                                 setCountInput(''); setScannedLot('');
                             }}
@@ -1020,15 +1035,14 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     // ═══════════════════════════════════════════════════════════════
     if (mode === 'recount') {
         const recountTasks = myTasks.filter(t => t.needsRecount);
-        const [recountInput, setRecountInput] = useState('');
-        const [recountTask, setRecountTask] = useState(recountTasks[0] || null);
+        const activeRecount = recountTask || recountTasks[0] || null;
 
-        if (recountTask) {
-            const cat = PRODUCT_CATALOG[recountTask.sku];
+        if (activeRecount) {
+            const cat = PRODUCT_CATALOG[activeRecount.sku];
             return (
                 <div style={{ padding: '24px' }} className="space-y-4">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => setMode('dashboard')} style={{ padding: '8px', borderRadius: '4px', background: 'var(--odoo-surface-low)', border: 'none', cursor: 'pointer', color: 'var(--odoo-text)' }}>
+                        <button onClick={() => { setMode('dashboard'); setRecountTask(null); }} style={{ padding: '8px', borderRadius: '4px', background: 'var(--odoo-surface-low)', border: 'none', cursor: 'pointer', color: 'var(--odoo-text)' }}>
                             <ChevronLeft className="w-5 h-5" />
                         </button>
                         <div>
@@ -1042,13 +1056,13 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                     <div style={{ ...cardStyle, padding: '16px', borderLeft: '4px solid var(--odoo-warning)' }}>
                         <div className="flex gap-4 mb-4">
                             {cat?.image && (
-                                <img src={cat.image} alt={recountTask.name} style={{ width: '56px', height: '56px', borderRadius: '4px', objectFit: 'cover', border: '1px solid var(--odoo-border-ghost)' }} />
+                                <img src={cat.image} alt={activeRecount.name} style={{ width: '56px', height: '56px', borderRadius: '4px', objectFit: 'cover', border: '1px solid var(--odoo-border-ghost)' }} />
                             )}
                             <div>
-                                <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--odoo-purple)', fontFamily: '"Source Code Pro", monospace' }}>{recountTask.sku}</p>
-                                <p style={{ fontSize: '13px', color: 'var(--odoo-text)' }}>{recountTask.name}</p>
+                                <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--odoo-purple)', fontFamily: '"Source Code Pro", monospace' }}>{activeRecount.sku}</p>
+                                <p style={{ fontSize: '13px', color: 'var(--odoo-text)' }}>{activeRecount.name}</p>
                                 <p className="flex items-center gap-1 mt-1" style={{ fontSize: '11px', color: 'var(--odoo-text-muted)' }}>
-                                    <MapPin className="w-3 h-3" />{recountTask.location}
+                                    <MapPin className="w-3 h-3" />{activeRecount.location}
                                 </p>
                             </div>
                         </div>
@@ -1056,15 +1070,15 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                         <div className="grid grid-cols-2 gap-3 mb-4" style={{ padding: '12px', background: 'var(--odoo-surface-low)', borderRadius: '4px' }}>
                             <div>
                                 <p style={{ ...labelStyle, fontSize: '10px' }}>Original Count</p>
-                                <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--odoo-text)' }}>{recountTask.countedQty}</p>
-                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>by {recountTask.countedBy}</p>
+                                <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--odoo-text)' }}>{activeRecount.countedQty}</p>
+                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>by {activeRecount.countedBy}</p>
                             </div>
                             <div>
                                 <p style={{ ...labelStyle, fontSize: '10px' }}>Variance</p>
-                                <p style={{ fontSize: '20px', fontWeight: 800, color: recountTask.variance > 0 ? 'var(--odoo-purple)' : 'var(--odoo-danger)' }}>
-                                    {recountTask.variance > 0 ? '+' : ''}{recountTask.variance}
+                                <p style={{ fontSize: '20px', fontWeight: 800, color: activeRecount.variance > 0 ? 'var(--odoo-purple)' : 'var(--odoo-danger)' }}>
+                                    {activeRecount.variance > 0 ? '+' : ''}{activeRecount.variance}
                                 </p>
-                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>{recountTask.variancePct || '?'}%</p>
+                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>{activeRecount.variancePct || '?'}%</p>
                             </div>
                         </div>
 
@@ -1074,9 +1088,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 onChange={e => setRecountInput(e.target.value)}
                                 onKeyDown={e => {
                                     if (e.key !== 'Enter' || !recountInput.trim()) return;
-                                    submitSupervisorRecount(recountTask, parseInt(recountInput));
+                                    submitSupervisorRecount(activeRecount, parseInt(recountInput));
                                     setRecountInput('');
-                                    const next = recountTasks.find(t => t.sku !== recountTask.sku);
+                                    const next = recountTasks.find(t => t.sku !== activeRecount.sku);
                                     setRecountTask(next || null);
                                     if (!next) setMode('dashboard');
                                 }}
@@ -1086,9 +1100,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             />
                             <button onClick={() => {
                                 if (!recountInput) return;
-                                submitSupervisorRecount(recountTask, parseInt(recountInput));
+                                submitSupervisorRecount(activeRecount, parseInt(recountInput));
                                 setRecountInput('');
-                                const next = recountTasks.find(t => t.sku !== recountTask.sku);
+                                const next = recountTasks.find(t => t.sku !== activeRecount.sku);
                                 setRecountTask(next || null);
                                 if (!next) setMode('dashboard');
                             }}
@@ -1103,9 +1117,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             <h3 style={sectionHeaderStyle}>Pending Recounts ({recountTasks.length})</h3>
                             <div className="space-y-1">
                                 {recountTasks.map(t => (
-                                    <button key={t.sku} onClick={() => { setRecountTask(t); setRecountInput(''); }}
+                                    <button key={t._key || t.sku} onClick={() => { setRecountTask(t); setRecountInput(''); }}
                                         className="w-full flex items-center justify-between"
-                                        style={{ padding: '8px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '13px', background: t.sku === recountTask?.sku ? 'var(--odoo-warning-light)' : 'transparent', color: 'var(--odoo-text)', textAlign: 'left' }}>
+                                        style={{ padding: '8px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '13px', background: t.sku === activeRecount?.sku ? 'var(--odoo-warning-light)' : 'transparent', color: 'var(--odoo-text)', textAlign: 'left' }}>
                                         <span style={{ fontFamily: '"Source Code Pro", monospace', fontWeight: 600 }}>{t.sku}</span>
                                         <span style={{ fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{t.location}</span>
                                     </button>
@@ -1188,7 +1202,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                             </thead>
                                             <tbody>
                                                 {dateRecords.map(r => (
-                                                    <tr key={r.sku} style={{ borderTop: '1px solid var(--odoo-border-ghost)' }}>
+                                                    <tr key={r._key || `${r.sku}-${r.location || idx}`} style={{ borderTop: '1px solid var(--odoo-border-ghost)' }}>
                                                         <td style={{ padding: '8px 0', fontFamily: '"Source Code Pro", monospace', fontWeight: 600, color: 'var(--odoo-text)' }}>{r.sku}</td>
                                                         <td style={{ padding: '8px 0', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{r.location}</td>
                                                         <td style={{ padding: '8px 0', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{r.lot || '—'}</td>
@@ -1257,7 +1271,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p style={{ fontSize: '13px', color: 'var(--odoo-text)' }}>{n.message}</p>
-                                            <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', marginTop: '4px' }}>{new Date(n.createdAt).toLocaleString()}</p>
+                                            <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', marginTop: '4px' }}>{formatDateTime(n.createdAt)}</p>
                                         </div>
                                         {!n.read && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--odoo-purple)', flexShrink: 0, marginTop: '8px' }} />}
                                     </div>
@@ -1568,7 +1582,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                                 </div>
                                             </td>
                                             <td style={{ padding: '10px 24px', textAlign: 'right', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>
-                                                {r.countedAt ? new Date(r.countedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
+                                                {r.countedAt ? formatTime(r.countedAt) : '—'}
                                             </td>
                                         </tr>
                                     );
@@ -1645,7 +1659,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                             {FC_STATUS[session.status]?.label}
                                         </span>
                                     </div>
-                                    <p style={{ fontSize: '11px', color: 'var(--odoo-text-muted)', marginTop: '4px' }}>Created: {new Date(session.createdAt).toLocaleDateString()}</p>
+                                    <p style={{ fontSize: '11px', color: 'var(--odoo-text-muted)', marginTop: '4px' }}>Created: {formatDate(session.createdAt)}</p>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <p style={{ fontSize: '24px', fontWeight: 900, color: 'var(--odoo-purple)' }}>{session.progress.counted}/{session.progress.total}</p>
@@ -1748,7 +1762,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                     <div key={s.id} className="flex items-center justify-between" style={{ padding: '12px', background: 'var(--odoo-surface-low)', borderRadius: '4px' }}>
                                         <div>
                                             <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--odoo-text)' }}>{s.name}</p>
-                                            <p style={{ fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{new Date(s.closedAt).toLocaleDateString()} — {s.progress.total} items</p>
+                                            <p style={{ fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{formatDate(s.closedAt)} — {s.progress.total} items</p>
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <p style={{ fontSize: '13px', fontWeight: 700, color: s.progress.matched === s.progress.total ? 'var(--odoo-success)' : 'var(--odoo-warning)' }}>
@@ -1777,7 +1791,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                         fullCountSession={activeSession} isEmbedded
                         onCountBin={(bin, stock) => {
                             const item = activeSession.counts.find(c => c.binId === bin.id);
-                            if (item) { setFcSelectedItem(item); setFcCountInput(''); }
+                            if (item) { setFcSelectedItem(item); setFcCountInput(''); setFcScannedLot(''); }
                         }}
                         language="en"
                     />
@@ -1796,6 +1810,27 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                     </div>
                                 )}
                             </div>
+                            {(fcSelectedItem.lotTracking || fcSelectedItem.lots?.length > 0) && (
+                                <div style={{ marginBottom: '8px' }}>
+                                    <label style={labelStyle}>Lot / Batch Number</label>
+                                    <input value={fcScannedLot} onChange={e => setFcScannedLot(e.target.value)}
+                                        placeholder="Enter or scan lot number..."
+                                        style={{ width: '100%', marginTop: '4px', padding: '8px 12px', border: '1px solid var(--odoo-border)', borderRadius: '4px', fontSize: '13px', background: 'var(--odoo-surface)', color: 'var(--odoo-text)', outline: 'none' }} />
+                                    {fcSelectedItem.lots?.length > 0 && (
+                                        <div className="flex gap-1 flex-wrap mt-1">
+                                            {fcSelectedItem.lots.map((l, li) => {
+                                                const lotName = typeof l === 'string' ? l : l.lotNumber || `Lot-${li + 1}`;
+                                                return (
+                                                    <button key={lotName + li} onClick={() => setFcScannedLot(lotName)}
+                                                        style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', border: fcScannedLot === lotName ? '1px solid var(--odoo-purple)' : '1px solid var(--odoo-border-ghost)', background: fcScannedLot === lotName ? 'var(--odoo-purple-light)' : 'var(--odoo-surface-low)', color: fcScannedLot === lotName ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)', cursor: 'pointer' }}>
+                                                        {lotName}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             <div className="flex gap-3 items-end">
                                 <div style={{ flex: 1 }}>
                                     <label style={labelStyle}>Counted Quantity</label>
@@ -1804,9 +1839,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                             if (e.key === 'Enter' && fcCountInput.trim()) {
                                                 const qty = parseInt(fcCountInput, 10);
                                                 if (!isNaN(qty) && qty >= 0) {
-                                                    submitFullCount(activeSession.id, fcSelectedItem.binId, qty);
+                                                    submitFullCount(activeSession.id, fcSelectedItem.binId, qty, fcScannedLot);
                                                     const nextItem = activeSession.counts.find(c => c.countedQty === null && c.binId !== fcSelectedItem.binId);
-                                                    if (nextItem) { setFcSelectedItem(nextItem); setFcCountInput(''); }
+                                                    if (nextItem) { setFcSelectedItem(nextItem); setFcCountInput(''); setFcScannedLot(''); }
                                                     else { setFcSelectedItem(null); addToast?.('All items counted!', 'success'); }
                                                 }
                                             }
@@ -1818,9 +1853,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 <button onClick={() => {
                                     const qty = parseInt(fcCountInput, 10);
                                     if (!isNaN(qty) && qty >= 0) {
-                                        submitFullCount(activeSession.id, fcSelectedItem.binId, qty);
+                                        submitFullCount(activeSession.id, fcSelectedItem.binId, qty, fcScannedLot);
                                         const nextItem = activeSession.counts.find(c => c.countedQty === null && c.binId !== fcSelectedItem.binId);
-                                        if (nextItem) { setFcSelectedItem(nextItem); setFcCountInput(''); }
+                                        if (nextItem) { setFcSelectedItem(nextItem); setFcCountInput(''); setFcScannedLot(''); }
                                         else { setFcSelectedItem(null); addToast?.('All items counted!', 'success'); }
                                     }
                                 }}
@@ -1830,7 +1865,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             </div>
                             {fcSelectedItem.countedQty !== null && (
                                 <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>
-                                    Previously counted: {fcSelectedItem.countedQty} by {fcSelectedItem.countedBy} at {new Date(fcSelectedItem.countedAt).toLocaleString()}
+                                    Previously counted: {fcSelectedItem.countedQty} by {fcSelectedItem.countedBy} at {formatDateTime(fcSelectedItem.countedAt)}
                                 </div>
                             )}
                         </div>
@@ -1845,6 +1880,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                         <th style={{ padding: '8px 12px', textAlign: 'left' }}>Location</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'left' }}>SKU</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'left' }}>Product</th>
+                                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Lot</th>
                                         {!activeSession.settings.blindCount && <th style={{ padding: '8px 12px', textAlign: 'right' }}>System</th>}
                                         <th style={{ padding: '8px 12px', textAlign: 'right' }}>Counted</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'right' }}>Variance</th>
@@ -1853,8 +1889,8 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 </thead>
                                 <tbody>
                                     {activeSession.counts.map(item => (
-                                        <tr key={item.binId}
-                                            onClick={() => { setFcSelectedItem(item); setFcCountInput(''); }}
+                                        <tr key={`${item.binId}-${item.sku || idx}`}
+                                            onClick={() => { setFcSelectedItem(item); setFcCountInput(''); setFcScannedLot(''); }}
                                             style={{ borderTop: '1px solid var(--odoo-border-ghost)', cursor: 'pointer', background: fcSelectedItem?.binId === item.binId ? 'var(--odoo-purple-light)' : 'transparent' }}
                                             onMouseEnter={e => { if (fcSelectedItem?.binId !== item.binId) e.currentTarget.style.background = 'var(--odoo-surface-low)'; }}
                                             onMouseLeave={e => { if (fcSelectedItem?.binId !== item.binId) e.currentTarget.style.background = 'transparent'; }}>
@@ -1866,6 +1902,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                             <td style={{ padding: '8px 12px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px' }}>{item.location}</td>
                                             <td style={{ padding: '8px 12px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px', fontWeight: 700 }}>{item.sku}</td>
                                             <td style={{ padding: '8px 12px', color: 'var(--odoo-text-secondary)' }}>{item.name}</td>
+                                            <td style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{item.lot || '—'}</td>
                                             {!activeSession.settings.blindCount && <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--odoo-text-muted)' }}>{item.systemQty}</td>}
                                             <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{item.countedQty ?? '—'}</td>
                                             <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: item.variance > 0 ? 'var(--odoo-purple)' : item.variance < 0 ? 'var(--odoo-danger)' : 'var(--odoo-text-muted)' }}>
@@ -1923,6 +1960,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                     <tr style={{ background: 'var(--odoo-surface-low)', fontSize: '10px', color: 'var(--odoo-text-muted)', textTransform: 'uppercase' }}>
                                         <th style={{ padding: '8px 12px', textAlign: 'left' }}>SKU</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'left' }}>Location</th>
+                                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Lot</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'right' }}>System</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'right' }}>Counted</th>
                                         <th style={{ padding: '8px 12px', textAlign: 'right' }}>Variance</th>
@@ -1931,9 +1969,10 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 </thead>
                                 <tbody>
                                     {activeSession.counts.filter(c => c.variance !== null && c.variance !== 0).map(c => (
-                                        <tr key={c.binId} style={{ borderTop: '1px solid var(--odoo-border-ghost)' }}>
+                                        <tr key={`${c.binId}-${c.sku || idx}`} style={{ borderTop: '1px solid var(--odoo-border-ghost)' }}>
                                             <td style={{ padding: '8px 12px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px', fontWeight: 700 }}>{c.sku}</td>
                                             <td style={{ padding: '8px 12px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px' }}>{c.location}</td>
+                                            <td style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{c.lot || '—'}</td>
                                             <td style={{ padding: '8px 12px', textAlign: 'right' }}>{c.systemQty}</td>
                                             <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{c.countedQty}</td>
                                             <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: c.variance > 0 ? 'var(--odoo-purple)' : 'var(--odoo-danger)' }}>
@@ -1943,7 +1982,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                         </tr>
                                     ))}
                                     {activeSession.counts.filter(c => c.variance !== null && c.variance !== 0).length === 0 && (
-                                        <tr><td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--odoo-text-muted)' }}>No variances — perfect match!</td></tr>
+                                        <tr><td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: 'var(--odoo-text-muted)' }}>No variances — perfect match!</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -2158,7 +2197,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                             {filteredTasks.map(task => {
                                 const abcCfg = ABC_CONFIG[task.abcGrade];
                                 return (
-                                    <tr key={task.sku}
+                                    <tr key={task._key || task.sku}
                                         onClick={() => {
                                             setSelectedTask(task); setMode('counting'); setScanStep('scan-location');
                                             setScannedLocation(null); setCountInput(''); setScannedLot('');

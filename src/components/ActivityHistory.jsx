@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Download, Trash2, ChevronLeft, ChevronRight, Package, ScanLine, Truck, ShoppingCart, Calendar, User, Filter, BarChart2, Clock, Hash, FileText, ArrowUpDown } from 'lucide-react';
 import { queryActivities, getStats, getWorkers, getCount, exportAll, clearAll } from '../utils/activityDB';
+import { formatDate as fmtDate, formatTime as fmtTime } from '../utils/dateFormat';
 
 const ACTION_CONFIG = {
     pick:             { label: 'Pick',           labelTh: 'หยิบ',         color: '#2563eb', bg: '#eff6ff', icon: ShoppingCart },
@@ -117,15 +118,8 @@ export default function ActivityHistory({ language = 'en' }) {
         }
     };
 
-    const formatTime = (ts) => {
-        const d = new Date(ts);
-        return d.toLocaleString(th ? 'th-TH' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    };
-
-    const formatDate = (ts) => {
-        const d = new Date(ts);
-        return d.toLocaleDateString(th ? 'th-TH' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-    };
+    const formatTime = fmtTime;
+    const formatDate = fmtDate;
 
     return (
         <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>

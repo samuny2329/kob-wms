@@ -88,10 +88,14 @@ function buildZoneRackStructure(inventory) {
 }
 
 function getBinStock(binId, inventory) {
-    const catalogEntry = Object.entries(PRODUCT_CATALOG).find(([, p]) => p.location === binId);
+    const isPF = binId?.startsWith('PF-');
+    const catalogEntry = isPF ? null : Object.entries(PRODUCT_CATALOG).find(([, p]) => p.location === binId);
     const sku = catalogEntry?.[0];
     const invItems = inventory?.items || (Array.isArray(inventory) ? inventory : []);
-    const item = invItems.find((i) => i.location === binId || i.sku === sku || i.default_code === sku);
+    // PF bins: match by location only. Rack bins: match by location or SKU
+    const item = isPF
+        ? invItems.find((i) => i.location === binId)
+        : invItems.find((i) => i.location === binId || i.sku === sku || i.default_code === sku);
     const qty = item?.onHand ?? item?.qty_available ?? item?.quantity ?? item?.qty ?? 0;
     const capacity = item?.capacity ?? 500;
     const pct = capacity > 0 ? Math.min((qty / capacity) * 100, 100) : 0;
@@ -326,7 +330,78 @@ export default function WarehouseMap({
 
             {/* ── Floor Plan View ── */}
             <div className={`flex gap-3 ${isEmbedded ? 'flex-1 overflow-hidden' : ''}`}>
-                <div className={`flex-1 bg-slate-50 dark:bg-gray-900 border dark:border-gray-700 rounded-xl p-4 overflow-auto relative ${isEmbedded ? '' : 'max-h-[640px]'}`}>
+
+                {/* ── Pick Face Shelf (Left) — vertical standing shelves like blueprint ── */}
+                <div className={`bg-amber-50/80 dark:bg-amber-900/10 border-2 border-amber-200 dark:border-amber-700 rounded-xl p-4 overflow-auto shrink-0 self-end ${isEmbedded ? '' : 'max-h-[640px]'}`}>
+                    <div className="text-center mb-3 pb-2 border-b-2 border-amber-300 dark:border-amber-700">
+                        <span className="text-xs font-black text-stone-700 dark:text-stone-300 uppercase tracking-[0.2em]">Pick Face Zone</span>
+                    </div>
+                    {/* 5 shelf units side by side: A (left) → E (right) */}
+                    <div className="flex gap-4">
+                        {['A', 'B', 'C', 'D', 'E'].map((zone) => (
+                            <div key={zone} className="flex flex-col items-center">
+                                {/* Zone label on top */}
+                                <span className="w-7 h-7 rounded flex items-center justify-center text-white text-[11px] font-black shadow mb-1.5"
+                                    style={{ backgroundColor: ZONE_COLORS[zone] || '#6b7280' }}>{zone}</span>
+                                {/* Shelf unit: 5 depth columns × 10 bins tall */}
+                                <div className="relative bg-stone-200/60 dark:bg-stone-800/40 rounded-sm p-[2px]">
+                                    {/* Vertical uprights (left + right) */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-sm z-10" style={{ backgroundColor: '#78716c' }} />
+                                    <div className="absolute right-0 top-0 bottom-0 w-[3px] rounded-sm z-10" style={{ backgroundColor: '#78716c' }} />
+                                    {/* 5 columns (shelves 1-5 = depth) with dividers */}
+                                    <div className="flex px-[3px]">
+                                        {[5, 4, 3, 2, 1].map((shelf, si) => (
+                                            <React.Fragment key={shelf}>
+                                                {/* Vertical divider between shelves */}
+                                                {si > 0 && <div className="w-[2px] shrink-0 my-[1px]" style={{ backgroundColor: '#a8a29e' }} />}
+                                                {/* Column of 10 bins (top=01, bottom=10) */}
+                                                <div className="flex flex-col gap-[1px] py-[1px]">
+                                                    {Array.from({ length: 10 }, (_, bi) => {
+                                                        const binNum = bi + 1;
+                                                        const binId = `PF-${zone}${shelf}-${String(binNum).padStart(2, '0')}`;
+                                                        const stock = getBinStock(binId, inventory);
+                                                        const hasSku = !!stock.sku;
+                                                        const color = hasSku ? getStockColor(stock.pct) : undefined;
+                                                        return (
+                                                            <div key={binNum}
+                                                                onClick={() => {
+                                                                    const slot = { sku: stock.sku, location: binId, name: stock.name, barcode: stock.barcode, brand: stock.brand };
+                                                                    handleSlotClick(slot, zone, shelf, binNum);
+                                                                }}
+                                                                className={`w-8 h-8 rounded cursor-pointer relative group/pf transition-all flex items-center justify-center
+                                                                    ${selectedBin?.id === binId ? 'ring-2 ring-blue-500 z-10 scale-110' : 'hover:scale-105 hover:z-10'}`}
+                                                                style={{
+                                                                    backgroundColor: hasSku ? color : '#d6d3d1',
+                                                                    boxShadow: hasSku
+                                                                        ? 'inset 0 -3px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1)'
+                                                                        : 'inset 0 1px 3px rgba(0,0,0,0.06)',
+                                                                    borderRadius: '4px',
+                                                                }}
+                                                                title={binId}>
+                                                                {hasSku && <span className="text-[7px] font-bold text-white drop-shadow-sm">{stock.qty}</span>}
+                                                                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-[9px] rounded shadow-lg whitespace-nowrap opacity-0 group-hover/pf:opacity-100 pointer-events-none transition-opacity z-30">
+                                                                    <p className="font-bold">{binId}</p>
+                                                                    {hasSku ? <p>{stock.sku} — {stock.qty}pcs</p> : <p className="text-emerald-300">Empty</p>}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                    {/* Base/feet */}
+                                    <div className="h-[4px] rounded-b-sm mt-[1px] -mx-[1px]" style={{ backgroundColor: '#78716c' }} />
+                                </div>
+                                {/* Shelf depth label */}
+                                <span className="mt-1 text-[6px] text-stone-400 font-mono font-bold">5 → 1</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ── Rack Grid (Right) ── */}
+                <div className={`bg-slate-50 dark:bg-gray-900 border dark:border-gray-700 rounded-xl p-4 overflow-auto relative ${isEmbedded ? '' : 'max-h-[640px]'}`}>
                     {/* Background image */}
                     {bgImage && (
                         <img src={bgImage} alt="Floor plan" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ opacity: bgOpacity }} />
@@ -423,65 +498,73 @@ export default function WarehouseMap({
                     </div>
                 </div>
 
-                {/* ── Detail Side Panel ── */}
+                {/* ── Detail Modal Popup ── */}
                 {selectedBin && detail && (
-                    <div className="w-64 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-y-auto flex-shrink-0 self-start">
-                        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700"
-                            style={{ backgroundColor: (ZONE_COLORS[selectedBin.zone] || '#6b7280') + '15' }}>
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-4 h-4 rounded flex items-center justify-center text-white text-[8px] font-bold" style={{ backgroundColor: ZONE_COLORS[selectedBin.zone] || '#6b7280' }}>{selectedBin.zone}</span>
-                                <span className="font-semibold text-sm text-gray-800 dark:text-gray-100">{selectedBin.id}</span>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        onClick={(e) => { if (e.target === e.currentTarget) setSelectedBin(null); }}>
+                        {/* Backdrop blur */}
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                        {/* Modal content */}
+                        <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-700"
+                                style={{ backgroundColor: (ZONE_COLORS[selectedBin.zone] || '#6b7280') + '15' }}>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-6 h-6 rounded-md flex items-center justify-center text-white text-[10px] font-black" style={{ backgroundColor: ZONE_COLORS[selectedBin.zone] || '#6b7280' }}>{selectedBin.zone}</span>
+                                    <span className="font-bold text-base text-gray-800 dark:text-gray-100">{selectedBin.id}</span>
+                                </div>
+                                <button onClick={() => setSelectedBin(null)} className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 transition-colors"><X size={18} /></button>
                             </div>
-                            <button onClick={() => setSelectedBin(null)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400"><X size={14} /></button>
-                        </div>
-                        <div className="p-3 space-y-3 text-xs">
-                            {detail.stock.sku ? (
-                                <div className="space-y-1">
-                                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">{isEn ? 'Product' : 'สินค้า'}</p>
-                                    <p className="text-gray-800 dark:text-gray-100 font-medium">{detail.stock.name}</p>
-                                    <p className="text-gray-500">SKU: {detail.stock.sku}</p>
-                                    {detail.stock.barcode && <p className="text-gray-500">Barcode: {detail.stock.barcode}</p>}
-                                    {detail.stock.brand && <p className="text-gray-500">Brand: {detail.stock.brand}</p>}
+                            {/* Body */}
+                            <div className="p-5 space-y-4 text-sm max-h-[70vh] overflow-y-auto">
+                                {detail.stock.sku ? (
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{isEn ? 'Product' : 'สินค้า'}</p>
+                                        <p className="text-gray-800 dark:text-gray-100 font-semibold text-base">{detail.stock.name}</p>
+                                        <p className="text-gray-500 font-mono text-xs">SKU: {detail.stock.sku}</p>
+                                        {detail.stock.barcode && <p className="text-gray-500 font-mono text-xs">Barcode: {detail.stock.barcode}</p>}
+                                        {detail.stock.brand && <p className="text-gray-500 text-xs">Brand: {detail.stock.brand}</p>}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <p className="text-emerald-500 font-bold text-lg">Available</p>
+                                        <p className="text-xs text-gray-400 mt-1">{isEn ? 'This bin is empty and ready for use' : 'ช่องนี้ว่างพร้อมใช้งาน'}</p>
+                                    </div>
+                                )}
+                                <div className="space-y-2">
+                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{isEn ? 'Stock Level' : 'ระดับสต็อค'}</p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-gray-700 dark:text-gray-200 font-medium">{detail.stock.qty} / {detail.stock.capacity}</span>
+                                        <span className="font-bold text-lg" style={{ color: getStockColor(detail.stock.pct) }}>{Math.round(detail.stock.pct)}%</span>
+                                    </div>
+                                    <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                        <div className="h-full rounded-full transition-all" style={{ width: `${detail.stock.pct}%`, backgroundColor: getStockColor(detail.stock.pct) }} />
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="text-center py-3">
-                                    <p className="text-emerald-500 font-bold text-sm">Available</p>
-                                    <p className="text-[10px] text-gray-400 mt-1">{isEn ? 'This bin is empty and ready for use' : 'ช่องนี้ว่างพร้อมใช้งาน'}</p>
+                                {detail.stock.lots?.length > 0 && (
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{isEn ? 'Lots' : 'ล็อต'}</p>
+                                        {detail.stock.lots.map((lot, i) => (
+                                            <div key={i} className="flex justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg text-gray-600 dark:text-gray-300 text-xs">
+                                                <span className="font-mono">{lot.lotNumber || `Lot ${i + 1}`}</span>
+                                                <span className="font-semibold">{lot.qty ?? '-'}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{isEn ? 'Pick Frequency' : 'ความถี่หยิบ'}</p>
+                                        <p className="text-gray-700 dark:text-gray-200 font-semibold">{detail.freq.count} picks</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{isEn ? 'Count Status' : 'สถานะนับ'}</p>
+                                        <p className="text-gray-700 dark:text-gray-200 font-semibold">{detail.countLabel}</p>
+                                    </div>
                                 </div>
-                            )}
-                            <div className="space-y-1.5">
-                                <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">{isEn ? 'Stock Level' : 'ระดับสต็อค'}</p>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-700 dark:text-gray-200">{detail.stock.qty} / {detail.stock.capacity}</span>
-                                    <span className="font-bold" style={{ color: getStockColor(detail.stock.pct) }}>{Math.round(detail.stock.pct)}%</span>
-                                </div>
-                                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                    <div className="h-full rounded-full transition-all" style={{ width: `${detail.stock.pct}%`, backgroundColor: getStockColor(detail.stock.pct) }} />
-                                </div>
-                            </div>
-                            {detail.stock.lots?.length > 0 && (
-                                <div className="space-y-1">
-                                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">{isEn ? 'Lots' : 'ล็อต'}</p>
-                                    {detail.stock.lots.map((lot, i) => (
-                                        <div key={i} className="flex justify-between bg-gray-50 dark:bg-gray-700/50 px-2 py-0.5 rounded text-gray-600 dark:text-gray-300">
-                                            <span>{lot.lotNumber || `Lot ${i + 1}`}</span>
-                                            <span>{lot.qty ?? '-'}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                            <div className="space-y-1">
-                                <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">{isEn ? 'Pick Frequency' : 'ความถี่หยิบ'}</p>
-                                <p className="text-gray-700 dark:text-gray-200">{detail.freq.count} picks</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">{isEn ? 'Count Status' : 'สถานะนับ'}</p>
-                                <p className="text-gray-700 dark:text-gray-200">{detail.countLabel}</p>
-                            </div>
-                            <div className="pt-2 space-y-1.5 border-t dark:border-gray-700">
                                 {onCountBin && (
-                                    <button onClick={() => onCountBin(selectedBin, detail.stock)} className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium">
-                                        <ClipboardCheck size={13} /> {isEn ? 'Count This Bin' : 'นับ Bin นี้'}
+                                    <button onClick={() => onCountBin(selectedBin, detail.stock)} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-colors mt-2">
+                                        <ClipboardCheck size={16} /> {isEn ? 'Count This Bin' : 'นับ Bin นี้'}
                                     </button>
                                 )}
                             </div>

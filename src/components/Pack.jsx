@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { BOX_TYPES, PACKING_SPEC, PRODUCT_CATALOG, suggestBox } from '../constants.jsx';
 import PackStation from './PackStation';
+import { formatTime } from '../utils/dateFormat';
 
 const Pack = ({
     salesOrders, selectedPackOrder, setSelectedPackOrder,
@@ -308,7 +309,7 @@ const Pack = ({
                                                             {order.courier} - {order.items.reduce((s, i) => s + (i.picked || i.expected || 0), 0)} Items
                                                             {order.createdAt && (
                                                                 <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>
-                                                                    {new Date(order.createdAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+                                                                    {formatTime(order.createdAt)}
                                                                 </span>
                                                             )}
                                                         </p>
@@ -355,8 +356,8 @@ const Pack = ({
                                     >
                                         <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'monospace', color: 'var(--odoo-text)' }}>{order.ref}</span>
                                         <span style={{ fontSize: '10px', color: 'var(--odoo-text-secondary)' }}>
-                                            {order.packedAt ? new Date(order.packedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                                : order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            {order.packedAt ? formatTime(order.packedAt)
+                                                : order.createdAt ? formatTime(order.createdAt)
                                                 : '--:--'}
                                             {orderTotal > 0 && ` - ${orderTotal.toLocaleString()}`}
                                         </span>

@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Printer, Package, CheckCircle2, Clock, TrendingUp, AlertTriangle, Truck, ShoppingCart, PackageCheck, BarChart3, Users, Boxes, Calendar } from 'lucide-react';
+import { formatDate, formatDateTime, formatTime } from '../utils/dateFormat';
 
 const Reports = ({ reportViewMode, setReportViewMode, reportFilterCourier, setReportFilterCourier, orderData, reportFilterBatchId, setReportFilterBatchId, historyData, courierBatches, orderId, salesOrders = [], activityLogs = [], inventory = null, invoices = [], onSaveArchive }) => {
 
@@ -49,7 +50,7 @@ const Reports = ({ reportViewMode, setReportViewMode, reportFilterCourier, setRe
     const eodData = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
         const isToday = eodDate === today;
-        const displayDate = new Date(eodDate + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const displayDate = formatDate(eodDate + 'T00:00:00');
 
         // Load data source — live or archived
         let srcSalesOrders, srcActivityLogs, srcInventory, srcInvoices;
@@ -232,7 +233,7 @@ const Reports = ({ reportViewMode, setReportViewMode, reportFilterCourier, setRe
             {reportViewMode === 'eod' && !eodData && (
                 <div className="w-full max-w-[210mm] bg-white shadow-md border border-slate-200 rounded-lg p-16 text-center">
                     <Calendar className="w-14 h-14 mx-auto mb-4 text-slate-300" />
-                    <p className="text-lg font-semibold text-slate-600 mb-2">No archive for {new Date(eodDate + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                    <p className="text-lg font-semibold text-slate-600 mb-2">No archive for {formatDate(eodDate + 'T00:00:00')}</p>
                     <p className="text-sm text-slate-400">EOD snapshots are automatically saved when you view the report or sign out.</p>
                     <p className="text-xs text-slate-300 mt-4">Archives are kept for 30 days.</p>
                 </div>
@@ -249,7 +250,7 @@ const Reports = ({ reportViewMode, setReportViewMode, reportFilterCourier, setRe
                         </div>
                         <div className="text-right flex flex-col items-end">
                             <div className="text-sm font-bold font-mono text-slate-800 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-md">{eodData.displayDate}</div>
-                            <div className="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-widest">Generated: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div className="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-widest">Generated: {formatTime(new Date())}</div>
                         </div>
                     </div>
 
@@ -433,7 +434,7 @@ const Reports = ({ reportViewMode, setReportViewMode, reportFilterCourier, setRe
                         </div>
                         <div className="text-right flex flex-col items-end">
                             <div className="text-sm font-bold font-mono text-slate-800 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-md inline-block">{currentReportOrderId}</div>
-                            <div className="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-widest">Generated: {new Date().toLocaleString('th-TH')}</div>
+                            <div className="text-[10px] text-slate-400 mt-2 font-medium uppercase tracking-widest">Generated: {formatDateTime(new Date())}</div>
                         </div>
                     </div>
 

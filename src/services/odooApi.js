@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '../utils/dateFormat';
 // Odoo WMS API Service Layer
 // Connects to real Odoo 18 via session-based auth
 //
@@ -184,7 +185,7 @@ export const fetchAllOrders = async (odooConfig, companyId) => {
     const domain = [
         ['picking_type_id.warehouse_id.name', 'ilike', '(Online)'],
         ['picking_type_code', '=', 'outgoing'],
-        ['state', 'in', ['assigned', 'confirmed', 'waiting']],
+        ['state', 'in', ['assigned', 'confirmed', 'waiting', 'done']],
         ['write_date', '>=', cutoff],
     ];
     // Always restrict to KOB (1) + BTV (2) only
@@ -652,7 +653,7 @@ export const fetchInventory = async (odooConfig, companyId) => {
     else locDomain.push(['company_id', 'in', [1, 2]]);
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
         [locDomain],
-        { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id'] }
+        { fields: ['product_id', 'lot_id', 'quantity', 'reserved_quantity', 'location_id', 'company_id'] }
     );
 
     // Fetch lot expiry dates
@@ -676,6 +677,8 @@ export const fetchInventory = async (odooConfig, companyId) => {
         if (!grouped[key]) grouped[key] = {
             productId: q.product_id[0], name: q.product_id[1],
             location: q.location_id[1], locationId: q.location_id[0],
+            companyId: q.company_id ? q.company_id[0] : null,
+            companyName: q.company_id ? q.company_id[1] : '',
             onHand: 0, reserved: 0, lots: [],
         };
         grouped[key].onHand += q.quantity;
@@ -690,16 +693,21 @@ export const fetchInventory = async (odooConfig, companyId) => {
     // Fetch SKU (default_code) for each product
     const productIds = [...new Set(Object.values(grouped).map(g => g.productId))];
     let skuMap = {};
+    let categMap = {};
     if (productIds.length > 0) {
         const products = await odooCallKw(odooConfig, 'product.product', 'read',
-            [productIds], { fields: ['id', 'default_code'] }
+            [productIds], { fields: ['id', 'default_code', 'categ_id'] }
         );
-        for (const p of products) skuMap[p.id] = p.default_code || '';
+        for (const p of products) {
+            skuMap[p.id] = p.default_code || '';
+            if (p.categ_id) categMap[p.id] = p.categ_id[1];
+        }
     }
     return Object.values(grouped).map(g => ({
         ...g,
         sku: skuMap[g.productId] || g.name,
         shortName: skuMap[g.productId] || '',
+        category: categMap[g.productId] || '',
         available: g.onHand - g.reserved,
         unitCost: 0,
         reorderPoint: 10,
@@ -837,6 +845,17 @@ export const createInvoiceFromPicking = async (odooConfig, pickingRef) => {
     ).catch(() => []);
     const so = soData?.[0];
     const deliveryComplete = so?.delivery_status === 'full' || pd.state === 'done';
+
+    // If Odoo already says "Fully Invoiced" — skip creation, just find and return the existing invoice
+    if (so?.invoice_status === 'invoiced') {
+        const existing = await odooCallKw(odooConfig, 'account.move', 'search_read',
+            [[['invoice_origin', 'ilike', pd.origin || ''], ['move_type', '=', 'out_invoice'], ['state', '!=', 'cancel']]],
+            { fields: ['id', 'name', 'state'], limit: 1, order: 'id desc' }
+        ).catch(() => []);
+        if (existing.length > 0) {
+            return { status: 'success', invoiceId: existing[0].id, invoiceName: existing[0].name, saleOrderId, alreadyExisted: true, posted: existing[0].state === 'posted' };
+        }
+    }
 
     // Check for existing invoice — prevent duplicates
     const existingInvoices = await odooCallKw(odooConfig, 'account.move', 'search_read',
@@ -1020,7 +1039,7 @@ export const fetchProducts = async (odooConfig) => {
     try {
         const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
             [[['active', '=', true], ['default_code', '!=', false]]],
-            { fields: ['id', 'name', 'default_code', 'barcode', 'image_128', 'lst_price', 'weight'], limit: 500 }
+            { fields: ['id', 'name', 'default_code', 'barcode', 'image_128', 'lst_price', 'weight', 'categ_id'], limit: 500 }
         );
         return products.map(p => ({
             id: p.id,
@@ -1030,6 +1049,8 @@ export const fetchProducts = async (odooConfig) => {
             image: p.image_128 ? `data:image/png;base64,${p.image_128}` : null,
             price: p.lst_price || 0,
             weight: p.weight || 0,
+            categoryId: p.categ_id ? p.categ_id[0] : null,
+            categoryName: p.categ_id ? p.categ_id[1] : '',
         }));
     } catch {
         return null;
@@ -1154,7 +1175,7 @@ export const fetchSaleOrderHistory = async (odooConfig, { days = 7 } = {}) => {
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([date, data]) => ({
                 date,
-                label: new Date(date + 'T12:00:00').toLocaleDateString('th-TH', { month: 'short', day: 'numeric' }),
+                label: formatDate(date + 'T12:00:00'),
                 isSpike: false,
                 ...data,
             }));
@@ -1203,7 +1224,7 @@ export const fetchStockHistory = async (odooConfig, productId, locationKeywords 
             const qty = isOutgoing ? -(ml.qty_done || 0) : (ml.qty_done || 0);
             balance += qty;
             rows.unshift({
-                date:    new Date(ml.date).toLocaleString(),
+                date:    formatDateTime(ml.date),
                 type:    isOutgoing ? 'delivery' : 'receipt',
                 ref:     ml.reference || ml.picking_id?.[1] || '—',
                 partner: '—',

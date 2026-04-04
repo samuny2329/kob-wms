@@ -11,6 +11,7 @@ import {
   APPROVAL_CHAIN, CORE_VALUES, computeOkrResults
 } from '../constants';
 import { validateScore, auditLog } from '../utils/security';
+import { formatDate, formatDateTime } from '../utils/dateFormat';
 
 // ── localStorage helpers ──
 const LS_KEY = 'wms_kpi_assessments';
@@ -779,7 +780,7 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Assessment Created</p>
               <p style={{ fontSize: 10, fontFamily: '"Source Code Pro", monospace', color: 'var(--odoo-text-muted)', margin: '2px 0 0' }}>
-                {new Date(assessment.createdAt).toLocaleString()}
+                {formatDateTime(assessment.createdAt)}
               </p>
             </div>
           </div>
@@ -795,7 +796,7 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
                 {h.action === 'submit' ? 'Submitted for Review' : h.action === 'approve' ? 'Approved' : 'Rejected'}
               </p>
               <p style={{ fontSize: 10, fontFamily: '"Source Code Pro", monospace', color: 'var(--odoo-text-muted)', margin: '2px 0 0' }}>
-                By: {h.by} | {new Date(h.at).toLocaleString()}
+                By: {h.by} | {formatDateTime(h.at)}
               </p>
             </div>
           </div>
@@ -1056,7 +1057,7 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
               <div>
                 <div style={{ fontWeight: 600, color: 'var(--odoo-text)' }}>{myAssessment.period}</div>
                 <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)', marginTop: 2 }}>
-                  Updated {new Date(myAssessment.updatedAt).toLocaleDateString()}
+                  Updated {formatDate(myAssessment.updatedAt)}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1152,7 +1153,7 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontWeight: 600, color: 'var(--odoo-text)' }}>{a.period}</div>
-                <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>Completed {new Date(a.updatedAt).toLocaleDateString()}</div>
+                <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>Completed {formatDate(a.updatedAt)}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <StatusBadge status={a.status} />
@@ -1213,14 +1214,14 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
         </div>
         {season?.startedBy && (
           <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>
-            Started by {season.startedBy} on {new Date(season.startedAt).toLocaleString()}
+            Started by {season.startedBy} on {formatDateTime(season.startedAt)}
           </div>
         )}
         {season?.snapshots && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>
               Snapshots: {Object.keys(season.snapshots).length} users captured
-              {season.lastRefresh && <> | Last refresh: {new Date(season.lastRefresh).toLocaleString()}</>}
+              {season.lastRefresh && <> | Last refresh: {formatDateTime(season.lastRefresh)}</>}
             </div>
             {season.status === 'open' && (
               <button onClick={refreshSnapshots}
@@ -1251,7 +1252,7 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
           </div>
           {season.ebitdaScore != null && (
             <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>
-              Current: <b style={{ color: 'var(--odoo-danger)' }}>{season.ebitdaScore}/5</b> set by {season.ebitdaSetBy} on {new Date(season.ebitdaSetAt).toLocaleString()}
+              Current: <b style={{ color: 'var(--odoo-danger)' }}>{season.ebitdaScore}/5</b> set by {season.ebitdaSetBy} on {formatDateTime(season.ebitdaSetAt)}
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

@@ -63,8 +63,7 @@ const formatCountdown = (ms) => {
     const min = Math.floor(ms / 60000), h = Math.floor(min / 60);
     return h > 0 ? `${h}h ${min % 60}m` : `${min}m`;
 };
-const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '—';
-const formatDate = (ts) => ts ? new Date(ts).toLocaleString('th-TH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+import { formatTime, formatDate, formatDateTime } from '../utils/dateFormat';
 const ageHours = (ts) => (Date.now() - ts) / 3600000;
 
 // connected = true only if platform API is actually enabled in Settings
@@ -965,7 +964,7 @@ const exportToPDF = (brief) => {
         @media print{body{padding:20px}h1{font-size:18px}}
     </style></head><body>
     <h1>WMS Pro — End-of-Day Report</h1>
-    <div class="subtitle">${brief.date} | Generated ${new Date().toLocaleTimeString()} | KOB & BTV-Online</div>
+    <div class="subtitle">${brief.date} | Generated ${formatDateTime(new Date())} | KOB & BTV-Online</div>
 
     <h2>Key Metrics</h2>
     <div class="grid">

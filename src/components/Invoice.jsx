@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { formatDate, formatDateTime } from '../utils/dateFormat';
 import {
     Receipt, Search, Check, FileText, DollarSign, CheckCircle2, Clock, Send,
     ChevronRight, ChevronDown, X, RefreshCw, Printer, Plus, Calendar,
@@ -25,11 +26,6 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast, apiConfigs }) =
     const [dateTo, setDateTo] = useState('');
 
     // Auto-generate invoices for orders that are 'rts' but don't have invoices
-    const uninvoicedOrders = useMemo(() => {
-        const invoicedRefs = new Set((invoices || []).map(inv => inv.orderRef));
-        return salesOrders.filter(o => o.status === 'rts' && !invoicedRefs.has(o.ref));
-    }, [salesOrders, invoices]);
-
     const filteredInvoices = useMemo(() => {
         let list = [...(invoices || [])];
         if (statusFilter !== 'all') {
@@ -101,36 +97,6 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast, apiConfigs }) =
         };
     }, [invoices]);
 
-    const handleAutoCreateInvoices = () => {
-        const newInvoices = uninvoicedOrders.map(order => {
-            const totalAmount = order.items.reduce((sum, item) => {
-                const qty = item.picked || item.expected || 0;
-                const price = item.unitPrice || 299;
-                return sum + (qty * price);
-            }, 0);
-            const tax = Math.round(totalAmount * 0.07);
-            return {
-                id: 'INV-' + Date.now() + '-' + order.id,
-                orderRef: order.ref,
-                odooOrigin: order.odooOrigin || order.soRef || '',
-                customer: order.customer,
-                platform: order.platform || order.courier,
-                items: order.items.map(i => ({ sku: i.sku, name: i.name, qty: i.picked || i.expected, unitPrice: i.unitPrice || 299 })),
-                subtotal: totalAmount,
-                tax,
-                total: totalAmount + tax,
-                status: 'draft',
-                createdAt: Date.now(),
-                invoiceDate: new Date().toISOString().split('T')[0],
-                dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-            };
-        });
-        if (newInvoices.length > 0) {
-            setInvoices(prev => [...newInvoices, ...(prev || [])]);
-            addToast(`Created ${newInvoices.length} draft invoices`);
-        }
-    };
-
     const handlePostInvoice = async (invoiceId) => {
         setIsPosting(true);
         try {
@@ -199,11 +165,7 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast, apiConfigs }) =
 
     const isOverdue = (inv) => inv.status === 'posted' && inv.dueDate && new Date(inv.dueDate).getTime() < Date.now();
 
-    const fmtDate = (ts) => {
-        if (!ts) return '--';
-        const d = typeof ts === 'number' ? new Date(ts) : new Date(ts);
-        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    };
+    const fmtDate = formatDate;
 
     // Pipeline progress for timeline dots
     const getTimeline = (inv) => {
@@ -249,34 +211,6 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast, apiConfigs }) =
 
     return (
         <div className="w-full animate-fade-in flex flex-col gap-6">
-
-            {/* =========== ALERT BANNER =========== */}
-            {uninvoicedOrders.length > 0 && (
-                <div className="rounded-xl px-6 py-4 flex items-center justify-between"
-                    style={{
-                        background: 'linear-gradient(135deg, var(--odoo-purple), var(--odoo-purple-dark))',
-                        boxShadow: 'var(--odoo-shadow-md)',
-                    }}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                            <Truck className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="text-white font-bold text-sm">
-                                {uninvoicedOrders.length} shipped order{uninvoicedOrders.length > 1 ? 's' : ''} pending invoice creation
-                            </p>
-                            <p className="text-white/60 text-xs mt-0.5">These RTS orders have no matching invoice yet</p>
-                        </div>
-                    </div>
-                    <button onClick={handleAutoCreateInvoices}
-                        className="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: 'var(--odoo-purple-dark)' }}>
-                        <FileText className="w-4 h-4" />
-                        Auto-Create All
-                    </button>
-                </div>
-            )}
 
             {/* =========== KPI STRIP (4 cards) =========== */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -502,12 +436,6 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast, apiConfigs }) =
                             <p className="text-xs mt-1" style={{ color: 'var(--odoo-text-muted)', opacity: 0.6 }}>
                                 {invoices?.length === 0 ? 'Create your first invoice or auto-generate from shipped orders' : 'Try adjusting your search or filters'}
                             </p>
-                            {uninvoicedOrders.length > 0 && (
-                                <button onClick={handleAutoCreateInvoices} className="mt-4 text-xs font-bold px-4 py-2 rounded-lg"
-                                    style={{ color: 'var(--odoo-purple)', backgroundColor: 'rgba(113, 75, 103, 0.08)' }}>
-                                    Create {uninvoicedOrders.length} invoices from shipped orders
-                                </button>
-                            )}
                         </div>
                     ) : (
                         paginatedInvoices.map(inv => {
@@ -754,8 +682,8 @@ const Invoice = ({ invoices, setInvoices, salesOrders, addToast, apiConfigs }) =
                                                 </div>
                                                 <div className="flex gap-4">
                                                     {inv.paymentState && <span style={{ textTransform: 'capitalize' }}>Payment: <b style={{ color: 'var(--odoo-text-secondary)' }}>{inv.paymentState.replace('_', ' ')}</b></span>}
-                                                    {inv.paidAt && <span>Paid: {new Date(inv.paidAt).toLocaleDateString('th-TH')}</span>}
-                                                    {inv.postedAt && <span>Posted: {new Date(inv.postedAt).toLocaleDateString('th-TH')}</span>}
+                                                    {inv.paidAt && <span>Paid: {formatDate(inv.paidAt)}</span>}
+                                                    {inv.postedAt && <span>Posted: {formatDate(inv.postedAt)}</span>}
                                                 </div>
                                             </div>
                                         </div>
