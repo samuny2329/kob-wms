@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Team Performance - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f8f9fa",
+                        "on-surface": "#191c1d",
+                        "secondary": "#00696e",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "secondary-fixed": "#a1f0f5",
+                        "primary-fixed": "#ffd7f1",
+                        "surface-container-high": "#e7e8e9",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-tertiary-fixed": "#112000",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "surface-dim": "#d9dadb",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "tertiary-fixed": "#d5eab4",
+                        "on-secondary-fixed": "#002022",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#d1c3ca",
+                        "surface-container": "#edeeef",
+                        "on-secondary-fixed-variant": "#004f53",
+                        "primary": "#57344f",
+                        "secondary-fixed-dim": "#85d3d9",
+                        "on-tertiary-container": "#c0d5a0",
+                        "surface-container-low": "#f3f4f5",
+                        "surface": "#f8f9fa",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f8f9fa",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "on-secondary-container": "#0c6d72",
+                        "secondary-container": "#9eedf2",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#e9b8d9",
+                        "outline": "#80747a",
+                        "tertiary": "#34451e",
+                        "surface-container-highest": "#e1e3e4",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#2f1029",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#4e444a",
+                        "inverse-surface": "#2e3132",
+                        "on-primary-container": "#f0bfe0",
+                        "primary-container": "#714b67",
+                        "tertiary-container": "#4b5d33",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#79526f",
+                        "surface-variant": "#e1e3e4",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-striping div:nth-child(even) {
+            background-color: rgba(225, 227, 228, 0.3);
+        }
+        .tonal-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface p-6 min-h-screen">
+<!-- Dashboard Header -->
+<header class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-primary">Team Performance</h1>
+<p class="text-sm text-on-surface-variant">Real-time productivity analytics for KOB WMS Pro</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-surface-container-low px-3 py-2 rounded-lg border border-transparent focus-within:border-secondary transition-all">
+<span class="material-symbols-outlined text-sm mr-2 text-on-surface-variant">calendar_today</span>
+<select class="bg-transparent border-none text-sm font-medium focus:ring-0 p-0 cursor-pointer">
+<option>Today, Oct 24</option>
+<option>Yesterday</option>
+<option>Last 7 Days</option>
+</select>
+</div>
+<button class="bg-secondary text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+                Export CSV
+            </button>
+</div>
+</header>
+<!-- KPI Strip -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<!-- Total Tasks -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border-l-4 border-primary shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Tasks Today</span>
+<span class="material-symbols-outlined text-primary/40">assignment</span>
+</div>
+<div class="text-3xl font-black text-on-surface">1,284</div>
+<div class="text-xs text-secondary mt-1 font-medium flex items-center">
+<span class="material-symbols-outlined text-xs mr-1">trending_up</span> +12% from yesterday
+            </div>
+</div>
+<!-- Average UPH -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border-l-4 border-secondary shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Average UPH</span>
+<span class="material-symbols-outlined text-secondary/40">speed</span>
+</div>
+<div class="text-3xl font-black text-on-surface">42.5</div>
+<div class="text-xs text-on-surface-variant mt-1 font-medium">Target: 50.0 UPH</div>
+</div>
+<!-- Top Performer -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border-l-4 border-primary-container shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Top Performer</span>
+<span class="material-symbols-outlined text-primary-container/40">military_tech</span>
+</div>
+<div class="text-xl font-black text-on-surface truncate">Marcus Chen</div>
+<div class="text-xs text-on-surface-variant mt-1 font-medium">68 UPH Today</div>
+</div>
+<!-- Efficiency Rate -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border-l-4 border-tertiary shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Efficiency Rate</span>
+<span class="material-symbols-outlined text-tertiary/40">bolt</span>
+</div>
+<div class="text-3xl font-black text-on-surface">94.2%</div>
+<div class="text-xs text-error mt-1 font-medium flex items-center">
+<span class="material-symbols-outlined text-xs mr-1">trending_down</span> -0.8% below goal
+            </div>
+</div>
+</section>
+<!-- Main Grid -->
+<main class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+<!-- Performance Table -->
+<section class="lg:col-span-8 bg-surface-container-lowest rounded-lg shadow-sm overflow-hidden">
+<div class="p-5 border-b border-surface-container-high flex justify-between items-center">
+<h3 class="font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">group</span> Team Rankings
+                </h3>
+<span class="text-xs text-on-surface-variant">Showing top 5 active members</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant font-bold text-xs uppercase tracking-widest">
+<th class="px-6 py-4">#</th>
+<th class="px-6 py-4">Member</th>
+<th class="px-6 py-4">Role</th>
+<th class="px-6 py-4">Pick</th>
+<th class="px-6 py-4">Pack</th>
+<th class="px-6 py-4">Total</th>
+<th class="px-6 py-4">UPH</th>
+<th class="px-6 py-4 text-center">Trend</th>
+</tr>
+</thead>
+<tbody class="zebra-striping">
+<tr class="hover:bg-surface-container-high transition-colors cursor-pointer group border-b border-surface-container/50 last:border-0">
+<td class="px-6 py-4 font-bold text-primary">01</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover border border-surface-container-high" data-alt="professional headshot of a smiling warehouse manager with short dark hair in a bright office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnx7WksBiuHR246GVW6BSVA38ENaA6yPq6nZyDUrxF3CQ_nsikHQOukbD_-LbL6iNfWTgpxzssCfEk_5d-ocdrq-BEiECbW_2CZrRG4r206e4jO093_aDDrsiotEAoqNRJIr5C-t94h2GJOJsQ8OgcGgsen5GaylAeyK5Ryw8S7_rWfhe4cZYLjYq1PmoeQSKVIKWjlmrllkPyul7VlXROidzqVEjxccsEN5F2emyPWcbYr6C8avJvWZdEJ5PB16ALGk-b2ISGFxGc"/>
+<span class="font-bold">Marcus Chen</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Senior Picker</td>
+<td class="px-6 py-4 font-medium">412</td>
+<td class="px-6 py-4 font-medium">--</td>
+<td class="px-6 py-4 font-bold">412</td>
+<td class="px-6 py-4 text-secondary font-bold">68.2</td>
+<td class="px-6 py-4">
+<div class="flex items-end justify-center gap-1 h-6">
+<div class="w-1 bg-secondary rounded-full h-2"></div>
+<div class="w-1 bg-secondary rounded-full h-3"></div>
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-6"></div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors cursor-pointer group border-b border-surface-container/50 last:border-0">
+<td class="px-6 py-4 font-bold text-primary">02</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover border border-surface-container-high" data-alt="young professional woman with a confident expression wearing a light blue shirt in a minimalist environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFrC8Us2n3WoTMfr46h-wqrP368_O5lvhlVMC-QKYzlr-_yvEt-DfgbcqC3bI_hUDTqAtXVMGQIiOYwx1H-i0rDT7AZXDPjShFcMWyvtnx8XdRWu6johr8f0Atj62ewQ5bIt5QUl785Ewt-wEIOnXmLm66dKx8dBxyLPD5oLFkj3RHFA7QFm2e4F_eP2ba9oeZrQ4KXJuGoujYJLqbt9Z6La0eGMGiab0OEoh0Yf3qterhheQM4-TQn6pTB18nSipmNu_vWU8nqoRk"/>
+<span class="font-bold">Elena Rodriguez</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Packer</td>
+<td class="px-6 py-4 font-medium">--</td>
+<td class="px-6 py-4 font-medium">385</td>
+<td class="px-6 py-4 font-bold">385</td>
+<td class="px-6 py-4 text-secondary font-bold">54.1</td>
+<td class="px-6 py-4">
+<div class="flex items-end justify-center gap-1 h-6">
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-3"></div>
+<div class="w-1 bg-secondary rounded-full h-6"></div>
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors cursor-pointer group border-b border-surface-container/50 last:border-0">
+<td class="px-6 py-4 font-bold text-primary">03</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover border border-surface-container-high" data-alt="portrait of a bearded man wearing spectacles in a warm brightly lit workshop environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRNdSU_Cs9dXJb3i2Nt_uPnL4ZHb1nmccMhAVoToqqO7eGJK63oSwyTs4_48uIkxEnapkQ_jYUJC62BGM8B89hOOd_GHYnFuujnL7hikv3D1CHfXl0UrgOr8M2RXWPBENXBcULY2lqvX4j95Gt14Ieq5atkrGplu2jTXXHzV-MguGsB_UgipU1LiIe8a7Gx_RE1RoIVveEVEisEw-lW9zSMekiub0HzcDFgtrCSQTuuPQsLFZWVDJgwfy-USsm2ou697OGpPR8WW4e"/>
+<span class="font-bold">Jordan Smith</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">General Assoc.</td>
+<td class="px-6 py-4 font-medium">210</td>
+<td class="px-6 py-4 font-medium">145</td>
+<td class="px-6 py-4 font-bold">355</td>
+<td class="px-6 py-4 text-secondary font-bold">49.8</td>
+<td class="px-6 py-4">
+<div class="flex items-end justify-center gap-1 h-6">
+<div class="w-1 bg-secondary rounded-full h-2"></div>
+<div class="w-1 bg-secondary rounded-full h-2"></div>
+<div class="w-1 bg-secondary rounded-full h-3"></div>
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-secondary rounded-full h-6"></div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors cursor-pointer group border-b border-surface-container/50 last:border-0">
+<td class="px-6 py-4 font-bold text-primary">04</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover border border-surface-container-high" data-alt="close up of a middle aged man with graying hair and a soft smile in a bright neutral studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyY4v3IHaS7jVSORfFjHT8H8e4B_pxjqspfhdJWWE2ANIykr0BhULrFY_xlUDMOLywiUU2ZWG18LPQH4PqDv9me-1mdIg_le0345liOz8c0Nwvki3MUfq3tZn03I1Et-Vr2uOOfRcjB-WBRjx28vevkxkXaclnL7CjpDqXAE1XUSGoUKCALD9-9XPfdIgu0D1-eOBVIpUjMugS_qIqgE2G1wzhe8uwF63LyTcppMRoVb5QVsdjWEYtyKpH7MiwRAmRL-5FBW7aKOJ2"/>
+<span class="font-bold">David Wilson</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Senior Picker</td>
+<td class="px-6 py-4 font-medium">321</td>
+<td class="px-6 py-4 font-medium">--</td>
+<td class="px-6 py-4 font-bold">321</td>
+<td class="px-6 py-4 text-secondary font-bold">45.3</td>
+<td class="px-6 py-4">
+<div class="flex items-end justify-center gap-1 h-6">
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-secondary rounded-full h-6"></div>
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-3"></div>
+<div class="w-1 bg-secondary rounded-full h-2"></div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors cursor-pointer group border-b border-surface-container/50 last:border-0">
+<td class="px-6 py-4 font-bold text-primary">05</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover border border-surface-container-high" data-alt="side profile of a young woman with long dark hair looking forward in a sunlit industrial loft space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBReSNYMjPMI3r5QC7o_G_s3D2eZgHgCsAv2wcwpFPIM3Q4OOaG0T3ZYEbRPasPW3SezDi1I5Cr_eoPx9yZc95Q1W5Z6Mgs_XtLMah8FVJlF3-m0OZMKiaAxLGjnVFm5XpYf7qUJwGatlo_gV8XIEYBdzlTDxcCiL7PMBdEVN9R-DdVr0oneNhAaFGx5BBiZ9LI7_KXT7fmS5mjgStvEIDpQ42090veaoXyhox9clmnhCycvlt4oXLcWbmDmwdwrYAZuMJKzc84WPVI"/>
+<span class="font-bold">Sarah Jenkins</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Packer</td>
+<td class="px-6 py-4 font-medium">--</td>
+<td class="px-6 py-4 font-medium">298</td>
+<td class="px-6 py-4 font-bold">298</td>
+<td class="px-6 py-4 text-secondary font-bold">41.9</td>
+<td class="px-6 py-4">
+<div class="flex items-end justify-center gap-1 h-6">
+<div class="w-1 bg-secondary rounded-full h-3"></div>
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-3"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low text-center">
+<button class="text-xs font-bold text-primary uppercase tracking-widest hover:underline">View Full Leaderboard</button>
+</div>
+</section>
+<!-- Right Side Analytics -->
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<!-- Speed Gauge -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm flex flex-col items-center">
+<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-6 w-full text-left">Speed Gauge (UPH)</h4>
+<div class="relative w-40 h-40 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle cx="80" cy="80" fill="transparent" r="70" stroke="#f3f4f5" stroke-width="12"></circle>
+<circle cx="80" cy="80" fill="transparent" r="70" stroke="#00696e" stroke-dasharray="440" stroke-dashoffset="66" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-black text-secondary">42.5</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Team Avg</span>
+</div>
+</div>
+<div class="mt-4 flex justify-between w-full text-[10px] font-bold text-on-surface-variant">
+<span>0 UPH</span>
+<span>TARGET: 50 UPH</span>
+</div>
+</div>
+<!-- Hourly Throughput (Bar Chart) -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm">
+<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-6">Last 8 Hours Throughput</h4>
+<div class="flex items-end justify-between h-32 gap-1 px-2">
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container/20 rounded-t h-[40%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">08:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container/40 rounded-t h-[60%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">09:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container/60 rounded-t h-[85%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">10:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container rounded-t h-[100%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">11:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container rounded-t h-[90%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">12:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container/40 rounded-t h-[30%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">13:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container/70 rounded-t h-[75%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">14:00</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="w-full bg-primary-container rounded-t h-[80%]"></div>
+<span class="text-[8px] font-bold text-on-surface-variant">15:00</span>
+</div>
+</div>
+</div>
+<!-- Badges & Achievements -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm">
+<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4">Milestones Reached</h4>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Marcus Chen</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Gold Badge: 400+ Units</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Elena Rodriguez</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Silver Badge: 350+ Units</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Jordan Smith</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Bronze Badge: 300+ Units</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Bottom Trend Chart Section -->
+<section class="bg-surface-container-lowest p-6 rounded-lg shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="font-bold text-primary">7-Day Production Trend</h3>
+<p class="text-xs text-on-surface-variant">Daily aggregate output comparison</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Current Week</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-surface-container-high"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Prev. Week</span>
+</div>
+</div>
+</div>
+<div class="relative h-48 w-full">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between">
+<div class="border-t border-surface-container/50 w-full h-px"></div>
+<div class="border-t border-surface-container/50 w-full h-px"></div>
+<div class="border-t border-surface-container/50 w-full h-px"></div>
+<div class="border-t border-surface-container/50 w-full h-px"></div>
+<div class="border-t border-surface-container w-full h-px"></div>
+</div>
+<!-- SVG Line Chart (Stylized) -->
+<svg class="absolute inset-0 w-full h-full preserve-3d" viewbox="0 0 1000 100">
+<!-- Previous Week (Ghost Line) -->
+<path d="M 0 70 Q 150 80 300 50 T 600 60 T 1000 40" fill="none" stroke="#e7e8e9" stroke-width="3"></path>
+<!-- Current Week (Hero Line) -->
+<path d="M 0 60 Q 150 40 300 80 T 600 20 T 1000 30" fill="none" stroke="#00696e" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<!-- Day Labels -->
+<div class="absolute -bottom-6 inset-x-0 flex justify-between px-2">
+<span class="text-[10px] font-bold text-on-surface-variant">MON</span>
+<span class="text-[10px] font-bold text-on-surface-variant">TUE</span>
+<span class="text-[10px] font-bold text-on-surface-variant">WED</span>
+<span class="text-[10px] font-bold text-on-surface-variant text-secondary">THU (NOW)</span>
+<span class="text-[10px] font-bold text-on-surface-variant">FRI</span>
+<span class="text-[10px] font-bold text-on-surface-variant">SAT</span>
+<span class="text-[10px] font-bold text-on-surface-variant">SUN</span>
+</div>
+</div>
+</section>
+</body></html>

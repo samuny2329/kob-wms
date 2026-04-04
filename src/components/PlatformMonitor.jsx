@@ -274,7 +274,7 @@ const ReportsView = ({ salesOrders, apiConfigs }) => {
     const [liveHistory, setLiveHistory] = useState(null);
     const [histLoading, setHistLoading] = useState(false);
 
-    const isLiveMode = apiConfigs?.odoo?.useMock === false;
+    const isLiveMode = !!apiConfigs?.odoo?.enabled;
     const days = { today: 1, '7d': 7, '14d': 14, '30d': 30 }[dateRange] || 7;
 
     // Fetch real Odoo history when in live mode
@@ -1312,10 +1312,10 @@ export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus
             tiktok: { ...prev.tiktok, connected: !!(apiConfigs?.tiktok?.enabled) },
             manual: { ...prev.manual, connected: true },
         }));
-    }, [apiConfigs?.odoo?.useMock, apiConfigs?.shopee?.enabled, apiConfigs?.lazada?.enabled, apiConfigs?.tiktok?.enabled]);
+    }, [apiConfigs?.odoo?.enabled, apiConfigs?.shopee?.enabled, apiConfigs?.lazada?.enabled, apiConfigs?.tiktok?.enabled]);
 
     const handleSync = useCallback(async (pk) => {
-        const isLive = apiConfigs?.odoo?.useMock === false;
+        const isLive = !!apiConfigs?.odoo?.enabled;
         setSyncStates(prev => ({ ...prev, [pk]: { ...prev[pk], syncing: true, error: null } }));
         try {
             if (isLive && pk !== 'manual') {
@@ -1356,7 +1356,7 @@ export default function PlatformMonitor({ salesOrders = [], addToast, syncStatus
         return result;
     }, [salesOrders]);
 
-    const isLive = apiConfigs?.odoo?.useMock === false;
+    const isLive = !!apiConfigs?.odoo?.enabled;
 
     const VIEWS = [
         { k: 'monitor', l: 'Live Monitor' },

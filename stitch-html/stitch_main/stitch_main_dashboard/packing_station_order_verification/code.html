@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"tertiary-fixed-dim": "#ffb3b6", "surface-variant": "#e2e2e2", "on-primary-fixed-variant": "#5f3b56", "surface-dim": "#dadada", "on-secondary": "#ffffff", "tertiary-fixed": "#ffdada", tertiary: "#791e2a", "on-surface-variant": "#4e444a", "primary-fixed": "#ffd7f1", "on-surface": "#1a1c1c", "on-tertiary": "#ffffff", "inverse-on-surface": "#f1f1f1", "primary-container": "#714b67", error: "#ba1a1a", "outline-variant": "#d1c3ca", "on-tertiary-fixed": "#40000c", "on-secondary-fixed": "#002022", "secondary-fixed-dim": "#78d5db", surface: "#f9f9f9", "on-primary-fixed": "#2f1029", "surface-bright": "#f9f9f9", "surface-container-high": "#e8e8e8", "inverse-surface": "#2f3131", "error-container": "#ffdad6", "on-tertiary-container": "#ffbdbf", "on-error": "#ffffff", "primary-fixed-dim": "#e9b8d9", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#822430", "secondary-container": "#92eff5", outline: "#80747a", "surface-tint": "#79526f", "surface-container-highest": "#e2e2e2", "surface-container": "#eeeeee", "on-primary-container": "#f0bfe0", "on-secondary-container": "#006e73", background: "#f9f9f9", "secondary-fixed": "#95f1f8", "on-error-container": "#93000a", "on-primary": "#ffffff", secondary: "#00696e", primary: "#714B67", "tertiary-container": "#983540", "surface-container-low": "#f3f3f3", "on-secondary-fixed-variant": "#004f53", "on-background": "#1a1c1c", "inverse-primary": "#e9b8d9", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 border-r border-opacity-10 border-[#d1c3ca] bg-[#f3f3f3] dark:bg-[#1a1c1c] text-[#57344f] dark:text-[#714b67] font-['Inter'] text-[0.875rem] font-medium pt-20 p-4 z-40">
+<div class="mb-8 px-2">
+<h2 class="text-lg font-black text-[#57344f] uppercase tracking-wider">KOB Fulfillment</h2>
+<p class="text-xs text-on-surface-variant opacity-70">Central Hub A1</p>
+</div>
+<nav class="space-y-1 flex-grow">
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-[#d1c3ca] hover:bg-[#e8e8e8] dark:hover:bg-[#4e444a] hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-[#d1c3ca] hover:bg-[#e8e8e8] dark:hover:bg-[#4e444a] hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-[#d1c3ca] hover:bg-[#e8e8e8] dark:hover:bg-[#4e444a] hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="content_paste_search">content_paste_search</span>
+<span>Picking</span>
+</div>
+<div class="flex items-center gap-3 p-3 bg-white dark:bg-[#57344f] text-[#57344f] dark:text-white rounded-md shadow-sm font-bold opacity-80 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span>Packing</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-[#d1c3ca] hover:bg-[#e8e8e8] dark:hover:bg-[#4e444a] hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span>Shipping</span>
+</div>
+</nav>
+<div class="mt-auto pt-4 space-y-1">
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-[#d1c3ca] hover:bg-[#e8e8e8] dark:hover:bg-[#4e444a] cursor-pointer">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Support</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-[#d1c3ca] hover:bg-[#e8e8e8] dark:hover:bg-[#4e444a] cursor-pointer">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>Logs</span>
+</div>
+</div>
+</aside>
+<div class="flex-1 md:ml-64 flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-white dark:bg-[#1a1c1c] text-[#57344f] dark:text-[#d1c3ca] font-['Inter'] text-sm tracking-tight docked full-width top-0 z-50 border-b border-opacity-10 border-[#d1c3ca] shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-[#57344f] dark:text-[#f9f9f9]">KOB WMS Pro</span>
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-[#4e444a] dark:text-[#d1c3ca] opacity-80 hover:bg-[#f3f3f3] dark:hover:bg-[#4e444a] transition-colors p-2 rounded" href="#">Picking</a>
+<a class="text-[#57344f] dark:text-[#ffffff] border-b-2 border-[#57344f] pb-1 font-semibold" href="#">Packing</a>
+<a class="text-[#4e444a] dark:text-[#d1c3ca] opacity-80 hover:bg-[#f3f3f3] dark:hover:bg-[#4e444a] transition-colors p-2 rounded" href="#">Shipping</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined p-2 hover:bg-[#f3f3f3] rounded-full cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined p-2 hover:bg-[#f3f3f3] rounded-full cursor-pointer" data-icon="settings">settings</span>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:scale-95 transition-transform duration-150">Ship Orders</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container">
+<img alt="User profile" data-alt="Close up portrait of a warehouse logistics manager in professional attire, soft warehouse lighting in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3WnsVykhEfyl9eMeHLpNM0R5ajDudEKqkkBkA5CSlWdcQcgHmJlJ0nwe3boS25wTadcLik3PYxVpKGQObt-2GbsRUHW3-X0D4qxByGiCzzKGsrKN1cksrl1tzRLcTu0-QBYNYy44iX9lGZmhM9qun4-b4YrGGdATLJRJsvDdUG1AhCcxA3sbYURCGbg4D2WMzMRAIE5Jla80I1QwgTBCoklzuMPdM4pM_m6OxvFNkMoc8x5Yv9og9jo1mHOKtOdDrAB6hXqFjKYee"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 p-8 bg-surface">
+<!-- Header Section -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="label-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-bold text-[0.6875rem] tracking-wider uppercase">Active Session</span>
+<span class="text-on-surface-variant text-sm font-medium">Station P-04</span>
+</div>
+<h1 class="text-3xl font-bold text-on-surface tracking-tight">Packing Order <span class="text-primary">#ORD-89942</span></h1>
+</div>
+<div class="flex gap-4">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-4">
+<div class="bg-secondary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="local_shipping">local_shipping</span>
+</div>
+<div>
+<p class="text-[0.6875rem] font-bold text-on-surface-variant uppercase tracking-widest">Carrier</p>
+<p class="text-lg font-bold text-on-surface">Shopee Express</p>
+</div>
+</div>
+<div class="bg-tertiary-container/10 p-4 rounded-xl shadow-sm border border-tertiary/20 flex items-center gap-4">
+<div class="bg-tertiary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-tertiary" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="text-[0.6875rem] font-bold text-tertiary uppercase tracking-widest">Handling</p>
+<p class="text-lg font-bold text-tertiary">Fragile Items</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Verification & Checklist -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- Scan Input -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">Scan Item SKU</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="barcode_scanner">barcode_scanner</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-lg font-mono" placeholder="Scan or type SKU code..." type="text"/>
+</div>
+</div>
+<!-- Verification Checklist -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant/10 bg-surface-container-low flex justify-between items-center">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface">Verification Checklist</h3>
+<span class="text-sm font-semibold text-secondary">2 / 3 Items Packed</span>
+</div>
+<div class="divide-y divide-outline-variant/10">
+<!-- Item 1 -->
+<div class="p-6 flex items-center gap-6 group hover:bg-surface-container-low transition-colors">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img alt="Modern wristwatch" data-alt="Minimalist modern wristwatch with leather strap on clean white background, high-end product photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9-_YNDR3zDX5NX-eQC9rsE1nSy2noLsXGThVoe6Bm21DuQnUz2HUb8ORAAjmbfCAqV9Dwo0Ap3sZJCbWvCa7_6zDLOy3yY7Ahf7XXpz_EvZ9upvYX1ax6kFYdMvrUp0q6j3OU7M-QFMa9HjzTbKRK88u3q0OLneWwka2_kJKLl6UuCp1OYEpjZflS-UZDTA61xHBs6_Mruss_5J8HFgNJyYCOGyfH6JIwo37v9Wtk1zFwvrLR7WKLo8IJN22MiiLbSqA-RjrhP729"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Premium Chronograph Watch</h4>
+<p class="text-sm text-on-surface-variant font-mono">SKU: WTC-ZEN-992</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-sm font-bold bg-surface-container px-3 py-1 rounded">Qty: 1</span>
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-6 flex items-center gap-6 group hover:bg-surface-container-low transition-colors">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img alt="Wireless headphones" data-alt="Sleek black wireless headphones on light grey background, soft studio lighting, professional tech gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkGq2Dye2GmPdyw6Zus_1JwPOHJrIFd0bo9tUAO90wEd9wyZxrXoTVbblRKNAsp4SZN5qtlG5HLqlo5nClPwwqnYVItg5518zXLPKxwgKujqFb6i1umX8MgGA_eU4xofvOV04Ubn1SgWaqG73hQWXTXgitf4Y-6LmioH0Wfo_qS_l2gx8inoGBXpnxxlN6AuJ_p4uqxntiSWDdZ5EtG-nRmAXtevRr8CYVlA9H4Z9p_ScgPeyAzyE5Oa9cZxky06fleX5lCv-i6M0K"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Noise Cancelling Headphones</h4>
+<p class="text-sm text-on-surface-variant font-mono">SKU: AUD-SON-441</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-sm font-bold bg-surface-container px-3 py-1 rounded">Qty: 1</span>
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</div>
+</div>
+<!-- Item 3 - Pending -->
+<div class="p-6 flex items-center gap-6 group hover:bg-surface-container-low transition-colors bg-surface-container-low/30">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden flex-shrink-0 grayscale">
+<img alt="Red running shoes" data-alt="Vibrant red athletic running shoes, sharp focus, white studio background, commercial sportswear photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC44p2xg-Q1XfdjbyfJ3z-bAx4z6o0JccjXkZzm_ooFn5KsPnIjcVxE9ze9_cnGHXB3f9OEyT3FmqFuzPYYZ3zCktyuU63leJG2tcW3JT-nOhseQPbU3ixJAgGyPP1Rx-rF7w0Nnj9_gbjI02QscVxP5uBh-7Vi44jHznWYc57TJz4FOAOV4lNCfR-ntbDlzE17sLl4uNf2pRA5R-qLxA_jwH9ELDmf0jk2lC_iLEll16UeIf3o8CZypKkSO7oDH2x7Brv0zp9Ni7FF"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface opacity-50">Sport Performance Sneakers (Red)</h4>
+<p class="text-sm text-on-surface-variant font-mono opacity-50">SKU: SHO-NIK-202</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-sm font-bold bg-surface-container px-3 py-1 rounded">Qty: 1</span>
+<div class="w-10 h-10 rounded-full border-2 border-dashed border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-outline" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Materials & Action -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Packaging Material Selection -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface mb-6">Packaging Selection</h3>
+<div class="space-y-4">
+<!-- Box Option -->
+<div class="p-4 rounded-lg border-2 border-primary bg-primary/5 flex items-center gap-4 cursor-pointer">
+<div class="w-12 h-12 rounded bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="inventory">inventory</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Box Type A</p>
+<p class="text-xs text-on-surface-variant">30 x 20 x 15 cm</p>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="radio_button_checked">radio_button_checked</span>
+</div>
+<!-- Fill Option -->
+<div class="p-4 rounded-lg border border-outline-variant hover:border-primary/50 transition-colors flex items-center gap-4 cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="layers">layers</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Bubble Wrap</p>
+<p class="text-xs text-on-surface-variant">Standard Protective</p>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</div>
+<!-- Alternate Box -->
+<div class="p-4 rounded-lg border border-outline-variant hover:border-primary/50 transition-colors flex items-center gap-4 cursor-pointer opacity-60">
+<div class="w-12 h-12 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="inventory">inventory</span>
+</div>
+<div class="flex-1">
+<p class="font-bold text-on-surface">Box Type B</p>
+<p class="text-xs text-on-surface-variant">45 x 30 x 25 cm</p>
+</div>
+<span class="material-symbols-outlined text-outline" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+<!-- Summary & Final Action -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5">
+<span class="material-symbols-outlined text-8xl" data-icon="print">print</span>
+</div>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant font-medium">Total Items</span>
+<span class="font-bold">03</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant font-medium">Package Weight</span>
+<span class="font-bold text-primary">1.45 kg</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant font-medium">Destination</span>
+<span class="font-bold">Metro Manila, PH</span>
+</div>
+</div>
+<!-- Main Action Button -->
+<button class="w-full py-6 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg shadow-xl hover:shadow-primary/20 hover:scale-[0.98] transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-2xl" data-icon="label_important" style="font-variation-settings: 'FILL' 1;">label_important</span>
+                            Generate Label
+                        </button>
+<div class="mt-6 flex items-center justify-center gap-6 opacity-40">
+<img alt="Shopee Logo" class="h-6 object-contain grayscale" data-alt="Official Shopee corporate logo, minimalist vector style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo1PcVLSj006B-osmZwcbpMJc4cbgR3w4XGVeXv96E8met_OJhbwZAnl9MQZNuZ5ma_1HFNgjBZORh5S8nK9pppvHm9JwY7R36_qZ4J5f_hkrXmh0dXmzWlMOJdH7j1Ouf3xbxfKJwGGjdGIvpPM1f72ccnax2Cka6ZU0Jbp7F6n14aj_O-u5b7MRyAvJi_UtscfVV5E_bzQutP560Aq4ULzKOHcL4aLKT8ziMfcixfj_Diy1ib6RjZCn7wo-mCQW-lmFPX4xemYHi"/>
+<img alt="Lazada Logo" class="h-6 object-contain grayscale" data-alt="Official Lazada corporate logo, minimalist vector style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP14cL5XGBBdgjXmWk3AIoZNJoRQDV5GJV8AQR-2sCqDtPtpBT8dUETfRPvR2RaUq6aUQAOkgbPjSD1ZDR8lHbQXZJyyD6EaNGvh11qDbsr2q00rszqCtPnTKwRzYLFN5v3uMBbPUHrWYumU6l4vNovRlNEwxJCwP-2k3p2MZPrW-AaS61PZhzfUN6c2G6_7J6Cw7XAdMosfattVxzF6EB8G0uJrr_hLfMG8UR0NJLBIarUy09puunyIJvkgOtBdAl3tMogXsNJNks"/>
+</div>
+</div>
+<!-- Quick Support Info -->
+<div class="bg-surface-container-low p-4 rounded-xl border border-dashed border-outline-variant flex items-start gap-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="info">info</span>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                            Need help? Ensure all items are scanned before generating labels. Fragile items require <strong>Double-Layer Bubble Wrap</strong> as per WH Protocol B-12.
+                        </p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Responsive Footer (Mobile Only) -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant/10 px-4 py-2 z-50 flex justify-around">
+<div class="flex flex-col items-center p-2 text-primary">
+<span class="material-symbols-outlined" data-icon="package_2" style="font-variation-settings: 'FILL' 1;">package_2</span>
+<span class="text-[10px] font-bold">Pack</span>
+</div>
+<div class="flex flex-col items-center p-2 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span class="text-[10px]">Ship</span>
+</div>
+<div class="flex flex-col items-center p-2 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px]">History</span>
+</div>
+<div class="flex flex-col items-center p-2 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px]">User</span>
+</div>
+</div>
+</body></html>

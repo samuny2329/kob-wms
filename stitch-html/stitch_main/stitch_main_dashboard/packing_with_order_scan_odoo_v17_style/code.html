@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Odoo WMS - Packing Station</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --odoo-primary: #714B67;
+            --odoo-secondary: #017E84;
+            --odoo-background: #F8F9FA;
+            --odoo-border: #dee2e6;
+            --odoo-text-main: #4c4c4c;
+            --odoo-text-heading: #111827;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--odoo-background);
+            color: var(--odoo-text-main);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .odoo-card {
+            background: white;
+            border: 1px solid var(--odoo-border);
+            border-radius: 4px;
+        }
+        .odoo-input {
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            transition: border-color 0.2s;
+        }
+        .odoo-input:focus {
+            border-color: var(--odoo-primary);
+            outline: none;
+            box-shadow: 0 0 0 1px var(--odoo-primary);
+        }
+        .odoo-btn-primary {
+            background-color: var(--odoo-primary);
+            color: white;
+            border: 1px solid var(--odoo-primary);
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .odoo-btn-primary:hover {
+            filter: brightness(1.1);
+        }
+        .odoo-navbar {
+            background-color: var(--odoo-primary);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#714B67",
+                      "secondary": "#017E84",
+                      "surface": "#F8F9FA",
+                      "outline": "#dee2e6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem"
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface antialiased">
+<!-- Odoo Top Navbar -->
+<header class="odoo-navbar w-full sticky top-0 z-50 h-12 flex items-center justify-between px-4 text-white">
+<div class="flex items-center gap-6 h-full">
+<div class="flex items-center gap-2 font-bold text-lg cursor-pointer">
+<span class="material-symbols-outlined">apps</span>
+<span>Odoo</span>
+</div>
+<nav class="hidden md:flex items-center h-full text-sm font-medium">
+<button class="h-full px-4 border-b-2 border-white bg-white/10">Packing</button>
+<button class="h-full px-4 hover:bg-white/10 transition-colors">Inventory</button>
+<button class="h-full px-4 hover:bg-white/10 transition-colors">Reporting</button>
+<button class="h-full px-4 hover:bg-white/10 transition-colors">Configuration</button>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-white/70 text-lg">search</span>
+<input class="pl-8 pr-4 py-1 bg-white/20 border-none rounded text-sm placeholder:text-white/60 focus:ring-0 focus:bg-white/30 w-64" placeholder="Search..." type="text"/>
+</div>
+<span class="material-symbols-outlined cursor-pointer hover:bg-white/10 p-1 rounded">notifications</span>
+<div class="flex items-center gap-2 cursor-pointer hover:bg-white/10 px-2 py-1 rounded">
+<img alt="User" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmy24tpTZHpPXUJlSzomUJqcz0jUzekvc6Y_qTQ6vbNRYpLJHkjMRZojvm5mmgnS59MIoyTpWg_yAzGmNohXO9SVgErh_SF8upIqfJovSWAtTErVsKSkCjUn576HIU-I2mczhNOsRfhgMxkGOdJWlkAIcEeic-tFQ-G9ICGLUqdgB_5bXjX4h-eTwozxJN7sTLyT7mAW7gMc5wYG8wzr45z6xOGUsUKQSlYHIYB-w9b_GSfs3Xjwucy4nz4wEwTSkkA5L1hNBPoAiH"/>
+<span class="text-sm font-medium">Mitchell Admin</span>
+</div>
+</div>
+</header>
+<!-- Breadcrumbs-style Subheader -->
+<div class="bg-white border-b border-outline px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h1 class="text-xl font-medium text-gray-800">Packing Order / <span class="font-bold">#ORD-9921</span></h1>
+<span class="ml-4 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded uppercase">High Priority</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 odoo-btn-primary text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">print</span> Print Label
+        </button>
+<button class="px-3 py-1.5 bg-white border border-outline text-gray-700 rounded text-sm hover:bg-gray-50">Validate</button>
+<button class="px-3 py-1.5 bg-white border border-outline text-gray-700 rounded text-sm hover:bg-gray-50">Cancel</button>
+</div>
+</div>
+<main class="max-w-full mx-auto p-4 flex flex-col gap-4">
+<!-- Odoo Prominent Scan Group -->
+<section class="odoo-card p-4 shadow-sm">
+<div class="max-w-3xl mx-auto">
+<label class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wide">Step 1: Scan Order Barcode</label>
+<div class="flex">
+<div class="flex items-center justify-center bg-gray-100 border border-r-0 border-outline px-4 rounded-l">
+<span class="material-symbols-outlined text-primary">barcode_reader</span>
+</div>
+<input autofocus="" class="flex-1 odoo-input rounded-l-none px-4 py-3 text-lg font-medium text-gray-800" placeholder="Scan or type Order ID to begin..." type="text"/>
+<button class="px-6 bg-primary text-white font-medium rounded-r hover:opacity-90 transition-opacity">PROCESS</button>
+</div>
+<p class="mt-2 text-xs text-gray-400 italic">Example: ORD-9921, INV-4552...</p>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+<!-- Left Column: Verification -->
+<div class="lg:col-span-8 flex flex-col gap-4">
+<!-- Order Details Overview -->
+<div class="odoo-card p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+<div>
+<p class="text-xs text-gray-500 font-bold uppercase">Customer</p>
+<p class="text-sm font-semibold">Jonathan Edwards</p>
+</div>
+<div>
+<p class="text-xs text-gray-500 font-bold uppercase">Marketplace</p>
+<div class="flex items-center gap-1.5">
+<span class="text-sm font-semibold">Shopee Express</span>
+</div>
+</div>
+<div>
+<p class="text-xs text-gray-500 font-bold uppercase">Station</p>
+<p class="text-sm font-semibold">Zone A-01-42</p>
+</div>
+<div>
+<p class="text-xs text-gray-500 font-bold uppercase">Status</p>
+<div class="w-full bg-gray-100 h-2 rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 66%"></div>
+</div>
+<p class="text-[10px] text-right mt-0.5 font-bold text-secondary">2 / 3 Items Packed</p>
+</div>
+</div>
+<!-- Item List -->
+<div class="odoo-card overflow-hidden">
+<div class="bg-gray-50 border-b border-outline px-4 py-2 flex items-center justify-between">
+<h2 class="text-sm font-bold text-gray-700 uppercase">Items to Verify</h2>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">barcode_scanner</span>
+<input class="odoo-input pl-8 py-1 text-xs w-48" placeholder="Scan SKU..." type="text"/>
+</div>
+</div>
+<div class="divide-y divide-outline">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+<img alt="Item" class="w-12 h-12 rounded border border-outline object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHDgWraR7WaV2nlEfFbsxxVq8elc9aRjE8uj_LiCOFa3keQy_SO5-ItouJCxtv8yP5WP3Ko0c7BtjL1JnC-so84aCPtgQ0yN-vvc0NluHnPOftiRUrhUphapZPkthf2zHug88oceys0aRUmaWtfDFQ694pynMCz8aUng4dczP8Qkgt2OgA58U12ULUu8objXPUvJskr6QDpinG42rF0sgHuXyZmGC1ovCyuh1SByQiEcJcFY45zT6V0b9jd9SYNmK-xKxY4OhNGwP_"/>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-gray-800">Mechanical Keyboard K88</h4>
+<p class="text-xs text-gray-500">SKU: TECH-8821-BL | Bin: B-12-C</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Verified</span>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+<img alt="Item" class="w-12 h-12 rounded border border-outline object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFJHmfVzX3Q6-kieBLVa2ZEm7kt9A89ngR9Ja0xmAOykfhxCTe6_LL6Usdh6G-cY9CpCsR1QyJ-lVg6LbbYrV9WBv_Rl8QUc-HthVACDm7fasL3YIu0XMBXMleYHPy7WFt1J4T4932zeLU3Aeg8Ydma-g5lL2HuoYkM_G8af5T9kJY1orVtxK42GrtmLtn1UEojLZC_q2tE4_FPNeOcjc4zq3insmSEPA0OHDeSgWTtf53EZN-hNvcaYLKddHY0Ir1P77TqPMw97oL"/>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-gray-800">Ultra-Speed USB-C Cable (2m)</h4>
+<p class="text-xs text-gray-500">SKU: ACC-4412-GR | Bin: A-04-F</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Verified</span>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Item 3 (Pending) -->
+<div class="flex items-center gap-4 p-4 bg-gray-50/50">
+<img alt="Item" class="w-12 h-12 rounded border border-outline object-cover opacity-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOAZdhSsgjHpi9zdbfUm1p80pLsdgZEvS0QdcVCMsgDv_lLmXvVbEuD0Xc4qgd7avqyvTFKU8qPajAd-_YslVtpb1QsituD6vMD9-hAbxxLQCR6JeVHbvgw34Jo7EkYJBtgEGIa4wSDRvQbsx5bFva9SiLdchaLx-yP12dYZh4u8DxVeO339PU1OGbkSYvO1qFywMInHFhEOb_xWrTVchEufefAPVeJH_st6V24DuIbgf-Bq-Zkb1A3vseReaQFl3Tn_7FNI0HjhUk"/>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-gray-400">Ergonomic Foam Wrist Rest</h4>
+<p class="text-xs text-gray-400">SKU: ACC-1029-BK | Bin: C-01-A</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-0.5 bg-gray-200 text-gray-600 text-[10px] font-bold rounded uppercase">Waiting...</span>
+<span class="material-symbols-outlined text-gray-300">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Packaging Selection -->
+<div class="odoo-card p-4">
+<h2 class="text-sm font-bold text-gray-700 uppercase mb-4">Packaging Selection</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<button class="odoo-card p-3 flex flex-col items-center gap-2 hover:border-primary border-2 transition-all border-transparent">
+<span class="material-symbols-outlined text-2xl text-gray-500">inventory_2</span>
+<p class="text-xs font-bold">Box A</p>
+</button>
+<button class="odoo-card p-3 flex flex-col items-center gap-2 border-primary bg-primary/5 border-2 relative">
+<span class="material-symbols-outlined text-2xl text-primary" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<p class="text-xs font-bold text-primary">Box B</p>
+<span class="absolute top-1 right-1 text-primary text-[10px] font-bold">SELECTED</span>
+</button>
+<button class="odoo-card p-3 flex flex-col items-center gap-2 hover:border-primary border-2 transition-all border-transparent">
+<span class="material-symbols-outlined text-2xl text-gray-500">inventory_2</span>
+<p class="text-xs font-bold">Box C</p>
+</button>
+<button class="odoo-card p-3 flex flex-col items-center gap-2 hover:border-primary border-2 transition-all border-transparent">
+<span class="material-symbols-outlined text-2xl text-gray-500">auto_awesome_motion</span>
+<p class="text-xs font-bold">Custom</p>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Finalize -->
+<div class="lg:col-span-4 flex flex-col gap-4">
+<div class="odoo-card p-0 shadow-md">
+<div class="bg-primary text-white px-4 py-3 rounded-t">
+<h3 class="font-bold text-base">Finalize Shipment</h3>
+<p class="text-[10px] text-white/70">Confirm weight &amp; shipping details</p>
+</div>
+<div class="p-4 space-y-4">
+<!-- Weight Section -->
+<div>
+<label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Measured Weight</label>
+<div class="flex">
+<input class="flex-1 odoo-input px-3 py-2 text-xl font-bold rounded-r-none border-r-0" step="0.01" type="number" value="1.45"/>
+<div class="flex items-center px-3 bg-gray-100 border border-outline rounded-r font-bold text-gray-600">KG</div>
+</div>
+</div>
+<!-- Address Section -->
+<div class="p-3 bg-gray-50 rounded border border-outline">
+<label class="block text-[10px] font-bold text-gray-500 uppercase mb-2">Shipping Address</label>
+<p class="text-sm font-bold text-gray-800">Jonathan Edwards</p>
+<p class="text-xs text-gray-600 mt-0.5">Jalan Merdeka No. 42, Gambir<br/>Jakarta Pusat, 10110, ID</p>
+<div class="mt-3 h-20 rounded bg-gray-200 overflow-hidden">
+<img alt="Map" class="w-full h-full object-cover opacity-50 grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6XjWg54_fJTb-KD5PXl85909gwroZKwuXz6TI6iNMtv0FG0s9yJQZlBijpX3A0V6dqb2-AQ__JcbTUqu4cXTn1SHrpV3aZ3-kHbh1hv2TW3_YfING1rto2HG_ZLzrzNuexhV_oplouriiqsz5Dy6JnSPp86JS-13d_IeVX1l50sJNxzAPY7I-U4NYWev-WViXN-YWoaCdiZL0eF9Yi5Jw89l2KqLmwbPsxoY0eClmh8baxeLA4ZDjbf-2Tn1JnrsGSHLdCRgMaxCY"/>
+</div>
+</div>
+<!-- Service Section -->
+<div>
+<label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Carrier Service</label>
+<div class="w-full p-2 border border-outline rounded flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-base">local_shipping</span>
+<span class="text-xs font-medium">Standard Express</span>
+</div>
+<span class="text-[10px] text-gray-400">Est. 2 days</span>
+</div>
+</div>
+<!-- Final Action -->
+<button class="w-full py-3 odoo-btn-primary flex items-center justify-center gap-2 text-lg shadow-sm">
+<span class="material-symbols-outlined">qr_code</span> Validate &amp; Print
+                    </button>
+<button class="w-full py-2 text-primary font-bold text-xs hover:bg-gray-50 rounded">
+                        Discard &amp; Return
+                    </button>
+</div>
+</div>
+<!-- Stats/History Widget -->
+<div class="odoo-card p-4">
+<div class="flex justify-between items-center mb-3">
+<h4 class="text-[10px] font-bold text-gray-400 uppercase">Recent Activity</h4>
+<span class="text-[10px] font-bold text-gray-400">STATION A-01</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-xs">
+<span class="text-gray-600">#ORD-9918</span>
+<span class="text-green-600 font-bold">SHIPPED</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-gray-600">#ORD-9919</span>
+<span class="text-green-600 font-bold">SHIPPED</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-gray-600 font-bold">#ORD-9920</span>
+<span class="text-orange-500 font-bold animate-pulse">IN PROGRESS</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Odoo Style Sidebar (Optional visual element) -->
+<aside class="hidden xl:flex h-screen w-12 fixed left-0 top-0 bg-[#333] flex-col items-center py-4 space-y-6 z-40">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white cursor-pointer">
+<span class="material-symbols-outlined text-lg">warehouse</span>
+</div>
+<nav class="flex flex-col gap-6 pt-4 text-gray-400">
+<span class="material-symbols-outlined hover:text-white cursor-pointer">dashboard</span>
+<span class="material-symbols-outlined text-white cursor-pointer" style="font-variation-settings: 'FILL' 1;">conveyor_belt</span>
+<span class="material-symbols-outlined hover:text-white cursor-pointer">inventory_2</span>
+<span class="material-symbols-outlined hover:text-white cursor-pointer">settings</span>
+</nav>
+</aside>
+<!-- Mobile Bottom Bar -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-outline flex items-center justify-around z-50">
+<span class="material-symbols-outlined text-gray-400">dashboard</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">conveyor_belt</span>
+<span class="material-symbols-outlined text-gray-400">inventory_2</span>
+<span class="material-symbols-outlined text-gray-400">settings</span>
+</nav>
+</body></html>

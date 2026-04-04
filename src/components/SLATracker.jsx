@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Shield, Clock, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, ChevronRight, Zap, Target, Users } from 'lucide-react';
+import { Shield, Clock, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, ChevronRight, Zap, Target, Users, Download, Calendar, Package, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 // SLA thresholds (minutes)
 const SLA_PICK = 120;
@@ -9,10 +9,10 @@ const SLA_SHIP = 240;
 const SLA_UPH_MIN = 30;
 
 const STATUS_CONFIG = {
-  Excellent: { color: '#22c55e', bg: 'rgba(34,197,94,0.15)', border: '#166534', min: 95 },
-  Good:      { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', border: '#1e40af', min: 85 },
-  'Needs Improvement': { color: '#eab308', bg: 'rgba(234,179,8,0.15)', border: '#854d0e', min: 70 },
-  Critical:  { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', border: '#991b1b', min: 0 },
+  Excellent: { color: 'var(--odoo-success)', bg: 'rgba(1,126,132,0.08)', border: 'rgba(1,126,132,0.2)', min: 95 },
+  Good:      { color: 'var(--odoo-info)', bg: 'rgba(91,168,200,0.08)', border: 'rgba(91,168,200,0.2)', min: 85 },
+  'Needs Improvement': { color: 'var(--odoo-warning)', bg: 'rgba(232,169,64,0.08)', border: 'rgba(232,169,64,0.2)', min: 70 },
+  Critical:  { color: 'var(--odoo-danger)', bg: 'rgba(228,111,120,0.08)', border: 'rgba(228,111,120,0.2)', min: 0 },
 };
 
 const getStatus = (score) => {
@@ -38,58 +38,36 @@ const generateMockBreaches = () => [];
 const generateMockAlerts = () => [];
 
 // Ring gauge SVG for overview card
-const RingGauge = ({ value, size = 64, strokeWidth = 6, color }) => {
+const RingGauge = ({ value, size = 160, strokeWidth = 10 }) => {
   const r = (size - strokeWidth) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - Math.min(value, 100) / 100);
+  const gaugeColor = value >= 85 ? 'var(--odoo-success)' : value >= 70 ? 'var(--odoo-warning)' : 'var(--odoo-danger)';
   return (
     <svg width={size} height={size} className="transform -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={strokeWidth}
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--odoo-surface-high)" strokeWidth={strokeWidth} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={gaugeColor} strokeWidth={strokeWidth}
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-700" />
     </svg>
   );
 };
 
-const ProgressBar = ({ value, color }) => (
-  <div className="w-full h-1.5 rounded-full bg-slate-700 overflow-hidden">
-    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(value, 100)}%`, backgroundColor: color }} />
+const ProgressBar = ({ value, color, height = 'h-1.5' }) => (
+  <div className={`w-full ${height} rounded-full overflow-hidden`} style={{ backgroundColor: 'var(--odoo-surface-high)' }}>
+    <div className={`${height} rounded-full transition-all duration-500`} style={{ width: `${Math.min(value, 100)}%`, backgroundColor: color }} />
   </div>
 );
-
-const SLACard = ({ title, value, unit, icon: Icon, color, trend, trendLabel }) => {
-  const isUp = trend >= 0;
-  return (
-    <div className="rounded-lg p-4 flex flex-col gap-2" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-400">{title}</span>
-        <Icon className="w-4 h-4" style={{ color }} />
-      </div>
-      <div className="flex items-end gap-2">
-        <span className="text-2xl font-bold text-white">{value}</span>
-        <span className="text-xs text-slate-500 mb-1">{unit}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        {isUp ? <TrendingUp className="w-3 h-3 text-emerald-400" /> : <TrendingDown className="w-3 h-3 text-red-400" />}
-        <span className={`text-xs ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
-          {isUp ? '▲' : '▼'} {Math.abs(trend).toFixed(1)}% {trendLabel || 'vs yesterday'}
-        </span>
-      </div>
-      <ProgressBar value={typeof value === 'string' ? parseFloat(value) : value} color={color} />
-    </div>
-  );
-};
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg p-3 text-xs" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
-      <p className="text-slate-300 font-medium mb-1">{label}</p>
+    <div className="rounded-lg p-3 text-xs" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-md)' }}>
+      <p className="font-medium mb-1" style={{ color: 'var(--odoo-text)' }}>{label}</p>
       {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-slate-400">{p.name}:</span>
-          <span className="text-white font-medium">{p.value}</span>
+          <span style={{ color: 'var(--odoo-text-secondary)' }}>{p.name}:</span>
+          <span className="font-medium" style={{ color: 'var(--odoo-text)' }}>{p.value}</span>
         </div>
       ))}
     </div>
@@ -99,6 +77,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function SLATracker({ activityLogs = [], orders = [], salesOrders = [], onSelectWorker, t }) {
   const [sortCol, setSortCol] = useState('overall');
   const [sortDir, setSortDir] = useState('desc');
+  const [dateRange, setDateRange] = useState('today');
 
   // Compute SLA data from activityLogs or fall back to mock
   const { workers, breachTimeline, alerts, distribution } = useMemo(() => {
@@ -202,10 +181,10 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
 
     // Distribution
     const dist = [
-      { range: 'Excellent (95-100)', count: 0, color: '#22c55e' },
-      { range: 'Good (85-94)', count: 0, color: '#3b82f6' },
-      { range: 'Fair (70-84)', count: 0, color: '#eab308' },
-      { range: 'Critical (<70)', count: 0, color: '#ef4444' },
+      { range: 'Excellent (95-100)', count: 0, color: 'var(--odoo-success)' },
+      { range: 'Good (85-94)', count: 0, color: 'var(--odoo-info)' },
+      { range: 'Fair (70-84)', count: 0, color: 'var(--odoo-warning)' },
+      { range: 'Critical (<70)', count: 0, color: 'var(--odoo-danger)' },
     ];
     computedWorkers.forEach(w => {
       if (w.overall >= 95) dist[0].count++;
@@ -219,13 +198,14 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
 
   // Overview aggregates
   const overview = useMemo(() => {
-    if (!workers.length) return { overall: 0, pick: 0, pack: 0, ship: 0, avgResp: 0 };
+    if (!workers.length) return { overall: 0, pick: 0, pack: 0, ship: 0, accuracy: 0, avgResp: 0 };
     const avg = (key) => +(workers.reduce((s, w) => s + w[key], 0) / workers.length).toFixed(1);
     return {
       overall: avg('overall'),
       pick: avg('pickSla'),
       pack: avg('packSla'),
       ship: avg('shipSla'),
+      accuracy: avg('accuracy'),
       avgResp: Math.round(workers.reduce((s, w) => s + w.avgTime, 0) / workers.length),
     };
   }, [workers]);
@@ -245,7 +225,7 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
   };
 
   const SortIcon = ({ col }) => (
-    <span className="text-slate-500 ml-1 text-[10px]">{sortCol === col ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+    <span className="ml-1 text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>{sortCol === col ? (sortDir === 'asc' ? '\u25B2' : '\u25BC') : '\u21C5'}</span>
   );
 
   // Top 4 workers for trend charts
@@ -253,73 +233,194 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
 
   if (!workers.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-        <Shield className="w-12 h-12 mb-3 text-slate-600" />
-        <p className="text-lg font-medium">No SLA data available</p>
-        <p className="text-sm text-slate-500 mt-1">Activity logs will populate this view</p>
+      <div className="flex flex-col items-center justify-center py-20" style={{ color: 'var(--odoo-text-muted)' }}>
+        <Shield className="w-12 h-12 mb-3" style={{ color: 'var(--odoo-border)' }} />
+        <p className="text-lg font-medium" style={{ color: 'var(--odoo-text-secondary)' }}>No SLA data available</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--odoo-text-muted)' }}>Activity logs will populate this view</p>
       </div>
     );
   }
 
   const label = (key, fallback) => (typeof t === 'function' ? t(key) : null) || fallback;
 
+  // SLA breakdown items for the gauge section
+  const slaBreakdown = [
+    { label: 'Pick SLA', value: overview.pick, target: `${SLA_PICK}m` },
+    { label: 'Pack SLA', value: overview.pack, target: `${SLA_PACK}m` },
+    { label: 'Ship SLA', value: overview.ship, target: `${SLA_SHIP}m` },
+    { label: 'Accuracy', value: overview.accuracy || 0, target: '99%' },
+  ];
+
   return (
-    <div className="max-w-[1400px] mx-auto space-y-5 pb-12 animate-slide-up">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(99,102,241,0.15)' }}>
-          <Shield className="w-5 h-5 text-indigo-400" />
-        </div>
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-12">
+      {/* ── Header ── */}
+      <div className="flex items-end justify-between">
         <div>
-          <h2 className="text-base font-bold text-white">{label('slaTracker', 'SLA Performance Tracker')}</h2>
-          <p className="text-xs text-slate-400">Service Level Agreement compliance per worker account</p>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--odoo-text)' }}>
+            {label('slaTracker', 'SLA Compliance Tracker')}
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--odoo-text-secondary)' }}>
+            Real-time service level agreement monitoring and fulfillment performance.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          {/* Date Toggle */}
+          <div className="flex items-center rounded-lg px-1" style={{ backgroundColor: 'var(--odoo-surface-high)' }}>
+            {['today', '7d', '30d'].map(range => (
+              <button
+                key={range}
+                onClick={() => setDateRange(range)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-md transition-all"
+                style={{
+                  backgroundColor: dateRange === range ? 'var(--odoo-surface)' : 'transparent',
+                  color: dateRange === range ? 'var(--odoo-text)' : 'var(--odoo-text-muted)',
+                  boxShadow: dateRange === range ? 'var(--odoo-shadow-sm)' : 'none',
+                }}
+              >
+                {range === 'today' ? 'Today' : range === '7d' ? '7 Days' : '30 Days'}
+              </button>
+            ))}
+          </div>
+          {/* Download Report */}
+          <button
+            className="px-4 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2 transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))' }}
+          >
+            <Download className="w-4 h-4" /> Download Report
+          </button>
         </div>
       </div>
 
-      {/* Section 1: Overview Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div className="rounded-lg p-4 flex items-center gap-4 col-span-2 sm:col-span-1" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-          <div className="relative flex-shrink-0">
-            <RingGauge value={overview.overall} color={overview.overall >= 85 ? '#22c55e' : overview.overall >= 70 ? '#eab308' : '#ef4444'} />
-            <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white">{overview.overall}%</span>
+      {/* ── Section 1: Overall SLA Score + Breakdown Bars ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Circular Gauge Card */}
+        <div className="rounded-lg p-6 flex flex-col items-center" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+          <div className="flex items-center justify-between w-full mb-6">
+            <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>
+              Overall SLA Score
+            </h3>
+            <Shield className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} />
           </div>
-          <div>
-            <p className="text-xs text-slate-400">Overall SLA</p>
-            <div className="flex items-center gap-1 mt-1">
-              <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <span className="text-[10px] text-emerald-400">▲ 2.1% vs yesterday</span>
+          <div className="relative">
+            <RingGauge value={overview.overall} />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-extrabold" style={{ color: 'var(--odoo-text)' }}>{overview.overall}<span className="text-base">%</span></span>
+              <span className="text-[8px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--odoo-text-muted)' }}>Compliance</span>
             </div>
           </div>
+          <div className="mt-4 text-center">
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--odoo-text-secondary)' }}>
+              {overview.overall >= 90
+                ? <span>Operating within <span className="font-bold" style={{ color: 'var(--odoo-success)' }}>Optimal Bounds</span>. No critical bottlenecks.</span>
+                : overview.overall >= 70
+                  ? <span>Performance at <span className="font-bold" style={{ color: 'var(--odoo-warning)' }}>Moderate Level</span>. Review pending breaches.</span>
+                  : <span>Performance <span className="font-bold" style={{ color: 'var(--odoo-danger)' }}>Below Target</span>. Immediate attention required.</span>
+              }
+            </p>
+          </div>
         </div>
-        <SLACard title="Pick On-Time" value={overview.pick} unit="%" icon={Zap} color={overview.pick >= 85 ? '#22c55e' : '#ef4444'} trend={1.8} />
-        <SLACard title="Pack On-Time" value={overview.pack} unit="%" icon={Target} color={overview.pack >= 85 ? '#22c55e' : '#ef4444'} trend={-0.5} />
-        <SLACard title="Ship On-Time" value={overview.ship} unit="%" icon={CheckCircle} color={overview.ship >= 85 ? '#22c55e' : '#ef4444'} trend={3.2} />
-        <SLACard title="Avg Response" value={overview.avgResp} unit="min" icon={Clock} color="#8b5cf6" trend={-2.4} trendLabel="vs yesterday" />
+
+        {/* SLA Breakdown Bars */}
+        <div className="lg:col-span-2 rounded-lg p-6" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>SLA Breakdown by Category</h3>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--odoo-text-secondary)' }}>Target vs actual performance per fulfillment stage</p>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>{workers.length} workers</span>
+          </div>
+          <div className="space-y-5">
+            {slaBreakdown.map(item => {
+              const barColor = item.value >= 85 ? 'var(--odoo-success)' : item.value >= 70 ? 'var(--odoo-warning)' : 'var(--odoo-danger)';
+              return (
+                <div key={item.label}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold" style={{ color: 'var(--odoo-text)' }}>{item.label}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Target: {item.target}</span>
+                      <span className="text-sm font-bold" style={{ color: barColor }}>{item.value}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-high)' }}>
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(item.value, 100)}%`, backgroundColor: barColor }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* Section 2: Per-Account Table */}
-      <div className="rounded-lg overflow-hidden" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-        <div className="px-5 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid #1e293b' }}>
-          <Users className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-semibold text-white">Per-Account SLA Breakdown</span>
-          <span className="ml-auto text-[10px] text-slate-500">{workers.length} workers</span>
+      {/* ── Section 2: 3-Card KPI Grid (Pick / Pack / Ship SLA) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { title: 'Pick SLA', value: overview.pick, target: SLA_PICK, unit: 'min', icon: Zap, trend: 1.8, avgTime: overview.avgResp ? Math.round(overview.avgResp * 0.4) : 0 },
+          { title: 'Pack SLA', value: overview.pack, target: SLA_PACK, unit: 'min', icon: Package, trend: -0.5, avgTime: overview.avgResp ? Math.round(overview.avgResp * 0.3) : 0 },
+          { title: 'Ship SLA', value: overview.ship, target: SLA_SHIP, unit: 'min', icon: Target, trend: 3.2, avgTime: overview.avgResp ? Math.round(overview.avgResp * 1.2) : 0 },
+        ].map(card => {
+          const cardColor = card.value >= 85 ? 'var(--odoo-success)' : card.value >= 70 ? 'var(--odoo-warning)' : 'var(--odoo-danger)';
+          const isUp = card.trend >= 0;
+          const IconComp = card.icon;
+          return (
+            <div key={card.title} className="rounded-lg p-6 flex flex-col" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>{card.title}</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                  <IconComp className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-3xl font-extrabold" style={{ color: 'var(--odoo-text)' }}>{card.value}%</span>
+                <span className="text-xs font-medium flex items-center gap-0.5" style={{ color: isUp ? 'var(--odoo-success)' : 'var(--odoo-danger)' }}>
+                  {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                  {Math.abs(card.trend).toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-4 mb-4">
+                <div>
+                  <span className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Target</span>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--odoo-text-secondary)' }}>{card.target} {card.unit}</p>
+                </div>
+                <div>
+                  <span className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Avg Time</span>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--odoo-text-secondary)' }}>{card.avgTime} {card.unit}</p>
+                </div>
+              </div>
+              <div className="mt-auto">
+                <ProgressBar value={card.value} color={cardColor} height="h-1.5" />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Section 3: Worker SLA Table ── */}
+      <div className="rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+        <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} />
+            <span className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>Worker SLA Performance</span>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>{workers.length} workers</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs" style={{ minWidth: 800 }}>
+          <table className="w-full text-xs" style={{ minWidth: 860 }}>
             <thead>
-              <tr style={{ backgroundColor: '#020617' }}>
+              <tr style={{ backgroundColor: 'var(--odoo-bg)' }}>
                 {[
-                  { key: 'name', label: 'Account' },
+                  { key: 'name', label: 'Worker' },
                   { key: 'ordersHandled', label: 'Orders' },
-                  { key: 'pickSla', label: 'Pick SLA %' },
-                  { key: 'packSla', label: 'Pack SLA %' },
-                  { key: 'shipSla', label: 'Ship SLA %' },
+                  { key: 'pickSla', label: 'Pick SLA' },
+                  { key: 'packSla', label: 'Pack SLA' },
+                  { key: 'shipSla', label: 'Ship SLA' },
                   { key: 'avgTime', label: 'Avg Time' },
                   { key: 'uph', label: 'UPH' },
                   { key: 'overall', label: 'Overall' },
                   { key: 'status', label: 'Status' },
                 ].map(col => (
-                  <th key={col.key} className="px-4 py-2.5 text-left text-slate-400 font-medium cursor-pointer select-none hover:text-slate-200 transition-colors"
+                  <th key={col.key}
+                    className="px-4 py-3 text-left font-bold uppercase tracking-wider cursor-pointer select-none transition-colors"
+                    style={{ color: 'var(--odoo-text-secondary)', fontSize: '10px', borderBottom: '1px solid var(--odoo-border)' }}
                     onClick={() => col.key !== 'status' && toggleSort(col.key)}>
                     {col.label}{col.key !== 'status' && <SortIcon col={col.key} />}
                   </th>
@@ -327,44 +428,53 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
               </tr>
             </thead>
             <tbody>
-              {sortedWorkers.map((w, i) => {
+              {sortedWorkers.map((w) => {
                 const status = getStatus(w.overall);
                 const cfg = STATUS_CONFIG[status];
                 const isCritical = status === 'Critical';
                 return (
-                  <tr key={w.username} className="hover:bg-slate-800/50 cursor-pointer transition-colors"
-                    style={{ borderBottom: '1px solid #1e293b', borderLeft: isCritical ? '3px solid #ef4444' : '3px solid transparent' }}
+                  <tr key={w.username}
+                    className="cursor-pointer transition-colors"
+                    style={{
+                      borderBottom: '1px solid var(--odoo-border-ghost)',
+                      borderLeft: isCritical ? '3px solid var(--odoo-danger)' : '3px solid transparent',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                     onClick={() => onSelectWorker?.(w)}>
-                    <td className="px-4 py-2.5">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
                           style={{ backgroundColor: getAvatarColor(w.name) }}>
                           {w.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-slate-200 font-medium">{w.name}</p>
-                          <p className="text-slate-500 text-[10px]">@{w.username}</p>
+                          <p className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{w.name}</p>
+                          <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>@{w.username}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-300 font-medium">{w.ordersHandled}</td>
-                    {['pickSla', 'packSla', 'shipSla'].map(key => (
-                      <td key={key} className="px-4 py-2.5">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-slate-200 font-medium">{w[key]}%</span>
-                          <ProgressBar value={w[key]} color={w[key] >= 85 ? '#22c55e' : w[key] >= 70 ? '#eab308' : '#ef4444'} />
-                        </div>
-                      </td>
-                    ))}
-                    <td className="px-4 py-2.5 text-slate-300">{w.avgTime}m</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`font-medium ${w.uph >= SLA_UPH_MIN ? 'text-emerald-400' : 'text-red-400'}`}>{w.uph}</span>
+                    <td className="px-4 py-3 font-medium" style={{ color: 'var(--odoo-text-secondary)' }}>{w.ordersHandled}</td>
+                    {['pickSla', 'packSla', 'shipSla'].map(key => {
+                      const slaColor = w[key] >= 85 ? 'var(--odoo-success)' : w[key] >= 70 ? 'var(--odoo-warning)' : 'var(--odoo-danger)';
+                      return (
+                        <td key={key} className="px-4 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{w[key]}%</span>
+                            <ProgressBar value={w[key]} color={slaColor} height="h-1" />
+                          </div>
+                        </td>
+                      );
+                    })}
+                    <td className="px-4 py-3" style={{ color: 'var(--odoo-text-secondary)' }}>{w.avgTime}m</td>
+                    <td className="px-4 py-3">
+                      <span className="font-semibold" style={{ color: w.uph >= SLA_UPH_MIN ? 'var(--odoo-success)' : 'var(--odoo-danger)' }}>{w.uph}</span>
                     </td>
-                    <td className="px-4 py-2.5">
-                      <span className="text-white font-bold">{w.overall}%</span>
+                    <td className="px-4 py-3">
+                      <span className="font-bold" style={{ color: 'var(--odoo-text)' }}>{w.overall}%</span>
                     </td>
-                    <td className="px-4 py-2.5">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                    <td className="px-4 py-3">
+                      <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase"
                         style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
                         {status}
                       </span>
@@ -377,72 +487,74 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
         </div>
       </div>
 
-      {/* Section 3 + 4: Breach Timeline + Alerts side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Breach Timeline */}
-        <div className="lg:col-span-2 rounded-lg p-4" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <span className="text-sm font-semibold text-white">SLA Breach Timeline</span>
-            <span className="text-[10px] text-slate-500 ml-auto">Today</span>
+      {/* ── Section 4: Breach Timeline + Alerts side by side ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Breach Timeline Chart */}
+        <div className="lg:col-span-2 rounded-lg p-6" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" style={{ color: 'var(--odoo-warning)' }} />
+              <span className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>SLA Breach Timeline</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>Today</span>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={breachTimeline} barGap={2}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="hour" tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={{ stroke: '#1e293b' }} />
-              <YAxis tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--odoo-border-ghost)" />
+              <XAxis dataKey="hour" tick={{ fill: 'var(--odoo-text-muted)', fontSize: 10 }} tickLine={false} axisLine={{ stroke: 'var(--odoo-border-ghost)' }} />
+              <YAxis tick={{ fill: 'var(--odoo-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="pick" name="Pick Breach" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="pack" name="Pack Breach" stackId="a" fill="#f97316" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="ship" name="Ship Breach" stackId="a" fill="#eab308" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="pick" name="Pick Breach" stackId="a" fill="var(--odoo-danger)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="pack" name="Pack Breach" stackId="a" fill="var(--odoo-warning)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="ship" name="Ship Breach" stackId="a" fill="var(--odoo-coral)" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-          <div className="flex items-center gap-4 mt-2 justify-center">
-            {[{ label: 'Pick', color: '#ef4444' }, { label: 'Pack', color: '#f97316' }, { label: 'Ship', color: '#eab308' }].map(l => (
-              <div key={l.label} className="flex items-center gap-1.5 text-[10px] text-slate-400">
+          <div className="flex items-center gap-4 mt-3 justify-center">
+            {[{ label: 'Pick', color: 'var(--odoo-danger)' }, { label: 'Pack', color: 'var(--odoo-warning)' }, { label: 'Ship', color: 'var(--odoo-coral)' }].map(l => (
+              <div key={l.label} className="flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>
                 <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: l.color }} />
                 {l.label}
               </div>
             ))}
-            <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-              <span className="w-4 border-t border-dashed border-emerald-500" />Target: 0
-            </div>
           </div>
         </div>
 
-        {/* Real-Time Alerts */}
-        <div className="rounded-lg p-4 flex flex-col" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-4 h-4 text-red-400" />
-            <span className="text-sm font-semibold text-white">Live SLA Alerts</span>
+        {/* Live SLA Alerts */}
+        <div className="rounded-lg p-6 flex flex-col" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="w-4 h-4" style={{ color: 'var(--odoo-danger)' }} />
+            <span className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>SLA Breach Alerts</span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-2 max-h-[260px] custom-scrollbar pr-1">
+          <div className="flex-1 overflow-y-auto space-y-2 max-h-[280px] pr-1">
             {alerts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-slate-500">
-                <CheckCircle className="w-8 h-8 mb-2 text-emerald-500" />
-                <p className="text-sm">All SLAs met — great job!</p>
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: 'rgba(1,126,132,0.08)' }}>
+                  <CheckCircle className="w-6 h-6" style={{ color: 'var(--odoo-success)' }} />
+                </div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>All SLAs Met</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--odoo-text-muted)' }}>No breaches detected today</p>
               </div>
             ) : (
               alerts.slice(0, 10).map(a => (
-                <div key={a.id} className="rounded-md p-2.5 flex items-start gap-2"
+                <div key={a.id} className="rounded-lg p-3 flex items-start gap-2 transition-colors"
                   style={{
-                    backgroundColor: a.isBreach ? 'rgba(239,68,68,0.08)' : 'rgba(234,179,8,0.08)',
-                    border: `1px solid ${a.isBreach ? 'rgba(239,68,68,0.2)' : 'rgba(234,179,8,0.2)'}`,
+                    backgroundColor: a.isBreach ? 'rgba(228,111,120,0.05)' : 'rgba(232,169,64,0.05)',
+                    border: `1px solid ${a.isBreach ? 'rgba(228,111,120,0.15)' : 'rgba(232,169,64,0.15)'}`,
                   }}>
                   {a.isBreach
-                    ? <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
-                    : <Clock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />}
+                    ? <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--odoo-danger)' }} />
+                    : <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--odoo-warning)' }} />}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 text-[10px]">
-                      <span className="text-slate-500">{a.timestamp}</span>
-                      <span className="text-slate-400 font-medium truncate">{a.worker}</span>
+                      <span style={{ color: 'var(--odoo-text-muted)' }}>{a.timestamp}</span>
+                      <span className="font-medium truncate" style={{ color: 'var(--odoo-text-secondary)' }}>{a.worker}</span>
                     </div>
-                    <p className="text-[11px] text-slate-300 mt-0.5">{a.type} — <span className="text-slate-500">{a.orderRef}</span></p>
-                    <span className={`text-[10px] font-semibold ${a.isBreach ? 'text-red-400' : 'text-amber-400'}`}>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'var(--odoo-text)' }}>{a.type} — <span style={{ color: 'var(--odoo-text-muted)' }}>{a.orderRef}</span></p>
+                    <span className="text-[10px] font-bold" style={{ color: a.isBreach ? 'var(--odoo-danger)' : 'var(--odoo-warning)' }}>
                       +{a.overMinutes} min over SLA
                     </span>
                   </div>
-                  <ChevronRight className="w-3 h-3 text-slate-600 flex-shrink-0 mt-1" />
+                  <ChevronRight className="w-3 h-3 flex-shrink-0 mt-1" style={{ color: 'var(--odoo-text-muted)' }} />
                 </div>
               ))
             )}
@@ -450,32 +562,34 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
         </div>
       </div>
 
-      {/* Section 5 + 6: Trend Charts + Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* ── Section 5: Trend Charts + Distribution ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* SLA Trend by Account */}
-        <div className="lg:col-span-2 rounded-lg p-4" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-indigo-400" />
-            <span className="text-sm font-semibold text-white">SLA Trend by Account</span>
-            <span className="text-[10px] text-slate-500 ml-auto">Past 7 days</span>
+        <div className="lg:col-span-2 rounded-lg p-6" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} />
+              <span className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>SLA Trend by Account</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>Past 7 days</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            {topWorkers.map((w, idx) => {
+            {topWorkers.map((w) => {
               const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
               const data = w.trend.map((v, i) => ({ day: days[i], score: v }));
               const trending = w.trend[6] >= w.trend[5];
-              const lineColor = trending ? '#22c55e' : '#ef4444';
+              const lineColor = trending ? 'var(--odoo-success)' : 'var(--odoo-danger)';
               return (
-                <div key={w.username} className="p-3 rounded-md" style={{ backgroundColor: '#020617', border: '1px solid #1e293b' }}>
+                <div key={w.username} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)' }}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5">
                       <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-bold"
                         style={{ backgroundColor: getAvatarColor(w.name) }}>{w.name.charAt(0)}</div>
-                      <span className="text-[11px] text-slate-300 font-medium">{w.name}</span>
+                      <span className="text-[11px] font-semibold" style={{ color: 'var(--odoo-text)' }}>{w.name}</span>
                     </div>
                     {trending
-                      ? <TrendingUp className="w-3 h-3 text-emerald-400" />
-                      : <TrendingDown className="w-3 h-3 text-red-400" />}
+                      ? <TrendingUp className="w-3 h-3" style={{ color: 'var(--odoo-success)' }} />
+                      : <TrendingDown className="w-3 h-3" style={{ color: 'var(--odoo-danger)' }} />}
                   </div>
                   <ResponsiveContainer width="100%" height={60}>
                     <LineChart data={data}>
@@ -492,16 +606,16 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
         </div>
 
         {/* SLA Distribution */}
-        <div className="rounded-lg p-4" style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-4 h-4 text-violet-400" />
-            <span className="text-sm font-semibold text-white">SLA Distribution</span>
+        <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', boxShadow: 'var(--odoo-shadow-sm)' }}>
+          <div className="flex items-center gap-2 mb-6">
+            <Target className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} />
+            <span className="text-sm font-bold" style={{ color: 'var(--odoo-text)' }}>SLA Distribution</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={distribution} layout="vertical" barSize={20}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
-              <YAxis type="category" dataKey="range" tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} width={110} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--odoo-border-ghost)" horizontal={false} />
+              <XAxis type="number" tick={{ fill: 'var(--odoo-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <YAxis type="category" dataKey="range" tick={{ fill: 'var(--odoo-text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} width={110} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="count" name="Workers" radius={[0, 4, 4, 0]}>
                 {distribution.map((entry, i) => (
@@ -510,14 +624,14 @@ export default function SLATracker({ activityLogs = [], orders = [], salesOrders
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div className="mt-3 space-y-1.5">
+          <div className="mt-4 space-y-2">
             {distribution.map(d => (
               <div key={d.range} className="flex items-center justify-between text-[10px]">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-                  <span className="text-slate-400">{d.range}</span>
+                  <span style={{ color: 'var(--odoo-text-secondary)' }}>{d.range}</span>
                 </div>
-                <span className="text-slate-300 font-medium">{d.count} workers</span>
+                <span className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{d.count} workers</span>
               </div>
             ))}
           </div>

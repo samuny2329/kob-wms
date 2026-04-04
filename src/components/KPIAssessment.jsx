@@ -4,7 +4,7 @@ import {
   Lock, Star, Award, Eye, Edit3, Clock, CheckCircle2, XCircle, Save,
   Play, DollarSign, Calendar, Users, Heart, TrendingUp, Zap, Shield,
   FileText, RotateCcw, Settings, History, ClipboardList, Upload,
-  RefreshCw, Activity, BarChart2
+  RefreshCw, Activity, BarChart2, Info, User
 } from 'lucide-react';
 import {
   KPI_PILLARS, DEFAULT_PILLAR_TEMPLATES, AUTO_KPI_REGISTRY,
@@ -25,18 +25,18 @@ const getCurrentPeriod = () => {
 
 const SCORE_LABELS = { 1: 'Needs Improvement', 2: 'Below Expectations', 3: 'Meets Expectations', 4: 'Exceeds Expectations', 5: 'Outstanding' };
 const SOURCE_BADGE = {
-  auto: { label: 'Auto', bg: 'bg-blue-100 dark:bg-blue-900', text: 'text-blue-700 dark:text-blue-300' },
-  manual: { label: 'Manual', bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-300' },
-  md: { label: 'MD', bg: 'bg-red-100 dark:bg-red-900', text: 'text-red-700 dark:text-red-300' },
-  '360': { label: '360', bg: 'bg-purple-100 dark:bg-purple-900', text: 'text-purple-700 dark:text-purple-300' },
+  auto: { label: 'Auto', bg: 'var(--odoo-success)', text: '#fff' },
+  manual: { label: 'Manual', bg: 'var(--odoo-purple)', text: '#fff' },
+  md: { label: 'MD', bg: 'var(--odoo-danger)', text: '#fff' },
+  '360': { label: '360', bg: '#8b5cf6', text: '#fff' },
 };
 
 const STATUS_CFG = {
-  draft: { label: 'Draft', cls: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300', Icon: Edit3 },
-  submitted: { label: 'Submitted', cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300', Icon: Send },
-  reviewing: { label: 'Reviewing', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300', Icon: Eye },
-  approved: { label: 'Approved', cls: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300', Icon: CheckCircle2 },
-  rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300', Icon: XCircle },
+  draft: { label: 'Draft', color: 'var(--odoo-text-muted)', bg: 'var(--odoo-surface-high)', Icon: Edit3 },
+  submitted: { label: 'Submitted', color: '#3b82f6', bg: '#eff6ff', Icon: Send },
+  reviewing: { label: 'Reviewing', color: 'var(--odoo-warning)', bg: '#fffbeb', Icon: Eye },
+  approved: { label: 'Approved', color: 'var(--odoo-success)', bg: '#f0fdf4', Icon: CheckCircle2 },
+  rejected: { label: 'Rejected', color: 'var(--odoo-danger)', bg: '#fef2f2', Icon: XCircle },
 };
 
 const PILLAR_ICONS = { Users, Heart, TrendingUp, Zap, DollarSign, Shield, Star, Award };
@@ -53,15 +53,43 @@ const toScale5 = (score) => {
 
 const genId = () => `kpi_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+// Pillar border colors matching Stitch design
+const PILLAR_BORDER_COLORS = {
+  developPeople: 'var(--odoo-purple)',
+  driveValue: '#3b82f6',
+  makeRevenue: 'var(--odoo-success)',
+  championProgress: 'var(--odoo-warning)',
+  deliverFinancial: '#6366f1',
+  manageRisk: 'var(--odoo-danger)',
+  liveValues: '#8b5cf6',
+  goAboveBeyond: '#0ea5e9',
+};
+
+// Pillar score colors for the score text display
+const PILLAR_SCORE_COLORS = {
+  developPeople: 'var(--odoo-purple)',
+  driveValue: '#2563eb',
+  makeRevenue: '#059669',
+  championProgress: '#d97706',
+  deliverFinancial: '#4f46e5',
+  manageRisk: 'var(--odoo-danger)',
+  liveValues: '#7c3aed',
+  goAboveBeyond: '#0284c7',
+};
+
 // ── Score Buttons ──
-const ScoreButtons = ({ value, onChange, disabled, color = '#3b82f6' }) => (
+const ScoreButtons = ({ value, onChange, disabled, color = 'var(--odoo-purple)' }) => (
   <div className="flex gap-1">
     {[1, 2, 3, 4, 5].map(n => (
       <button key={n} onClick={() => !disabled && onChange(n)} title={SCORE_LABELS[n]} disabled={disabled}
-        className="w-7 h-7 rounded text-xs font-bold border-2 transition-all disabled:opacity-50"
-        style={value === n
-          ? { background: color, borderColor: color, color: 'var(--odoo-surface)', transform: 'scale(1.1)', boxShadow: `0 2px 6px ${color}66` }
-          : { background: 'transparent', borderColor: '#d1d5db', color: '#6b7280' }}>
+        className="transition-all disabled:opacity-50"
+        style={{
+          width: 28, height: 28, fontSize: 12, fontWeight: 700,
+          borderRadius: 'var(--odoo-radius)',
+          ...(value === n
+            ? { background: color, borderColor: color, color: '#fff', transform: 'scale(1.1)', boxShadow: `0 2px 6px ${typeof color === 'string' && color.startsWith('#') ? color + '66' : 'rgba(113,75,103,0.4)'}`, border: `2px solid ${color}` }
+            : { background: 'transparent', color: 'var(--odoo-text-muted)', border: '2px solid var(--odoo-surface-high)' }),
+        }}>
         {n}
       </button>
     ))}
@@ -73,8 +101,9 @@ const StatusBadge = ({ status }) => {
   const cfg = STATUS_CFG[status] || STATUS_CFG.draft;
   const Icon = cfg.Icon;
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.cls}`}>
-      <Icon className="w-3 h-3" />{cfg.label}
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 uppercase tracking-widest"
+      style={{ background: cfg.bg, color: cfg.color, borderRadius: 'var(--odoo-radius)', fontSize: 10, fontWeight: 700 }}>
+      <Icon style={{ width: 12, height: 12 }} />{cfg.label}
     </span>
   );
 };
@@ -108,142 +137,194 @@ function calcTotalScore(pillars, season) {
   return sum;
 }
 
-// ── Get templates for a role ──
 function getTemplatesForRole(role) {
   const custom = safeParse(TEMPLATE_KEY, {});
   return custom[role] || DEFAULT_PILLAR_TEMPLATES[role] || DEFAULT_PILLAR_TEMPLATES.picker;
 }
 
-// ── PillarCard ──
+function getGrade(score) {
+  if (score >= 4.5) return 'A';
+  if (score >= 3.5) return 'B';
+  if (score >= 2.5) return 'C';
+  if (score >= 1.5) return 'D';
+  return 'F';
+}
+
+function getGradeColor(grade) {
+  if (grade === 'A') return 'var(--odoo-success)';
+  if (grade === 'B') return '#3b82f6';
+  if (grade === 'C') return 'var(--odoo-warning)';
+  return 'var(--odoo-danger)';
+}
+
+// ── PillarCard (Stitch-style perspective card) ──
 const PillarCard = React.memo(({ pillar, pillarDef, season, isApprover, assessmentStatus, onKpiChange, readOnly }) => {
-  const [expanded, setExpanded] = useState(true);
   const [rubricOpen, setRubricOpen] = useState(null);
-  const Icon = getPillarIcon(pillarDef.icon);
   const score = calcPillarScore(pillar, season);
+  const borderColor = PILLAR_BORDER_COLORS[pillar.pillarKey] || pillarDef.color;
+  const scoreColor = PILLAR_SCORE_COLORS[pillar.pillarKey] || borderColor;
+  const isAuto = pillar.kpis.some(k => k.source === 'auto');
+  const isManual = pillar.kpis.some(k => k.source === 'manual' || k.source === '360');
+  const sourceLabel = isAuto && !isManual ? 'Auto' : isManual && !isAuto ? 'Manual' : 'Mixed';
+  const sourceBg = isAuto && !isManual ? 'var(--odoo-success)' : 'var(--odoo-purple)';
 
   return (
-    <div className="border rounded-lg overflow-hidden dark:border-gray-700 mb-3" style={{ borderLeftWidth: 4, borderLeftColor: pillarDef.color }}>
-      <button onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-        <div className="flex items-center gap-2">
-          <Icon className="w-5 h-5" style={{ color: pillarDef.color }} />
-          <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">{pillarDef.label}</span>
-          <span className="text-xs text-gray-500">({pillar.weight}%)</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold" style={{ color: pillarDef.color }}>{score.toFixed(2)}/5</span>
-          {expanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
-        </div>
-      </button>
+    <div
+      style={{
+        background: 'var(--odoo-surface)',
+        borderLeft: `4px solid ${borderColor}`,
+        padding: 20,
+        boxShadow: 'var(--odoo-shadow-sm)',
+        borderRadius: 'var(--odoo-radius)',
+        transition: 'var(--odoo-transition)',
+      }}
+      className="hover:shadow-md"
+    >
+      {/* Card header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>{pillarDef.label}</h3>
+        <span style={{
+          fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
+          padding: '2px 8px', borderRadius: 9999, color: '#fff',
+          background: sourceBg, letterSpacing: '0.02em',
+        }}>
+          {sourceLabel}
+        </span>
+      </div>
 
-      {expanded && (
-        <div className="border-t dark:border-gray-700 divide-y dark:divide-gray-700">
-          {pillar.kpis.length === 0 && (
-            <div className="p-3 text-xs text-gray-400 italic">No KPIs in this pillar (weight 0%)</div>
-          )}
-          {pillar.kpis.map((kpi, ki) => {
-            const badge = SOURCE_BADGE[kpi.source] || SOURCE_BADGE.manual;
-            const isAuto = kpi.source === 'auto';
-            const isMd = kpi.source === 'md';
-            const is360 = kpi.source === '360';
-            const fs = computeFinalScore(kpi, season);
+      {/* KPI items list */}
+      <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px 0' }}>
+        {pillar.kpis.map((kpi) => {
+          const fs = computeFinalScore(kpi, season);
+          return (
+            <li key={kpi.id} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              fontSize: 11, fontWeight: 500, color: 'var(--odoo-text-secondary)',
+              padding: '6px 0',
+            }}>
+              <span>{kpi.label}</span>
+              <span style={{ fontWeight: 700, color: 'var(--odoo-text)' }}>
+                {fs != null ? `${fs}/5` : (kpi.systemScore != null ? `${kpi.systemScore}%` : '---')}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
 
-            return (
-              <div key={kpi.id} className="p-3 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{kpi.label}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${badge.bg} ${badge.text}`}>{badge.label}</span>
-                      <span className="text-[10px] text-gray-400">W:{kpi.kpiWeight}%</span>
-                    </div>
-                    {kpi.labelTh && <div className="text-[10px] text-gray-400">{kpi.labelTh}</div>}
-                  </div>
-                  <div className="text-right shrink-0">
-                    {fs != null && <div className="text-xs font-bold" style={{ color: pillarDef.color }}>{fs}/5</div>}
-                    <div className="text-[9px] text-gray-400">{fs != null ? SCORE_LABELS[fs] : 'Not scored'}</div>
-                  </div>
+      {/* Score slider area */}
+      <div>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          fontSize: 10, fontWeight: 700, color: 'var(--odoo-text-muted)', textTransform: 'uppercase',
+          marginBottom: 8,
+        }}>
+          <span>Perspective Weight: {pillar.weight}%</span>
+          <span style={{ color: scoreColor, fontWeight: 900 }}>Score: {score.toFixed(1)}</span>
+        </div>
+        <div style={{
+          width: '100%', height: 4,
+          background: 'var(--odoo-surface-high)',
+          borderRadius: 2, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${(score / 5) * 100}%`, height: '100%',
+            background: borderColor, borderRadius: 2,
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
+      </div>
+
+      {/* Expandable scoring section for self/approver */}
+      {pillar.kpis.map((kpi, ki) => {
+        const isAutoKpi = kpi.source === 'auto';
+        const isMd = kpi.source === 'md';
+        const is360 = kpi.source === '360';
+        const showScoring = (!readOnly && !isAutoKpi && !isMd) || isApprover || isAutoKpi || isMd || is360;
+        if (!showScoring) return null;
+
+        return (
+          <div key={`score-${kpi.id}`} style={{
+            marginTop: 12, paddingTop: 12,
+            borderTop: '1px solid var(--odoo-border-ghost)',
+          }}>
+            <div className="flex flex-wrap items-center gap-3">
+              {isAutoKpi && (
+                <div className="flex items-center gap-2">
+                  <Lock style={{ width: 12, height: 12, color: '#3b82f6' }} />
+                  <span style={{ fontSize: 10, color: 'var(--odoo-text-muted)' }}>System: {kpi.systemScore ?? '---'}/100</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#3b82f6' }}>= {kpi.autoScale5 ?? '---'}/5</span>
                 </div>
+              )}
+              {isMd && (
+                <div className="flex items-center gap-2">
+                  <Lock style={{ width: 12, height: 12, color: 'var(--odoo-danger)' }} />
+                  <span style={{ fontSize: 10, color: 'var(--odoo-text-muted)' }}>MD EBITDA:</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--odoo-danger)' }}>{season?.ebitdaScore ?? 'Not set'}</span>
+                </div>
+              )}
+              {is360 && kpi.feedback360Scores?.length > 0 && (
+                <div style={{ fontSize: 10, color: '#8b5cf6' }}>
+                  360 avg: {(kpi.feedback360Scores.reduce((a, b) => a + b, 0) / kpi.feedback360Scores.length).toFixed(1)}
+                </div>
+              )}
+              {!isAutoKpi && !isMd && !readOnly && (
+                <div>
+                  <div style={{ fontSize: 10, color: 'var(--odoo-text-muted)', marginBottom: 2 }}>Self Score</div>
+                  <ScoreButtons value={kpi.selfScore} color={borderColor}
+                    onChange={(v) => onKpiChange(pillar.pillarKey, ki, 'selfScore', v)} disabled={readOnly} />
+                </div>
+              )}
+              {!isAutoKpi && !isMd && readOnly && kpi.selfScore && (
+                <div style={{ fontSize: 10, color: 'var(--odoo-text-muted)' }}>Self: <b>{kpi.selfScore}/5</b></div>
+              )}
+              {isApprover && (
+                <div>
+                  <div style={{ fontSize: 10, color: 'var(--odoo-text-muted)', marginBottom: 2 }}>Approver Score</div>
+                  <ScoreButtons value={kpi.approverScore} color={borderColor}
+                    onChange={(v) => onKpiChange(pillar.pillarKey, ki, 'approverScore', v)}
+                    disabled={!(assessmentStatus === 'submitted' || assessmentStatus === 'reviewing')} />
+                </div>
+              )}
+            </div>
 
-                {/* Rubric toggle */}
-                {kpi.rubric && (
-                  <div>
-                    <button onClick={() => setRubricOpen(rubricOpen === kpi.id ? null : kpi.id)}
-                      className="text-[10px] text-blue-500 hover:underline">
-                      {rubricOpen === kpi.id ? 'Hide rubric' : 'Show rubric'}
-                    </button>
-                    {rubricOpen === kpi.id && (
-                      <div className="mt-1 grid grid-cols-5 gap-1">
-                        {[1, 2, 3, 4, 5].map(n => (
-                          <div key={n} className="p-1.5 rounded text-[9px] bg-gray-50 dark:bg-gray-800 border dark:border-gray-700">
-                            <div className="font-bold mb-0.5">{n}</div>
-                            <div className="text-gray-500 dark:text-gray-400">{kpi.rubric[n]}</div>
-                          </div>
-                        ))}
+            {/* Rubric toggle */}
+            {kpi.rubric && (
+              <div style={{ marginTop: 8 }}>
+                <button onClick={() => setRubricOpen(rubricOpen === kpi.id ? null : kpi.id)}
+                  style={{ fontSize: 10, color: 'var(--odoo-purple)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                  {rubricOpen === kpi.id ? 'Hide rubric' : 'Show rubric'}
+                </button>
+                {rubricOpen === kpi.id && (
+                  <div className="grid grid-cols-5 gap-1" style={{ marginTop: 4 }}>
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <div key={n} style={{
+                        padding: 6, borderRadius: 'var(--odoo-radius)', fontSize: 9,
+                        background: 'var(--odoo-surface-low)', border: '1px solid var(--odoo-border-ghost)',
+                      }}>
+                        <div style={{ fontWeight: 700, marginBottom: 2, color: 'var(--odoo-text)' }}>{n}</div>
+                        <div style={{ color: 'var(--odoo-text-muted)' }}>{kpi.rubric[n]}</div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 )}
-
-                {/* Score inputs */}
-                <div className="flex flex-wrap items-center gap-3">
-                  {isAuto && (
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-3 h-3 text-blue-400" />
-                      <span className="text-[10px] text-gray-500">System: {kpi.systemScore ?? '—'}/100</span>
-                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">= {kpi.autoScale5 ?? '—'}/5</span>
-                    </div>
-                  )}
-                  {isMd && (
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-3 h-3 text-red-400" />
-                      <span className="text-[10px] text-gray-500">MD EBITDA:</span>
-                      <span className="text-[10px] font-bold text-red-600 dark:text-red-400">{season?.ebitdaScore ?? 'Not set'}</span>
-                    </div>
-                  )}
-                  {is360 && kpi.feedback360Scores?.length > 0 && (
-                    <div className="text-[10px] text-purple-600 dark:text-purple-400">
-                      360 avg: {(kpi.feedback360Scores.reduce((a, b) => a + b, 0) / kpi.feedback360Scores.length).toFixed(1)}
-                    </div>
-                  )}
-                  {/* Self score */}
-                  {!isAuto && !isMd && !readOnly && (
-                    <div>
-                      <div className="text-[10px] text-gray-400 mb-0.5">Self Score</div>
-                      <ScoreButtons value={kpi.selfScore} color={pillarDef.color}
-                        onChange={(v) => onKpiChange(pillar.pillarKey, ki, 'selfScore', v)} disabled={readOnly} />
-                    </div>
-                  )}
-                  {!isAuto && !isMd && readOnly && kpi.selfScore && (
-                    <div className="text-[10px] text-gray-500">Self: <b>{kpi.selfScore}/5</b></div>
-                  )}
-                  {/* Approver score */}
-                  {isApprover && (
-                    <div>
-                      <div className="text-[10px] text-gray-400 mb-0.5">Approver Score</div>
-                      <ScoreButtons value={kpi.approverScore} color={pillarDef.color}
-                        onChange={(v) => onKpiChange(pillar.pillarKey, ki, 'approverScore', v)}
-                        disabled={!(assessmentStatus === 'submitted' || assessmentStatus === 'reviewing')} />
-                    </div>
-                  )}
-                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 });
 
 // ── Weight Summary Bar ──
 const WeightBar = ({ pillars }) => (
-  <div className="flex rounded-lg overflow-hidden h-6 bg-gray-100 dark:bg-gray-800">
+  <div className="flex overflow-hidden" style={{ borderRadius: 'var(--odoo-radius)', height: 24, background: 'var(--odoo-surface-high)' }}>
     {pillars.filter(p => p.weight > 0).map(p => {
       const def = KPI_PILLARS.find(d => d.key === p.pillarKey);
+      const borderColor = PILLAR_BORDER_COLORS[p.pillarKey] || def?.color || '#6b7280';
       return (
-        <div key={p.pillarKey} className="flex items-center justify-center text-[9px] font-bold text-white truncate"
-          style={{ width: `${p.weight}%`, background: def?.color || '#6b7280' }}
+        <div key={p.pillarKey} className="flex items-center justify-center truncate"
+          style={{ width: `${p.weight}%`, background: borderColor, fontSize: 9, fontWeight: 700, color: '#fff' }}
           title={`${def?.label}: ${p.weight}%`}>
           {p.weight >= 8 ? `${def?.label?.split(' ')[0]} ${p.weight}%` : `${p.weight}%`}
         </div>
@@ -251,6 +332,45 @@ const WeightBar = ({ pillars }) => (
     })}
   </div>
 );
+
+// ── Radar SVG component (Stitch-style) ──
+const RadarChart = ({ pillars, season }) => {
+  const scores = pillars.map(p => calcPillarScore(p, season));
+  const n = scores.length;
+  if (n === 0) return null;
+  const cx = 100, cy = 100, maxR = 80;
+  const getPoint = (idx, r) => {
+    const angle = (Math.PI * 2 * idx) / n - Math.PI / 2;
+    return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+  };
+  const dataPoints = scores.map((s, i) => getPoint(i, (s / 5) * maxR));
+  const polygon = dataPoints.map(p => p.join(',')).join(' ');
+  const labels = pillars.map(p => {
+    const def = KPI_PILLARS.find(d => d.key === p.pillarKey);
+    return def?.label?.split(' ')[0]?.toUpperCase() || '';
+  });
+
+  return (
+    <svg viewBox="0 0 200 200" style={{ width: '100%', maxWidth: 280 }}>
+      {[80, 60, 40, 20].map(r => (
+        <circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke="var(--odoo-surface-high)" strokeWidth="1" />
+      ))}
+      {Array.from({ length: n }).map((_, i) => {
+        const [x, y] = getPoint(i, maxR);
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--odoo-surface-high)" strokeWidth="1" />;
+      })}
+      <polygon points={polygon} fill="rgba(113, 75, 103, 0.2)" stroke="var(--odoo-purple)" strokeWidth="2" />
+      {labels.map((label, i) => {
+        const [x, y] = getPoint(i, maxR + 15);
+        return (
+          <text key={i} x={x} y={y} textAnchor="middle" fill="var(--odoo-text-muted)" fontSize="6" fontWeight="bold">
+            {label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+};
 
 // ════════════════════════════════════════════════════════════════
 // ── Main Component ──
@@ -316,7 +436,6 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
 
   // ── Update KPI score ──
   const handleKpiChange = useCallback((assessId, pillarKey, kpiIdx, field, value) => {
-    // Validate score fields before saving
     if (field === 'selfScore' || field === 'approverScore') {
       const validated = validateScore(value);
       if (validated === null) return;
@@ -338,7 +457,6 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   const submitAssessment = useCallback((assessId) => {
     const a = assessments.find(x => x.id === assessId);
     if (!a) return;
-    // Validate: all manual/360 KPIs must have selfScore
     for (const p of a.pillars) {
       for (const k of p.kpis) {
         if ((k.source === 'manual' || k.source === '360') && k.selfScore == null) {
@@ -360,12 +478,10 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
 
   // ── Approve / Reject ──
   const handleReview = useCallback((assessId, action) => {
-    // Validate approver authorization
     const targetAssessment = assessments.find(x => x.id === assessId);
     if (targetAssessment) {
       const currentStep = APPROVAL_CHAIN.find(c => c.level === targetAssessment.currentLevel);
       if (!currentStep) return;
-      // For now, admin can approve any level. In production, check actual role hierarchy.
       if (!isAdmin && user?.role !== currentStep.role) {
         addToast?.('You are not authorized to approve at this level', 'error');
         return;
@@ -422,7 +538,6 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
     const snapshots = {};
     (users || []).forEach(u => {
       const role = u.role || 'picker';
-      // Use shared workerOkrData if available, else compute fresh
       const okrData = workerOkrData[u.username];
       let autoScores = {};
       if (okrData?.okrAll?.results) {
@@ -441,7 +556,6 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
 
   const setEbitda = useCallback(() => {
     if (!season) return;
-    // Only admin with explicit authorization can set EBITDA
     if (!isAdmin) {
       addToast?.('Only administrators can set the EBITDA score', 'error');
       return;
@@ -457,7 +571,7 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
     logActivity?.('ebitda_set', `Set EBITDA score to ${localEbitda}`);
   }, [season, localEbitda, user, isAdmin, period, persistSeason, addToast, logActivity]);
 
-  // ── Derived data (filter out old-format assessments without pillars) ──
+  // ── Derived data ──
   const validAssessments = useMemo(() => assessments.filter(a => Array.isArray(a.pillars)), [assessments]);
   const myAssessment = useMemo(() => validAssessments.find(a => a.username === user?.username && a.period === period), [validAssessments, user, period]);
   const editingAssessment = useMemo(() => validAssessments.find(a => a.id === editingId), [validAssessments, editingId]);
@@ -484,136 +598,480 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   }, [isAdmin, pendingReviews.length]);
 
   // ════════════════════════════════════════════════════════════
+  // ── RENDER: Employee Header (Stitch-style) ──
+  // ════════════════════════════════════════════════════════════
+  const renderEmployeeHeader = (assessment) => {
+    const total = calcTotalScore(assessment.pillars, season);
+    const grade = getGrade(total);
+    const gradeColor = getGradeColor(grade);
+
+    return (
+      <section style={{
+        background: 'var(--odoo-surface)',
+        padding: 24,
+        borderRadius: 'var(--odoo-radius)',
+        boxShadow: 'var(--odoo-shadow-sm)',
+        marginBottom: 32,
+      }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+          {/* Left: avatar + name */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                width: 80, height: 80, borderRadius: 8,
+                background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 28, fontWeight: 800,
+              }}>
+                {(assessment.name || assessment.username || '?')[0].toUpperCase()}
+              </div>
+              <div style={{
+                position: 'absolute', bottom: -8, right: -8,
+                background: 'var(--odoo-success)', color: '#fff',
+                borderRadius: '50%', width: 24, height: 24,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '3px solid var(--odoo-surface)',
+              }}>
+                <CheckCircle2 style={{ width: 12, height: 12 }} />
+              </div>
+            </div>
+            <div>
+              <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--odoo-text)', margin: 0 }}>
+                {assessment.name || assessment.username}
+              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
+                <span style={{
+                  padding: '2px 8px', borderRadius: 'var(--odoo-radius)', fontSize: 10, fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.1em',
+                  background: 'var(--odoo-surface-high)', color: 'var(--odoo-text-secondary)',
+                }}>
+                  {assessment.role}
+                </span>
+                <StatusBadge status={assessment.status} />
+                <span style={{ color: 'var(--odoo-text-muted)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Calendar style={{ width: 14, height: 14 }} />
+                  Assessment Period: <span style={{ fontWeight: 700, color: 'var(--odoo-text)' }}>{assessment.period}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: score + grade */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32, borderLeft: '1px solid var(--odoo-surface-high)', paddingLeft: 32 }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--odoo-text-muted)', textTransform: 'uppercase', letterSpacing: '-0.02em', marginBottom: 4, margin: '0 0 4px 0' }}>
+                Total Weighted Score
+              </p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, justifyContent: 'center' }}>
+                <span style={{ fontSize: 36, fontWeight: 900, color: 'var(--odoo-purple)', letterSpacing: '-0.02em' }}>
+                  {total.toFixed(1)}
+                </span>
+                <span style={{ color: 'var(--odoo-text-muted)', fontSize: 14, fontWeight: 600 }}>/ 5.0</span>
+              </div>
+            </div>
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%',
+              border: `4px solid ${gradeColor}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 24, fontWeight: 900,
+              color: gradeColor,
+              background: `${gradeColor}10`,
+            }}>
+              {grade}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  // ════════════════════════════════════════════════════════════
+  // ── RENDER: Performance Radar (right sidebar) ──
+  // ════════════════════════════════════════════════════════════
+  const renderRadarPanel = (assessment) => (
+    <div style={{
+      background: 'var(--odoo-surface)',
+      padding: 24, borderRadius: 'var(--odoo-radius)',
+      boxShadow: 'var(--odoo-shadow-sm)',
+    }}>
+      <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--odoo-text-muted)', marginBottom: 24, margin: '0 0 24px 0' }}>
+        Performance Radar
+      </h2>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', aspectRatio: '1' }}>
+        <RadarChart pillars={assessment.pillars} season={season} />
+      </div>
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════
+  // ── RENDER: 360 Peer Feedback / Pillar Scores panel ──
+  // ════════════════════════════════════════════════════════════
+  const renderFeedbackPanel = (assessment) => {
+    const feedbackItems = [];
+    for (const p of assessment.pillars) {
+      for (const k of p.kpis) {
+        if (k.source === '360' && k.feedback360Scores?.length > 0) {
+          const avg = k.feedback360Scores.reduce((a, b) => a + b, 0) / k.feedback360Scores.length;
+          feedbackItems.push({ label: k.label, score: avg, count: k.feedback360Scores.length });
+        }
+      }
+    }
+    const pillarBars = assessment.pillars.filter(p => p.weight > 0).map(p => {
+      const def = KPI_PILLARS.find(d => d.key === p.pillarKey);
+      return { label: def?.label?.split(' ').slice(0, 2).join(' ') || p.pillarKey, score: calcPillarScore(p, season) };
+    });
+
+    const bars = feedbackItems.length > 0 ? feedbackItems : pillarBars;
+    const totalCount = feedbackItems.reduce((s, f) => s + f.count, 0) || bars.length;
+    const title = feedbackItems.length > 0 ? '360 Peer Feedback' : 'Pillar Scores';
+    const subtitle = feedbackItems.length > 0 ? `${totalCount} Responses` : `${bars.length} Pillars`;
+
+    return (
+      <div style={{
+        background: 'var(--odoo-surface)',
+        padding: 24, borderRadius: 'var(--odoo-radius)',
+        boxShadow: 'var(--odoo-shadow-sm)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h2 style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--odoo-text-muted)', margin: 0 }}>
+            {title}
+          </h2>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--odoo-success)' }}>
+            {subtitle}
+          </span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {bars.map((item, i) => (
+            <div key={i}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
+                <span style={{ color: 'var(--odoo-text)' }}>{item.label}</span>
+                <span style={{ color: 'var(--odoo-purple)' }}>{item.score.toFixed(1)}</span>
+              </div>
+              <div style={{ height: 8, width: '100%', background: 'var(--odoo-surface-high)', borderRadius: 9999, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', width: `${(item.score / 5) * 100}%`,
+                  background: 'var(--odoo-purple)', borderRadius: 9999,
+                  transition: 'width 0.3s ease',
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ════════════════════════════════════════════════════════════
+  // ── RENDER: Assessment History panel ──
+  // ════════════════════════════════════════════════════════════
+  const renderHistoryPanel = (assessment) => (
+    <div style={{
+      background: 'var(--odoo-surface-low)',
+      padding: 16, borderRadius: 8,
+    }}>
+      <h2 style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--odoo-text-muted)', marginBottom: 16, margin: '0 0 16px 0' }}>
+        Assessment History
+      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {assessment.approvalHistory.length === 0 && (
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ width: 4, background: 'var(--odoo-success)', borderRadius: 4, minHeight: 36 }} />
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Assessment Created</p>
+              <p style={{ fontSize: 10, fontFamily: '"Source Code Pro", monospace', color: 'var(--odoo-text-muted)', margin: '2px 0 0' }}>
+                {new Date(assessment.createdAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        )}
+        {assessment.approvalHistory.map((h, i) => (
+          <div key={i} style={{ display: 'flex', gap: 12 }}>
+            <div style={{
+              width: 4, borderRadius: 4, minHeight: 36,
+              background: h.action === 'approve' ? 'var(--odoo-success)' : h.action === 'reject' ? 'var(--odoo-danger)' : 'var(--odoo-purple)',
+            }} />
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>
+                {h.action === 'submit' ? 'Submitted for Review' : h.action === 'approve' ? 'Approved' : 'Rejected'}
+              </p>
+              <p style={{ fontSize: 10, fontFamily: '"Source Code Pro", monospace', color: 'var(--odoo-text-muted)', margin: '2px 0 0' }}>
+                By: {h.by} | {new Date(h.at).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════
+  // ── RENDER: Floating Action Bar (Stitch-style sticky footer) ──
+  // ════════════════════════════════════════════════════════════
+  const renderActionBar = ({ onBack, onSubmit, onReject, onApprove, showSubmit, showReview }) => (
+    <div style={{
+      position: 'sticky', bottom: 0,
+      background: 'rgba(255,255,255,0.8)',
+      backdropFilter: 'blur(16px)',
+      borderTop: '1px solid var(--odoo-surface-high)',
+      padding: '12px 0',
+      marginTop: 32,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      zIndex: 10,
+    }}>
+      <div className="hidden sm:flex" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--odoo-text-muted)' }}>
+        <Info style={{ width: 14, height: 14 }} />
+        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+          Weight calculation: Final = Sum(Score x Weight)
+        </span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={onBack}
+          style={{
+            padding: '8px 24px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.15em', border: '1px solid var(--odoo-purple)',
+            color: 'var(--odoo-purple)', background: 'transparent', borderRadius: 'var(--odoo-radius)',
+            cursor: 'pointer', transition: 'var(--odoo-transition)',
+          }}>
+          Back
+        </button>
+        {showReview && (
+          <>
+            <button onClick={onReject}
+              style={{
+                padding: '8px 24px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.15em', border: '1px solid var(--odoo-danger)',
+                color: 'var(--odoo-danger)', background: 'transparent', borderRadius: 'var(--odoo-radius)',
+                cursor: 'pointer', transition: 'var(--odoo-transition)',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+              <XCircle style={{ width: 14, height: 14 }} />Reject
+            </button>
+            <button onClick={onApprove}
+              style={{
+                padding: '8px 40px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.15em', border: 'none', color: '#fff',
+                background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))',
+                borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(113, 75, 103, 0.3)',
+                transition: 'var(--odoo-transition)',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+              <CheckCircle2 style={{ width: 14, height: 14 }} />Approve
+            </button>
+          </>
+        )}
+        {showSubmit && (
+          <button onClick={onSubmit}
+            style={{
+              padding: '8px 40px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.15em', border: 'none', color: '#fff',
+              background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))',
+              borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(113, 75, 103, 0.3)',
+              transition: 'var(--odoo-transition)',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+            <Send style={{ width: 14, height: 14 }} />Submit for Review
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════
+  // ── RENDER: Live Performance Card ──
+  // ════════════════════════════════════════════════════════════
+  const renderLivePerformance = (username, isApproverView = false) => {
+    const okr = workerOkrData[username];
+    const dataSource = isApproverView ? okr?.okrAll : okr?.okrToday;
+    if (!dataSource?.results?.length) return null;
+    const results = dataSource.results.filter(r => r.actual > 0);
+    if (!results.length) return null;
+
+    return (
+      <div style={{
+        border: '1px solid var(--odoo-border-ghost)',
+        borderRadius: 'var(--odoo-radius)', padding: 12,
+        background: isApproverView
+          ? 'linear-gradient(135deg, rgba(1,126,132,0.04), rgba(16,185,129,0.04))'
+          : 'linear-gradient(135deg, rgba(59,130,246,0.04), rgba(99,102,241,0.04))',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Activity style={{ width: 16, height: 16, color: isApproverView ? 'var(--odoo-success)' : '#3b82f6' }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: isApproverView ? 'var(--odoo-success)' : '#1d4ed8' }}>
+            {isApproverView ? 'System Performance Data' : 'Live Performance (Today)'}
+          </span>
+          <span style={{ fontSize: 10, color: 'var(--odoo-text-muted)', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <BarChart2 style={{ width: 12, height: 12 }} />
+            {isApproverView ? 'auto-computed from activity logs' : 'from Team Performance'}
+          </span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
+          {results.slice(0, 8).map(r => {
+            const pctVal = r.target > 0 ? Math.round((r.actual / r.target) * 100) : 100;
+            const color = pctVal >= 90 ? 'var(--odoo-success)' : pctVal >= 70 ? 'var(--odoo-warning)' : 'var(--odoo-danger)';
+            return (
+              <div key={r.key} style={{ background: 'var(--odoo-surface)', borderRadius: 'var(--odoo-radius)', padding: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: 'var(--odoo-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.label}>{r.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color }}>{typeof r.actual === 'number' ? (r.actual % 1 ? r.actual.toFixed(1) : r.actual) : r.actual}</div>
+                <div style={{ fontSize: 9, color: 'var(--odoo-text-muted)' }}>
+                  target: {r.target}{isApproverView ? ` | score: ${r.score}` : ` (${pctVal}%)`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // ════════════════════════════════════════════════════════════
+  // ── RENDER: Assessment Detail (shared between My + Review) ──
+  // ════════════════════════════════════════════════════════════
+  const renderAssessmentDetail = (assessment, { isApprover, onBack, onSubmit, onReject, onApprove, showSubmit, showReview }) => {
+    const isOwner = assessment.username === user?.username;
+    const readOnly = isApprover ? true : (assessment.status !== 'draft' && assessment.status !== 'rejected');
+
+    return (
+      <div>
+        {/* Employee Header */}
+        {renderEmployeeHeader(assessment)}
+
+        {/* 3-column grid: perspectives + sidebar */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32 }} className="xl:grid-cols-3">
+          {/* Left: OKR Perspectives (2/3 width) */}
+          <div className="xl:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Section header with legend */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h2 style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--odoo-text-muted)', margin: 0 }}>
+                OKR Perspectives
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, fontWeight: 600 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--odoo-success)' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--odoo-success)', display: 'inline-block' }} />
+                  Auto Tracking
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--odoo-purple)' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--odoo-purple)', display: 'inline-block' }} />
+                  Manual Entry
+                </span>
+              </div>
+            </div>
+
+            {/* Live Performance Card */}
+            {renderLivePerformance(assessment.username, isApprover)}
+
+            {/* Perspective cards grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+              gap: 16,
+            }}>
+              {assessment.pillars.map(p => {
+                const def = KPI_PILLARS.find(d => d.key === p.pillarKey);
+                if (!def) return null;
+                return (
+                  <PillarCard key={p.pillarKey} pillar={p} pillarDef={def} season={season}
+                    isApprover={isApprover} assessmentStatus={assessment.status} readOnly={readOnly}
+                    onKpiChange={(pk, ki, f, v) => handleKpiChange(assessment.id, pk, ki, f, v)} />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right sidebar (1/3 width) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            {renderRadarPanel(assessment)}
+            {renderFeedbackPanel(assessment)}
+            {renderHistoryPanel(assessment)}
+          </div>
+        </div>
+
+        {/* Bottom action bar */}
+        {renderActionBar({ onBack, onSubmit, onReject, onApprove, showSubmit, showReview })}
+      </div>
+    );
+  };
+
+  // ════════════════════════════════════════════════════════════
   // ── RENDER: My Assessment ──
   // ════════════════════════════════════════════════════════════
   const renderMyAssessment = () => {
     if (editingAssessment) {
       const a = editingAssessment;
       const isOwner = a.username === user?.username;
-      const readOnly = a.status !== 'draft' && a.status !== 'rejected';
-      const total = calcTotalScore(a.pillars, season);
-      const pct = (total / 5) * 100;
-
-      return (
-        <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{a.name} - {a.period}</h3>
-              <div className="flex items-center gap-2 mt-1">
-                <StatusBadge status={a.status} />
-                <span className="text-xs text-gray-500">Level {a.currentLevel}/5</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold" style={{ color: pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444' }}>
-                {total.toFixed(2)}/5
-              </div>
-              <div className="text-xs text-gray-500">{pct.toFixed(1)}%</div>
-            </div>
-          </div>
-
-          {/* Weight bar */}
-          <WeightBar pillars={a.pillars} />
-
-          {/* Live Performance Card — real-time data from Team Performance */}
-          {(() => {
-            const okr = workerOkrData[a.username];
-            if (!okr?.okrToday?.results?.length) return null;
-            const todayResults = okr.okrToday.results.filter(r => r.actual > 0);
-            if (!todayResults.length) return null;
-            return (
-              <div className="border dark:border-gray-700 rounded-lg p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">Live Performance (Today)</span>
-                  <BarChart2 className="w-3 h-3 text-blue-400 ml-auto" />
-                  <span className="text-[10px] text-blue-400">from Team Performance</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {todayResults.slice(0, 8).map(r => {
-                    const pctVal = r.target > 0 ? Math.round((r.actual / r.target) * 100) : 100;
-                    const color = pctVal >= 90 ? '#10b981' : pctVal >= 70 ? '#f59e0b' : '#ef4444';
-                    return (
-                      <div key={r.key} className="bg-white dark:bg-gray-800 rounded-lg p-2 text-center">
-                        <div className="text-[10px] text-gray-500 truncate" title={r.label}>{r.label}</div>
-                        <div className="text-sm font-bold" style={{ color }}>{typeof r.actual === 'number' ? (r.actual % 1 ? r.actual.toFixed(1) : r.actual) : r.actual}</div>
-                        <div className="text-[9px] text-gray-400">target: {r.target} ({pctVal}%)</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Pillar cards */}
-          {a.pillars.map(p => {
-            const def = KPI_PILLARS.find(d => d.key === p.pillarKey);
-            if (!def) return null;
-            return (
-              <PillarCard key={p.pillarKey} pillar={p} pillarDef={def} season={season}
-                isApprover={false} assessmentStatus={a.status} readOnly={readOnly}
-                onKpiChange={(pk, ki, f, v) => handleKpiChange(a.id, pk, ki, f, v)} />
-            );
-          })}
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <button onClick={() => setEditingId(null)}
-              className="px-4 py-2 text-sm border rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-              Back
-            </button>
-            {(a.status === 'draft' || a.status === 'rejected') && isOwner && (
-              <button onClick={() => submitAssessment(a.id)}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1">
-                <Send className="w-4 h-4" />Submit
-              </button>
-            )}
-          </div>
-        </div>
-      );
+      return renderAssessmentDetail(a, {
+        isApprover: false,
+        onBack: () => setEditingId(null),
+        onSubmit: () => submitAssessment(a.id),
+        showSubmit: (a.status === 'draft' || a.status === 'rejected') && isOwner,
+        showReview: false,
+      });
     }
 
     // List view
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">My Assessment - {period}</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>My Assessment - {period}</h3>
           {(!myAssessment || myAssessment.status === 'approved') && season?.status === 'open' && (
             <button onClick={createAssessment}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1">
-              <Plus className="w-4 h-4" />New Assessment
+              style={{
+                padding: '8px 24px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.1em', border: 'none', color: '#fff',
+                background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))',
+                borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(113, 75, 103, 0.3)',
+                transition: 'var(--odoo-transition)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+              <Plus style={{ width: 16, height: 16 }} />New Assessment
             </button>
           )}
         </div>
+
         {!season?.status && (
-          <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-700 dark:text-amber-300">
-            <Clock className="w-4 h-4 inline mr-1" />No active assessment season. Contact admin to start one.
+          <div style={{
+            padding: 16, borderRadius: 'var(--odoo-radius)',
+            background: 'var(--odoo-warning-light)',
+            border: '1px solid rgba(232,169,64,0.2)',
+            fontSize: 13, color: 'var(--odoo-warning)',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <Clock style={{ width: 16, height: 16 }} />
+            No active assessment season. Contact admin to start one.
           </div>
         )}
+
         {myAssessment && (
-          <div className="border dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-            onClick={() => setEditingId(myAssessment.id)}>
-            <div className="flex items-center justify-between">
+          <div onClick={() => setEditingId(myAssessment.id)}
+            style={{
+              background: 'var(--odoo-surface)',
+              border: '1px solid var(--odoo-border-ghost)',
+              borderRadius: 'var(--odoo-radius)', padding: 16, cursor: 'pointer',
+              transition: 'var(--odoo-transition)',
+            }}
+            className="hover:shadow-md">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{myAssessment.period}</div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div style={{ fontWeight: 600, color: 'var(--odoo-text)' }}>{myAssessment.period}</div>
+                <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)', marginTop: 2 }}>
                   Updated {new Date(myAssessment.updatedAt).toLocaleDateString()}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <StatusBadge status={myAssessment.status} />
-                <div className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--odoo-purple)' }}>
                   {calcTotalScore(myAssessment.pillars, season).toFixed(2)}/5
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <ChevronRight style={{ width: 16, height: 16, color: 'var(--odoo-text-muted)' }} />
               </div>
             </div>
           </div>
         )}
+
         {!myAssessment && season?.status === 'open' && (
-          <div className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center">
+          <div style={{ fontSize: 14, color: 'var(--odoo-text-muted)', padding: 16, textAlign: 'center' }}>
             No assessment yet this period. Click "New Assessment" to start.
           </div>
         )}
@@ -630,119 +1088,39 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   const renderReviews = () => {
     if (reviewAssessment) {
       const a = reviewAssessment;
-      const total = calcTotalScore(a.pillars, season);
-      const pct = (total / 5) * 100;
-
-      return (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Review: {a.name}</h3>
-              <div className="flex items-center gap-2 mt-1">
-                <StatusBadge status={a.status} />
-                <span className="text-xs text-gray-500">Role: {a.role} | Level {a.currentLevel}/5</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold" style={{ color: pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444' }}>
-                {total.toFixed(2)}/5
-              </div>
-            </div>
-          </div>
-
-          <WeightBar pillars={a.pillars} />
-
-          {/* Live Performance — helps approver compare */}
-          {(() => {
-            const okr = workerOkrData[a.username];
-            if (!okr?.okrAll?.results?.length) return null;
-            const results = okr.okrAll.results.filter(r => r.actual > 0);
-            if (!results.length) return null;
-            return (
-              <div className="border dark:border-gray-700 rounded-lg p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-green-500" />
-                  <span className="text-xs font-semibold text-green-700 dark:text-green-400">System Performance Data</span>
-                  <span className="text-[10px] text-green-400 ml-auto">auto-computed from activity logs</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {results.slice(0, 8).map(r => {
-                    const pctVal = r.target > 0 ? Math.round((r.actual / r.target) * 100) : 100;
-                    const color = pctVal >= 90 ? '#10b981' : pctVal >= 70 ? '#f59e0b' : '#ef4444';
-                    return (
-                      <div key={r.key} className="bg-white dark:bg-gray-800 rounded-lg p-2 text-center">
-                        <div className="text-[10px] text-gray-500 truncate">{r.label}</div>
-                        <div className="text-sm font-bold" style={{ color }}>{typeof r.actual === 'number' ? (r.actual % 1 ? r.actual.toFixed(1) : r.actual) : r.actual}</div>
-                        <div className="text-[9px] text-gray-400">target: {r.target} | score: {r.score}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-
-          {a.pillars.map(p => {
-            const def = KPI_PILLARS.find(d => d.key === p.pillarKey);
-            if (!def) return null;
-            return (
-              <PillarCard key={p.pillarKey} pillar={p} pillarDef={def} season={season}
-                isApprover={true} assessmentStatus={a.status} readOnly={true}
-                onKpiChange={(pk, ki, f, v) => handleKpiChange(a.id, pk, ki, f, v)} />
-            );
-          })}
-
-          {/* Approval history */}
-          {a.approvalHistory.length > 0 && (
-            <div className="border dark:border-gray-700 rounded-lg p-3">
-              <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">Approval History</div>
-              {a.approvalHistory.map((h, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs text-gray-500 py-1">
-                  <span className={h.action === 'approve' ? 'text-green-600' : h.action === 'reject' ? 'text-red-600' : 'text-blue-600'}>
-                    {h.action}
-                  </span>
-                  <span>by {h.by}</span>
-                  <span className="text-gray-400">{new Date(h.at).toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2 pt-2">
-            <button onClick={() => setReviewingId(null)}
-              className="px-4 py-2 text-sm border rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-              Back
-            </button>
-            <button onClick={() => { handleReview(a.id, 'approve'); setReviewingId(null); }}
-              className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-1">
-              <CheckCircle2 className="w-4 h-4" />Approve
-            </button>
-            <button onClick={() => { handleReview(a.id, 'reject'); setReviewingId(null); }}
-              className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1">
-              <XCircle className="w-4 h-4" />Reject
-            </button>
-          </div>
-        </div>
-      );
+      return renderAssessmentDetail(a, {
+        isApprover: true,
+        onBack: () => setReviewingId(null),
+        onReject: () => { handleReview(a.id, 'reject'); setReviewingId(null); },
+        onApprove: () => { handleReview(a.id, 'approve'); setReviewingId(null); },
+        showSubmit: false,
+        showReview: true,
+      });
     }
 
     return (
-      <div className="space-y-3">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Pending Reviews</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Pending Reviews</h3>
         {pendingReviews.length === 0 && (
-          <div className="text-sm text-gray-500 p-4 text-center">No pending reviews.</div>
+          <div style={{ fontSize: 14, color: 'var(--odoo-text-muted)', padding: 16, textAlign: 'center' }}>No pending reviews.</div>
         )}
         {pendingReviews.map(a => (
-          <div key={a.id} className="border dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-            onClick={() => setReviewingId(a.id)}>
-            <div className="flex items-center justify-between">
+          <div key={a.id} onClick={() => setReviewingId(a.id)}
+            style={{
+              background: 'var(--odoo-surface)',
+              border: '1px solid var(--odoo-border-ghost)',
+              borderRadius: 'var(--odoo-radius)', padding: 16, cursor: 'pointer',
+              transition: 'var(--odoo-transition)',
+            }}
+            className="hover:shadow-md">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{a.name}</div>
-                <div className="text-xs text-gray-500">{a.role} | {a.period} | Level {a.currentLevel}/5</div>
+                <div style={{ fontWeight: 600, color: 'var(--odoo-text)' }}>{a.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>{a.role} | {a.period} | Level {a.currentLevel}/5</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <StatusBadge status={a.status} />
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <ChevronRight style={{ width: 16, height: 16, color: 'var(--odoo-text-muted)' }} />
               </div>
             </div>
           </div>
@@ -754,26 +1132,32 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   // ════════════════════════════════════════════════════════════
   // ── RENDER: History ──
   // ════════════════════════════════════════════════════════════
-  const renderHistory = () => (
-    <div className="space-y-3">
-      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Assessment History</h3>
+  const renderHistoryTab = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Assessment History</h3>
       {historyList.length === 0 && (
-        <div className="text-sm text-gray-500 p-4 text-center">No completed assessments.</div>
+        <div style={{ fontSize: 14, color: 'var(--odoo-text-muted)', padding: 16, textAlign: 'center' }}>No completed assessments.</div>
       )}
       {historyList.map(a => {
         const total = calcTotalScore(a.pillars, season);
         return (
-          <div key={a.id} className="border dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-            onClick={() => setEditingId(a.id)}>
-            <div className="flex items-center justify-between">
+          <div key={a.id} onClick={() => setEditingId(a.id)}
+            style={{
+              background: 'var(--odoo-surface)',
+              border: '1px solid var(--odoo-border-ghost)',
+              borderRadius: 'var(--odoo-radius)', padding: 16, cursor: 'pointer',
+              transition: 'var(--odoo-transition)',
+            }}
+            className="hover:shadow-md">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{a.period}</div>
-                <div className="text-xs text-gray-500">Completed {new Date(a.updatedAt).toLocaleDateString()}</div>
+                <div style={{ fontWeight: 600, color: 'var(--odoo-text)' }}>{a.period}</div>
+                <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>Completed {new Date(a.updatedAt).toLocaleDateString()}</div>
               </div>
-              <div className="flex items-center gap-3">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <StatusBadge status={a.status} />
-                <div className="text-lg font-bold text-green-600">{total.toFixed(2)}/5</div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--odoo-success)' }}>{total.toFixed(2)}/5</div>
+                <ChevronRight style={{ width: 16, height: 16, color: 'var(--odoo-text-muted)' }} />
               </div>
             </div>
           </div>
@@ -786,47 +1170,68 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   // ── RENDER: Season (admin) ──
   // ════════════════════════════════════════════════════════════
   const renderSeason = () => (
-    <div className="space-y-4">
-      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Assessment Season</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Assessment Season</h3>
 
       {/* Season status */}
-      <div className="border dark:border-gray-700 rounded-lg p-4 space-y-3">
-        <div className="flex items-center justify-between">
+      <div style={{
+        background: 'var(--odoo-surface)',
+        border: '1px solid var(--odoo-border-ghost)',
+        borderRadius: 'var(--odoo-radius)', padding: 16,
+        display: 'flex', flexDirection: 'column', gap: 12,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Period: {period}</div>
-            <div className="text-xs text-gray-500 mt-0.5">
-              Status: <span className={season?.status === 'open' ? 'text-green-600 font-bold' : 'text-gray-400'}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--odoo-text)' }}>Current Period: {period}</div>
+            <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)', marginTop: 2 }}>
+              Status: <span style={{ color: season?.status === 'open' ? 'var(--odoo-success)' : 'var(--odoo-text-muted)', fontWeight: 700 }}>
                 {season?.status || 'Not started'}
               </span>
             </div>
           </div>
           {!season?.status || season.status === 'closed' ? (
             <button onClick={startSeason}
-              className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-1">
-              <Play className="w-4 h-4" />Start Season
+              style={{
+                padding: '8px 24px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                border: 'none', color: '#fff', background: 'var(--odoo-success)',
+                borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                transition: 'var(--odoo-transition)', display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+              <Play style={{ width: 16, height: 16 }} />Start Season
             </button>
           ) : (
             <button onClick={closeSeason}
-              className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1">
-              <Lock className="w-4 h-4" />Close Season
+              style={{
+                padding: '8px 24px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
+                border: 'none', color: '#fff', background: 'var(--odoo-danger)',
+                borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                transition: 'var(--odoo-transition)', display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+              <Lock style={{ width: 16, height: 16 }} />Close Season
             </button>
           )}
         </div>
         {season?.startedBy && (
-          <div className="text-xs text-gray-500">
+          <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>
             Started by {season.startedBy} on {new Date(season.startedAt).toLocaleString()}
           </div>
         )}
         {season?.snapshots && (
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-500">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>
               Snapshots: {Object.keys(season.snapshots).length} users captured
               {season.lastRefresh && <> | Last refresh: {new Date(season.lastRefresh).toLocaleString()}</>}
             </div>
             {season.status === 'open' && (
               <button onClick={refreshSnapshots}
-                className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 flex items-center gap-1">
-                <RefreshCw className="w-3 h-3" />Refresh Snapshots
+                style={{
+                  padding: '6px 12px', fontSize: 11, fontWeight: 600,
+                  border: 'none', color: '#3b82f6',
+                  background: 'rgba(59,130,246,0.1)',
+                  borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                  transition: 'var(--odoo-transition)', display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                <RefreshCw style={{ width: 12, height: 12 }} />Refresh Snapshots
               </button>
             )}
           </div>
@@ -835,20 +1240,30 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
 
       {/* EBITDA */}
       {season?.status === 'open' && (
-        <div className="border dark:border-gray-700 rounded-lg p-4 space-y-3">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-red-500" />EBITDA Score (MD)
+        <div style={{
+          background: 'var(--odoo-surface)',
+          border: '1px solid var(--odoo-border-ghost)',
+          borderRadius: 'var(--odoo-radius)', padding: 16,
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--odoo-text)' }}>
+            <DollarSign style={{ width: 16, height: 16, color: 'var(--odoo-danger)' }} />EBITDA Score (MD)
           </div>
           {season.ebitdaScore != null && (
-            <div className="text-xs text-gray-500">
-              Current: <b className="text-red-600">{season.ebitdaScore}/5</b> set by {season.ebitdaSetBy} on {new Date(season.ebitdaSetAt).toLocaleString()}
+            <div style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>
+              Current: <b style={{ color: 'var(--odoo-danger)' }}>{season.ebitdaScore}/5</b> set by {season.ebitdaSetBy} on {new Date(season.ebitdaSetAt).toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-3">
-            <ScoreButtons value={localEbitda} onChange={setLocalEbitda} color="#ef4444" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <ScoreButtons value={localEbitda} onChange={setLocalEbitda} color="var(--odoo-danger)" />
             <button onClick={setEbitda}
-              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1">
-              <Save className="w-3 h-3" />Set EBITDA
+              style={{
+                padding: '6px 16px', fontSize: 12, fontWeight: 700,
+                border: 'none', color: '#fff', background: 'var(--odoo-danger)',
+                borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                transition: 'var(--odoo-transition)', display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+              <Save style={{ width: 12, height: 12 }} />Set EBITDA
             </button>
           </div>
         </div>
@@ -856,15 +1271,22 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
 
       {/* Summary */}
       {season?.status === 'open' && (
-        <div className="border dark:border-gray-700 rounded-lg p-4">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Season Summary</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div style={{
+          background: 'var(--odoo-surface)',
+          border: '1px solid var(--odoo-border-ghost)',
+          borderRadius: 'var(--odoo-radius)', padding: 16,
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--odoo-text)', marginBottom: 12 }}>Season Summary</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
             {['draft', 'submitted', 'reviewing', 'approved'].map(s => {
               const count = assessments.filter(a => a.period === period && a.status === s).length;
               return (
-                <div key={s} className="text-center p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-                  <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{count}</div>
-                  <div className="text-[10px] text-gray-500">{STATUS_CFG[s]?.label}</div>
+                <div key={s} style={{
+                  textAlign: 'center', padding: 12, borderRadius: 'var(--odoo-radius)',
+                  background: 'var(--odoo-surface-low)',
+                }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--odoo-text)' }}>{count}</div>
+                  <div style={{ fontSize: 10, color: 'var(--odoo-text-muted)' }}>{STATUS_CFG[s]?.label}</div>
                 </div>
               );
             })}
@@ -943,28 +1365,41 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   const [tplExpanded, setTplExpanded] = useState({});
 
   const renderTemplates = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Template Editor</h3>
-        <div className="flex items-center gap-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Template Editor</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <select value={tplRole} onChange={e => loadTpl(e.target.value)}
-            className="text-sm border rounded-lg px-3 py-1.5 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
+            style={{
+              fontSize: 13, border: '1px solid var(--odoo-border-ghost)',
+              borderRadius: 'var(--odoo-radius)', padding: '6px 12px',
+              background: 'var(--odoo-surface)', color: 'var(--odoo-text)',
+            }}>
             {Object.keys(DEFAULT_PILLAR_TEMPLATES).map(r => (
               <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
             ))}
           </select>
           <button onClick={saveTpl}
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1">
-            <Save className="w-4 h-4" />Save
+            style={{
+              padding: '6px 16px', fontSize: 12, fontWeight: 700,
+              border: 'none', color: '#fff',
+              background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))',
+              borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+              transition: 'var(--odoo-transition)', display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+            <Save style={{ width: 14, height: 14 }} />Save
           </button>
         </div>
       </div>
 
       {/* Weight total indicator */}
-      <div className={`text-sm font-medium px-3 py-2 rounded-lg ${tplWeightTotal === 100
-        ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-        : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'}`}>
-        Total pillar weight: {tplWeightTotal}% {tplWeightTotal === 100 ? <Check className="w-4 h-4 inline" /> : '(must be 100%)'}
+      <div style={{
+        fontSize: 13, fontWeight: 600, padding: '8px 12px', borderRadius: 'var(--odoo-radius)',
+        background: tplWeightTotal === 100 ? 'rgba(1,126,132,0.08)' : 'rgba(228,111,120,0.08)',
+        color: tplWeightTotal === 100 ? 'var(--odoo-success)' : 'var(--odoo-danger)',
+        display: 'flex', alignItems: 'center', gap: 4,
+      }}>
+        Total pillar weight: {tplWeightTotal}% {tplWeightTotal === 100 ? <Check style={{ width: 16, height: 16 }} /> : '(must be 100%)'}
       </div>
 
       {/* Pillar accordions */}
@@ -976,88 +1411,141 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
         const kpiWeightTotal = pillar.kpis.reduce((s, k) => s + k.kpiWeight, 0);
 
         return (
-          <div key={pillar.pillarKey} className="border dark:border-gray-700 rounded-lg overflow-hidden"
-            style={{ borderLeftWidth: 4, borderLeftColor: def.color }}>
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800">
+          <div key={pillar.pillarKey} style={{
+            border: '1px solid var(--odoo-border-ghost)',
+            borderLeft: `4px solid ${PILLAR_BORDER_COLORS[pillar.pillarKey] || def.color}`,
+            borderRadius: 'var(--odoo-radius)', overflow: 'hidden',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, background: 'var(--odoo-surface-low)' }}>
               <button onClick={() => setTplExpanded(p => ({ ...p, [pillar.pillarKey]: !p[pillar.pillarKey] }))}
-                className="flex items-center gap-2 flex-1">
-                <Icon className="w-4 h-4" style={{ color: def.color }} />
-                <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{def.label}</span>
-                {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                <Icon style={{ width: 16, height: 16, color: PILLAR_BORDER_COLORS[pillar.pillarKey] || def.color }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--odoo-text)' }}>{def.label}</span>
+                {isOpen
+                  ? <ChevronDown style={{ width: 16, height: 16, color: 'var(--odoo-text-muted)' }} />
+                  : <ChevronRight style={{ width: 16, height: 16, color: 'var(--odoo-text-muted)' }} />
+                }
               </button>
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-500">Weight:</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>Weight:</label>
                 <input type="number" min={0} max={100} value={pillar.weight}
                   onChange={e => updateTplPillarWeight(pIdx, e.target.value)}
-                  className="w-16 text-sm border rounded px-2 py-1 text-center dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" />
-                <span className="text-xs text-gray-400">%</span>
+                  style={{
+                    width: 64, fontSize: 13, border: '1px solid var(--odoo-border-ghost)',
+                    borderRadius: 'var(--odoo-radius)', padding: '4px 8px', textAlign: 'center',
+                    background: 'var(--odoo-surface)', color: 'var(--odoo-text)',
+                  }} />
+                <span style={{ fontSize: 12, color: 'var(--odoo-text-muted)' }}>%</span>
               </div>
             </div>
 
             {isOpen && (
-              <div className="p-3 space-y-3">
+              <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {pillar.kpis.length > 0 && (
-                  <div className={`text-xs px-2 py-1 rounded ${kpiWeightTotal === 100
-                    ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                    : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'}`}>
+                  <div style={{
+                    fontSize: 12, padding: '4px 8px', borderRadius: 'var(--odoo-radius)',
+                    background: kpiWeightTotal === 100 ? 'rgba(1,126,132,0.08)' : 'rgba(228,111,120,0.08)',
+                    color: kpiWeightTotal === 100 ? 'var(--odoo-success)' : 'var(--odoo-danger)',
+                  }}>
                     KPI weights: {kpiWeightTotal}% {kpiWeightTotal === 100 ? '' : '(must be 100%)'}
                   </div>
                 )}
 
                 {pillar.kpis.map((kpi, kIdx) => (
-                  <div key={kpi.id || kIdx} className="border dark:border-gray-700 rounded-lg p-3 space-y-2 bg-white dark:bg-gray-900">
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex gap-2 flex-wrap items-center">
+                  <div key={kpi.id || kIdx} style={{
+                    border: '1px solid var(--odoo-border-ghost)',
+                    borderRadius: 'var(--odoo-radius)', padding: 12,
+                    background: 'var(--odoo-surface)',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                           <input value={kpi.label} onChange={e => updateTplKpi(pIdx, kIdx, 'label', e.target.value)}
-                            className="text-sm font-medium border-b border-dashed dark:bg-transparent dark:text-gray-200 flex-1 min-w-[120px] outline-none"
+                            style={{
+                              fontSize: 13, fontWeight: 500,
+                              background: 'transparent', color: 'var(--odoo-text)',
+                              outline: 'none', flex: 1, minWidth: 120, border: 'none',
+                              borderBottom: '1px dashed var(--odoo-surface-high)',
+                            }}
                             placeholder="KPI Label" />
                           <select value={kpi.source} onChange={e => updateTplKpi(pIdx, kIdx, 'source', e.target.value)}
-                            className="text-xs border rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                            style={{
+                              fontSize: 12, border: '1px solid var(--odoo-border-ghost)',
+                              borderRadius: 'var(--odoo-radius)', padding: '4px 8px',
+                              background: 'var(--odoo-surface)', color: 'var(--odoo-text)',
+                            }}>
                             <option value="manual">Manual</option>
                             <option value="auto">Auto</option>
                             <option value="md">MD</option>
                             <option value="360">360</option>
                           </select>
-                          <div className="flex items-center gap-1">
-                            <label className="text-[10px] text-gray-400">W:</label>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <label style={{ fontSize: 10, color: 'var(--odoo-text-muted)' }}>W:</label>
                             <input type="number" min={0} max={100} value={kpi.kpiWeight}
                               onChange={e => updateTplKpi(pIdx, kIdx, 'kpiWeight', Number(e.target.value) || 0)}
-                              className="w-14 text-xs border rounded px-1 py-0.5 text-center dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200" />
-                            <span className="text-[10px] text-gray-400">%</span>
+                              style={{
+                                width: 56, fontSize: 12, border: '1px solid var(--odoo-border-ghost)',
+                                borderRadius: 'var(--odoo-radius)', padding: '2px 4px', textAlign: 'center',
+                                background: 'var(--odoo-surface)', color: 'var(--odoo-text)',
+                              }} />
+                            <span style={{ fontSize: 10, color: 'var(--odoo-text-muted)' }}>%</span>
                           </div>
                         </div>
                         {kpi.source === 'auto' && (
                           <input value={kpi.autoKey || ''} onChange={e => updateTplKpi(pIdx, kIdx, 'autoKey', e.target.value)}
-                            className="text-xs border-b border-dashed dark:bg-transparent dark:text-gray-300 outline-none w-full"
+                            style={{
+                              fontSize: 12, background: 'transparent', color: 'var(--odoo-text-muted)',
+                              outline: 'none', width: '100%', border: 'none',
+                              borderBottom: '1px dashed var(--odoo-surface-high)',
+                            }}
                             placeholder="Auto Key (e.g., uph, accuracy)" />
                         )}
                         <input value={kpi.labelTh || ''} onChange={e => updateTplKpi(pIdx, kIdx, 'labelTh', e.target.value)}
-                          className="text-[11px] border-b border-dashed dark:bg-transparent text-gray-400 outline-none w-full"
+                          style={{
+                            fontSize: 11, background: 'transparent', color: 'var(--odoo-text-muted)',
+                            outline: 'none', width: '100%', border: 'none',
+                            borderBottom: '1px dashed var(--odoo-surface-high)',
+                          }}
                           placeholder="Thai label (optional)" />
                         {/* Rubric */}
-                        <div className="grid grid-cols-5 gap-1">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 }}>
                           {[1, 2, 3, 4, 5].map(n => (
                             <div key={n}>
-                              <div className="text-[9px] font-bold text-gray-400 mb-0.5">{n}</div>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--odoo-text-muted)', marginBottom: 2 }}>{n}</div>
                               <input value={kpi.rubric?.[n] || ''} onChange={e => updateTplRubric(pIdx, kIdx, n, e.target.value)}
-                                className="w-full text-[10px] border rounded px-1 py-0.5 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                style={{
+                                  width: '100%', fontSize: 10,
+                                  border: '1px solid var(--odoo-border-ghost)',
+                                  borderRadius: 'var(--odoo-radius)', padding: '2px 4px',
+                                  background: 'var(--odoo-surface)', color: 'var(--odoo-text)',
+                                }}
                                 placeholder={`Level ${n}`} />
                             </div>
                           ))}
                         </div>
                       </div>
                       <button onClick={() => removeTplKpi(pIdx, kIdx)}
-                        className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
-                        <Trash2 className="w-4 h-4" />
+                        style={{
+                          padding: 4, color: 'var(--odoo-danger)', background: 'none',
+                          border: 'none', cursor: 'pointer', borderRadius: 'var(--odoo-radius)',
+                        }}>
+                        <Trash2 style={{ width: 16, height: 16 }} />
                       </button>
                     </div>
                   </div>
                 ))}
 
                 <button onClick={() => addTplKpi(pIdx)}
-                  className="w-full py-2 text-xs text-blue-600 dark:text-blue-400 border border-dashed dark:border-gray-700 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center justify-center gap-1">
-                  <Plus className="w-3 h-3" />Add KPI
+                  style={{
+                    width: '100%', padding: '8px 0', fontSize: 12,
+                    color: 'var(--odoo-purple)', background: 'none',
+                    border: '1px dashed var(--odoo-border-ghost)',
+                    borderRadius: 'var(--odoo-radius)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                    transition: 'var(--odoo-transition)',
+                  }}>
+                  <Plus style={{ width: 12, height: 12 }} />Add KPI
                 </button>
               </div>
             )}
@@ -1071,31 +1559,46 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
   // ── MAIN RENDER ──
   // ════════════════════════════════════════════════════════════
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-          <Target className="w-5 h-5 text-white" />
+    <div style={{ minHeight: '100vh' }}>
+      {/* Page Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 8,
+          background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Target style={{ width: 20, height: 20, color: '#fff' }} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">KPI Assessment</h2>
-          <p className="text-xs text-gray-500">8-Pillar Performance Evaluation System</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>KPI Assessment</h2>
+          <p style={{ fontSize: 12, color: 'var(--odoo-text-muted)', margin: 0 }}>8-Pillar Performance Evaluation System</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 overflow-x-auto">
+      <div style={{
+        display: 'flex', gap: 4, overflowX: 'auto',
+        background: 'var(--odoo-surface-low)', borderRadius: 'var(--odoo-radius)', padding: 4, marginBottom: 24,
+      }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => { setTab(t.key); setEditingId(null); setReviewingId(null); }}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              tab === t.key
-                ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-            }`}>
-            <t.Icon className="w-4 h-4" />
+            style={{
+              padding: '8px 16px', borderRadius: 'var(--odoo-radius)', fontSize: 13, fontWeight: 600,
+              border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+              transition: 'var(--odoo-transition)',
+              background: tab === t.key ? 'var(--odoo-surface)' : 'transparent',
+              color: tab === t.key ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)',
+              boxShadow: tab === t.key ? 'var(--odoo-shadow-sm)' : 'none',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+            <t.Icon style={{ width: 16, height: 16 }} />
             {t.label}
             {t.count > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
+              <span style={{
+                marginLeft: 4, padding: '1px 6px', borderRadius: 9999,
+                fontSize: 10, fontWeight: 700,
+                background: 'var(--odoo-danger)', color: '#fff',
+              }}>
                 {t.count}
               </span>
             )}
@@ -1104,10 +1607,15 @@ const KPIAssessment = ({ user, users = [], activityLogs = [], salesOrders = [], 
       </div>
 
       {/* Tab content */}
-      <div className="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-xl p-4 sm:p-6">
+      <div style={{
+        background: 'var(--odoo-surface)',
+        border: '1px solid var(--odoo-border-ghost)',
+        borderRadius: 'var(--odoo-radius)',
+        padding: 24,
+      }}>
         {tab === 'my' && renderMyAssessment()}
         {tab === 'reviews' && renderReviews()}
-        {tab === 'history' && renderHistory()}
+        {tab === 'history' && renderHistoryTab()}
         {tab === 'season' && isAdmin && renderSeason()}
         {tab === 'templates' && isAdmin && renderTemplates()}
       </div>

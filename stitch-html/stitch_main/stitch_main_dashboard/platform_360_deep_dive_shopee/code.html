@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shopee Official | Industrial Atelier 360</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dadada",
+                        "surface-container-low": "#f3f3f3",
+                        "background": "#f9f9f9",
+                        "tertiary-container": "#006166",
+                        "tertiary-fixed-dim": "#78d5db",
+                        "on-tertiary-fixed-variant": "#004f53",
+                        "tertiary-fixed": "#95f1f8",
+                        "surface-container": "#eeeeee",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "outline": "#80747a",
+                        "on-background": "#1a1c1c",
+                        "primary-fixed": "#ffd7f1",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-surface-variant": "#4e444a",
+                        "tertiary": "#00474b",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-primary": "#e9b8d9",
+                        "on-tertiary-fixed": "#002022",
+                        "outline-variant": "#d1c3ca",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#fdccee",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "surface-variant": "#e2e2e2",
+                        "primary": "#57344f",
+                        "on-primary-fixed": "#2f1029",
+                        "secondary": "#79526f",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-container": "#7fdce2",
+                        "on-primary-container": "#f0bfe0",
+                        "surface-tint": "#79526f",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#e8b8da",
+                        "secondary-fixed": "#ffd7f1",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-secondary-container": "#795370",
+                        "on-secondary-fixed-variant": "#5f3b56",
+                        "inverse-on-surface": "#f1f1f1",
+                        "primary-container": "#714b67",
+                        "error": "#ba1a1a",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary-fixed": "#2e1029"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-overlay {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 left-0 right-0 h-14 z-50 flex justify-between items-center px-6 bg-gradient-to-r from-purple-900 to-purple-800 dark:from-slate-950 dark:to-slate-900 font-inter tracking-tight text-sm no-line boundary-shift bg-surface-dim flat no shadows">
+<div class="flex items-center gap-8">
+<span class="text-lg font-bold text-white tracking-widest uppercase">Industrial Atelier 360</span>
+<nav class="hidden md:flex gap-6 items-center h-full">
+<a class="text-purple-200 hover:text-white transition-colors" href="#">Global</a>
+<a class="text-white border-b-2 border-teal-400 font-bold pb-1" href="#">Shopee</a>
+<a class="text-purple-200 hover:text-white transition-colors" href="#">Lazada</a>
+<a class="text-purple-200 hover:text-white transition-colors" href="#">TikTok</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center bg-white/10 rounded px-3 py-1 gap-2">
+<span class="material-symbols-outlined text-purple-200 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-white placeholder-purple-300 text-xs" placeholder="Search orders..." type="text"/>
+</div>
+<button class="bg-teal-500 text-primary-container px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-teal-400 transition-all scale-95 duration-150">Quick Scan</button>
+<div class="flex items-center gap-2 border-l border-white/10 pl-4">
+<span class="material-symbols-outlined text-purple-200 cursor-pointer hover:bg-white/10 p-1.5 rounded transition-colors">notifications</span>
+<span class="material-symbols-outlined text-purple-200 cursor-pointer hover:bg-white/10 p-1.5 rounded transition-colors">settings</span>
+<img alt="Manager Profile" class="w-8 h-8 rounded-full border border-teal-400/30" data-alt="professional headshot of a logistics manager in a dark suit with a clean office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA97QsKSjONPHCF2sYxC9JnsfJrV6Lnj8dV_8MEeBZGLEGimARkDPnqCozgdgJMcjsHyIdQELE7DLwoYDFOJYL-Hr-tzJ9yrLoGbXAOVPhYycssOfAiH8ikEoYEmam6YzzlDwG02OnBdfXZ2jgqIq898qrx1rU0I_87FO_cAwuTvLQh5g4vkqJJrMTbeMxh0HGCsQzKinG0MYAN_2gEWQnKw3iLHXrQZW_3x4MTjawCKFf_pW2vbjN-kqDZD8pSgJWuUayFtN3sHcxe"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-14 bottom-0 flex flex-col z-40 bg-slate-50 dark:bg-slate-950 w-20 hover:w-64 transition-all duration-300 border-r border-slate-200 dark:border-slate-800 group tonal-layering surface-container-low ease-in-out transition-all">
+<div class="flex flex-col flex-1 py-4 overflow-hidden">
+<div class="px-6 mb-8 flex items-center gap-4 overflow-hidden whitespace-nowrap">
+<div class="min-w-[32px] h-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity">
+<h2 class="text-purple-900 font-black text-sm uppercase">KOB/BTV WH</h2>
+<p class="text-[10px] text-slate-500 font-bold tracking-widest">PRECISION LOGISTICS</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<!-- Navigation Item 1: Overview -->
+<a class="flex items-center h-12 px-6 gap-4 bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 border-l-4 border-teal-500 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Overview</span>
+</a>
+<!-- Item 2 -->
+<a class="flex items-center h-12 px-6 gap-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-purple-900 transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Inventory</span>
+</a>
+<!-- Item 3 -->
+<a class="flex items-center h-12 px-6 gap-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-purple-900 transition-all" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Shipments</span>
+</a>
+<!-- Item 4 -->
+<a class="flex items-center h-12 px-6 gap-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-purple-900 transition-all" href="#">
+<span class="material-symbols-outlined">assignment_return</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Returns</span>
+</a>
+<!-- Item 5 -->
+<a class="flex items-center h-12 px-6 gap-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-purple-900 transition-all" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto px-6 mb-6">
+<button class="w-full bg-primary text-white py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hidden group-hover:block whitespace-nowrap">New Shipment</button>
+</div>
+<div class="border-t border-slate-200 dark:border-slate-800 pt-4 flex flex-col gap-1">
+<a class="flex items-center h-12 px-6 gap-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-purple-900 transition-all" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Switch WH</span>
+</a>
+<a class="flex items-center h-12 px-6 gap-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-purple-900 transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="text-[11px] font-bold uppercase tracking-wider Inter opacity-0 group-hover:opacity-100 whitespace-nowrap">Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pl-20 pt-14 min-h-screen">
+<!-- Scan Status Bar (Global) -->
+<div class="w-full h-1 bg-tertiary-fixed">
+<div class="h-full bg-tertiary w-3/4"></div>
+</div>
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Header & Time Period Toggles -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Shopee Official</h1>
+<p class="text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">location_on</span>
+                        Multi-Warehouse Performance Deep Dive (KOB + BTV)
+                    </p>
+</div>
+<div class="bg-surface-container-low p-1 rounded flex gap-1">
+<button class="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-white shadow-sm rounded">Daily</button>
+<button class="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-white/50 rounded">Monthly</button>
+<button class="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-white/50 rounded">Yearly</button>
+</div>
+</div>
+<!-- Bento Grid: Top Performance KPIs -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+<!-- SLA Fulfillment -->
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-tertiary">
+<p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Ship-on-Time (SLA)</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold text-on-surface">98.4%</span>
+<span class="text-xs font-bold text-tertiary-container">+0.4% from last period</span>
+</div>
+<div class="mt-4 h-1 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[98.4%]"></div>
+</div>
+</div>
+<!-- Non-Fulfillment Rate -->
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-primary">
+<p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Non-Fulfillment Rate</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold text-on-surface">0.82%</span>
+<span class="text-xs font-bold text-error">Critical Threshold: 1.0%</span>
+</div>
+<div class="mt-4 flex gap-1">
+<div class="h-2 w-full bg-primary/20"></div>
+<div class="h-2 w-full bg-primary/20"></div>
+<div class="h-2 w-full bg-primary/60"></div>
+<div class="h-2 w-full bg-primary/20"></div>
+</div>
+</div>
+<!-- Customer Ratings -->
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-tertiary-container">
+<p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">Store Rating</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold text-on-surface">4.92</span>
+<div class="flex text-tertiary-container text-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+</div>
+<p class="text-xs text-on-surface-variant mt-2">Based on 12,403 verified orders</p>
+</div>
+</div>
+<!-- Main Operational Dashboard Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+<!-- Left: Pipeline Status (3/4 Width) -->
+<div class="lg:col-span-3 flex flex-col gap-6">
+<div class="bg-surface-container-lowest p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-9xl">shopping_cart</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface mb-6 uppercase tracking-widest border-b border-surface-container pb-4">Live Pipeline: Shopee Orders</h3>
+<div class="grid grid-cols-3 gap-8">
+<!-- Stage: Picking -->
+<div class="group">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Picking</span>
+<span class="bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-bold">142</span>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-low p-4 hover:bg-surface-bright transition-colors border-l-2 border-transparent hover:border-tertiary">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-sm text-on-surface">ORD-SHP-2993</span>
+<span class="text-[10px] text-tertiary-container font-bold uppercase">Urgent</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase">KOB Warehouse • Aisle 4</p>
+</div>
+<div class="bg-surface-container-low p-4 hover:bg-surface-bright transition-colors border-l-2 border-transparent hover:border-tertiary">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-sm text-on-surface">ORD-SHP-3001</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">Standard</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase">BTV Warehouse • Aisle 12</p>
+</div>
+</div>
+<button class="w-full mt-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors">View All Picking</button>
+</div>
+<!-- Stage: Packing -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Packing</span>
+<span class="bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-bold">87</span>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-low p-4 border-l-2 border-tertiary-container">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-sm text-on-surface">ORD-SHP-2877</span>
+<span class="text-[10px] text-tertiary-container font-bold uppercase">Ready</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase">3 Items • Bubble Wrap Req.</p>
+</div>
+<div class="bg-surface-container-low p-4">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-sm text-on-surface">ORD-SHP-2884</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">Standard</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase">1 Item • Eco-Box</p>
+</div>
+</div>
+</div>
+<!-- Stage: Shipping -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Shipping</span>
+<span class="bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-bold">211</span>
+</div>
+<div class="space-y-3">
+<div class="bg-tertiary-container text-on-tertiary-container p-4">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-sm">Shopee Xpress</span>
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<p class="text-[10px] uppercase font-medium">Van L-920 Picked up</p>
+</div>
+<div class="bg-surface-container-low p-4">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-sm text-on-surface">J&amp;T Express</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">In Transit</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase">Bulk Load #422</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Warehouse Comparison (Horizontal Layer) -->
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-surface-container-low p-6 rounded">
+<h4 class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-4">KOB Warehouse Allocation</h4>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full border-4 border-primary border-t-transparent"></div>
+<div>
+<p class="text-2xl font-bold">642</p>
+<p class="text-[10px] font-bold uppercase text-on-surface-variant">Daily Units Dispatched</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded">
+<h4 class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-4">BTV Warehouse Allocation</h4>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full border-4 border-tertiary border-r-transparent"></div>
+<div>
+<p class="text-2xl font-bold">891</p>
+<p class="text-[10px] font-bold uppercase text-on-surface-variant">Daily Units Dispatched</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Connectivity & Stats (1/4 Width) -->
+<div class="flex flex-col gap-6">
+<!-- API Connectivity Widgets -->
+<div class="bg-surface-container-lowest p-6">
+<h3 class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-6">Shopee API Connectivity</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+<span class="text-[11px] font-bold uppercase tracking-tighter">Order Fetch</span>
+</div>
+<span class="text-[10px] font-medium text-on-surface-variant">42ms</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="text-[11px] font-bold uppercase tracking-tighter">Stock Sync</span>
+</div>
+<span class="text-[10px] font-medium text-on-surface-variant">118ms</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+<span class="text-[11px] font-bold uppercase tracking-tighter">Label Print</span>
+</div>
+<span class="text-[10px] font-medium text-on-surface-variant">842ms</span>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-outline-variant/30 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-surface-container transition-colors">Test Endpoints</button>
+</div>
+<!-- Platform Specific Graphic -->
+<div class="relative bg-primary-container h-48 rounded-lg overflow-hidden group">
+<img alt="Warehouse Interior" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:scale-105 transition-transform duration-700" data-alt="dramatic interior of a modern high-tech warehouse with rows of organized shelves and blue industrial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoOiXI8O5tHv7B5uDXWFGW5mbDY3yp3X06U7IhH9ZboRFI90RFSGIV_WJkYxQQvdKpNrQMSPFIYLCGsGJtUJ2ZAHDSclHpxei8IWi_w4jx2fsIoNBmd9N1d79au6t2g7Oe8njA2mcQ-J3p4UnE9VNaMEpsYoMH37mMqSLf29k6TaIr94wtSGnVAFYrj5EviurkFvrvG92g6J--bImwrlXtfbcTOvctubA-rem9Oiwk8DB151eXjcqLJD8t70aUB5sfwJ3gyS3ZErto"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary to-transparent p-6 flex flex-col justify-end">
+<span class="text-white text-xs font-bold uppercase tracking-widest">Platform Note</span>
+<p class="text-white/80 text-[10px] leading-relaxed mt-2">Inventory balance across Shopee stores is synced every 5 minutes with priority for Warehouse BTV.</p>
+</div>
+</div>
+<!-- Export Actions -->
+<div class="bg-surface-container-highest p-6 rounded-lg">
+<p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-4">Deep Dive Data</p>
+<div class="flex flex-col gap-2">
+<button class="flex items-center justify-between px-4 py-2 bg-white text-[11px] font-bold text-primary hover:bg-surface-bright">
+                                EXPORT CSV <span class="material-symbols-outlined text-sm">download</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2 bg-white text-[11px] font-bold text-primary hover:bg-surface-bright">
+                                PERFORMANCE PDF <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Notifications / Alerts -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex items-center gap-4 bg-error-container/20 p-4 border-l-4 border-error">
+<span class="material-symbols-outlined text-error">warning</span>
+<div>
+<p class="text-[11px] font-black uppercase text-error">SLA Warning: 14 Orders</p>
+<p class="text-[10px] text-on-surface-variant">Orders from KOB Warehouse approaching deadline in &lt; 2 hours.</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-tertiary-container/10 p-4 border-l-4 border-tertiary">
+<span class="material-symbols-outlined text-tertiary">info</span>
+<div>
+<p class="text-[11px] font-black uppercase text-tertiary">Shopee Mega-Sale Event</p>
+<p class="text-[10px] text-on-surface-variant">Scheduled for +3 days. Capacity forecast: 240% increase.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for quick action (Suppressed as per rules on detail dashboards, but included for system consistency if navigation shell requires it) -->
+<div class="fixed bottom-8 right-8 flex flex-col gap-3">
+<button class="w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+</div>
+</body></html>

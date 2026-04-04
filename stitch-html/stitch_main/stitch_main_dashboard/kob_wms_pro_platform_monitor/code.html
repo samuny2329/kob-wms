@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro | Platform Monitor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffd7f1",
+                        "on-tertiary-fixed-variant": "#004f53",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-primary-container": "#f0bfe0",
+                        "primary": "#57344f",
+                        "surface-container-low": "#f3f3f3",
+                        "on-error-container": "#93000a",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "inverse-surface": "#2f3131",
+                        "outline": "#80747a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#ffd7f1",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "on-secondary-container": "#795370",
+                        "tertiary-fixed-dim": "#78d5db",
+                        "on-surface-variant": "#4e444a",
+                        "surface-bright": "#f9f9f9",
+                        "surface-tint": "#79526f",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary-fixed": "#2f1029",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#2e1029",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#714b67",
+                        "outline-variant": "#d1c3ca",
+                        "on-tertiary-fixed": "#002022",
+                        "on-secondary-fixed-variant": "#5f3b56",
+                        "secondary-fixed-dim": "#e8b8da",
+                        "tertiary": "#00474b",
+                        "tertiary-container": "#006166",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-primary": "#e9b8d9",
+                        "secondary-container": "#fdccee",
+                        "on-tertiary-container": "#7fdce2",
+                        "on-surface": "#1a1c1c",
+                        "error-container": "#ffdad6",
+                        "background": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "on-background": "#1a1c1c",
+                        "secondary": "#79526f",
+                        "tertiary-fixed": "#95f1f8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-layering {
+            background-color: #f3f3f3;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+            color: #1a1c1c;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1c3ca;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-gradient-to-r from-[#57344F] to-[#714B67] shadow-sm flex items-center justify-between px-6 h-14 w-full">
+<div class="flex items-center gap-4">
+<span class="text-lg font-bold tracking-tight text-white">KOB WMS Pro</span>
+<nav class="hidden md:flex items-center gap-6 ml-8 h-full">
+<a class="text-white border-b-2 border-white h-14 flex items-center px-1 text-sm font-medium" href="#">Dashboard</a>
+<a class="text-white/70 hover:bg-white/10 transition-colors h-14 flex items-center px-1 text-sm font-medium" href="#">Network</a>
+<a class="text-white/70 hover:bg-white/10 transition-colors h-14 flex items-center px-1 text-sm font-medium" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-white/10 rounded px-3 py-1 cursor-pointer">
+<span class="material-symbols-outlined text-white text-sm mr-2">search</span>
+<input class="bg-transparent border-none text-white text-xs focus:ring-0 placeholder-white/50 w-48" placeholder="Quick Search..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-white cursor-pointer hover:bg-white/10 p-1.5 rounded transition-colors">notifications</span>
+<span class="material-symbols-outlined text-white cursor-pointer hover:bg-white/10 p-1.5 rounded transition-colors">settings</span>
+<span class="material-symbols-outlined text-white cursor-pointer hover:bg-white/10 p-1.5 rounded transition-colors">help</span>
+<img alt="Administrator Profile" class="w-8 h-8 rounded-full border border-white/20 ml-2 object-cover" data-alt="Professional administrator profile portrait in a minimalist office setting, clean lighting, corporate style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs1P8kDlt7JMbaDU7Ib6ZIL4zNmGo9VZrGRCqjYt2hh6jUCWwOPMAoepu1ytdSy2V12ib5IeaY9VB_dHjzkHQrDOqPgrnwIftc3uVxf8jmzeCKhzKmj1dhoXMw2Ett26OjKv-hrvd3TOXpIFoZtT2bmx7i84VrWpIZ9Iv-MkOD5EcQ8u5b56wkWvNGDzqvVPtxdAPZe9CHnl1JDm4mLa-nLW4L8G3tGJJJL7yq_WN_ChwnX29EU_oTfp2Ot8g47NJpt0L--I04VBL2"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-[220px] bg-[#F3F3F3] flex flex-col py-4 border-r border-[#D1C3CA]/15 z-40">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-8 h-8 bg-[#714B67] rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl">hub</span>
+</div>
+<div>
+<p class="text-[11px] font-bold uppercase tracking-wider text-[#714B67] font-['Inter']">Platform Monitor</p>
+<p class="text-[10px] text-[#57344F]/60">Global Overview</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<div class="px-2">
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#714B67] bg-white font-bold border-l-4 border-[#00A09D] transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#57344F]/60 hover:bg-gray-200/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">factory</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">Zone Control</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#57344F]/60 hover:bg-gray-200/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#57344F]/60 hover:bg-gray-200/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">System Health</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#57344F]/60 hover:bg-gray-200/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">Audit Logs</span>
+</a>
+</div>
+</nav>
+<div class="px-4 mt-auto mb-4">
+<button class="w-full py-2 bg-error text-white text-[11px] font-bold uppercase tracking-widest rounded-sm hover:bg-red-700 transition-colors shadow-sm">
+                Emergency Stop
+            </button>
+</div>
+<div class="px-2 pt-4 border-t border-[#D1C3CA]/30">
+<a class="flex items-center gap-3 px-4 py-2 text-[#57344F]/60 hover:bg-gray-200/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#57344F]/60 hover:bg-gray-200/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[220px] pt-14 h-screen overflow-y-auto bg-surface custom-scrollbar">
+<!-- Scan Status Progress Bar -->
+<div class="w-full h-1 bg-tertiary-fixed shadow-sm"></div>
+<div class="p-6 max-w-[1600px] mx-auto">
+<!-- Executive Header Section -->
+<div class="flex flex-col md:flex-row gap-6 mb-8">
+<!-- Executive Health Score Card -->
+<div class="flex-1 bg-surface-container-lowest border-l-[3px] border-[#00A09D] p-6 shadow-[8px_24px_rgba(26,28,28,0.04)]">
+<div class="flex justify-between items-start mb-4">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Overall System Health</span>
+<div class="flex items-center gap-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-tertiary"></span>
+</span>
+<span class="text-[10px] font-semibold text-tertiary uppercase">Live Pulse</span>
+</div>
+</div>
+<div class="flex items-end gap-3">
+<span class="text-5xl font-extrabold tracking-tighter text-on-surface">99.8%</span>
+<span class="text-tertiary font-bold pb-2">+0.2% (24h)</span>
+</div>
+<div class="mt-4 grid grid-cols-3 gap-2">
+<div class="h-1 bg-tertiary rounded-full"></div>
+<div class="h-1 bg-tertiary rounded-full"></div>
+<div class="h-1 bg-tertiary/20 rounded-full"></div>
+</div>
+</div>
+<!-- Active Fleet & Device Oversight -->
+<div class="flex-[2] grid grid-cols-3 gap-4">
+<div class="bg-surface-container-lowest border-l-[3px] border-primary p-4 shadow-[8px_24px_rgba(26,28,28,0.04)]">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block mb-2">Handhelds Online</span>
+<div class="flex items-center justify-between">
+<span class="text-2xl font-bold text-on-surface">1,402</span>
+<span class="material-symbols-outlined text-primary/40">devices</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border-l-[3px] border-primary p-4 shadow-[8px_24px_rgba(26,28,28,0.04)]">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block mb-2">Active Trucks</span>
+<div class="flex items-center justify-between">
+<span class="text-2xl font-bold text-on-surface">84</span>
+<span class="material-symbols-outlined text-primary/40">local_shipping</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border-l-[3px] border-primary p-4 shadow-[8px_24px_rgba(26,28,28,0.04)]">
+<span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block mb-2">Print Nodes</span>
+<div class="flex items-center justify-between">
+<span class="text-2xl font-bold text-on-surface">100%</span>
+<span class="material-symbols-outlined text-primary/40">print</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Multi-Zone Connectivity Monitor (Left Column) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<section class="bg-surface-container-low p-6 rounded-lg">
+<h3 class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">hub</span>
+                            Multi-Zone Connectivity
+                        </h3>
+<div class="space-y-4">
+<!-- WH1 -->
+<div class="bg-surface-container-lowest p-4 rounded border border-outline-variant/15 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-sm font-semibold">WH1 - Northern Hub</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-tertiary">Active</span>
+</div>
+<!-- WH2 -->
+<div class="bg-surface-container-lowest p-4 rounded border border-outline-variant/15 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-sm font-semibold">WH2 - Central Distribution</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-tertiary">Active</span>
+</div>
+<!-- BTV-Logistics -->
+<div class="bg-surface-container-lowest p-4 rounded border border-outline-variant/15 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-sm font-semibold">BTV-Logistics</span>
+</div>
+<span class="text-[10px] font-bold uppercase text-error">Heavy Load</span>
+</div>
+<div class="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+<div class="w-[92%] h-full bg-error"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant">92% Throughput Capacity Reached</span>
+</div>
+</div>
+</section>
+<!-- Global SLA Heatmap -->
+<section class="bg-surface-container-lowest p-6 shadow-[8px_24px_rgba(26,28,28,0.04)] relative overflow-hidden">
+<h3 class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-4">Global Fulfillment performance</h3>
+<div class="h-48 rounded bg-surface-container-high relative flex items-center justify-center">
+<img class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" data-alt="Abstract stylized digital world map with glowing nodes representing logistics data and network connectivity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhAPsxerjjUhh04XIdFOSZ9u6QA1nApi-KjvN6hd_ppxDdrMartDqk6jlloT-N_FDONn1UDdKX6kBVtrwHXG5z48jjyiJTfyK6WuwiFOuC6An2WAtJBG-sXi1Gjximf2ZwwdpLvvGx04ZeVGzKCsH0MWhGfOIWinQSskII6HAim633VcXvpyEp8bDdUj39QM8UVHNimm0SxWH_GEw2wFaqEcU1tqVf-Kj93eH57meXaMZe-AOYCJXxl24yJbBrD5s4yg-exIrCooRY"/>
+<div class="z-10 text-center">
+<span class="material-symbols-outlined text-4xl text-primary/40">public</span>
+<p class="text-[10px] font-medium text-on-surface-variant mt-2 uppercase tracking-tighter">Mini-Map Fulfillment SLA View</p>
+</div>
+<!-- Pulse points -->
+<div class="absolute top-1/4 left-1/3 w-2 h-2 bg-tertiary rounded-full animate-ping"></div>
+<div class="absolute bottom-1/3 right-1/4 w-2 h-2 bg-error rounded-full animate-ping"></div>
+<div class="absolute top-1/2 left-2/3 w-2 h-2 bg-tertiary rounded-full animate-ping"></div>
+</div>
+<div class="mt-4 flex justify-between">
+<div class="text-center">
+<p class="text-[10px] uppercase text-on-surface-variant">North Am.</p>
+<p class="text-sm font-bold">99.2%</p>
+</div>
+<div class="text-center">
+<p class="text-[10px] uppercase text-on-surface-variant">EMEA</p>
+<p class="text-sm font-bold">98.5%</p>
+</div>
+<div class="text-center">
+<p class="text-[10px] uppercase text-on-surface-variant">APAC</p>
+<p class="text-sm font-bold text-error">91.4%</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Live Transaction Throughput (Middle Column) -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
+<section class="bg-surface-container-lowest p-6 shadow-[8px_24px_rgba(26,28,28,0.04)] h-full border-l-[3px] border-tertiary">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h3 class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Live Transaction Throughput</h3>
+<p class="text-2xl font-bold tracking-tight">842 <span class="text-xs font-normal text-on-surface-variant uppercase">orders/min</span></p>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 bg-surface-container text-[10px] font-bold rounded">1H</span>
+<span class="px-2 py-1 bg-primary text-white text-[10px] font-bold rounded">LIVE</span>
+</div>
+</div>
+<!-- High Density Visualization Mockup -->
+<div class="h-64 flex items-end gap-1 mb-6">
+<div class="w-full bg-tertiary/10 h-32 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/10 h-40 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/10 h-36 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/10 h-48 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/20 h-52 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/40 h-60 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/20 h-44 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/10 h-38 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/30 h-42 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/60 h-56 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/80 h-64 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary h-60 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-error h-24 hover:bg-error/80 transition-colors"></div>
+<div class="w-full bg-tertiary/20 h-32 hover:bg-tertiary/30 transition-colors"></div>
+<div class="w-full bg-tertiary/10 h-28 hover:bg-tertiary/30 transition-colors"></div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center text-sm py-2 border-b border-outline-variant/10">
+<span class="text-on-surface-variant">Peak Throughput</span>
+<span class="font-bold">1,204 ops/min</span>
+</div>
+<div class="flex justify-between items-center text-sm py-2 border-b border-outline-variant/10">
+<span class="text-on-surface-variant">Average Wait Time</span>
+<span class="font-bold">120ms</span>
+</div>
+<div class="flex justify-between items-center text-sm py-2">
+<span class="text-on-surface-variant">DB Connectivity</span>
+<span class="font-bold text-tertiary">99.99%</span>
+</div>
+</div>
+</section>
+</div>
+<!-- System Logs & Error Stream (Right Column) -->
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+<section class="bg-[#1A1C1C] text-white p-6 h-[500px] flex flex-col shadow-xl">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Live System Stream</h3>
+<span class="text-[10px] bg-white/10 px-2 py-1 rounded">AUTO-SCROLL</span>
+</div>
+<div class="flex-1 overflow-y-auto font-mono text-[11px] space-y-3 custom-scrollbar pr-2">
+<div class="flex gap-2">
+<span class="text-gray-500">[14:22:01]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>WH1: Load balancer shifted to node_C4</span>
+</div>
+<div class="flex gap-2 border-l-2 border-error pl-2 py-1 bg-error/10">
+<span class="text-gray-500">[14:22:04]</span>
+<span class="text-error font-bold">ERROR</span>
+<span class="text-error-container">PRINTER_OFFLINE: Node_P22 timeout at WH2</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:22:15]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>DB_SYNC: Daily manifest synced for EMEA</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:22:18]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>FLEET: Truck #84 signal verified at gate 12</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:23:01]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>SECURITY: RSA key rotation successful</span>
+</div>
+<div class="flex gap-2 border-l-2 border-error pl-2 py-1 bg-error/10">
+<span class="text-gray-500">[14:23:44]</span>
+<span class="text-error font-bold">CRITICAL</span>
+<span class="text-error-container">WH2_CON_LOST: Ping failure on primary fiber</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:24:02]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>ROUTING: Auto-reroute engaged for WH2 via failover</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:24:10]</span>
+<span class="text-gray-400">DEBUG</span>
+<span>Latency spike detected: 450ms on egress</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:24:30]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>SYSTEM: All heartbeats received</span>
+</div>
+<div class="flex gap-2">
+<span class="text-gray-500">[14:25:01]</span>
+<span class="text-tertiary-fixed font-bold">INFO</span>
+<span>API: Transaction commit for order #99423</span>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-white/10 flex items-center gap-4">
+<span class="text-[10px] text-gray-400 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary rounded-full"></span>
+                                142 Event/Sec
+                            </span>
+<span class="text-[10px] text-gray-400 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-error rounded-full"></span>
+                                2 Errors
+                            </span>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</body></html>

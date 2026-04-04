@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OmniChannel Ledger - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#4b5d33",
+                    "surface-tint": "#79526f",
+                    "on-secondary-container": "#725f6b",
+                    "inverse-surface": "#2e3132",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#d8c0ce",
+                    "secondary-container": "#f5dbea",
+                    "on-background": "#191c1d",
+                    "outline-variant": "#d1c3ca",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-container": "#c0d5a0",
+                    "on-surface-variant": "#4e444a",
+                    "tertiary": "#34451e",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#d5eab4",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "inverse-primary": "#e9b8d9",
+                    "primary-fixed": "#ffd7f1",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-secondary-fixed": "#251721",
+                    "surface-container": "#edeeef",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#112000",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8f9fa",
+                    "surface": "#f8f9fa",
+                    "primary": "#57344f",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "primary-container": "#714b67",
+                    "outline": "#80747a",
+                    "on-primary-fixed": "#2f1029",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "secondary": "#6c5965",
+                    "on-secondary-fixed-variant": "#53424d",
+                    "surface-variant": "#e1e3e4",
+                    "surface-dim": "#d9dadb",
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "on-primary-container": "#f0bfe0",
+                    "secondary-fixed": "#f5dbea",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-high": "#e7e8e9",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body { font-family: 'Inter', sans-serif; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-header {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #d1c3ca; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md shadow-[0px_4px_20px_rgba(25,28,29,0.06)] flex justify-between items-center px-6 h-14 w-full">
+<div class="flex items-center gap-8">
+<span class="text-lg font-semibold text-[#714B67] dark:text-[#a37c98]">OmniChannel Ledger</span>
+<div class="hidden md:flex items-center gap-1">
+<div class="px-3 py-1 bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-colors rounded-md text-zinc-500 flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">search</span>
+<span class="text-[0.75rem]">Search orders, products...</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-gradient-to-tr from-[#57344f] to-[#714b67] text-white px-4 py-1.5 rounded-lg text-[0.75rem] font-medium transition-all hover:opacity-90 shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+                Sync Orders
+            </button>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-zinc-100/50 rounded-full text-zinc-500 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-zinc-100/50 rounded-full text-zinc-500 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-outline-variant/30">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="professional user portrait in minimalist office setting with soft natural light and blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxqkfquIrjCdSPtmO9vCdZ7PgVj0wPRkyvgX88JPxHdgMHzrdJn7B076ii9IXRJIONZNKpMY1koWTu_gYo57Yrcn11nFurJPL-1URRDeFd2jYTclWdjgxGIyVhx6gGM3izQAe9rAg_nAIdfchwspB63AQeCEcstwbe4bRCshImDToSx7UZxO3BgOTkohKAdRGyaETzZY4Wt8j1CttkLw0panzOxUwPrI87_ePPdvvLmlZP4w6LrMZdbsZSggENTLnlckEOoUplX2g3"/>
+</div>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[220px] z-[60] bg-zinc-100 dark:bg-zinc-900 flex flex-col h-full pt-16 pb-4 px-3">
+<div class="mb-8 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+</div>
+<div>
+<h2 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-tight">Enterprise Core</h2>
+<p class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">V19.4 Operational</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-zinc-800 text-[#714B67] border-l-4 border-[#714B67] font-medium text-[0.75rem] transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                Orders
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory</span>
+                Products
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">leaderboard</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+                Help
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[0.75rem] font-medium transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[220px] pt-14 p-8 bg-surface min-h-screen">
+<!-- Header Section -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h1 class="text-2xl font-medium text-zinc-900 tracking-tight">TikTok Shop Operations</h1>
+<p class="text-sm text-on-surface-variant mt-1">Real-time KOB WMS Pro logistics monitor</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-tertiary-container/10 rounded-full">
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></div>
+<span class="text-[0.7rem] font-bold text-tertiary uppercase tracking-widest">Live Stream Active</span>
+</div>
+<button class="flex items-center gap-2 px-4 py-1.5 bg-surface-container-high rounded-md text-[0.75rem] font-medium text-zinc-700 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Filter View
+                </button>
+</div>
+</div>
+<!-- Dashboard Grid (Bento Style) -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Live Stream Spike Monitor (Primary) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0px_4px_20px_rgba(25,28,29,0.06)] relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Live Order Velocity</h3>
+<p class="text-3xl font-bold text-primary">1,284 <span class="text-sm font-normal text-tertiary tracking-normal ml-2">+240/min</span></p>
+</div>
+<div class="flex gap-1">
+<span class="px-2 py-0.5 bg-zinc-100 rounded text-[10px] font-bold text-zinc-500">REAL-TIME</span>
+<span class="px-2 py-0.5 bg-zinc-100 rounded text-[10px] font-bold text-zinc-500">TIKTOK SHOP</span>
+</div>
+</div>
+<!-- Visual Placeholder for Graph -->
+<div class="h-48 w-full bg-surface-container-low rounded-lg relative flex items-end p-4 gap-2">
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 40%"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 35%"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 55%"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 70%"></div>
+<div class="flex-1 bg-primary/30 rounded-t-sm" style="height: 85%"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 95%"></div>
+<div class="flex-1 bg-primary rounded-t-sm" style="height: 100%"></div>
+<div class="flex-1 bg-primary/90 rounded-t-sm" style="height: 80%"></div>
+<div class="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[2px]">
+<div class="px-4 py-2 bg-white shadow-xl rounded-lg border border-outline-variant/30 text-center">
+<p class="text-[0.65rem] text-zinc-500 font-bold uppercase">Spike Detected</p>
+<p class="text-xs font-semibold">"Summer Glow Up" Live Session</p>
+</div>
+</div>
+</div>
+<!-- Mini Stats Overlay -->
+<div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-zinc-100">
+<div>
+<p class="text-[0.65rem] font-bold text-zinc-500 uppercase">Backlog</p>
+<p class="text-lg font-bold text-zinc-900">4,210</p>
+</div>
+<div>
+<p class="text-[0.65rem] font-bold text-zinc-500 uppercase">Avg Process Time</p>
+<p class="text-lg font-bold text-zinc-900">3.4 min</p>
+</div>
+<div>
+<p class="text-[0.65rem] font-bold text-zinc-500 uppercase">Labor Efficiency</p>
+<p class="text-lg font-bold text-zinc-900 text-tertiary">92%</p>
+</div>
+</div>
+</div>
+<!-- Pending Returns & Refunds -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-low rounded-xl p-6 flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Refund Pulse</h3>
+<span class="material-symbols-outlined text-zinc-400">keyboard_return</span>
+</div>
+<div class="space-y-4 flex-1">
+<div class="p-4 bg-white rounded-lg shadow-sm">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[0.7rem] font-bold text-error uppercase">Action Required</span>
+<span class="text-[0.7rem] text-zinc-400">2h ago</span>
+</div>
+<p class="text-sm font-semibold mb-1">Refund #TK-9921-A</p>
+<p class="text-[0.7rem] text-zinc-500">Customer reported "Damaged in Transit". Needs WMS photo verification.</p>
+</div>
+<div class="p-4 bg-white/60 rounded-lg">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[0.7rem] font-bold text-zinc-500 uppercase">Pending Review</span>
+<span class="text-[0.7rem] text-zinc-400">5h ago</span>
+</div>
+<p class="text-sm font-semibold mb-1">Return #TK-8854-F</p>
+<p class="text-[0.7rem] text-zinc-500">Return package received at dock 4. Triage pending.</p>
+</div>
+<div class="p-4 bg-white/60 rounded-lg">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[0.7rem] font-bold text-zinc-500 uppercase">Automated System</span>
+<span class="text-[0.7rem] text-zinc-400">1d ago</span>
+</div>
+<p class="text-sm font-semibold mb-1">12 Refunds Processed</p>
+<p class="text-[0.7rem] text-zinc-500">Auto-approvals based on "Item not received" within SLA.</p>
+</div>
+</div>
+<button class="mt-4 w-full py-2 text-[0.75rem] font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors">
+                    Manage All Returns
+                </button>
+</div>
+<!-- Fulfillment Rules (Pick-to-Light) -->
+<div class="col-span-12 lg:col-span-5 bg-surface-container-highest rounded-xl p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Pick-to-Light Nodes</h3>
+<span class="material-symbols-outlined text-[#714B67]">light_mode</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-surface-container-lowest rounded-lg border-l-4 border-tertiary">
+<p class="text-[0.65rem] font-bold text-zinc-500 uppercase">Zone A (Beauty)</p>
+<p class="text-xl font-bold">14 Active</p>
+<p class="text-[0.65rem] text-tertiary font-medium">Optimal flow</p>
+</div>
+<div class="p-4 bg-surface-container-lowest rounded-lg border-l-4 border-primary">
+<p class="text-[0.65rem] font-bold text-zinc-500 uppercase">Zone B (Apparel)</p>
+<p class="text-xl font-bold">32 Active</p>
+<p class="text-[0.65rem] text-primary font-medium">Congestion warning</p>
+</div>
+</div>
+<div class="mt-6 space-y-3">
+<div class="flex items-center justify-between text-[0.75rem]">
+<span class="text-zinc-600">TikTok SLA Bundle Rule</span>
+<div class="w-10 h-5 bg-tertiary/20 rounded-full relative">
+<div class="absolute right-1 top-1 w-3 h-3 bg-tertiary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-[0.75rem]">
+<span class="text-zinc-600">Express Priority Skip-line</span>
+<div class="w-10 h-5 bg-tertiary/20 rounded-full relative">
+<div class="absolute right-1 top-1 w-3 h-3 bg-tertiary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-[0.75rem]">
+<span class="text-zinc-600">Affiliate Sample Tagging</span>
+<div class="w-10 h-5 bg-zinc-200 rounded-full relative">
+<div class="absolute left-1 top-1 w-3 h-3 bg-zinc-400 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Influencer/Affiliate Sample Tracking (Data Table) -->
+<div class="col-span-12 lg:col-span-7 bg-surface-container-lowest rounded-xl p-6 shadow-[0px_4px_20px_rgba(25,28,29,0.06)]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Influencer Sample Shipments</h3>
+<button class="text-primary text-[0.75rem] font-bold flex items-center gap-1">
+                        View All <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-2">
+<thead>
+<tr>
+<th class="text-[0.65rem] font-bold text-zinc-400 uppercase pb-2 px-2">Influencer</th>
+<th class="text-[0.65rem] font-bold text-zinc-400 uppercase pb-2 px-2">Campaign</th>
+<th class="text-[0.65rem] font-bold text-zinc-400 uppercase pb-2 px-2">Status</th>
+<th class="text-[0.65rem] font-bold text-zinc-400 uppercase pb-2 px-2 text-right">ETA</th>
+</tr>
+</thead>
+<tbody class="text-[0.75rem]">
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-low transition-colors rounded-lg">
+<td class="py-3 px-2 font-medium flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="close up headshot of a stylish man with a warm smile and clear skin in natural studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXGCdaNDga1uBWszncOvZFgD1bLk-ccNI7AjH9jYAVBBZ6ttXUAS3PAjHNtPgXnj2mCwaUvHvzlwSsHK7hSnwBVARhutNE6A8LJXBGHs6iWsAFvmxDYtJgJJjNqrnjJmrQSj_GMzOFUN2_LJipd8D8rfBB1gTkIvm24K1hFmMrL8vkE1Y-t5O1QE2CRqyxGcodRXc-6n4TdrZ8KSzQAeDAbx7SJMn15fNLtOXkEqEtCOzZI0Ro4JPyIRyZzqNJEnOxje6STGD2QwzP"/>
+                                    @stylebyjames
+                                </td>
+<td class="py-3 px-2 text-zinc-500 italic">Summer Revive</td>
+<td class="py-3 px-2">
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary rounded-full text-[10px] font-bold uppercase">Delivered</span>
+</td>
+<td class="py-3 px-2 text-right text-zinc-500">—</td>
+</tr>
+<tr class="bg-white hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-2 font-medium flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="professional portrait of a confident young woman with elegant makeup and minimal background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBplROSPBptAEbKKKk3OA_mMDXT7YuiZzr4nyAw8fhBbZ1eMNkE1RgCjOvRYLl-dM_5axiaybrnWrUfQ1b2ZwFSTU22AfJzTD7yvEx5mj2tfjiUNB-SbURcOtq4vAtt6zyTPbP7P66hlZ81BSrz7v0tg2aQcaizHPcVO742RcCIQsy8MvPo-X8idiAmpE1oyJhw-25-IfyJWnPQ4iErC9lpmFNLLbRpHUPKTawfOba_EzBJNEPCW5KNr7DzdE7Gp2esFuMYerYeQpVG"/>
+                                    @glow_mama
+                                </td>
+<td class="py-3 px-2 text-zinc-500 italic">Kitchen Essentials</td>
+<td class="py-3 px-2">
+<span class="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase">In Transit</span>
+</td>
+<td class="py-3 px-2 text-right text-zinc-500">24 Aug</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-2 font-medium flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="studio shot of a cheerful young man with a casual style and clean background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOuxzNdux_kpjO9Tz8YNCFX12u_HAsUP98Cm7BG2U6pSYLMmYBV8Nu416Nh77Lps0wpPut_YHp2En5Dmq1P7gdozx6Nobpp3Crck9EhXVChq_0NMywVfknTRt4ZTPEqPD1vKlyFY9hLKsBTCNjNk2c_j5jt0vQqi3S59xa2dOVhzXhiOU5-Osu8ji_dJFF7YDm_dGA2YpzU_mhubCtyMUhFOJ81HiX2r7RmPRD6ij1IuXZ0sK7TKSrPsxW2wFL2zk25I_SX8rA3xGS"/>
+                                    @tech_reviews_daily
+                                </td>
+<td class="py-3 px-2 text-zinc-500 italic">Q3 Launch</td>
+<td class="py-3 px-2">
+<span class="px-2 py-0.5 bg-zinc-100 text-zinc-500 rounded-full text-[10px] font-bold uppercase">Processing</span>
+</td>
+<td class="py-3 px-2 text-right text-zinc-500">26 Aug</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Floating Action (Contextual) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-tr from-[#57344f] to-[#714b67] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 flex justify-around items-center h-16 px-4 z-50">
+<button class="flex flex-col items-center gap-1 text-[#714B67]">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Dashboard</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-zinc-400">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-[10px] font-bold">Orders</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-zinc-400">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-bold">Stock</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-zinc-400">
+<span class="material-symbols-outlined">tune</span>
+<span class="text-[10px] font-bold">Settings</span>
+</button>
+</nav>
+</body></html>

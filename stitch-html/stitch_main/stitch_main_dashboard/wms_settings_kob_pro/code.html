@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Source+Code+Pro:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f1f1f1",
+                    "inverse-primary": "#e9b8d9",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "on-tertiary-container": "#c0d5a0",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#f9f9f9",
+                    "on-surface-variant": "#4e444a",
+                    "on-primary-container": "#f0bfe0",
+                    "inverse-surface": "#2f3131",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-secondary-fixed-variant": "#53424d",
+                    "on-secondary-container": "#725f6b",
+                    "on-primary-fixed": "#2f1029",
+                    "on-background": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e2e2e2",
+                    "secondary-fixed-dim": "#d8c0ce",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "primary-fixed": "#ffd7f1",
+                    "surface-container-low": "#f3f3f3",
+                    "primary": "#57344f",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#34451e",
+                    "secondary-container": "#f5dbea",
+                    "surface-container-high": "#e8e8e8",
+                    "on-surface": "#1a1c1c",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#dadada",
+                    "secondary-fixed": "#f5dbea",
+                    "background": "#f9f9f9",
+                    "outline": "#80747a",
+                    "on-secondary-fixed": "#251721",
+                    "on-tertiary-fixed": "#112000",
+                    "primary-container": "#714b67",
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "surface-container": "#eeeeee",
+                    "error-container": "#ffdad6",
+                    "secondary": "#6c5965",
+                    "tertiary-fixed": "#d5eab4",
+                    "surface-tint": "#79526f",
+                    "surface": "#f9f9f9",
+                    "outline-variant": "#d1c3ca",
+                    "tertiary-container": "#4b5d33"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"],
+                    "mono": ["Source Code Pro"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ghost-border {
+            outline: 1px solid rgba(209, 195, 202, 0.15);
+        }
+        .editorial-input {
+            border: none;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom-color 0.2s ease;
+        }
+        .editorial-input:focus {
+            border-bottom-color: #57344f;
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-gradient-to-br from-[#714B67] to-[#57344F] text-white shadow-sm flex justify-between items-center px-6 h-16">
+<div class="flex items-center gap-4">
+<span class="text-lg font-bold tracking-[-0.02em] font-headline">KOB WMS Pro</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer">notifications</span>
+</div>
+<div class="flex items-center gap-2 hover:bg-white/10 p-1 pr-3 rounded-full transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-2xl">account_circle</span>
+<span class="text-sm font-medium">Administrator</span>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-16 h-full w-[240px] bg-surface-container-low dark:bg-slate-900 flex flex-col pt-4 gap-2 border-r border-transparent">
+<div class="px-6 mb-6">
+<h2 class="text-[#57344F] font-bold text-xl dark:text-white font-headline">Kinetic Architect</h2>
+<p class="text-xs font-semibold opacity-60 uppercase tracking-widest">Warehouse OS</p>
+</div>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-surface-container transition-all font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-surface-container transition-all font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-surface-container transition-all font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span>Operations</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-surface-container transition-all font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Reports</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#57344F] bg-surface-container dark:bg-slate-800 border-r-4 border-[#57344F] transition-all font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<!-- Main Content -->
+<main class="ml-[240px] mt-16 p-8 min-h-screen bg-surface">
+<div class="max-w-6xl mx-auto space-y-8">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-4">
+<div>
+<h1 class="text-3xl font-bold font-headline tracking-tight text-on-surface">Settings</h1>
+<p class="text-sm text-outline font-medium mt-1">Configure your warehouse ecosystem and API connections</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2 rounded font-semibold text-sm text-primary border border-outline-variant hover:bg-surface-container-low transition-all active:scale-95">Discard Changes</button>
+<button class="px-8 py-2 rounded font-semibold text-sm text-white bg-gradient-to-br from-[#57344f] to-[#714b67] shadow-sm hover:brightness-110 transition-all active:scale-95">Save Changes</button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Section 1: API Integrations - Odoo ERP -->
+<section class="bg-surface-container-lowest p-6 rounded ghost-border">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="cloud_sync">cloud_sync</span>
+<h3 class="text-lg font-bold font-headline">Odoo ERP Connection</h3>
+</div>
+<label class="flex items-center cursor-pointer">
+<span class="mr-3 text-xs font-bold text-outline uppercase tracking-tighter">Live Mode</span>
+<div class="relative">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-tertiary-container after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+</div>
+</label>
+</div>
+<div class="space-y-4">
+<div class="grid grid-cols-1 gap-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">URL</label>
+<input class="editorial-input bg-surface-container-low px-3 py-2 font-mono text-sm" type="text" value="https://kob-logistics.odoo.com"/>
+</div>
+<div class="grid grid-cols-1 gap-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Database Name</label>
+<input class="editorial-input bg-surface-container-low px-3 py-2 font-mono text-sm" type="text" value="kob_wms_pro_live"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-1 gap-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Username</label>
+<input class="editorial-input bg-surface-container-low px-3 py-2 font-mono text-sm" type="text" value="admin@kob.pro"/>
+</div>
+<div class="grid grid-cols-1 gap-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Password</label>
+<input class="editorial-input bg-surface-container-low px-3 py-2 font-mono text-sm" type="password" value="••••••••••••"/>
+</div>
+</div>
+</div>
+<div class="mt-8 flex gap-3">
+<button class="flex-1 px-4 py-2 text-xs font-bold border border-primary text-primary rounded hover:bg-primary/5 transition-all">Test Connection</button>
+<button class="flex-1 px-4 py-2 text-xs font-bold bg-primary text-white rounded hover:brightness-110 transition-all">Save ERP Config</button>
+</div>
+</section>
+<!-- Section 4: System Settings -->
+<section class="bg-surface-container-lowest p-6 rounded ghost-border">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="settings_suggest">settings_suggest</span>
+<h3 class="text-lg font-bold font-headline">System Core</h3>
+</div>
+<div class="grid grid-cols-2 gap-x-6 gap-y-6">
+<div class="space-y-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Interface Language</label>
+<select class="w-full bg-surface-container-low border-none text-sm font-medium py-2 px-3 focus:ring-0">
+<option>English (US)</option>
+<option>Thai (ภาษาไทย)</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Default Timezone</label>
+<select class="w-full bg-surface-container-low border-none text-sm font-medium py-2 px-3 focus:ring-0">
+<option>(GMT+07:00) Bangkok</option>
+<option>(GMT+00:00) UTC</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Auto-sync Interval (min)</label>
+<input class="w-full bg-surface-container-low border-none text-sm font-mono py-2 px-3 focus:ring-0" type="number" value="15"/>
+</div>
+<div class="space-y-1">
+<label class="text-[0.6875rem] font-semibold text-outline uppercase tracking-wider">Session Timeout (hrs)</label>
+<input class="w-full bg-surface-container-low border-none text-sm font-mono py-2 px-3 focus:ring-0" type="number" value="8"/>
+</div>
+</div>
+<div class="mt-6 p-4 bg-tertiary/5 rounded border border-tertiary-container/20">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary mt-1" data-icon="info">info</span>
+<p class="text-xs text-on-surface opacity-80 leading-relaxed">System performance is currently optimized for high-frequency scanning. Sync intervals below 5 minutes may increase server load during peak operations.</p>
+</div>
+</div>
+</section>
+<!-- Section 2: Platform APIs -->
+<section class="bg-surface-container-lowest p-6 rounded ghost-border lg:col-span-2">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary" data-icon="shopping_cart">shopping_cart</span>
+<h3 class="text-lg font-bold font-headline">Marketplace Platform Integrations</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Shopee -->
+<div class="p-4 bg-surface rounded flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-[#EE4D2D]/10 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-[#EE4D2D]" data-icon="store">store</span>
+</div>
+<span class="font-bold text-sm tracking-tight">Shopee</span>
+</div>
+<label class="inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container-highest rounded-full peer peer-checked:bg-tertiary-container after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4"></div>
+</label>
+</div>
+<div class="space-y-1">
+<label class="text-[0.625rem] font-bold text-outline uppercase tracking-widest">API Key</label>
+<input class="w-full editorial-input bg-white px-2 py-1.5 font-mono text-xs" type="text" value="SHP_88291_AXZ_991"/>
+</div>
+</div>
+<!-- Lazada -->
+<div class="p-4 bg-surface rounded flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-[#0F146D]/10 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-[#0F146D]" data-icon="local_mall">local_mall</span>
+</div>
+<span class="font-bold text-sm tracking-tight">Lazada</span>
+</div>
+<label class="inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container-highest rounded-full peer peer-checked:bg-tertiary-container after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4"></div>
+</label>
+</div>
+<div class="space-y-1">
+<label class="text-[0.625rem] font-bold text-outline uppercase tracking-widest">API Key</label>
+<input class="w-full editorial-input bg-white px-2 py-1.5 font-mono text-xs" type="text" value="LZD_MOD_7721_V9"/>
+</div>
+</div>
+<!-- TikTok -->
+<div class="p-4 bg-surface rounded flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-black/5 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-black" data-icon="video_library">video_library</span>
+</div>
+<span class="font-bold text-sm tracking-tight">TikTok Shop</span>
+</div>
+<label class="inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container-highest rounded-full peer peer-checked:bg-tertiary-container after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4"></div>
+</label>
+</div>
+<div class="space-y-1">
+<label class="text-[0.625rem] font-bold text-outline uppercase tracking-widest">API Key</label>
+<input class="w-full editorial-input bg-white px-2 py-1.5 font-mono text-xs" placeholder="Enter API Key..." type="text"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Courier APIs -->
+<section class="bg-surface-container-lowest p-6 rounded ghost-border lg:col-span-2">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary" data-icon="local_shipping">local_shipping</span>
+<h3 class="text-lg font-bold font-headline">Logistics &amp; Courier Credentials</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Flash -->
+<div class="space-y-3">
+<div class="flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-[#F9D000]" data-icon="bolt" style="font-variation-settings: 'FILL' 1">bolt</span>
+<span class="font-bold text-xs">Flash Express</span>
+</div>
+<div class="space-y-2">
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" placeholder="Merchant ID" type="text"/>
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" type="password" value="********"/>
+</div>
+</div>
+<!-- Kerry -->
+<div class="space-y-3">
+<div class="flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-[#F47920]" data-icon="package_2" style="font-variation-settings: 'FILL' 1">package_2</span>
+<span class="font-bold text-xs">Kerry Logistics</span>
+</div>
+<div class="space-y-2">
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" placeholder="API User" type="text"/>
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" type="password" value="********"/>
+</div>
+</div>
+<!-- J&T -->
+<div class="space-y-3">
+<div class="flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-[#FF0000]" data-icon="speed" style="font-variation-settings: 'FILL' 1">speed</span>
+<span class="font-bold text-xs">J&amp;T Express</span>
+</div>
+<div class="space-y-2">
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" placeholder="App Key" type="text"/>
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" type="password" value="********"/>
+</div>
+</div>
+<!-- Thai Post -->
+<div class="space-y-3">
+<div class="flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-[#ED1C24]" data-icon="mail" style="font-variation-settings: 'FILL' 1">mail</span>
+<span class="font-bold text-xs">Thailand Post</span>
+</div>
+<div class="space-y-2">
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" placeholder="Token ID" type="text"/>
+<input class="w-full bg-surface-container-low border-none text-[10px] font-mono py-1 px-2" type="password" value="********"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Decorative Asset - Data Health -->
+<div class="lg:col-span-2">
+<div class="relative overflow-hidden bg-[#57344F] rounded h-32 flex items-center px-8">
+<div class="absolute right-0 top-0 h-full w-1/2 opacity-10 bg-no-repeat bg-cover bg-center" data-alt="abstract technical grid pattern with circuit lines and geometric data nodes in dark purple and magenta tones" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuABx2vYLDwJ6RzJQqeqG3BkHl6qi_DPR736dLrmjrXxWm6D8bJuPG-nqladTPxll0VU3uBAt9Kjm7blYP4dELTVhqSCf4jb85iJkU10xR_pt5ATShCS6ng0SS9nEY1ghAdQtvloMLwfQGfm1b45U3bkSDMqdQO3l4fSC5r2jGx_P9VLCRjpsVS0j3ufF4uV0W4hwwyqbzP7vV0WBScg7SHN6338lHXpsxxj3kix7_CICbxo86TEn_6oVBTo_7KiKfkSRMkSLVBi8UL0')"></div>
+<div class="z-10 flex gap-12">
+<div>
+<p class="text-[0.625rem] font-bold text-white/60 uppercase tracking-widest mb-1">API Health</p>
+<p class="text-2xl font-bold text-white">99.8%</p>
+</div>
+<div>
+<p class="text-[0.625rem] font-bold text-white/60 uppercase tracking-widest mb-1">Last Sync</p>
+<p class="text-2xl font-bold text-white">04:12 PM</p>
+</div>
+<div>
+<p class="text-[0.625rem] font-bold text-white/60 uppercase tracking-widest mb-1">Active Hooks</p>
+<p class="text-2xl font-bold text-white">12/14</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

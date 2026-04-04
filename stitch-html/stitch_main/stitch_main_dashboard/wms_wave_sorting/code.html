@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wave Sorting | KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004f53",
+                        "on-tertiary-fixed": "#40000c",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#2f1029",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-low": "#f3f3f3",
+                        "on-tertiary-container": "#ffbdbf",
+                        "tertiary-fixed": "#ffdada",
+                        "secondary-fixed": "#95f1f8",
+                        "outline-variant": "#d1c3ca",
+                        "on-surface-variant": "#4e444a",
+                        "tertiary": "#791e2a",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "primary-container": "#714b67",
+                        "secondary-container": "#92eff5",
+                        "background": "#f9f9f9",
+                        "tertiary-container": "#983540",
+                        "primary-fixed": "#ffd7f1",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "primary": "#57344f",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#79526f",
+                        "surface-container": "#eeeeee",
+                        "secondary-fixed-dim": "#78d5db",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "on-background": "#1a1c1c",
+                        "error": "#ba1a1a",
+                        "secondary": "#00696e",
+                        "on-tertiary-fixed-variant": "#822430",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "surface": "#f9f9f9",
+                        "inverse-primary": "#e9b8d9",
+                        "outline": "#80747a",
+                        "on-secondary-container": "#006e73",
+                        "surface-bright": "#f9f9f9",
+                        "on-primary-container": "#f0bfe0",
+                        "on-secondary-fixed": "#002022",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-gradient-to-r from-[#57344f] to-[#714b67] text-white font-['Inter'] text-sm tracking-wide fixed top-0 w-full z-50 shadow-lg shadow-[#4e444a]/10 flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-white tracking-tight">KOB WMS Pro</span>
+<nav class="hidden md:flex space-x-6">
+<a class="text-white border-b-2 border-white pb-1" href="#">Dashboard</a>
+<a class="text-white/80 hover:bg-white/10 transition-colors px-2 py-1 rounded" href="#">Reports</a>
+<a class="text-white/80 hover:bg-white/10 transition-colors px-2 py-1 rounded" href="#">Help</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined text-white p-2 hover:bg-white/10 rounded-full cursor-pointer transition-colors">notifications</span>
+</div>
+<div class="flex items-center gap-2 pl-4 border-l border-white/20">
+<span class="material-symbols-outlined text-white">account_circle</span>
+<span class="hidden sm:inline font-medium">Warehouse Admin</span>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-full w-[240px] bg-[#f3f3f3] dark:bg-slate-900 flex flex-col py-8 px-4 space-y-2 text-[#57344f] dark:text-[#d1c3ca] font-['Inter'] font-medium text-[0.875rem]">
+<div class="mb-8 px-2">
+<div class="text-[#57344f] font-bold text-lg">WMS Pro</div>
+<div class="text-[0.6875rem] uppercase tracking-widest text-on-surface-variant/60">Warehouse Admin</div>
+</div>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-white dark:bg-slate-800 text-[#57344f] dark:text-white rounded-md font-semibold translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">waves</span>
+<span>Wave Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#4e444a] dark:text-slate-400 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#4e444a] dark:text-slate-400 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>Operations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#4e444a] dark:text-slate-400 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-16 min-h-screen">
+<div class="p-8 max-w-[1600px] mx-auto space-y-8">
+<!-- Action Bar & Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-2xl font-bold text-on-surface mb-1">Wave Sorting</h1>
+<p class="text-on-surface-variant text-sm">Optimize warehouse throughput with intelligent grouping</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<select class="appearance-none bg-surface-container-lowest border-0 text-sm font-medium rounded-lg px-4 py-2.5 pr-10 shadow-sm ring-1 ring-outline-variant/15 focus:ring-primary">
+<option>Platform Template</option>
+<option>Courier Template</option>
+<option>Zone Template</option>
+<option>Custom Template</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+<button class="bg-gradient-to-r from-[#57344f] to-[#714b67] text-white px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-md hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        Create Wave
+                    </button>
+</div>
+</div>
+<!-- Wave Summary Strip (KPIs) -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="bg-surface-container-lowest p-5 rounded-lg flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div>
+<div class="text-[0.6875rem] font-bold uppercase tracking-wider text-on-surface-variant/70">Total Waves</div>
+<div class="text-2xl font-bold">142</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg flex items-center gap-4">
+<div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">motion_photos_on</span>
+</div>
+<div>
+<div class="text-[0.6875rem] font-bold uppercase tracking-wider text-on-surface-variant/70">Active Wave</div>
+<div class="text-2xl font-bold">WV-2024-089</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container/10 rounded-full flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">inventory</span>
+</div>
+<div>
+<div class="text-[0.6875rem] font-bold uppercase tracking-wider text-on-surface-variant/70">Orders in Wave</div>
+<div class="text-2xl font-bold">48</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg flex items-center gap-4">
+<div class="w-12 h-12 bg-tertiary/10 rounded-full flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<div>
+<div class="text-[0.6875rem] font-bold uppercase tracking-wider text-on-surface-variant/70">Completion %</div>
+<div class="text-2xl font-bold">78.5%</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<!-- Left Column: Wave List -->
+<div class="xl:col-span-4 space-y-6">
+<h2 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant/60 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">list_alt</span> Recent Waves
+                    </h2>
+<div class="space-y-4">
+<!-- Wave Card 1 (Active) -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border-l-4 border-primary shadow-sm hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-3">
+<span class="font-bold text-primary">WV-2024-089</span>
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded uppercase">In Progress</span>
+</div>
+<div class="grid grid-cols-2 gap-y-3 text-[13px]">
+<div>
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Template</p>
+<p class="font-medium">Courier Sort</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Orders</p>
+<p class="font-medium">48 Units</p>
+</div>
+<div>
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Created By</p>
+<p class="font-medium text-on-surface/80">S. Wilson</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Time</p>
+<p class="font-medium text-on-surface/80">09:42 AM</p>
+</div>
+</div>
+</div>
+<!-- Wave Card 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm hover:bg-surface-container-low transition-colors cursor-pointer border-l-4 border-transparent">
+<div class="flex justify-between items-start mb-3">
+<span class="font-bold text-on-surface">WV-2024-088</span>
+<span class="px-2 py-0.5 bg-on-surface-variant/10 text-on-surface-variant text-[10px] font-bold rounded uppercase">Completed</span>
+</div>
+<div class="grid grid-cols-2 gap-y-3 text-[13px]">
+<div>
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Template</p>
+<p class="font-medium">Platform Sort</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Orders</p>
+<p class="font-medium">120 Units</p>
+</div>
+</div>
+</div>
+<!-- Wave Card 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm hover:bg-surface-container-low transition-colors cursor-pointer border-l-4 border-transparent">
+<div class="flex justify-between items-start mb-3">
+<span class="font-bold text-on-surface">WV-2024-087</span>
+<span class="px-2 py-0.5 bg-outline-variant text-white text-[10px] font-bold rounded uppercase">Draft</span>
+</div>
+<div class="grid grid-cols-2 gap-y-3 text-[13px]">
+<div>
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Template</p>
+<p class="font-medium">Zone Sort</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant/60 text-[10px] uppercase font-bold">Orders</p>
+<p class="font-medium">24 Units</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Active Wave Detail -->
+<div class="xl:col-span-8 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<!-- Progress Header -->
+<div class="p-6 bg-surface-container-low/50">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="text-lg font-bold">Active Wave Details: WV-2024-089</h2>
+<p class="text-sm text-on-surface-variant">Last updated 2 mins ago</p>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-primary">37 <span class="text-sm font-normal text-on-surface-variant">/ 48</span></div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60">Units Processed</div>
+</div>
+</div>
+<!-- Progress Visualization -->
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-bold uppercase text-on-surface-variant/80">
+<span>Picked (40)</span>
+<span>Packed (32)</span>
+<span>Shipped (28)</span>
+</div>
+<div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 83%"></div>
+<div class="h-full bg-secondary-container" style="width: 66%"></div>
+<div class="h-full bg-secondary" style="width: 58%"></div>
+</div>
+<div class="flex gap-4 pt-2">
+<div class="flex items-center gap-1.5">
+<div class="w-2.5 h-2.5 rounded-sm bg-primary"></div>
+<span class="text-[10px] text-on-surface-variant">Picked</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="w-2.5 h-2.5 rounded-sm bg-secondary-container"></div>
+<span class="text-[10px] text-on-surface-variant">Packed</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="w-2.5 h-2.5 rounded-sm bg-secondary"></div>
+<span class="text-[10px] text-on-surface-variant">Shipped</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Orders List -->
+<div class="p-6 overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-4">
+<thead>
+<tr class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60">
+<th class="pb-2 pl-4">Order ID</th>
+<th class="pb-2">SKU Count</th>
+<th class="pb-2">Courier</th>
+<th class="pb-2">Destination</th>
+<th class="pb-2">Status</th>
+<th class="pb-2 pr-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody>
+<!-- Order Row 1 -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors group">
+<td class="py-4 pl-4 rounded-l-lg font-semibold text-primary">#ORD-9021-A</td>
+<td class="py-4">3 Items</td>
+<td class="py-4">
+<span class="px-2 py-1 bg-[#FF8C00]/10 text-[#FF8C00] text-[11px] font-bold rounded">Flash</span>
+</td>
+<td class="py-4 text-sm">Bangkok, TH</td>
+<td class="py-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span class="text-xs font-medium">Ready</span>
+</div>
+</td>
+<td class="py-4 pr-4 rounded-r-lg text-right">
+<button class="material-symbols-outlined text-on-surface-variant/40 hover:text-primary">more_vert</button>
+</td>
+</tr>
+<!-- Order Row 2 -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors group">
+<td class="py-4 pl-4 rounded-l-lg font-semibold text-primary">#ORD-9022-B</td>
+<td class="py-4">12 Items</td>
+<td class="py-4">
+<span class="px-2 py-1 bg-[#2E7D32]/10 text-[#2E7D32] text-[11px] font-bold rounded">Kerry</span>
+</td>
+<td class="py-4 text-sm">Chiang Mai, TH</td>
+<td class="py-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">pending</span>
+<span class="text-xs font-medium">Picking</span>
+</div>
+</td>
+<td class="py-4 pr-4 rounded-r-lg text-right">
+<button class="material-symbols-outlined text-on-surface-variant/40 hover:text-primary">more_vert</button>
+</td>
+</tr>
+<!-- Order Row 3 -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors group">
+<td class="py-4 pl-4 rounded-l-lg font-semibold text-primary">#ORD-9023-C</td>
+<td class="py-4">1 Item</td>
+<td class="py-4">
+<span class="px-2 py-1 bg-[#D32F2F]/10 text-[#D32F2F] text-[11px] font-bold rounded">J&amp;T</span>
+</td>
+<td class="py-4 text-sm">Phuket, TH</td>
+<td class="py-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span class="text-xs font-medium">Ready</span>
+</div>
+</td>
+<td class="py-4 pr-4 rounded-r-lg text-right">
+<button class="material-symbols-outlined text-on-surface-variant/40 hover:text-primary">more_vert</button>
+</td>
+</tr>
+<!-- Order Row 4 -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors group">
+<td class="py-4 pl-4 rounded-l-lg font-semibold text-primary">#ORD-9024-D</td>
+<td class="py-4">5 Items</td>
+<td class="py-4">
+<span class="px-2 py-1 bg-[#1976D2]/10 text-[#1976D2] text-[11px] font-bold rounded">ThaiPost</span>
+</td>
+<td class="py-4 text-sm">Rayong, TH</td>
+<td class="py-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-xs font-medium">Queued</span>
+</div>
+</td>
+<td class="py-4 pr-4 rounded-r-lg text-right">
+<button class="material-symbols-outlined text-on-surface-variant/40 hover:text-primary">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Bottom Strategy Insight Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+<h3 class="font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">trending_up</span> Efficiency Insight
+                            </h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                                Current wave WV-2024-089 has a 12% higher density than average. Recommend allocating 2 additional packers to Station B for J&amp;T Express overflow.
+                            </p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">local_shipping</span> Next Pickup
+                                </h3>
+<span class="text-[10px] font-bold text-error animate-pulse">EST. 14:00</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full bg-[#FF8C00] flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">F</div>
+<div class="w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">K</div>
+<div class="w-8 h-8 rounded-full bg-[#D32F2F] flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">J</div>
+</div>
+<button class="text-primary text-xs font-bold hover:underline">View Fleet Status</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

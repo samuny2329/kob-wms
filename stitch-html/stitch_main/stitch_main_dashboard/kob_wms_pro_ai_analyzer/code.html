@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Analyzer - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#e9b8d9",
+                        "primary-fixed": "#ffd7f1",
+                        "on-background": "#191c1d",
+                        "outline": "#80747a",
+                        "tertiary-fixed": "#d5eab4",
+                        "surface-container": "#edeeef",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "tertiary-container": "#4b5d33",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-low": "#f3f4f5",
+                        "background": "#f8f9fa",
+                        "secondary-container": "#f5dbea",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#d1c3ca",
+                        "on-tertiary-fixed": "#112000",
+                        "tertiary": "#34451e",
+                        "surface-container-high": "#e7e8e9",
+                        "inverse-primary": "#e9b8d9",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-surface-variant": "#4e444a",
+                        "secondary-fixed-dim": "#d8c0ce",
+                        "secondary-fixed": "#f5dbea",
+                        "surface-tint": "#79526f",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#f0bfe0",
+                        "on-tertiary-container": "#c0d5a0",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#6c5965",
+                        "primary": "#57344f",
+                        "on-primary-fixed": "#2f1029",
+                        "surface-variant": "#e1e3e4",
+                        "inverse-surface": "#2e3132",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#251721",
+                        "on-surface": "#191c1d",
+                        "error": "#ba1a1a",
+                        "primary-container": "#714b67",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-secondary-fixed-variant": "#53424d",
+                        "on-secondary-container": "#725f6b",
+                        "surface": "#f8f9fa",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 glass-header shadow-sm h-14 flex justify-between items-center px-6">
+<div class="flex items-center gap-8">
+<span class="text-lg font-semibold tracking-tighter text-primary-container">KOB WMS Pro</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-neutral-500 dark:text-neutral-400 font-inter body-sm tracking-tight hover:bg-neutral-100 transition-colors px-2 py-1" href="#">Dashboard</a>
+<a class="text-primary-container font-medium border-b-2 border-primary-container font-inter body-sm tracking-tight px-2 py-1" href="#">AI Analyzer</a>
+<a class="text-neutral-500 dark:text-neutral-400 font-inter body-sm tracking-tight hover:bg-neutral-100 transition-colors px-2 py-1" href="#">Inventory</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-surface-container rounded-lg px-3 py-1 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-48" placeholder="Global Search..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:bg-neutral-100 p-1 rounded-full transition-colors">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:bg-neutral-100 p-1 rounded-full transition-colors">settings</span>
+<img alt="Administrator profile avatar" class="w-8 h-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmguckjC4vIfk8x1ax-mD1DYrERtQGW-7mbXVzVE0mTUZfIuK3Ijhs1zhg4Wk57nu57h1iK9BRvdyTqeqDBWQcVocXQjq7Kpay1w5fUPssNxPgcxJIP4TASEhzLtNXdTKYJmKD2zQjFOwBm3AIKjV52B6HR5OX0TfpQhhmAdbazgD0IhoQH7p3gvtlG1p-h3cQMXr4vTG9-gFnxHQ7EMTZjpIOYq9lv8i5UB0uJNMezZI8lZ6lkBlQUoEeZSIyfvV9y1VlMf0nLWJz"/>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[220px] z-40 bg-surface-container-low flex flex-col pt-16 pb-4 px-3 border-r border-transparent">
+<div class="mb-6 px-3">
+<div class="text-md font-bold text-primary-container">WMS Pro AI</div>
+<div class="text-[10px] text-neutral-500 uppercase tracking-widest">Enterprise Ledger</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+<span class="font-inter text-xs font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+<span class="font-inter text-xs font-medium">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">insights</span>
+<span class="font-inter text-xs font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-surface-container-lowest text-primary-container border-l-4 border-primary-container shadow-sm rounded-r-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+<span class="font-inter text-xs font-medium">Predictive AI</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+<span class="font-inter text-xs font-medium">Heatmaps</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+<span class="font-inter text-xs font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white text-xs py-2 rounded-md mb-4 shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-xs">add_chart</span>
+                New Analysis
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span class="font-inter text-xs font-medium">Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-neutral-600 hover:bg-neutral-200/50 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span class="font-inter text-xs font-medium">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[220px] pt-14 p-6 min-h-screen">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div class="text-left">
+<h1 class="text-2xl font-medium text-primary-container mb-1 tracking-tight">AI Analyzer</h1>
+<p class="text-on-surface-variant text-sm">Real-time predictive insights and warehouse optimization.</p>
+</div>
+<div class="flex gap-2">
+<span class="bg-tertiary-container/10 text-tertiary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary rounded-full animate-pulse"></span>
+                    Live Engine Active
+                </span>
+</div>
+</div>
+<!-- Section 1: AI Insights Summary (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-primary relative overflow-hidden">
+<div class="flex items-start justify-between mb-3">
+<span class="material-symbols-outlined text-primary-container bg-primary-fixed p-2 rounded-lg">auto_awesome</span>
+<span class="text-[10px] font-semibold text-neutral-400">PRIORITY: HIGH</span>
+</div>
+<h3 class="text-sm font-semibold mb-2">Demand Surge Predicted</h3>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                    AI predicts a <span class="font-bold text-primary">15% surge</span> in orders from <span class="italic">Lazada</span> tomorrow. Suggesting re-allocation of <span class="font-semibold">5 pickers</span> to Zone B.
+                </p>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-[#34451e] relative overflow-hidden">
+<div class="flex items-start justify-between mb-3">
+<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-2 rounded-lg">bolt</span>
+<span class="text-[10px] font-semibold text-neutral-400">PRIORITY: MEDIUM</span>
+</div>
+<h3 class="text-sm font-semibold mb-2">Efficiency Optimization</h3>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                    Pathfinding AI suggests <span class="text-tertiary font-semibold">Batch Clustering</span> for SKU group #90-B. Potential reduction of travel time by 12%.
+                </p>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border-l-4 border-error relative overflow-hidden">
+<div class="flex items-start justify-between mb-3">
+<span class="material-symbols-outlined text-error bg-error-container p-2 rounded-lg">warning</span>
+<span class="text-[10px] font-semibold text-neutral-400">PRIORITY: CRITICAL</span>
+</div>
+<h3 class="text-sm font-semibold mb-2">SLA Risk Alert</h3>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                    32 Shipments for <span class="font-semibold">Carrier DHL</span> are at risk of missing the 6PM cutoff. Immediate manifest consolidation recommended.
+                </p>
+</div>
+</div>
+<!-- Section 2 & 3: Performance & Heatmap -->
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+<!-- Predictive Performance Metrics -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">trending_up</span>
+                        Performance Forecast
+                    </h2>
+</div>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between text-[11px] mb-2 font-medium">
+<span class="text-neutral-500 uppercase">UPH: Predicted vs Actual</span>
+<span class="text-primary">82 / 75 Units</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 75%"></div>
+<div class="h-full bg-primary-fixed-dim border-l border-white" style="width: 15%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[11px] mb-2 font-medium">
+<span class="text-neutral-500 uppercase">Inventory Turnover Forecast</span>
+<span class="text-tertiary">4.2x (Expected)</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary" style="width: 65%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-[11px] mb-2 font-medium">
+<span class="text-neutral-500 uppercase">SLA Breach Probability</span>
+<span class="text-error">12.5% Risk</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error" style="width: 12.5%"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-surface-container flex justify-around">
+<div class="text-center">
+<div class="text-2xl font-bold text-primary">8.4m</div>
+<div class="text-[10px] text-neutral-500 font-semibold uppercase">Avg Pick Time</div>
+</div>
+<div class="text-center">
+<div class="text-2xl font-bold text-on-surface">99.1%</div>
+<div class="text-[10px] text-neutral-500 font-semibold uppercase">Accuracy Fcst</div>
+</div>
+</div>
+</div>
+<!-- Warehouse Heatmap (Simplified) -->
+<div class="lg:col-span-3 bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">grid_view</span>
+                        Live Flow Heatmap
+                    </h2>
+<div class="flex gap-4 text-[10px] font-bold text-neutral-500 uppercase">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> Congested</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> Moderate</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary"></span> Optimal</span>
+</div>
+</div>
+<div class="aspect-[16/7] w-full grid grid-cols-4 gap-2">
+<div class="bg-tertiary/20 rounded border-2 border-tertiary flex flex-col items-center justify-center relative">
+<span class="text-xs font-bold text-tertiary">ZONE A</span>
+<span class="text-[9px] text-tertiary-container uppercase">Inbound</span>
+<div class="absolute bottom-2 right-2"><span class="material-symbols-outlined text-sm text-tertiary">check_circle</span></div>
+</div>
+<div class="bg-error/10 rounded border-2 border-error/50 flex flex-col items-center justify-center relative">
+<span class="text-xs font-bold text-error">ZONE B</span>
+<span class="text-[9px] text-error uppercase">Picking Peak</span>
+<div class="absolute bottom-2 right-2"><span class="material-symbols-outlined text-sm text-error" data-weight="fill">warning</span></div>
+</div>
+<div class="bg-surface-container rounded flex flex-col items-center justify-center relative">
+<span class="text-xs font-bold text-neutral-400">ZONE C</span>
+<span class="text-[9px] text-neutral-400 uppercase">Bulk Storage</span>
+</div>
+<div class="bg-yellow-400/10 rounded border-2 border-yellow-400/50 flex flex-col items-center justify-center relative">
+<span class="text-xs font-bold text-yellow-700">ZONE D</span>
+<span class="text-[9px] text-yellow-700 uppercase">Outbound</span>
+</div>
+</div>
+<div class="mt-4 flex gap-4">
+<img class="w-20 h-12 object-cover rounded shadow-sm opacity-50 grayscale hover:grayscale-0 transition-all" data-alt="aerial perspective of warehouse shelving organized in long parallel rows with industrial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD386-XE-lWVf4x1i5EscHPDgY0cEx-OOic_Xxa8tBtB2TJmEoVQwXMgFsQ7i0zM24dFr1XhC2-v_y2Gh7pnnGYzQKUsoGFbNPYUHarkZe63ZZc291Sq68J5pJsFaqy0jafRwPHOoRwk7KIkZNfSSuOmQCxyS8gO5OTnmT5oMerSeIIZyAfig0vScNvTrQ6k4vTS6bOBgG_RrdghlXR01u91LCVK_3UoiW0BxBb-WvVANPva3ZL2fa4osKRpHdi5xBfUEU-hVageuEh"/>
+<div class="flex-1 flex items-center bg-surface-container-low rounded-lg px-4 py-2 border border-outline-variant/10">
+<span class="material-symbols-outlined text-sm mr-2 text-primary">info</span>
+<p class="text-[10px] text-neutral-500 italic">"Flow congestion in Zone B is caused by Batch #8829 pallet bottleneck."</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 4: Actionable Recommendations Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-surface-container flex justify-between items-center bg-surface-container-low/30">
+<h2 class="text-sm font-semibold text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">task_alt</span>
+                    AI Optimized Recommendations
+                </h2>
+<button class="text-xs text-primary font-medium hover:underline">Apply All AI Suggestions</button>
+</div>
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Suggested Action</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Metric Impact</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Resource Need</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Execution</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="text-xs font-semibold">Optimize Route for Batch #8829</div>
+<div class="text-[10px] text-neutral-500">Redirecting to Dock 4 via Zone A</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] text-tertiary-container bg-tertiary-fixed px-2 py-0.5 rounded-full font-bold">-18m Travel Time</span>
+</td>
+<td class="px-6 py-4 text-xs">1 MHE Operator</td>
+<td class="px-6 py-4 text-right">
+<button class="bg-primary text-white px-4 py-1.5 rounded text-[11px] font-medium shadow-sm hover:scale-95 transition-transform duration-150">Apply</button>
+</td>
+</tr>
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="text-xs font-semibold">Re-stock SKU-99201 in Forward Area</div>
+<div class="text-[10px] text-neutral-500">Preventing stock-out for Lazada peak</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] text-primary-container bg-primary-fixed px-2 py-0.5 rounded-full font-bold">+24% Pick Speed</span>
+</td>
+<td class="px-6 py-4 text-xs">2 Warehouse Hands</td>
+<td class="px-6 py-4 text-right">
+<button class="bg-primary text-white px-4 py-1.5 rounded text-[11px] font-medium shadow-sm hover:scale-95 transition-transform duration-150">Apply</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="text-xs font-semibold">Consolidate Orders (Region: SEA)</div>
+<div class="text-[10px] text-neutral-500">Merging 45 small orders into 3 pallets</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] text-tertiary-container bg-tertiary-fixed px-2 py-0.5 rounded-full font-bold">-12% Ship Cost</span>
+</td>
+<td class="px-6 py-4 text-xs">Automated Sorter</td>
+<td class="px-6 py-4 text-right">
+<button class="bg-primary text-white px-4 py-1.5 rounded text-[11px] font-medium shadow-sm hover:scale-95 transition-transform duration-150">Apply</button>
+</td>
+</tr>
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<div class="text-xs font-semibold">Pre-manifest DHL Shipments</div>
+<div class="text-[10px] text-neutral-500">Bypassing staging for fast-track exit</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] text-error bg-error-container px-2 py-0.5 rounded-full font-bold">SLA Save (6PM)</span>
+</td>
+<td class="px-6 py-4 text-xs">Dispatch Clerk</td>
+<td class="px-6 py-4 text-right">
+<button class="bg-primary text-white px-4 py-1.5 rounded text-[11px] font-medium shadow-sm hover:scale-95 transition-transform duration-150">Apply</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+</body></html>

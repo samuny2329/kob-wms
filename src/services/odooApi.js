@@ -1,6 +1,5 @@
 // Odoo WMS API Service Layer
-// Reads USE_MOCK from odooConfig.useMock (set in Settings UI)
-// When useMock is false, connects to real Odoo 18 via session-based auth
+// Connects to real Odoo 18 via session-based auth
 //
 // ─── Odoo Models & Fields Used ───────────────────────────────────────
 //
@@ -69,7 +68,6 @@ import { getCSRFToken, auditLog } from '../utils/security';
 import { nextRequestId } from './requestManager';
 
 const API_TIMEOUT = 8000;
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Session state
 let _sessionAuthenticated = false;
@@ -90,8 +88,6 @@ const fetchWithTimeout = async (url, options = {}, timeout = API_TIMEOUT) => {
 
 // ============ AUTH & TRANSPORT ============
 
-const isMock = (odooConfig) => odooConfig?.useMock === true;
-
 // Use Vite proxy: requests to /wms/* are forwarded to Odoo by the dev server
 // No CORS issues, no credentials needed
 const getOdooBase = (odooConfig) => {
@@ -109,7 +105,6 @@ const isCrossOrigin = (odooConfig) => {
 const getCredentials = (odooConfig) => isCrossOrigin(odooConfig) ? 'omit' : 'include';
 
 export const authenticateOdoo = async (odooConfig) => {
-    if (isMock(odooConfig)) return { status: 'success', uid: 1 };
     try {
         // Use Odoo's standard JSONRPC auth endpoint (proxied via Vite /web/session/*)
         const base = getOdooBase(odooConfig);
@@ -175,29 +170,14 @@ const odooPost = async (odooConfig, endpoint, params = {}) => {
 // ============ ORDERS ============
 
 export const fetchPickingOrders = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        const stored = JSON.parse(localStorage.getItem('wms_sales_orders') || '[]');
-        return stored.filter(o => o.status === 'pending' || o.status === 'picking');
-    }
     return odooPost(odooConfig, '/wms/orders/pending');
 };
 
 export const fetchPackableOrders = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        const stored = JSON.parse(localStorage.getItem('wms_sales_orders') || '[]');
-        return stored.filter(o => o.status === 'picked' || o.status === 'packing');
-    }
     return odooPost(odooConfig, '/wms/orders/picked');
 };
 
 export const fetchAllOrders = async (odooConfig, companyId) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        return JSON.parse(localStorage.getItem('wms_sales_orders') || '[]');
-    }
-
     // Live: fetch ONLY KOB-WH2 (Online) / BTV-WH2 (Online) Delivery Orders
     const cutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10) + ' 00:00:00';
     // Filter: warehouse name contains "(Online)" → matches KOB-WH2 (Online) and BTV-WH2 (Online)
@@ -332,25 +312,10 @@ export const fetchAllOrders = async (odooConfig, companyId) => {
 };
 
 export const updateOrderStatus = async (odooConfig, orderId, status, extraData = {}) => {
-    if (isMock(odooConfig)) {
-        await delay(150);
-        return { status: 'success', orderId, newStatus: status };
-    }
     return odooPost(odooConfig, '/wms/orders/update', { order_id: orderId, status, ...extraData });
 };
 
 export const confirmRTS = async (odooConfig, orderId, platform) => {
-    if (isMock(odooConfig)) {
-        await delay(500);
-        const platformPrefixes = {
-            'Shopee Express': 'SPXTH', 'Lazada Express': 'LZTH', 'Flash Express': 'FLTH',
-            'Kerry Express': 'KETH', 'J&T Express': 'JTTH', 'Thai Post': 'TPTH', 'TikTok Shop': 'TTTH'
-        };
-        const prefix = platformPrefixes[platform] || 'TH';
-        const awb = prefix + Math.floor(Math.random() * 88888888 + 10000000);
-        return { status: 'success', awb, trackingUrl: `https://track.example.com/${awb}` };
-    }
-
     // Resolve picking ID — orderId may be a numeric Odoo ID or a ref string like 'WH/OUT/00104'
     let pickingId = Number(orderId);
     if (!pickingId || pickingId < 10) {
@@ -475,7 +440,7 @@ export const confirmRTS = async (odooConfig, orderId, platform) => {
         status: 'success',
         awb,
         trackingUrl: `https://track.example.com/${awb}`,
-        invoiceId,
+        invoiceId: null,
         pickingValidated: true,
     };
 };
@@ -524,9 +489,6 @@ const odooCallKw = async (odooConfig, model, method, args = [], kwargs = {}) => 
 
 // Find or create the PICKFACE internal location under WH/Stock
 export const ensurePickfaceLocation = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        return { id: 999, name: 'PICKFACE', complete_name: 'WH/Stock/PICKFACE' };
-    }
     // Search existing
     const existing = await odooCallKw(odooConfig, 'stock.location', 'search_read',
         [[['name', '=', PICKFACE_LOCATION_NAME], ['usage', '=', 'internal']]],
@@ -580,13 +542,6 @@ const PLATFORM_CUSTOMER_MAP = {
  * @returns {{ soId, soName, pickingRef }}
  */
 export const createSalesOrder = async (odooConfig, orderData) => {
-    if (isMock(odooConfig)) {
-        // Mock: return a fake result for UI testing
-        await delay(600);
-        const fakeRef = `WH/OUT/${String(Math.floor(Math.random() * 900) + 100).padStart(5, '0')}`;
-        return { soId: Math.floor(Math.random() * 9000) + 1000, soName: `S${Date.now()}`, pickingRef: fakeRef };
-    }
-
     const { platform = 'Manual', items = [], note = '', sourceDoc = '' } = orderData;
 
     // 1. Find product IDs by default_code
@@ -682,11 +637,6 @@ export const createTestSalesOrders = async (odooConfig, count = 5) => {
 // ============ INVENTORY ============
 
 export const fetchInventory = async (odooConfig, companyId) => {
-    if (isMock(odooConfig)) {
-        await delay(250);
-        const stored = JSON.parse(localStorage.getItem('wms_inventory') || 'null');
-        return stored || [];
-    }
     // Live mode: fetch stock.quant ONLY from WH2 (Online) warehouse locations
     // KOB = K-On/Stock, BTV = B-On/Stock (Online warehouse prefixes)
     const allowedLoc = getStoredAllowedLocations();
@@ -757,10 +707,6 @@ export const fetchInventory = async (odooConfig, companyId) => {
 };
 
 export const updateInventory = async (odooConfig, sku, adjustment, reason, lotNumber) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return { status: 'success', sku, newQty: adjustment };
-    }
     return odooPost(odooConfig, '/wms/inventory/adjust', { sku, adjustment, reason, lot_number: lotNumber, location: PICKFACE_LOCATION_NAME });
 };
 
@@ -770,20 +716,6 @@ export const updateInventory = async (odooConfig, sku, adjustment, reason, lotNu
 // items: [{ sku, location, systemQty, countedQty, variance }]
 // Returns: { status, applied, failed, results }
 export const applyFullCountAdjustments = async (odooConfig, { sessionId, sessionName, items, approvedBy }) => {
-    if (isMock(odooConfig)) {
-        await delay(500);
-        return {
-            status: 'success',
-            applied: items.length,
-            failed: 0,
-            results: items.map(item => ({
-                sku: item.sku, location: item.location,
-                oldQty: item.systemQty, newQty: item.countedQty,
-                variance: item.variance, status: 'applied',
-            })),
-        };
-    }
-
     const results = [];
     let applied = 0;
     let failed = 0;
@@ -856,40 +788,20 @@ export const applyFullCountAdjustments = async (odooConfig, { sessionId, session
 // ============ WAVES / SORTING ============
 
 export const fetchWaves = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return JSON.parse(localStorage.getItem('wms_waves') || '[]');
-    }
     return odooPost(odooConfig, '/wms/waves/list');
 };
 
 export const createWave = async (odooConfig, waveName, orderIds, waveType) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        return {
-            status: 'success',
-            wave: { id: 'WAVE-' + Date.now(), name: waveName, type: waveType, orderIds, status: 'active', createdAt: Date.now() }
-        };
-    }
     return odooPost(odooConfig, '/wms/waves/create', { name: waveName, order_ids: orderIds, type: waveType });
 };
 
 export const closeWave = async (odooConfig, waveId) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return { status: 'success', waveId };
-    }
     return odooPost(odooConfig, '/wms/waves/close', { wave_id: waveId });
 };
 
 // ============ AUTO-INVOICE (called after AWB scan) ============
 
 export const createInvoiceFromPicking = async (odooConfig, pickingRef) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        return { status: 'success', invoiceId: null };
-    }
-
     // Resolve picking
     let pickingId = Number(pickingRef);
     if (!pickingId || pickingId < 10) {
@@ -919,13 +831,44 @@ export const createInvoiceFromPicking = async (odooConfig, pickingRef) => {
         return { status: 'warning', message: 'No sale order linked to picking' };
     }
 
+    // Verify SO delivery status before invoicing
+    const soData = await odooCallKw(odooConfig, 'sale.order', 'read',
+        [[saleOrderId]], { fields: ['delivery_status', 'invoice_status', 'name'] }
+    ).catch(() => []);
+    const so = soData?.[0];
+    const deliveryComplete = so?.delivery_status === 'full' || pd.state === 'done';
+
+    // Check for existing invoice — prevent duplicates
+    const existingInvoices = await odooCallKw(odooConfig, 'account.move', 'search_read',
+        [[['invoice_origin', 'ilike', pd.origin || ''], ['move_type', '=', 'out_invoice'], ['state', '!=', 'cancel']]],
+        { fields: ['id', 'name', 'state'], limit: 1, order: 'id desc' }
+    ).catch(() => []);
+    if (existingInvoices.length > 0) {
+        const existing = existingInvoices[0];
+        // If draft + delivery complete → auto-post
+        if (existing.state === 'draft' && deliveryComplete) {
+            try {
+                await odooCallKw(odooConfig, 'account.move', 'action_post', [[existing.id]]);
+                // Verify post succeeded
+                const verify = await odooCallKw(odooConfig, 'account.move', 'read',
+                    [[existing.id]], { fields: ['state', 'name'] }
+                ).catch(() => []);
+                const posted = verify?.[0];
+                return { status: 'success', invoiceId: existing.id, invoiceName: posted?.name || existing.name, saleOrderId, alreadyExisted: true, posted: posted?.state === 'posted' };
+            } catch (postErr) {
+                return { status: 'warning', invoiceId: existing.id, invoiceName: existing.name, saleOrderId, alreadyExisted: true, posted: false, postError: postErr.message };
+            }
+        }
+        return { status: 'success', invoiceId: existing.id, invoiceName: existing.name, saleOrderId, alreadyExisted: true, posted: existing.state === 'posted' };
+    }
+
     // Create invoice via wizard
     const wizardId = await odooCallKw(odooConfig, 'sale.advance.payment.inv', 'create',
         [{ advance_payment_method: 'delivered', sale_order_ids: [[6, 0, [saleOrderId]]] }]
     );
     await odooCallKw(odooConfig, 'sale.advance.payment.inv', 'create_invoices', [[wizardId]]);
 
-    // Find and post the created draft invoice
+    // Find the created draft invoice
     const invoices = await odooCallKw(odooConfig, 'account.move', 'search_read',
         [[['invoice_origin', 'ilike', pd.origin || ''], ['state', '=', 'draft'], ['move_type', '=', 'out_invoice']]],
         { fields: ['id', 'name'], limit: 1, order: 'id desc' }
@@ -933,23 +876,33 @@ export const createInvoiceFromPicking = async (odooConfig, pickingRef) => {
 
     let invoiceId = null;
     let invoiceName = '';
+    let posted = false;
     if (invoices.length > 0) {
         invoiceId = invoices[0].id;
         invoiceName = invoices[0].name;
-        await odooCallKw(odooConfig, 'account.move', 'action_post', [[invoiceId]]);
+        // Auto-post only if delivery is complete
+        if (deliveryComplete) {
+            try {
+                await odooCallKw(odooConfig, 'account.move', 'action_post', [[invoiceId]]);
+                // Verify and get the real invoice name (assigned after posting)
+                const verify = await odooCallKw(odooConfig, 'account.move', 'read',
+                    [[invoiceId]], { fields: ['state', 'name'] }
+                ).catch(() => []);
+                const v = verify?.[0];
+                if (v) { invoiceName = v.name; posted = v.state === 'posted'; }
+            } catch (postErr) {
+                // Invoice created but post failed — return with warning
+                return { status: 'warning', invoiceId, invoiceName, saleOrderId, posted: false, postError: postErr.message };
+            }
+        }
     }
 
-    return { status: 'success', invoiceId, invoiceName, saleOrderId };
+    return { status: 'success', invoiceId, invoiceName, saleOrderId, posted };
 };
 
 // ============ INVOICES ============
 
 export const fetchInvoices = async (odooConfig, companyId) => {
-    if (isMock(odooConfig)) {
-        await delay(250);
-        return JSON.parse(localStorage.getItem('wms_invoices') || '[]');
-    }
-
     // Live: fetch E-commerce invoices for selected company
     const invCutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
     const invDomain = [
@@ -1006,7 +959,8 @@ export const fetchInvoices = async (odooConfig, companyId) => {
     };
 
     return moves.map(m => ({
-        id: m.name,                              // INV/2026/00006
+        id: m.id,                                // Odoo numeric ID (for API calls)
+        invoiceName: m.name,                     // INV/2026/00006 (display)
         odooId: m.id,
         orderRef: m.invoice_origin || m.name,    // S00100 or INV number
         customer: m.partner_id?.[1] || '',
@@ -1025,76 +979,32 @@ export const fetchInvoices = async (odooConfig, companyId) => {
 };
 
 export const createInvoice = async (odooConfig, order) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        const totalAmount = order.items.reduce((sum, item) => {
-            const qty = item.picked || item.expected || 0;
-            const price = item.unitPrice || 299;
-            return sum + (qty * price);
-        }, 0);
-        const tax = Math.round(totalAmount * 0.07);
-        return {
-            status: 'success',
-            invoice: {
-                id: 'INV-' + Date.now(),
-                orderRef: order.ref,
-                customer: order.customer,
-                platform: order.platform || order.courier,
-                items: order.items.map(i => ({ sku: i.sku, name: i.name, qty: i.picked || i.expected, unitPrice: i.unitPrice || 299 })),
-                subtotal: totalAmount,
-                tax,
-                total: totalAmount + tax,
-                status: 'draft',
-                createdAt: Date.now()
-            }
-        };
-    }
     return odooPost(odooConfig, '/wms/invoices/create', { order_id: order.id });
 };
 
 export const postInvoice = async (odooConfig, invoiceId) => {
-    if (isMock(odooConfig)) {
-        await delay(400);
-        return { status: 'success', invoiceId, postedAt: Date.now() };
-    }
     return odooPost(odooConfig, '/wms/invoices/post', { invoice_id: invoiceId });
 };
 
 // ============ PLATFORM ORDERS ============
 
 export const fetchPlatformOrders = async (odooConfig, platform) => {
-    if (isMock(odooConfig)) {
-        await delay(400);
-        return [];
-    }
     return odooPost(odooConfig, '/wms/platform/orders', { platform });
 };
 
 export const syncAllPlatforms = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(800);
-        return { shopee: [], lazada: [], tiktok: [], total: 0 };
-    }
     return odooPost(odooConfig, '/wms/platform/sync');
 };
 
 // ============ AI BRAIN ============
 
 export const fetchAiSuggestion = async (odooConfig, pickingId, question) => {
-    if (isMock(odooConfig)) {
-        await delay(600);
-        return { status: 'success', suggestion: 'Connect to Odoo to enable AI suggestions.' };
-    }
     return odooPost(odooConfig, '/wms/ai/ask', { picking_id: pickingId, question });
 };
 
 // ============ CONNECTION ============
 
 export const testConnection = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(500);
-        return { status: 'success', version: 'Odoo 18.0 (Not Connected)', database: odooConfig.db || 'No database configured' };
-    }
     try {
         // Authenticate directly — this is the most reliable test
         const auth = await authenticateOdoo(odooConfig);
@@ -1107,7 +1017,6 @@ export const testConnection = async (odooConfig) => {
 // ============ PRODUCTS ============
 
 export const fetchProducts = async (odooConfig) => {
-    if (isMock(odooConfig)) return null;
     try {
         const products = await odooCallKw(odooConfig, 'product.product', 'search_read',
             [[['active', '=', true], ['default_code', '!=', false]]],
@@ -1153,10 +1062,6 @@ export const saveAllowedLocations = (list) => {
 
 // Fetch all internal stock locations from Odoo (for the picker UI)
 export const fetchAllLocations = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(150);
-        return [];
-    }
     return await odooCallKw(odooConfig, 'stock.location', 'search_read',
         [[['usage', '=', 'internal'], ['active', '=', true]]],
         { fields: ['id', 'name', 'complete_name'], order: 'complete_name asc', limit: 200 }
@@ -1170,11 +1075,8 @@ export const fetchAllLocations = async (odooConfig) => {
  * Live mode: queries Odoo sale.order with date_order >= (today - days).
  *   Platform is detected from sale.order.team_id.name or channel/tag.
  *   Returns same shape as generateHistoricalData() so ReportsView works identically.
- * Mock mode: returns null (caller falls back to generateHistoricalData).
  */
 export const fetchSaleOrderHistory = async (odooConfig, { days = 7 } = {}) => {
-    if (isMock(odooConfig)) return null;
-
     const dateFrom = new Date();
     dateFrom.setDate(dateFrom.getDate() - days + 1);
     dateFrom.setHours(0, 0, 0, 0);
@@ -1265,11 +1167,6 @@ export const fetchSaleOrderHistory = async (odooConfig, { days = 7 } = {}) => {
 // ============ STOCK HISTORY ============
 
 export const fetchStockHistory = async (odooConfig, productId, locationKeywords = [], limit = 50) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        // Return null — caller will use mock generator
-        return null;
-    }
     // Build domain: find stock.move.line for this product, done state
     const domain = [
         ['product_id', '=', productId],
@@ -1327,10 +1224,6 @@ export const fetchStockHistory = async (odooConfig, productId, locationKeywords 
 
 // Fetch full product detail (General Information tab)
 export const fetchProductDetail = async (odooConfig, productId) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return null;
-    }
     try {
         const result = await odooCallKw(odooConfig, 'product.product', 'read',
             [[productId]],
@@ -1351,10 +1244,6 @@ export const fetchProductDetail = async (odooConfig, productId) => {
 
 // Fetch supplier/vendor info for a product
 export const fetchSupplierInfo = async (odooConfig, productId) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return [];
-    }
     try {
         return await odooCallKw(odooConfig, 'product.supplierinfo', 'search_read',
             [[['product_id', '=', productId]]],
@@ -1368,10 +1257,6 @@ export const fetchSupplierInfo = async (odooConfig, productId) => {
 
 // Fetch recent sales history for a product
 export const fetchSalesHistory = async (odooConfig, productId, limit = 20) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return [];
-    }
     try {
         return await odooCallKw(odooConfig, 'sale.order.line', 'search_read',
             [[['product_id', '=', productId], ['state', 'in', ['sale', 'done']]]],
@@ -1385,10 +1270,6 @@ export const fetchSalesHistory = async (odooConfig, productId, limit = 20) => {
 
 // Fetch stock breakdown by ALL locations for a product
 export const fetchStockByLocation = async (odooConfig, productId) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return [];
-    }
     try {
         return await odooCallKw(odooConfig, 'stock.quant', 'search_read',
             [[['product_id', '=', productId], ['location_id.usage', '=', 'internal']]],
@@ -1402,10 +1283,6 @@ export const fetchStockByLocation = async (odooConfig, productId) => {
 
 // Fetch stock forecast (available, incoming, outgoing, future moves)
 export const fetchStockForecast = async (odooConfig, productId) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return { qty_available: 0, virtual_available: 0, incoming_qty: 0, outgoing_qty: 0, upcoming_moves: [] };
-    }
     try {
         const product = await odooCallKw(odooConfig, 'product.product', 'read',
             [[productId]], { fields: ['qty_available', 'virtual_available', 'incoming_qty', 'outgoing_qty'] }
@@ -1433,10 +1310,6 @@ export const fetchStockForecast = async (odooConfig, productId) => {
 
 // Fetch full inventory — ALL internal locations (no whitelist filter)
 export const fetchFullInventory = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        return [];
-    }
     // Live: fetch ALL stock.quant — restricted to KOB (1) + BTV (2), Online warehouse only
     const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',
         [[['location_id.usage', '=', 'internal'], ['company_id', 'in', [1, 2]], ['location_id.warehouse_id.name', 'ilike', '(Online)']]],
@@ -1470,12 +1343,6 @@ export const fetchFullInventory = async (odooConfig) => {
 
 // Fetch reorder rules (stock.warehouse.orderpoint)
 export const fetchReorderRules = async (odooConfig, productId = null) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        const stored = JSON.parse(localStorage.getItem('wms_reorder_rules') || 'null');
-        if (stored) return productId ? stored.filter(r => r.product_id?.[0] === productId) : stored;
-        return [];
-    }
     try {
         const domain = [['active', '=', true]];
         if (productId) domain.push(['product_id', '=', productId]);
@@ -1491,14 +1358,6 @@ export const fetchReorderRules = async (odooConfig, productId = null) => {
 
 // Create reorder rule
 export const createReorderRule = async (odooConfig, { productId, locationId, minQty, maxQty }) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        const rules = JSON.parse(localStorage.getItem('wms_reorder_rules') || '[]');
-        const newRule = { id: Date.now(), product_id: [productId, ''], location_id: [locationId, ''], product_min_qty: minQty, product_max_qty: maxQty, qty_to_order: 0, trigger: 'auto' };
-        rules.push(newRule);
-        localStorage.setItem('wms_reorder_rules', JSON.stringify(rules));
-        return newRule;
-    }
     try {
         const id = await odooCallKw(odooConfig, 'stock.warehouse.orderpoint', 'create',
             [{ product_id: productId, location_id: locationId, product_min_qty: minQty, product_max_qty: maxQty }]
@@ -1512,14 +1371,6 @@ export const createReorderRule = async (odooConfig, { productId, locationId, min
 
 // Update reorder rule
 export const updateReorderRule = async (odooConfig, ruleId, { minQty, maxQty }) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        const rules = JSON.parse(localStorage.getItem('wms_reorder_rules') || '[]');
-        const idx = rules.findIndex(r => r.id === ruleId);
-        if (idx >= 0) { rules[idx].product_min_qty = minQty; rules[idx].product_max_qty = maxQty; }
-        localStorage.setItem('wms_reorder_rules', JSON.stringify(rules));
-        return true;
-    }
     try {
         await odooCallKw(odooConfig, 'stock.warehouse.orderpoint', 'write',
             [[ruleId], { product_min_qty: minQty, product_max_qty: maxQty }]
@@ -1533,15 +1384,6 @@ export const updateReorderRule = async (odooConfig, ruleId, { minQty, maxQty }) 
 
 // Create internal transfer (Bulk → PICKFACE or any location)
 export const createInternalTransfer = async (odooConfig, { srcLocationId, destLocationId, lines }) => {
-    if (isMock(odooConfig)) {
-        await delay(400);
-        return {
-            status: 'success',
-            picking_id: `WH/INT/${Date.now().toString().slice(-5)}`,
-            state: 'done',
-            lines: lines.map(l => ({ ...l, status: 'done' })),
-        };
-    }
     try {
         // Find internal picking type
         const pickTypes = await odooCallKw(odooConfig, 'stock.picking.type', 'search_read',
@@ -1602,10 +1444,6 @@ export const createInternalTransfer = async (odooConfig, { srcLocationId, destLo
 
 // Fetch product categories from Odoo
 export const fetchProductCategories = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(150);
-        return [];
-    }
     try {
         return await odooCallKw(odooConfig, 'product.category', 'search_read',
             [[]], { fields: ['id', 'name', 'complete_name', 'parent_id'], limit: 200 }
@@ -1618,10 +1456,6 @@ export const fetchProductCategories = async (odooConfig) => {
 
 // Fetch all brands from existing products (distinct values)
 export const fetchProductBrands = async (odooConfig) => {
-    if (isMock(odooConfig)) {
-        await delay(100);
-        return [];
-    }
     try {
         // Read product_brand or use product template brand field
         // Odoo 18 may have product_brand_id on product.template
@@ -1637,10 +1471,6 @@ export const fetchProductBrands = async (odooConfig) => {
 
 // Create a GWP product in Odoo
 export const createGWPProduct = async (odooConfig, { name, sku, barcode, categoryId, weight, listPrice, description }) => {
-    if (isMock(odooConfig)) {
-        await delay(300);
-        return { status: 'success', id: 90000 + Math.floor(Math.random() * 9999), sku };
-    }
     try {
         const productData = {
             name,
@@ -1664,10 +1494,6 @@ export const createGWPProduct = async (odooConfig, { name, sku, barcode, categor
 
 // Update initial stock for a GWP product via stock.quant
 export const setGWPInitialStock = async (odooConfig, { productId, locationId, qty }) => {
-    if (isMock(odooConfig)) {
-        await delay(200);
-        return { status: 'success' };
-    }
     try {
         // Use inventory adjustment (stock.quant with inventory_quantity)
         const quants = await odooCallKw(odooConfig, 'stock.quant', 'search_read',

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Odoo Dashboard | Enterprise Architect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-primary-container": "#f0bfe0", "on-primary-fixed": "#2f1029", "tertiary-container": "#983540", "secondary-fixed": "#95f1f8", "on-primary": "#ffffff", "on-tertiary-fixed": "#40000c", "surface-tint": "#79526f", "on-secondary-fixed": "#002022", "on-surface": "#1a1c1c", "on-tertiary-container": "#ffbdbf", error: "#ba1a1a", "secondary-fixed-dim": "#78d5db", "inverse-primary": "#e9b8d9", "on-error-container": "#93000a", surface: "#f9f9f9", "on-background": "#1a1c1c", "surface-bright": "#f9f9f9", "primary-fixed-dim": "#e9b8d9", "primary-fixed": "#ffd7f1", "inverse-on-surface": "#f1f1f1", "outline-variant": "#d1c3ca", "on-secondary-container": "#006e73", "on-tertiary-fixed-variant": "#822430", "tertiary-fixed": "#ffdada", "on-secondary": "#ffffff", "on-surface-variant": "#4e444a", "on-error": "#ffffff", "tertiary-fixed-dim": "#ffb3b6", "primary-container": "#714b67", "on-secondary-fixed-variant": "#004f53", outline: "#80747a", "secondary-container": "#92eff5", "surface-container-lowest": "#ffffff", "surface-container-high": "#e8e8e8", background: "#f9f9f9", "surface-container-low": "#f3f3f3", "surface-dim": "#dadada", secondary: "#00696e", primary: "#714B67", "inverse-surface": "#2f3131", "error-container": "#ffdad6", "on-primary-fixed-variant": "#5f3b56", "on-tertiary": "#ffffff", "surface-container-highest": "#e2e2e2", "surface-variant": "#e2e2e2", "surface-container": "#eeeeee", tertiary: "#791e2a", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+        }
+        .app-icon-container {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .app-icon-container:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface select-none">
+<!-- TopNavBar Execution -->
+<header class="flex justify-between items-center w-full px-4 h-12 fixed z-[100] bg-[#57344f] dark:bg-[#4a2c43]">
+<div class="flex items-center gap-6 h-full">
+<span class="text-lg font-bold text-white tracking-tight">Odoo</span>
+<nav class="hidden md:flex h-full">
+<a class="flex items-center px-4 bg-white/10 text-white font-semibold font-sans text-sm tracking-tight transition-all" href="#">Discuss</a>
+<a class="flex items-center px-4 text-white/80 hover:text-white hover:bg-white/5 font-sans text-sm font-medium tracking-tight transition-colors" href="#">Calendar</a>
+<a class="flex items-center px-4 text-white/80 hover:text-white hover:bg-white/5 font-sans text-sm font-medium tracking-tight transition-colors" href="#">Contacts</a>
+<a class="flex items-center px-4 text-white/80 hover:text-white hover:bg-white/5 font-sans text-sm font-medium tracking-tight transition-colors" href="#">CRM</a>
+<a class="flex items-center px-4 text-white/80 hover:text-white hover:bg-white/5 font-sans text-sm font-medium tracking-tight transition-colors" href="#">Sales</a>
+<a class="flex items-center px-4 text-white/80 hover:text-white hover:bg-white/5 font-sans text-sm font-medium tracking-tight transition-colors" href="#">Dashboards</a>
+</nav>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-10 h-10 flex items-center justify-center text-white/90 hover:bg-[#714b67] transition-colors rounded">
+<span class="material-symbols-outlined" data-icon="apps">apps</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-white/90 hover:bg-[#714b67] transition-colors rounded relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2 h-2 bg-secondary rounded-full border border-[#57344f]"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-white/90 hover:bg-[#714b67] transition-colors rounded">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+</button>
+<div class="ml-2 pl-2 border-l border-white/10 h-6 flex items-center">
+<img alt="User Profile" class="w-7 h-7 rounded-full object-cover border border-white/20" data-alt="professional headshot of an executive man in a suit with a neutral background, soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjFqnjmGTP0-M8f5pTb38FOSWO7FDSeM8qHsC-pm__TVGsi0H-fu9RO3f8pcKLTvZX9po4bsqfBkx0PlIqUs5VMbqOGH3MKOWy-VMrEG_r8JbbhuHfeQLbb5Jz2umI2iUFWqH0d7OTj6F2S2VDGZGAM8EVbwK10LtdI_tVmyMGFvJM3JvxOMsZA7K2PbJxEo2LrvE6KUhas2npACXbdwDN46iwmviHUYi6tDGxDsolqTYFjw7GnBKeiflwK2gq5Oxx5_Mn-rmkQXN5"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-12 min-h-screen flex flex-col items-center">
+<!-- Search Anchor -->
+<div class="w-full max-w-4xl px-8 mt-16 mb-12">
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border-none ring-1 ring-outline/10 focus:ring-2 focus:ring-primary h-14 pl-12 pr-4 rounded-xl shadow-sm text-body-md transition-all outline-none" placeholder="Search apps..." type="text"/>
+<div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+<span class="text-xs font-bold text-outline/40 bg-surface-container-high px-2 py-1 rounded">CMD + K</span>
+</div>
+</div>
+</div>
+<!-- Central App Grid (The Enterprise Hub) -->
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-x-12 gap-y-16 p-8 max-w-5xl">
+<!-- CRM -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#57344f] to-[#714b67] flex items-center justify-center shadow-lg shadow-primary/10 transition-shadow group-hover:shadow-primary/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="view_kanban" style="font-variation-settings: 'FILL' 1;">view_kanban</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">CRM</span>
+</div>
+<!-- Inventory -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#00696e] to-[#008f96] flex items-center justify-center shadow-lg shadow-secondary/10 transition-shadow group-hover:shadow-secondary/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">Inventory</span>
+</div>
+<!-- Sales -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2e7d32] to-[#4caf50] flex items-center justify-center shadow-lg shadow-green-900/10 transition-shadow group-hover:shadow-green-900/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="monetization_on" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">Sales</span>
+</div>
+<!-- Accounting -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#ef6c00] to-[#ff9800] flex items-center justify-center shadow-lg shadow-orange-900/10 transition-shadow group-hover:shadow-orange-900/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="account_balance" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">Accounting</span>
+</div>
+<!-- Manufacturing -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#c62828] to-[#ef5350] flex items-center justify-center shadow-lg shadow-red-900/10 transition-shadow group-hover:shadow-red-900/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="precision_manufacturing" style="font-variation-settings: 'FILL' 1;">precision_manufacturing</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">Manufacturing</span>
+</div>
+<!-- Project -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#00838f] to-[#00acc1] flex items-center justify-center shadow-lg shadow-cyan-900/10 transition-shadow group-hover:shadow-cyan-900/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="assignment" style="font-variation-settings: 'FILL' 1;">assignment</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">Project</span>
+</div>
+<!-- POS -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#fbc02d] to-[#ffeb3b] flex items-center justify-center shadow-lg shadow-yellow-900/10 transition-shadow group-hover:shadow-yellow-900/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="point_of_sale" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">POS</span>
+</div>
+<!-- Settings -->
+<div class="flex flex-col items-center gap-4 cursor-pointer group app-icon-container">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#455a64] to-[#78909c] flex items-center justify-center shadow-lg shadow-slate-900/10 transition-shadow group-hover:shadow-slate-900/20">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-tight">Settings</span>
+</div>
+</div>
+<!-- Footer / Insight Strip (Design System Sectional Layer) -->
+<div class="mt-auto w-full bg-surface-container-low py-6 px-12 border-t border-outline-variant/10">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-6">
+<div class="flex flex-col">
+<span class="text-[0.6875rem] font-bold uppercase tracking-wider text-outline">System Status</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-secondary rounded-full"></span>
+<span class="text-sm font-medium text-on-surface">All modules operational</span>
+</div>
+</div>
+<div class="h-8 w-px bg-outline-variant/20"></div>
+<div class="flex flex-col">
+<span class="text-[0.6875rem] font-bold uppercase tracking-wider text-outline">Active Users</span>
+<span class="text-sm font-medium text-on-surface">14 Team Members</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface-container-lowest text-primary text-sm font-semibold rounded-md border border-outline-variant/10 hover:bg-surface-container-high transition-colors">
+                        App Store
+                    </button>
+<button class="px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-white text-sm font-semibold rounded-md shadow-sm hover:opacity-90 transition-all">
+                        Upgrade
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB Contextual Suppression) - Not needed for Main Dashboard as per guidelines, but adding a subtle Help anchor -->
+<div class="fixed bottom-8 right-8">
+<button class="w-14 h-14 bg-surface-container-lowest rounded-full shadow-2xl flex items-center justify-center text-primary border border-outline-variant/20 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</body></html>

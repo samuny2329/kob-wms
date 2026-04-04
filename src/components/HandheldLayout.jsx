@@ -30,13 +30,13 @@ const HandheldLayout = ({
     const [odooPass, setOdooPass] = useState(() => apiConfigs?.odoo?.password || '');
     const [setupStatus, setSetupStatus] = useState(null); // null | 'testing' | 'ok' | 'error'
 
-    const isLiveMode = apiConfigs?.odoo?.enabled && apiConfigs?.odoo?.useMock === false;
+    const isLiveMode = apiConfigs?.odoo?.enabled && !!apiConfigs?.odoo?.enabled;
 
     // Build effective odoo config (live-forced)
     const liveConfig = {
         ...apiConfigs?.odoo,
         url: odooUrl, db: odooDB, username: odooUser, password: odooPass,
-        enabled: true, useMock: false,
+        enabled: true, /* live mode */
     };
 
     // Manual "Sync Orders" button available to force-pull from Odoo
@@ -55,7 +55,7 @@ const HandheldLayout = ({
                 username: base.username || odooUser,
                 password: base.password || odooPass,
                 enabled: true,
-                useMock: false,
+                /* live mode */
             };
             const orders = await fetchAllOrders(cfg);
             if (orders && Array.isArray(orders) && orders.length > 0) {

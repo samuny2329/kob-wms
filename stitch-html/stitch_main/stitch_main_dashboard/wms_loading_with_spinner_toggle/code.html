@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f3f3f3",
+                    "surface-bright": "#f9f9f9",
+                    "primary": "#57344f",
+                    "secondary-container": "#92eff5",
+                    "on-primary-fixed": "#2f1029",
+                    "on-primary-container": "#f0bfe0",
+                    "surface-container-high": "#e8e8e8",
+                    "on-tertiary": "#ffffff",
+                    "secondary": "#00696e",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "error-container": "#ffdad6",
+                    "background": "#f9f9f9",
+                    "on-surface-variant": "#4e444a",
+                    "on-tertiary-fixed": "#40000c",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary-fixed": "#002022",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#95f1f8",
+                    "inverse-surface": "#2f3131",
+                    "primary-fixed": "#ffd7f1",
+                    "tertiary-container": "#983540",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-error": "#ffffff",
+                    "primary-container": "#714b67",
+                    "outline-variant": "#d1c3ca",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-container": "#006e73",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dadada",
+                    "surface-container": "#eeeeee",
+                    "on-tertiary-fixed-variant": "#822430",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#78d5db",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "tertiary": "#791e2a",
+                    "surface": "#f9f9f9",
+                    "outline": "#80747a",
+                    "inverse-on-surface": "#f1f1f1",
+                    "tertiary-fixed": "#ffdada",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#79526f",
+                    "surface-variant": "#e2e2e2",
+                    "on-tertiary-container": "#ffbdbf",
+                    "on-secondary-fixed-variant": "#004f53",
+                    "inverse-primary": "#e9b8d9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-custom {
+            animation: spin-slow 2s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar Skeleton (Immutable Logic) -->
+<header class="bg-gradient-to-r from-[#57344F] to-[#714B67] text-white font-['Inter'] font-medium text-sm h-14 flex justify-between items-center w-full px-6 shadow-lg fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-lg font-bold text-white tracking-tight">KOB WMS Pro</span>
+<nav class="hidden md:flex items-center gap-6">
+<!-- Skeleton Loading Shimmers for Nav -->
+<div class="h-4 w-20 bg-white/20 rounded-lg"></div>
+<div class="h-4 w-20 bg-white/20 rounded-lg"></div>
+<div class="h-4 w-20 bg-white/20 rounded-lg"></div>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined hover:bg-white/10 transition-colors p-1.5 rounded-lg cursor-pointer">notifications</span>
+<span class="material-symbols-outlined hover:bg-white/10 transition-colors p-1.5 rounded-lg cursor-pointer">help</span>
+<span class="material-symbols-outlined hover:bg-white/10 transition-colors p-1.5 rounded-lg cursor-pointer">account_circle</span>
+</div>
+</header>
+<main class="relative h-screen w-full flex flex-col items-center justify-center pt-14">
+<!-- Background Texture Overlay -->
+<div class="absolute inset-0 z-0 opacity-5 pointer-events-none" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAp_J-ki_nccmQRCQsm1hx5C-ZdOtbS4mn8H32rj2UBADrBgPpsbfNOtp0dtQ5jmZWsvto1m-_M1ZagesBSLkPe8APM59OZ0s1OQKtO-9k7et94vIYXt3vM2k2zEV33pew8AYCiz7ClIRCd_h5byol_4W018KGGjF2BXtgoj1STvTMk-2P7mX8hwRe0awnuhgGT7nck5l9GdUulYg_HjAZmqM8KkYlEQD5zOyNLc5eSqXlCsJeSuSrf8Ru_Xj4L0Tv_N_lIgZwZg3h9');"></div>
+<!-- Central Loading Container -->
+<div class="relative z-10 flex flex-col items-center max-w-md w-full px-8">
+<!-- Bento-style Loading Card -->
+<div class="bg-surface-container-lowest p-12 rounded-xl shadow-[0_8px_32px_rgba(47,49,49,0.06)] flex flex-col items-center w-full text-center">
+<!-- Data Mode Toggle Section -->
+<div class="mb-10 w-full">
+<div class="inline-flex flex-col items-center gap-2">
+<span class="font-['Inter'] text-[0.6875rem] font-medium uppercase tracking-[0.05em] text-on-surface-variant">Data Mode Selection</span>
+<div class="bg-surface-container p-1 rounded-lg flex items-center gap-1">
+<button class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-white shadow-sm text-primary transition-all">
+                                Live
+                            </button>
+<button class="px-4 py-1.5 text-xs font-medium rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all">
+                                Cached
+                            </button>
+</div>
+</div>
+</div>
+<!-- Animated Circular Progress -->
+<div class="relative mb-8 flex justify-center items-center">
+<div class="relative w-28 h-28 flex items-center justify-center">
+<!-- Outer track -->
+<div class="absolute inset-0 rounded-full border-4 border-surface-container"></div>
+<!-- Odoo-style primary spinner -->
+<div class="absolute inset-0 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin-custom" style="border-top-color: #714B67;"></div>
+<!-- Center icon/logo placeholder -->
+<div class="z-10 flex items-center justify-center bg-white rounded-full p-2 shadow-sm">
+<span class="material-symbols-outlined text-[#714B67] text-4xl" style="font-variation-settings: 'FILL' 1;">sync</span>
+</div>
+</div>
+</div>
+<!-- Status Messages -->
+<div class="space-y-3">
+<h2 class="text-on-surface font-medium text-lg">Synchronizing Warehouse Data...</h2>
+<p class="text-on-surface-variant text-sm font-normal leading-relaxed">
+                        Optimizing inventory streams and validating picking routes for Main Facility Zone A-12.
+                    </p>
+</div>
+<!-- Minimal Progress Meter -->
+<div class="mt-10 w-full bg-surface-container h-1 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-700 ease-out" style="width: 65%;"></div>
+</div>
+<div class="mt-2 flex justify-between w-full">
+<span class="text-[0.6875rem] font-bold text-on-surface-variant tracking-wider">65% COMPLETE</span>
+<span class="text-[0.6875rem] font-bold text-on-surface-variant tracking-wider">FETCHING SKUS</span>
+</div>
+</div>
+<!-- Footer Branding/Context -->
+<div class="mt-8 flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+<span class="text-[0.6875rem] font-bold text-on-surface-variant tracking-wide">SECURE SSL SESSION</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full">
+<span class="text-[0.6875rem] font-bold text-on-surface-variant tracking-wide">VERSION 4.2.0-PRO</span>
+</div>
+</div>
+</div>
+<!-- Decorative Foreground Asset -->
+<div class="absolute bottom-12 right-12 opacity-10 grayscale hover:grayscale-0 transition-all duration-500 hidden lg:block">
+<img alt="Warehouse schematic" class="w-64 h-auto rounded-xl" data-alt="Technical blueprint of a modern logistics warehouse with organized shelving units and subtle isometric grid lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEOnYSxZxozNHj2wW7kmHykTXJGIBnYSpN1HDQqPl7Sb9czVui00oL9s1bfALAdqUckLNzWTG6G8ZVY-t5FuTv7Qu7WG8q4PuSUi2ovBqBM0Mw19XMsddBqMis4gtsjVs5iAM6oSbEkRUcq0PgnbZFecQ4PIcdFBo0FFpZsn6TMglLy89f4bhB9aQTJvrCfZ9eRtPYqLTejyWBPeMNg63yuIXkQolD2ET9zD-UqKd5GlqduGX6ghEr-ZPBXnqDWUTS0utYqnXHx_2L"/>
+</div>
+</main>
+<!-- SideNavBar Skeleton (Inactive Visual Anchor) -->
+<aside class="fixed left-0 top-14 bottom-0 w-64 bg-[#F3F3F3] border-r-0 flex flex-col py-4 pl-4 opacity-40 pointer-events-none select-none">
+<div class="flex items-center gap-3 mb-8 pr-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest"></div>
+<div class="flex flex-col gap-1">
+<div class="h-3 w-24 bg-surface-container-highest rounded"></div>
+<div class="h-2 w-16 bg-surface-container-highest/60 rounded"></div>
+</div>
+</div>
+<div class="space-y-4 flex-1">
+<div class="flex items-center gap-3 px-4 py-3 rounded-l-lg bg-white/50">
+<div class="w-5 h-5 bg-primary/20 rounded"></div>
+<div class="h-3 w-28 bg-primary/20 rounded"></div>
+</div>
+<div class="flex items-center gap-3 px-4 py-3">
+<div class="w-5 h-5 bg-surface-container-highest rounded"></div>
+<div class="h-3 w-24 bg-surface-container-highest rounded"></div>
+</div>
+<div class="flex items-center gap-3 px-4 py-3">
+<div class="w-5 h-5 bg-surface-container-highest rounded"></div>
+<div class="h-3 w-20 bg-surface-container-highest rounded"></div>
+</div>
+<div class="flex items-center gap-3 px-4 py-3">
+<div class="w-5 h-5 bg-surface-container-highest rounded"></div>
+<div class="h-3 w-26 bg-surface-container-highest rounded"></div>
+</div>
+</div>
+<div class="mt-auto pr-4">
+<div class="h-10 w-full bg-surface-container-highest rounded-lg"></div>
+</div>
+</aside>
+</body></html>

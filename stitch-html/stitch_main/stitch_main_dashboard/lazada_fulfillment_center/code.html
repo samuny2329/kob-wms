@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OmniChannel Ledger - Lazada Global Fulfillment</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#4b5d33",
+                    "surface-tint": "#79526f",
+                    "on-secondary-container": "#725f6b",
+                    "inverse-surface": "#2e3132",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#d8c0ce",
+                    "secondary-container": "#f5dbea",
+                    "on-background": "#191c1d",
+                    "outline-variant": "#d1c3ca",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-container": "#c0d5a0",
+                    "on-surface-variant": "#4e444a",
+                    "tertiary": "#34451e",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#d5eab4",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "inverse-primary": "#e9b8d9",
+                    "primary-fixed": "#ffd7f1",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-secondary-fixed": "#251721",
+                    "surface-container": "#edeeef",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#112000",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8f9fa",
+                    "surface-container-low": "#f3f4f5",
+                    "surface": "#f8f9fa",
+                    "primary": "#57344f",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "primary-container": "#714b67",
+                    "outline": "#80747a",
+                    "on-primary-fixed": "#2f1029",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "secondary": "#6c5965",
+                    "on-secondary-fixed-variant": "#53424d",
+                    "surface-variant": "#e1e3e4",
+                    "surface-dim": "#d9dadb",
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "on-primary-container": "#f0bfe0",
+                    "secondary-fixed": "#f5dbea",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-high": "#e7e8e9",
+                    "on-error": "#ffffff",
+                    "lazada-blue": "#0f146d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-nav {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 glass-nav shadow-[0px_4px_20px_rgba(25,28,29,0.06)] flex justify-between items-center px-6 h-14 w-full">
+<div class="flex items-center gap-8">
+<span class="text-lg font-semibold text-[#714B67] dark:text-[#a37c98]">OmniChannel Ledger</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-inter body-sm tracking-tight text-[#714B67] border-b-2 border-[#714B67]" href="#">Orders</a>
+<a class="font-inter body-sm tracking-tight text-zinc-500 hover:bg-zinc-100/50 transition-colors" href="#">Inventory</a>
+<a class="font-inter body-sm tracking-tight text-zinc-500 hover:bg-zinc-100/50 transition-colors" href="#">Logistics</a>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-48 placeholder:text-outline-variant" placeholder="Search SKU or Order ID" type="text"/>
+</div>
+<button class="bg-gradient-to-br from-[#57344f] to-[#714b67] text-white px-4 py-1.5 rounded-lg text-xs font-medium shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="sync">sync</span>
+                Sync Orders
+            </button>
+<span class="material-symbols-outlined text-zinc-500 cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-zinc-500 cursor-pointer" data-icon="settings">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="User profile" data-alt="close-up portrait of a professional operations manager in a clean corporate office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9FePVUDaXyOtg8uP-s91cVY6Zd1q6NaeRl0aY6nSrhUXS4sRdwcsXqoNfL_vpkiCa8FC0S94_r0fXAiPpQ7EMGqYXQuA6P1q4BIGUzduBSx7S3uyGHXIkXgaianf9fJ--lqYZAiqCtsY6OqCcymCPWq-Y7Zp9TL1U2VQroR0xXLqcPrUJwk8tCiOBYlhuWl6w_9xgv_IgxwTvJ-8OAOxjbUWRiALptb7PSoldsy86Xy0YZLzjQdFUrZCIuZapor-BlmeH06xoAmTw"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[220px] z-[60] bg-zinc-100 flex flex-col h-full pt-16 pb-4 px-3">
+<div class="mb-8 px-4">
+<h2 class="text-sm font-bold text-zinc-900">Enterprise Core</h2>
+<p class="text-[0.65rem] text-zinc-500 uppercase tracking-widest font-bold">V19.4 Operational</p>
+</div>
+<div class="space-y-1 flex-1">
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined text-lg" data-icon="dashboard">dashboard</span>
+<span class="font-inter text-[0.75rem] font-medium">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 bg-white text-[#714B67] border-l-4 border-[#714B67] transition-all cursor-pointer rounded-r-lg">
+<span class="material-symbols-outlined text-lg" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-inter text-[0.75rem] font-medium">Orders</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined text-lg" data-icon="inventory_2">inventory_2</span>
+<span class="font-inter text-[0.75rem] font-medium">Inventory</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined text-lg" data-icon="inventory">inventory</span>
+<span class="font-inter text-[0.75rem] font-medium">Products</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined text-lg" data-icon="leaderboard">leaderboard</span>
+<span class="font-inter text-[0.75rem] font-medium">Analytics</span>
+</div>
+</div>
+<div class="border-t border-zinc-200 pt-4 space-y-1">
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined text-lg" data-icon="help_outline">help_outline</span>
+<span class="font-inter text-[0.75rem] font-medium">Help</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined text-lg" data-icon="logout">logout</span>
+<span class="font-inter text-[0.75rem] font-medium">Logout</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[220px] pt-14 p-6 min-h-screen bg-surface">
+<!-- Header Section -->
+<header class="flex justify-between items-end mb-8">
+<div>
+<h1 class="headline-sm font-medium text-on-surface">Lazada Global Fulfillment</h1>
+<p class="body-sm text-on-surface-variant">Manage KOB WMS Pro logistics and SKU synchronization.</p>
+</div>
+<div class="flex gap-2">
+<div class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm gap-4">
+<div class="flex flex-col">
+<span class="label-md text-on-surface-variant uppercase font-bold text-[0.65rem] tracking-tighter">Stock Sync</span>
+<span class="text-xs font-semibold text-tertiary">99.8% Healthy</span>
+</div>
+<div class="h-8 w-px bg-zinc-200"></div>
+<div class="flex flex-col">
+<span class="label-md text-on-surface-variant uppercase font-bold text-[0.65rem] tracking-tighter">Avg SLA</span>
+<span class="text-xs font-semibold text-[#714B67]">4.2 hrs</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Logistics Filters & Stats -->
+<section class="col-span-12 lg:col-span-3 space-y-6">
+<div class="bg-surface-container-low rounded-xl p-5 border-none">
+<h3 class="label-md text-on-surface-variant mb-4 font-bold">Active Logistics</h3>
+<div class="space-y-3">
+<label class="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-3">
+<input checked="" class="rounded text-[#0f146d] focus:ring-[#0f146d] border-zinc-300" type="checkbox"/>
+<span class="text-xs font-medium">Lazada Express</span>
+</div>
+<span class="text-[0.65rem] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">142</span>
+</label>
+<label class="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-3">
+<input class="rounded text-[#0f146d] focus:ring-[#0f146d] border-zinc-300" type="checkbox"/>
+<span class="text-xs font-medium">NinjaVan</span>
+</div>
+<span class="text-[0.65rem] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full">89</span>
+</label>
+<label class="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-3">
+<input class="rounded text-[#0f146d] focus:ring-[#0f146d] border-zinc-300" type="checkbox"/>
+<span class="text-xs font-medium">J&amp;T Express</span>
+</div>
+<span class="text-[0.65rem] bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full">34</span>
+</label>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-5 border-none shadow-[0px_4px_20px_rgba(25,28,29,0.04)]">
+<h3 class="label-md text-on-surface-variant mb-4 font-bold">Bulk Label Printing</h3>
+<p class="text-[0.7rem] text-zinc-500 mb-4 leading-relaxed">Select orders from the queue to generate aggregate shipping documentation.</p>
+<button class="w-full bg-[#0f146d] text-white py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="print">print</span>
+                        Print Selected (24)
+                    </button>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="text-[0.6rem] px-2 py-1 bg-zinc-100 text-zinc-600 rounded">Awb Only</span>
+<span class="text-[0.6rem] px-2 py-1 bg-zinc-100 text-zinc-600 rounded">Awb + Picklist</span>
+<span class="text-[0.6rem] px-2 py-1 bg-zinc-100 text-zinc-600 rounded">Invoice</span>
+</div>
+</div>
+</section>
+<!-- Order Queue Table -->
+<section class="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(25,28,29,0.04)] overflow-hidden">
+<div class="px-6 py-4 flex justify-between items-center bg-surface-dim/30">
+<h3 class="title-sm font-medium">Order Queue: Ready to Ship</h3>
+<div class="flex gap-4">
+<button class="text-[0.7rem] font-medium text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span> Filter SLA Risk
+                        </button>
+<button class="text-[0.7rem] font-medium text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span> Export
+                        </button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="p-4 w-10"><input class="rounded border-zinc-300" type="checkbox"/></th>
+<th class="p-4 label-md font-bold text-on-surface-variant">Order Details</th>
+<th class="p-4 label-md font-bold text-on-surface-variant">Courier</th>
+<th class="p-4 label-md font-bold text-on-surface-variant">SLA Countdown</th>
+<th class="p-4 label-md font-bold text-on-surface-variant text-right">SKU Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-zinc-100">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4"><input checked="" class="rounded border-zinc-300" type="checkbox"/></td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-xs font-bold">#LZD-92841-X</span>
+<span class="text-[0.65rem] text-zinc-500">2 Items • Digital Camera Z2</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-[#0f146d]"></div>
+<span class="text-xs">Lazada Express</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-error font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="timer">timer</span>
+<span class="text-xs">01:42:12</span>
+</div>
+</td>
+<td class="p-4 text-right">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 bg-tertiary-container/10 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-[0.6rem] font-bold text-tertiary">Synced: $249.00</span>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors">
+<td class="p-4"><input class="rounded border-zinc-300" type="checkbox"/></td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-xs font-bold">#LZD-92842-B</span>
+<span class="text-[0.65rem] text-zinc-500">1 Item • Mesh Running Shoes</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-red-500"></div>
+<span class="text-xs">NinjaVan</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="timer">timer</span>
+<span class="text-xs">14:15:44</span>
+</div>
+</td>
+<td class="p-4 text-right">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 bg-tertiary-container/10 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-[0.6rem] font-bold text-tertiary">Synced: $45.99</span>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4"><input checked="" class="rounded border-zinc-300" type="checkbox"/></td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-xs font-bold">#LZD-92845-W</span>
+<span class="text-[0.65rem] text-zinc-500">1 Item • Wireless Earbuds Pro</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-[#0f146d]"></div>
+<span class="text-xs">Lazada Express</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="timer">timer</span>
+<span class="text-xs">08:22:01</span>
+</div>
+</td>
+<td class="p-4 text-right">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 bg-error-container text-on-error-container rounded-full">
+<span class="material-symbols-outlined text-[0.7rem]" data-icon="sync_problem">sync_problem</span>
+<span class="text-[0.6rem] font-bold">Price Mismatch</span>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors">
+<td class="p-4"><input class="rounded border-zinc-300" type="checkbox"/></td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-xs font-bold">#LZD-92848-K</span>
+<span class="text-[0.65rem] text-zinc-500">3 Items • Smart Watch Bundle</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-red-500"></div>
+<span class="text-xs">NinjaVan</span>
+</div>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="timer">timer</span>
+<span class="text-xs">22:05:19</span>
+</div>
+</td>
+<td class="p-4 text-right">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 bg-tertiary-container/10 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="text-[0.6rem] font-bold text-tertiary">Synced: $120.00</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-surface-container-low/20 text-center">
+<button class="text-xs font-medium text-zinc-500 hover:text-primary transition-colors">Load More Orders (242 remaining)</button>
+</div>
+</section>
+<!-- Bottom Asymmetric Cards -->
+<section class="col-span-12 md:col-span-8">
+<div class="bg-gradient-to-br from-white to-zinc-50 rounded-xl p-6 shadow-sm flex items-center gap-8 relative overflow-hidden">
+<div class="flex-1">
+<span class="label-md font-bold text-on-surface-variant mb-1 block">Logistics Network Health</span>
+<h4 class="text-xl font-bold mb-2">94% Fleet On-Time Rate</h4>
+<p class="text-xs text-zinc-500 leading-relaxed max-w-md">Lazada Express is currently experiencing high volume in the South-East region. Consider shifting urgent NinjaVan orders to J&amp;T for faster processing.</p>
+<div class="mt-4 flex gap-4">
+<div class="flex flex-col">
+<span class="text-lg font-bold text-[#0f146d]">12m</span>
+<span class="text-[0.6rem] text-zinc-400 font-bold uppercase">Avg Pick Up</span>
+</div>
+<div class="flex flex-col">
+<span class="text-lg font-bold text-tertiary">102</span>
+<span class="text-[0.6rem] text-zinc-400 font-bold uppercase">Drivers Active</span>
+</div>
+</div>
+</div>
+<div class="hidden md:block w-48 h-32 rounded-lg bg-surface-container overflow-hidden">
+<img alt="Logistics map" class="object-cover w-full h-full" data-alt="minimalist modern data visualization dashboard showing logistics routes with thin glowing lines on a dark gray grid background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQY9wCVSHzVZaRPZibpX6ZB1LVVmZfdMDfNbstdMIx-TbWjmhCeB30SlFrLQLqzeMY62aW-uMYJXHmpsZ1PKJ6E2rl1psIUejArhWO4mAPQFQoENNaWamxXL5rcssZcvh0HlU_Mwlfl9M7Mgb-c5LFQA3KyC0OEHOjjpNrMa2BnMu-EaoWDal9YNHgtyGiGWFw-iQR_7-OG4cdcqdFeql7zqJXmrezssCWFu57BjFO0j0WD-npRerMAacRD-B5W94qLs16ljZqlhFw"/>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="local_shipping">local_shipping</span>
+</div>
+</div>
+</section>
+<section class="col-span-12 md:col-span-4 space-y-6">
+<div class="bg-[#0f146d] text-white rounded-xl p-6 relative overflow-hidden">
+<span class="label-md font-bold opacity-80 mb-1 block">Marketplace Sync</span>
+<h4 class="text-lg font-bold mb-4">SKU Pulse Monitoring</h4>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-[0.75rem]">
+<span>Lazada SG</span>
+<span class="font-bold">Connected</span>
+</div>
+<div class="w-full bg-white/20 h-1.5 rounded-full">
+<div class="bg-white h-full w-[92%] rounded-full"></div>
+</div>
+<div class="flex justify-between items-center text-[0.75rem]">
+<span>Lazada MY</span>
+<span class="font-bold">Connected</span>
+</div>
+<div class="w-full bg-white/20 h-1.5 rounded-full">
+<div class="bg-white h-full w-[100%] rounded-full"></div>
+</div>
+</div>
+<button class="mt-6 w-full py-2 bg-white/10 hover:bg-white/20 transition-colors rounded text-[0.7rem] font-bold border border-white/20">FORCE STOCK SYNC</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-[#57344f] to-[#714b67] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-[100]">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+</body></html>

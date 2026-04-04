@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invoice Management | KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e7e8e9",
+                        "outline": "#80747a",
+                        "on-tertiary-fixed": "#112000",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "tertiary": "#34451e",
+                        "secondary-fixed-dim": "#85d3d9",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d9dadb",
+                        "outline-variant": "#d1c3ca",
+                        "on-secondary-fixed-variant": "#004f53",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary-container": "#4b5d33",
+                        "background": "#f8f9fa",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#714b67",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "on-surface": "#191c1d",
+                        "on-primary-fixed": "#2f1029",
+                        "inverse-surface": "#2e3132",
+                        "secondary-fixed": "#a1f0f5",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9fa",
+                        "on-surface-variant": "#4e444a",
+                        "surface-bright": "#f8f9fa",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "tertiary-fixed": "#d5eab4",
+                        "secondary-container": "#9eedf2",
+                        "on-background": "#191c1d",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-fixed": "#002022",
+                        "on-secondary-container": "#0c6d72",
+                        "surface-container": "#edeeef",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "primary": "#57344f",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#e9b8d9",
+                        "surface-container-low": "#f3f4f5",
+                        "on-tertiary-container": "#c0d5a0",
+                        "surface-tint": "#79526f",
+                        "secondary": "#00696e",
+                        "primary-fixed": "#ffd7f1",
+                        "on-primary-container": "#f0bfe0",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "4px",
+                        "lg": "4px",
+                        "xl": "8px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"],
+                        "mono": ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .amber-pulse { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1c3ca; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen">
+<main class="w-full max-w-[1920px] mx-auto min-h-screen flex flex-col pb-24">
+<!-- 1. Alert Banner -->
+<section class="w-full bg-primary p-3 flex justify-between items-center px-8 text-on-primary">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]">notification_important</span>
+<span class="text-[0.875rem] font-medium tracking-tight">12 shipped orders pending invoice creation</span>
+</div>
+<button class="bg-surface-container-lowest text-primary px-4 py-1.5 rounded-sm text-[0.8125rem] font-bold uppercase tracking-wider hover:bg-surface-container-low transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                Auto-Create All
+            </button>
+</section>
+<div class="p-8 flex-grow flex flex-col gap-6">
+<!-- 2. KPI Strip -->
+<section class="grid grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest p-5 rounded-sm border-l-4 border-primary shadow-sm flex flex-col justify-between h-32">
+<span class="label-md uppercase text-[0.75rem] font-bold tracking-[0.05em] text-outline">Total Invoices</span>
+<div class="flex items-baseline justify-between">
+<span class="text-3xl font-black text-on-surface">1,428</span>
+<span class="material-symbols-outlined text-primary-container opacity-20 text-4xl">description</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-sm border-l-4 border-[#f59e0b] shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="label-md uppercase text-[0.75rem] font-bold tracking-[0.05em] text-outline">Draft / Pending Post</span>
+<button class="text-[#f59e0b] text-[0.7rem] font-bold hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">send</span> POST ALL
+                        </button>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-3xl font-black text-[#f59e0b]">42</span>
+<span class="material-symbols-outlined text-[#f59e0b] opacity-20 text-4xl">pending_actions</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-sm border-l-4 border-secondary shadow-sm flex flex-col justify-between h-32">
+<span class="label-md uppercase text-[0.75rem] font-bold tracking-[0.05em] text-outline">Posted This Month</span>
+<div class="flex items-baseline justify-between">
+<span class="text-3xl font-black text-secondary">312</span>
+<span class="material-symbols-outlined text-secondary opacity-20 text-4xl">task_alt</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-sm border-l-4 border-primary-container shadow-sm flex flex-col justify-between h-32">
+<span class="label-md uppercase text-[0.75rem] font-bold tracking-[0.05em] text-outline">Revenue This Month</span>
+<div class="flex items-baseline justify-between">
+<span class="text-3xl font-black text-on-surface tabular-nums">฿ 2,450,190</span>
+<span class="material-symbols-outlined text-primary-container opacity-20 text-4xl">payments</span>
+</div>
+</div>
+</section>
+<!-- 3. Pipeline Status Tabs -->
+<section class="flex border-b border-outline-variant/30 mt-2">
+<button class="px-6 py-3 text-[0.8125rem] font-bold tracking-wider text-primary border-b-2 border-primary flex items-center gap-2">
+                    JUST CREATED
+                    <span class="w-2 h-2 rounded-full bg-[#f59e0b] amber-pulse"></span>
+</button>
+<button class="px-6 py-3 text-[0.8125rem] font-bold tracking-wider text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
+                    POSTED
+                </button>
+<button class="px-6 py-3 text-[0.8125rem] font-bold tracking-wider text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
+                    PAID
+                </button>
+<button class="px-6 py-3 text-[0.8125rem] font-bold tracking-wider text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
+                    ALL
+                </button>
+<div class="ml-auto flex items-center gap-2 mb-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-sm text-[0.8125rem] focus:ring-1 focus:ring-primary w-64" placeholder="Search Invoice, SO, Customer..." type="text"/>
+</div>
+<button class="p-2 text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined">filter_list</span></button>
+<button class="p-2 text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined">download</span></button>
+</div>
+</section>
+<!-- 4. Invoice Table -->
+<section class="flex-grow overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-0">
+<thead class="bg-surface-container-low sticky top-0 z-10">
+<tr>
+<th class="p-3 w-10"><input class="rounded-sm text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline">Invoice #</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline">References</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline">Customer</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline text-center">Platform</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline">Created At</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline">Timeline</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline text-right">Amount / VAT</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline text-right">Total</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline text-center">Status</th>
+<th class="p-3 label-md uppercase text-[0.7rem] font-bold tracking-[0.1em] text-outline text-center">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: New/Draft -->
+<tr class="bg-surface hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3"><input class="rounded-sm text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-3">
+<div class="flex items-center gap-2">
+<span class="font-mono text-[0.8125rem] font-bold text-primary-container">INV/2026/00142</span>
+<span class="bg-[#f59e0b] text-white text-[0.6rem] font-black px-1 rounded-sm animate-pulse">NEW</span>
+</div>
+</td>
+<td class="p-3">
+<div class="flex flex-col">
+<span class="text-secondary text-[0.75rem] font-bold hover:underline cursor-pointer">S00421</span>
+<span class="text-outline text-[0.7rem]">K-On/OUT/621908</span>
+</div>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img alt="Somchai" data-alt="minimalist avatar icon for user somchai with professional clean aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkZuzM8B7oDIrUnvdp-mgC0VJ1TESDMTVQ4ZBN1chLBiNdBgh3ZucyPzGSdin0-fJV0f4cMkgOukICKcP7imtVdT5CTjLRGmsAgqNuK9f_isyJt4u4wYLaNyzEx0zFTmLs6PKpuRVth1j01In6Wnl4N3BGAItyuwYc-a5KmIJJFKQS5A4-r6narCPhI1KN0qMrlWCqQvarmCyfWHfjjivpvJZ5yK_0Ir2xV-4yJgl0FAvpGWs-7hFQzbK2zhLObITXUIGgZZp_JGrJ"/>
+</div>
+<span class="text-[0.8125rem] font-medium">Somchai K.</span>
+</div>
+</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 bg-[#ff4d2d] text-white text-[0.65rem] font-bold rounded-full">Shopee</span>
+</td>
+<td class="p-3 text-[0.8125rem] text-outline">Oct 24, 2026 14:22</td>
+<td class="p-3">
+<div class="flex items-center gap-1 text-[0.65rem] font-bold text-outline">
+<span class="text-secondary">Pick ✓</span>
+<span class="text-secondary">Pack ✓</span>
+<span class="text-secondary">Ship ✓</span>
+<span class="text-secondary">Inv ✓</span>
+<span class="opacity-30">Post</span>
+</div>
+</td>
+<td class="p-3 text-right tabular-nums">
+<div class="flex flex-col">
+<span class="text-[0.8125rem] font-medium text-on-surface">฿ 1,200.00</span>
+<span class="text-[0.7rem] text-outline">VAT ฿ 84.00</span>
+</div>
+</td>
+<td class="p-3 text-right tabular-nums">
+<span class="text-[0.9375rem] font-extrabold text-on-surface">฿ 1,284.00</span>
+</td>
+<td class="p-3 text-center">
+<span class="px-2 py-1 bg-[#fff8e1] text-[#f59e0b] border border-[#f59e0b]/20 text-[0.65rem] font-black uppercase rounded-sm">DRAFT</span>
+</td>
+<td class="p-3 text-center">
+<div class="flex items-center justify-center gap-2">
+<button class="bg-[#f59e0b] text-white px-2 py-1 rounded-sm text-[0.7rem] font-bold hover:brightness-95">Post</button>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Posted -->
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors group">
+<td class="p-3"><input class="rounded-sm text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-3 font-mono text-[0.8125rem] font-bold text-primary-container">INV/2026/00141</td>
+<td class="p-3">
+<div class="flex flex-col">
+<span class="text-secondary text-[0.75rem] font-bold hover:underline cursor-pointer">S00418</span>
+<span class="text-outline text-[0.7rem]">K-On/OUT/621901</span>
+</div>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img alt="Lazada User" data-alt="minimalist avatar icon with clean professional aesthetic for user lazada customer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNZp_OE2c9kqgHDSGN2hIx8nUmgAHYrRZNYDjO8SnGSisOxyTRxddslhOPsKFq7GjFa7L18R6fCxxZD8eytaBhtf3lMKiDJWqiQQk5Zuk8lph8lWmvO_TYghug4FUVRIPCv74bKOgXweZhnACIxvCLUn10mRacg5rQvSNBgdTnQ6T4VS-VvUgHYrgX01l79cGV1bqYKCXrspJf8Tf9WP0MGN9_VywppfP_HQLea3Os0_QVKuZmNhsVBqjjl69Cz9GfjTl_JtyD_ZWn"/>
+</div>
+<span class="text-[0.8125rem] font-medium">Praewpan S.</span>
+</div>
+</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 bg-[#000081] text-white text-[0.65rem] font-bold rounded-full">Lazada</span>
+</td>
+<td class="p-3 text-[0.8125rem] text-outline">Oct 24, 2026 12:45</td>
+<td class="p-3">
+<div class="flex items-center gap-1 text-[0.65rem] font-bold text-secondary">
+<span>Pick ✓</span>
+<span>Pack ✓</span>
+<span>Ship ✓</span>
+<span>Inv ✓</span>
+<span>Post ✓</span>
+</div>
+</td>
+<td class="p-3 text-right tabular-nums">
+<div class="flex flex-col">
+<span class="text-[0.8125rem] font-medium text-on-surface">฿ 850.00</span>
+<span class="text-[0.7rem] text-outline">VAT ฿ 59.50</span>
+</div>
+</td>
+<td class="p-3 text-right tabular-nums">
+<span class="text-[0.9375rem] font-extrabold text-on-surface">฿ 909.50</span>
+</td>
+<td class="p-3 text-center">
+<span class="px-2 py-1 bg-secondary-container/30 text-secondary border border-secondary/20 text-[0.65rem] font-black uppercase rounded-sm">POSTED</span>
+</td>
+<td class="p-3 text-center">
+<div class="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">print</span></button>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Paid -->
+<tr class="bg-surface hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3"><input class="rounded-sm text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="p-3 font-mono text-[0.8125rem] font-bold text-primary-container">INV/2026/00140</td>
+<td class="p-3">
+<div class="flex flex-col">
+<span class="text-secondary text-[0.75rem] font-bold hover:underline cursor-pointer">S00412</span>
+<span class="text-outline text-[0.7rem]">K-On/OUT/621890</span>
+</div>
+</td>
+<td class="p-3">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img alt="TikTok Store" data-alt="minimalist avatar icon for user tiktok store customer with professional clean aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0Puk4NNOTLr_JHc6O6naitXuFW73ixERTB5OF96-406ngkeB_J-zAzKRO2V_uTkB80OIPEOwshFypBalnz84UTDAeYPfWmgzReLsKMmr4xpT6-Nv87_mh-ZyN-U2MUwvQL0diUApX2Ddn4woAFWyeDvbQ8EihaOelUzEz4QE3O_tddMJrQWWv7YLon_Kv3my6JSn_jZyoTa-1k7W6Gy5wvApfkzaej4zWNU8WeDQ-1USgY_AEpKfpdgfmBwz00jJx3ZcfZRdebXix"/>
+</div>
+<span class="text-[0.8125rem] font-medium">Boonchuay R.</span>
+</div>
+</td>
+<td class="p-3 text-center">
+<span class="px-2 py-0.5 bg-black text-white text-[0.65rem] font-bold rounded-full">TikTok</span>
+</td>
+<td class="p-3 text-[0.8125rem] text-outline">Oct 24, 2026 11:30</td>
+<td class="p-3">
+<div class="flex items-center gap-1 text-[0.65rem] font-bold text-secondary">
+<span>Pick ✓</span>
+<span>Pack ✓</span>
+<span>Ship ✓</span>
+<span>Inv ✓</span>
+<span>Post ✓</span>
+</div>
+</td>
+<td class="p-3 text-right tabular-nums">
+<div class="flex flex-col">
+<span class="text-[0.8125rem] font-medium text-on-surface">฿ 15,400.00</span>
+<span class="text-[0.7rem] text-outline">VAT ฿ 1,078.00</span>
+</div>
+</td>
+<td class="p-3 text-right tabular-nums">
+<span class="text-[0.9375rem] font-extrabold text-on-surface">฿ 16,478.00</span>
+</td>
+<td class="p-3 text-center">
+<span class="px-2 py-1 bg-[#e8f5e9] text-[#2e7d32] border border-[#2e7d32]/20 text-[0.65rem] font-black uppercase rounded-sm">PAID</span>
+</td>
+<td class="p-3 text-center">
+<div class="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">print</span></button>
+<button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</td>
+</tr>
+<!-- More Rows to fill space -->
+<script>
+                            const platforms = ['Shopee', 'Lazada', 'TikTok'];
+                            const colors = ['#ff4d2d', '#000081', 'black'];
+                            for(let i=0; i<8; i++) {
+                                document.write(`
+                                <tr class="bg-surface hover:bg-surface-container-lowest transition-colors group">
+                                    <td class="p-3"><input type="checkbox" class="rounded-sm text-primary focus:ring-primary"></td>
+                                    <td class="p-3 font-mono text-[0.8125rem] font-bold text-primary-container">INV/2026/00${139-i}</td>
+                                    <td class="p-3">
+                                        <div class="flex flex-col">
+                                            <span class="text-secondary text-[0.75rem] font-bold hover:underline cursor-pointer">S00${400-i}</span>
+                                            <span class="text-outline text-[0.7rem]">K-On/OUT/6218${80-i}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3"><span class="text-[0.8125rem] font-medium">Customer Row ${i+4}</span></td>
+                                    <td class="p-3 text-center">
+                                        <span class="px-2 py-0.5 text-white text-[0.65rem] font-bold rounded-full" style="background: ${colors[i % 3]}">${platforms[i % 3]}</span>
+                                    </td>
+                                    <td class="p-3 text-[0.8125rem] text-outline">Oct 23, 2026 09:15</td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-1 text-[0.65rem] font-bold text-secondary">
+                                            <span>Pick ✓</span><span>Pack ✓</span><span>Ship ✓</span><span>Inv ✓</span><span>Post ✓</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-right tabular-nums">
+                                        <div class="flex flex-col">
+                                            <span class="text-[0.8125rem] font-medium text-on-surface">฿ 2,100.00</span>
+                                            <span class="text-[0.7rem] text-outline">VAT ฿ 147.00</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-right tabular-nums">
+                                        <span class="text-[0.9375rem] font-extrabold text-on-surface">฿ 2,247.00</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <span class="px-2 py-1 bg-secondary-container/30 text-secondary border border-secondary/20 text-[0.65rem] font-black uppercase rounded-sm">POSTED</span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <div class="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                            <button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">print</span></button>
+                                            <button class="text-outline hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                `);
+                            }
+                        </script>
+</tbody>
+</table>
+</section>
+</div>
+<!-- 5. Sticky Bottom Action Bar -->
+<footer class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-outline-variant/20 px-8 py-3 flex items-center justify-between shadow-[0_-8px_24px_rgba(25,28,29,0.04)] z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-sm bg-primary/10 text-primary flex items-center justify-center font-black text-xs">8</span>
+<span class="text-[0.8125rem] font-bold text-on-surface">invoices selected</span>
+</div>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<div class="flex items-center gap-4">
+<button class="text-secondary hover:text-secondary-container text-[0.75rem] font-bold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">file_download</span> EXPORT CSV
+                    </button>
+<button class="text-secondary hover:text-secondary-container text-[0.75rem] font-bold flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">print</span> PRINT SELECTED
+                    </button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-container-low text-outline px-6 py-2 rounded-sm text-[0.8125rem] font-bold hover:text-on-surface transition-colors">
+                    Discard Selection
+                </button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-8 py-2 rounded-sm text-[0.8125rem] font-bold shadow-md hover:shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">cloud_upload</span>
+                    Post Selected to Odoo
+                </button>
+</div>
+</footer>
+</main>
+</body></html>

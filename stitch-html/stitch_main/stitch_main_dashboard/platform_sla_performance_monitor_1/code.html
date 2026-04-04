@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Dashboard - Platform SLA &amp; Performance Monitor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f3f3f3; }
+        ::-webkit-scrollbar-thumb { background: #d1c3ca; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eeeeee",
+                        "primary": "#57344f",
+                        "on-background": "#1a1c1c",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-container": "#fdccee",
+                        "background": "#f9f9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "outline": "#80747a",
+                        "on-primary-container": "#f0bfe0",
+                        "outline-variant": "#d1c3ca",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed-variant": "#004f53",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-fixed": "#ffd7f1",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "inverse-primary": "#e9b8d9",
+                        "tertiary-fixed": "#95f1f8",
+                        "surface": "#f9f9f9",
+                        "on-surface-variant": "#4e444a",
+                        "primary-fixed": "#ffd7f1",
+                        "primary-container": "#714b67",
+                        "on-secondary-container": "#795370",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e2e2e2",
+                        "tertiary": "#00474b",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-tint": "#79526f",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary-fixed": "#2e1029",
+                        "tertiary-container": "#006166",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "on-primary-fixed": "#2f1029",
+                        "secondary": "#79526f",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#78d5db",
+                        "secondary-fixed-dim": "#e8b8da",
+                        "on-secondary-fixed-variant": "#5f3b56",
+                        "on-tertiary-fixed": "#002022",
+                        "on-tertiary-container": "#7fdce2",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background">
+<!-- Shell Layout: SideNavBar & Main Content -->
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="flex flex-col fixed left-0 top-0 h-full z-40 w-20 lg:w-64 bg-[#F3F3F3] dark:bg-[#1A1C1C] border-r border-slate-200 dark:border-slate-800 transition-all duration-150 ease-in-out">
+<div class="p-6 flex flex-col gap-1">
+<span class="text-[11px] uppercase tracking-wider font-medium text-[#57344f] dark:text-[#714b67]">Warehouse Ops</span>
+<span class="text-[10px] text-slate-500 uppercase tracking-tighter">Global Monitor</span>
+</div>
+<nav class="flex-1 px-0 mt-4 overflow-y-auto">
+<div class="space-y-1">
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="api">api</span>
+<span class="text-[11px] uppercase tracking-wider font-medium lg:block hidden">Connectivity</span>
+</a>
+<a class="flex items-center px-6 py-3 bg-white dark:bg-[#57344f] text-[#57344f] dark:text-white border-l-4 border-[#00474b] transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="timer">timer</span>
+<span class="text-[11px] uppercase tracking-wider font-medium lg:block hidden">SLA Tracking</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="report_problem">report_problem</span>
+<span class="text-[11px] uppercase tracking-wider font-medium lg:block hidden">Complaints</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="local_shipping">local_shipping</span>
+<span class="text-[11px] uppercase tracking-wider font-medium lg:block hidden">Logistics</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="bar_chart">bar_chart</span>
+<span class="text-[11px] uppercase tracking-wider font-medium lg:block hidden">Analytics</span>
+</a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="storefront">storefront</span>
+<span class="text-[11px] uppercase tracking-wider font-medium lg:block hidden">Marketplaces</span>
+</a>
+</div>
+</nav>
+<div class="p-6 border-t border-slate-200 dark:border-slate-800">
+<button class="w-full bg-primary text-white text-[11px] uppercase tracking-widest font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span class="lg:block hidden">New Report</span>
+</button>
+<a class="flex items-center mt-6 text-slate-600 dark:text-slate-400 text-[11px] uppercase tracking-wider font-medium" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="logout">logout</span>
+<span class="lg:block hidden">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-20 lg:ml-64 min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-6 w-full h-14 sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-inter tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-lg font-bold text-[#57344f] dark:text-[#714b67] uppercase tracking-widest">Nexus Dashboard</span>
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-lg text-xs w-64 focus:ring-1 focus:ring-primary" placeholder="Search Metrics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border border-primary-fixed-dim">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="professional headshot of a male operations manager in a clean modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7Mig-8bC0AIDFwCcLi5JRjyHZ8h2r8K-YIZfS4tmOq0-EOiuH-ZsgYsC0B1v7nz_7Pw-qNMx0ho_PBeaAPKZXE2twrFuAIiqRkOHlAgXZ60-SiPbCXfS1A1gReclB_Dq7f_bB6V79cOR3VZ4SD3KHVNOpcLIltoWlvKByclJod9gX5pTeAm_vclXZ-HX29T0BBbz6_5VaxdCNgA-_Kxl9hj9Th--mXGzyLy9eccjPNz6Wp1RqwyssMA6dPVD7tbjoqLwAxxt6Vh4F"/>
+</div>
+</div>
+</header>
+<div class="p-8 max-w-[1600px] mx-auto">
+<!-- Scan Status Bar (Design System signature) -->
+<div class="w-full h-1 bg-surface-container-highest mb-8 overflow-hidden rounded-full">
+<div class="h-full bg-tertiary-fixed w-[92%]"></div>
+</div>
+<!-- Section 1: Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-tertiary">
+<p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-medium mb-1">Global SLA Success Rate</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-on-surface">98.4%</span>
+<span class="text-[11px] text-green-600 font-bold">+1.2%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-primary">
+<p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-medium mb-1">Total Active Complaints</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-on-surface">14</span>
+<span class="text-[11px] text-red-600 font-bold">+2 New</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-tertiary">
+<p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-medium mb-1">Avg. Fulfillment Time</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-on-surface">4.2h</span>
+<span class="text-[11px] text-green-600 font-bold">-0.5h</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 border-l-[3px] border-primary-container">
+<p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-medium mb-1">Active Shipments</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-on-surface">1,204</span>
+</div>
+</div>
+</div>
+<!-- Section 2: Platform Tabs -->
+<div class="mb-10">
+<div class="flex border-b border-outline-variant/20 mb-6">
+<button class="px-8 py-3 text-[11px] uppercase tracking-widest font-bold border-b-2 border-primary text-primary bg-white">Shopee</button>
+<button class="px-8 py-3 text-[11px] uppercase tracking-widest font-medium text-slate-500 hover:bg-slate-50 transition-colors">Lazada</button>
+<button class="px-8 py-3 text-[11px] uppercase tracking-widest font-medium text-slate-500 hover:bg-slate-50 transition-colors">TikTok Shop</button>
+</div>
+<!-- Platform Dashboard Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- SLA Fulfillment Column -->
+<div class="space-y-6">
+<h3 class="text-[11px] uppercase tracking-widest font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="verified">verified</span>
+                                SLA Fulfillment
+                            </h3>
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant/10">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-4">Ship-on-Time Rate</p>
+<div class="flex items-center justify-between mb-2">
+<span class="text-2xl font-bold">99.1%</span>
+<span class="text-[10px] font-bold px-2 py-0.5 bg-green-100 text-green-700 rounded-full">OPTIMAL</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full">
+<div class="h-full bg-tertiary w-[99%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant/10">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-4">Non-fulfillment Rate</p>
+<div class="flex items-center justify-between mb-2">
+<span class="text-2xl font-bold">0.45%</span>
+<span class="text-[10px] font-bold px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">STABLE</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full">
+<div class="h-full bg-yellow-500 w-[15%]"></div>
+</div>
+</div>
+</div>
+<!-- Client Complaint Status Column -->
+<div class="space-y-6">
+<h3 class="text-[11px] uppercase tracking-widest font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="forum">forum</span>
+                                Client Complaint Status
+                            </h3>
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant/10">
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Returns</p>
+<span class="text-xl font-bold">12 <span class="text-xs font-normal text-slate-400">/mo</span></span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Refunds</p>
+<span class="text-xl font-bold">08 <span class="text-xs font-normal text-slate-400">/mo</span></span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-slate-50">
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-2">Seller Rating</p>
+<div class="flex items-center gap-1">
+<span class="text-2xl font-bold mr-2">4.9</span>
+<span class="material-symbols-outlined text-yellow-500 text-sm" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-500 text-sm" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-500 text-sm" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-500 text-sm" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-yellow-500 text-sm" data-icon="star_half" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star_half</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Logistics Health Column -->
+<div class="space-y-6">
+<h3 class="text-[11px] uppercase tracking-widest font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="local_shipping">local_shipping</span>
+                                Logistics Health
+                            </h3>
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant/10 space-y-4">
+<div>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Avg. Delivery Time</p>
+<div class="flex justify-between items-end">
+<span class="text-xl font-bold">1.8 Days</span>
+<span class="text-[10px] text-green-600 font-medium mb-1">Top 5% of Sellers</span>
+</div>
+</div>
+<div class="h-[1px] bg-slate-50"></div>
+<div>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant mb-1">Package Loss Rate</p>
+<div class="flex justify-between items-end">
+<span class="text-xl font-bold">0.02%</span>
+<span class="text-[10px] text-on-surface-variant mb-1">Target: &lt; 0.05%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Critical Issues List -->
+<div class="mt-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-[11px] uppercase tracking-widest font-bold text-error flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="warning">warning</span>
+                            Critical Issues
+                        </h3>
+<button class="text-[10px] uppercase tracking-widest font-bold text-primary hover:underline">View All Alerts</button>
+</div>
+<div class="bg-surface-container-lowest rounded-lg overflow-hidden border border-error/10">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Issue Description</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Platform</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Severity</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Deadline</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-6 py-4">
+<p class="text-xs font-semibold text-on-surface">Potential SLA Breach: SKU-9042</p>
+<p class="text-[10px] text-slate-500">Pick list pending for &gt; 12 hours</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] px-2 py-0.5 bg-orange-100 text-orange-700 rounded font-bold uppercase">Shopee</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-[10px] font-medium uppercase">Critical</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs font-mono text-error">2h 14m</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[10px] bg-primary text-white px-4 py-1.5 rounded-lg font-bold uppercase tracking-widest hover:opacity-90">Dispatch Now</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-6 py-4">
+<p class="text-xs font-semibold text-on-surface">Negative Review: Delivery Delay</p>
+<p class="text-[10px] text-slate-500">Order #LX-88392 needs response</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-bold uppercase">Lazada</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+<span class="text-[10px] font-medium uppercase">Medium</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs font-mono text-on-surface-variant">24h 00m</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[10px] border border-outline-variant/30 text-primary px-4 py-1.5 rounded-lg font-bold uppercase tracking-widest hover:bg-slate-50">Respond</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-bright transition-colors">
+<td class="px-6 py-4">
+<p class="text-xs font-semibold text-on-surface">Bulk Refund Request (5 items)</p>
+<p class="text-[10px] text-slate-500">Quality control issue reported</p>
+</td>
+<td class="px-6 py-4">
+<span class="text-[10px] px-2 py-0.5 bg-black text-white rounded font-bold uppercase">TikTok Shop</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="text-[10px] font-medium uppercase">Critical</span>
+</div>
+</td>
+<td class="px-6 py-4 text-xs font-mono text-error">5h 45m</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[10px] bg-primary text-white px-4 py-1.5 rounded-lg font-bold uppercase tracking-widest hover:opacity-90">Investigate</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Footer / Status Info -->
+<footer class="mt-12 py-8 border-t border-slate-200 flex justify-between items-center text-slate-400">
+<p class="text-[10px] uppercase tracking-widest font-medium">Last Sync: Today at 09:42:15 AM (UTC+7)</p>
+<div class="flex gap-6">
+<a class="text-[10px] uppercase tracking-widest font-bold text-primary" href="#">Export CSV</a>
+<a class="text-[10px] uppercase tracking-widest font-bold text-primary" href="#">View Historical Data</a>
+</div>
+</footer>
+</div>
+</main>
+</div>
+<!-- Floating Action Button (Only on Home/Dashboard) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white shadow-xl flex items-center justify-center hover:scale-105 transition-transform z-50">
+<span class="material-symbols-outlined text-2xl" data-icon="auto_awesome">auto_awesome</span>
+</button>
+</body></html>

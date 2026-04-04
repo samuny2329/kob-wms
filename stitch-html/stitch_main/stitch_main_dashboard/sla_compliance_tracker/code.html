@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SLA Compliance Tracker - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "inverse-on-surface": "#f0f1f2",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#714b67",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2e3132",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#f8f9fa",
+                    "primary-fixed": "#ffd7f1",
+                    "secondary": "#6c5965",
+                    "on-tertiary-fixed": "#112000",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "on-background": "#191c1d",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "secondary-fixed": "#f5dbea",
+                    "on-primary-container": "#f0bfe0",
+                    "primary": "#57344f",
+                    "inverse-primary": "#e9b8d9",
+                    "tertiary-fixed": "#d5eab4",
+                    "tertiary": "#34451e",
+                    "on-secondary-container": "#725f6b",
+                    "tertiary-container": "#4b5d33",
+                    "surface-container-low": "#f3f4f5",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8f9fa",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f8f9fa",
+                    "secondary-container": "#f5dbea",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "surface-dim": "#d9dadb",
+                    "outline-variant": "#d1c3ca",
+                    "secondary-fixed-dim": "#d8c0ce",
+                    "surface-tint": "#79526f",
+                    "surface-container": "#edeeef",
+                    "on-tertiary-container": "#c0d5a0",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-primary-fixed": "#2f1029",
+                    "on-secondary-fixed-variant": "#53424d",
+                    "surface-variant": "#e1e3e4",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#4e444a",
+                    "on-secondary-fixed": "#251721",
+                    "outline": "#80747a",
+                    "surface-container-high": "#e7e8e9",
+                    "on-surface": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      body { font-family: 'Inter', sans-serif; }
+      .glass-nav {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      .whisper-shadow {
+        box-shadow: 0px 4px 20px rgba(25, 28, 29, 0.06);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Component -->
+<aside class="w-[220px] h-screen fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col py-4 z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'FILL' 1;">warehouse</span>
+</div>
+<div>
+<h1 class="font-medium text-[#714B67] text-lg leading-tight">KOB WMS Pro</h1>
+<p class="text-[0.65rem] text-slate-500 uppercase tracking-wider font-bold">Warehouse Management</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-2">
+<!-- Dashboard Active (Closest match for SLA Compliance Tracker) -->
+<a class="flex items-center px-4 py-2.5 bg-slate-200 dark:bg-slate-800 border-l-4 border-[#714B67] text-[#714B67] font-semibold transition-all duration-150 ease-in-out scale-95" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="font-inter text-[0.75rem] tracking-tight">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span class="font-inter text-[0.75rem] tracking-tight">Operations</span>
+</a>
+<a class="flex items-center px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="local_shipping">local_shipping</span>
+<span class="font-inter text-[0.75rem] tracking-tight">Logistics</span>
+</a>
+<a class="flex items-center px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-inter text-[0.75rem] tracking-tight">E-commerce</span>
+</a>
+<a class="flex items-center px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="inventory_2">inventory_2</span>
+<span class="font-inter text-[0.75rem] tracking-tight">Inventory</span>
+</a>
+<a class="flex items-center px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="assessment">assessment</span>
+<span class="font-inter text-[0.75rem] tracking-tight">Reports</span>
+</a>
+<a class="flex items-center px-4 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="receipt_long">receipt_long</span>
+<span class="font-inter text-[0.75rem] tracking-tight">Invoices</span>
+</a>
+</nav>
+</aside>
+<!-- TopNavBar Component -->
+<header class="fixed top-0 right-0 w-[calc(100%-220px)] z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-6 h-16 ml-[220px]">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#57344f] to-[#714b67] Inter">SLA Compliance Tracker</h2>
+<div class="h-6 w-px bg-slate-200"></div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 bg-surface-container-low border-none text-xs rounded-lg focus:ring-1 focus:ring-primary-container w-64" placeholder="Search SLA metrics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-300 relative">
+<span class="material-symbols-outlined text-slate-600" data-icon="chat">chat</span>
+</button>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-300 relative">
+<span class="material-symbols-outlined text-slate-600" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 ml-2 pl-4 border-l border-slate-200">
+<div class="text-right">
+<p class="text-xs font-semibold text-slate-800">Marcus Vane</p>
+<p class="text-[10px] text-slate-500 font-medium">Warehouse Manager</p>
+</div>
+<img alt="Warehouse Manager Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container/20" data-alt="Professional portrait of a mid-40s male logistics manager in a clean warehouse environment, soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd62KqU0l9JJY_V9-e-5Io1du6Mzn4_Hi-Y34I-pyI8-oTGqWgh8Fu2vuo5wYBHa_9mP5edELnW0HKBjekV7O44eETCcEYsS2KyTZYHiTEg0w6ES7btcivmQAgQLJU8YZZ73u-KNTsALKzhFWKqhNgHblu5rlxGRFh99_pDlv8x120PVqiS0Uk0A1Y0KxdAqO1jphffAOPbIr7xtY-74nEV3EGJ8RnuSDuwpd0iJw5LYLgwTYz3HrE5abQ_VbGRLARw5U471KydXFy"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[220px] pt-20 pb-12 px-8 min-h-screen">
+<!-- Mission Control Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Overall SLA Gauge (Asymmetric Focus) -->
+<section class="col-span-12 lg:col-span-4 bg-surface-container-lowest p-8 rounded-xl whisper-shadow border-none">
+<div class="flex flex-col items-center justify-center h-full text-center">
+<h3 class="text-on-surface-variant uppercase tracking-widest text-[10px] font-bold mb-8">Overall SLA Compliance</h3>
+<div class="relative w-48 h-48 flex items-center justify-center mb-6">
+<svg class="w-full h-full -rotate-90">
+<circle class="text-surface-container-low" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary-container" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-dasharray="552.9" stroke-dashoffset="32" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-5xl font-extrabold text-primary leading-none">94.2%</span>
+<span class="text-[10px] text-tertiary font-bold mt-2 uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                                +1.2% VS LW
+                            </span>
+</div>
+</div>
+<p class="text-on-surface-variant text-xs leading-relaxed max-w-[200px]">System performing at optimal levels. 2.4k orders processed in last 24h.</p>
+</div>
+</section>
+<!-- SLA Progress Bars -->
+<section class="col-span-12 lg:col-span-8 bg-surface-container-low p-8 rounded-xl border-none space-y-8">
+<div class="flex justify-between items-end mb-2">
+<h3 class="text-on-surface-variant uppercase tracking-widest text-[10px] font-bold">Key Performance Indicators</h3>
+<span class="text-[10px] text-slate-400 font-medium italic italic">Target: 98.0%</span>
+</div>
+<!-- PICK SLA -->
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-semibold uppercase">
+<span>PICK SLA</span>
+<span>96.5%</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 96.5%"></div>
+</div>
+</div>
+<!-- PACK SLA -->
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-semibold uppercase">
+<span>PACK SLA</span>
+<span>92.1%</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 92.1%"></div>
+</div>
+</div>
+<!-- SHIP SLA -->
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-semibold uppercase">
+<span>SHIP SLA</span>
+<span>98.8%</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container rounded-full" style="width: 98.8%"></div>
+</div>
+</div>
+<!-- Inventory Accuracy -->
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-semibold uppercase">
+<span>Inventory Accuracy</span>
+<span>89.4%</span>
+</div>
+<div class="w-full h-2.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error-container/40 bg-error rounded-full" style="width: 89.4%"></div>
+</div>
+</div>
+</section>
+<!-- Three Performance Cards -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Pick Performance -->
+<div class="bg-surface-container-lowest p-6 rounded-xl whisper-shadow flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary-container bg-primary-fixed p-2 rounded-lg" data-icon="pan_tool_alt">pan_tool_alt</span>
+<span class="text-[10px] font-bold text-tertiary px-2 py-0.5 bg-tertiary-fixed rounded-full">ON TARGET</span>
+</div>
+<h4 class="text-sm font-bold mb-1">Pick Velocity</h4>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-extrabold">2.4m</span>
+<span class="text-[10px] text-slate-500">Avg per line</span>
+</div>
+</div>
+<div class="mt-6 flex items-end gap-1 h-12">
+<div class="flex-1 bg-surface-container-low h-[40%] rounded-sm"></div>
+<div class="flex-1 bg-surface-container-low h-[60%] rounded-sm"></div>
+<div class="flex-1 bg-surface-container-low h-[80%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[95%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[70%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[85%] rounded-sm"></div>
+</div>
+</div>
+<!-- Pack Performance -->
+<div class="bg-surface-container-lowest p-6 rounded-xl whisper-shadow flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary-container bg-primary-fixed p-2 rounded-lg" data-icon="package_2">package_2</span>
+<span class="text-[10px] font-bold text-error px-2 py-0.5 bg-error-container rounded-full uppercase">At Risk</span>
+</div>
+<h4 class="text-sm font-bold mb-1">Pack Cycle Time</h4>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-extrabold">4.8m</span>
+<span class="text-[10px] text-slate-500">Target: 4.0m</span>
+</div>
+</div>
+<div class="mt-6 flex items-end gap-1 h-12">
+<div class="flex-1 bg-surface-container-low h-[90%] rounded-sm"></div>
+<div class="flex-1 bg-error h-[80%] rounded-sm"></div>
+<div class="flex-1 bg-error h-[100%] rounded-sm"></div>
+<div class="flex-1 bg-error h-[95%] rounded-sm"></div>
+<div class="flex-1 bg-surface-container-low h-[70%] rounded-sm"></div>
+<div class="flex-1 bg-surface-container-low h-[60%] rounded-sm"></div>
+</div>
+</div>
+<!-- Ship Performance -->
+<div class="bg-surface-container-lowest p-6 rounded-xl whisper-shadow flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary-container bg-primary-fixed p-2 rounded-lg" data-icon="local_shipping">local_shipping</span>
+<span class="text-[10px] font-bold text-tertiary px-2 py-0.5 bg-tertiary-fixed rounded-full">ON TARGET</span>
+</div>
+<h4 class="text-sm font-bold mb-1">Carrier Handover</h4>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-extrabold">18m</span>
+<span class="text-[10px] text-slate-500">Dwell time</span>
+</div>
+</div>
+<div class="mt-6 flex items-end gap-1 h-12">
+<div class="flex-1 bg-primary-container h-[40%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[45%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[35%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[30%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[40%] rounded-sm"></div>
+<div class="flex-1 bg-primary-container h-[25%] rounded-sm"></div>
+</div>
+</div>
+</div>
+<!-- Worker SLA Performance Table -->
+<section class="col-span-12 bg-surface-container-lowest rounded-xl whisper-shadow overflow-hidden">
+<div class="px-6 py-4 flex justify-between items-center border-b border-surface-container-low">
+<h3 class="text-on-surface-variant uppercase tracking-widest text-[10px] font-bold">Worker SLA Performance</h3>
+<div class="flex gap-2">
+<button class="text-[10px] font-bold uppercase py-1 px-3 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors">Shift A</button>
+<button class="text-[10px] font-bold uppercase py-1 px-3 bg-primary-container text-white rounded-lg">All Staff</button>
+</div>
+</div>
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase">Operator</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase">Process</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase text-right">Avg Time</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase text-right">Compliance</th>
+<th class="px-6 py-3 text-[10px] font-bold text-on-surface-variant uppercase text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-3">
+<div class="flex items-center gap-3">
+<img alt="Worker Avatar" class="w-8 h-8 rounded-full" data-alt="Close-up of a young male warehouse operator with a friendly expression and warehouse gear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5IY3lIGW-d_7D8v7yKtZt0u1it94YumzTZlGmlgKSp7UAfGAJ6CSUQkka-Kj1wF-BF_P35yoDinGKe8JbnUKEq9uKqHOAzPTMXyl5RGxfZAE1RHRD5QfH-25Kgzm5Lc9dq22hvTrZdYQnAxSHFlTq-O8Db-btv9NkmaFqQ-kOnIbmE-Hjg8qiHUrZ2pMe5QO1nhaR0w3a9FTcLNOkvTk3si-WSkXixGk3HNyhPB4aM3u5TwphAnwLCs_TPQfe8GBBws7kTd-vI91A"/>
+<span class="text-xs font-semibold">David Chen</span>
+</div>
+</td>
+<td class="px-6 py-3 text-xs text-slate-500">Pick - Zone A</td>
+<td class="px-6 py-3 text-xs font-bold text-right">1.8m</td>
+<td class="px-6 py-3 text-xs font-bold text-right text-tertiary">99.2%</td>
+<td class="px-6 py-3 text-center">
+<span class="px-2 py-1 bg-tertiary-fixed text-tertiary text-[9px] font-bold rounded-full">ON TRACK</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/20">
+<td class="px-6 py-3">
+<div class="flex items-center gap-3">
+<img alt="Worker Avatar" class="w-8 h-8 rounded-full" data-alt="Portrait of a female worker wearing a high-visibility vest in a logistical setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeLLi36J1WXQT_XZ7M2O-Id5YQVNxnlYM1_2qBm8E1bisSA_9jQnFVDDwseWYVqjAhN0hf8g7yQXISacZZGXmi5TcYM_VhdBlzLVmFbKdcUamPsB1O2GFW_Ib5mM-pkAidQRCx1vb3VrkH_eHW2kHvHjitP0AcJP9HSM30oFGL-wwUqSktTt-r7ABVWXIafCO0rECEsRP3GZeunCuKuWFMWjXiyonI0hIoPeaNO-FVhzE0BZ7SOKDmz9k3QQgbFRPgtDyNhe83IalM"/>
+<span class="text-xs font-semibold">Elena Rossi</span>
+</div>
+</td>
+<td class="px-6 py-3 text-xs text-slate-500">Pack - High Value</td>
+<td class="px-6 py-3 text-xs font-bold text-right text-error">5.2m</td>
+<td class="px-6 py-3 text-xs font-bold text-right text-error">84.5%</td>
+<td class="px-6 py-3 text-center">
+<span class="px-2 py-1 bg-error-container text-error text-[9px] font-bold rounded-full">BELOW SLA</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-3">
+<div class="flex items-center gap-3">
+<img alt="Worker Avatar" class="w-8 h-8 rounded-full" data-alt="Portrait of a focused male warehouse worker with headphones and industrial tablet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2zq81fm8a_fqttCVXGYPte5LcEyEPkD4o7_rZhrCQtV92esvetgCkoEsa-bIhLjqxH_eyF7Ac6KdL7G3DNZVkcZdCx7CnVZS2fWnZ735QmCMNujuktpvPwJX9xgzmUQ5ZbKqoJp_TrGcpA427Vsgo_V1wjTYcHqMQYcRLXakryBWsSm4tmU6QACKbxk_Tap29YMJJ4V3eaCC5bKe5ChgPZ67OodTl_6vwjLQF4csZWVetRIvaEUR-3xfEXujPSd1hjxxJ8M5BnKOK"/>
+<span class="text-xs font-semibold">Jameson Miller</span>
+</div>
+</td>
+<td class="px-6 py-3 text-xs text-slate-500">Ship - LTL Gate</td>
+<td class="px-6 py-3 text-xs font-bold text-right">14.1m</td>
+<td class="px-6 py-3 text-xs font-bold text-right text-secondary-container text-primary">91.8%</td>
+<td class="px-6 py-3 text-center">
+<span class="px-2 py-1 bg-secondary-container text-secondary text-[9px] font-bold rounded-full uppercase">At Risk</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/20">
+<td class="px-6 py-3">
+<div class="flex items-center gap-3">
+<img alt="Worker Avatar" class="w-8 h-8 rounded-full" data-alt="Portrait of a smiling male logistical worker in blue warehouse uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN7lkv5OqQcggtWRgFuPXMXeCRbNeoKp35dVWig2vbavyQl1zSENBc4_H6txbOky7gHhn8mPMyvC998emk37Er5TPR9dkK34apdtUg4Rzl9z6p_dbz65G3P4Y-0kvsaOVSyVBEQYPO1o1U5HMi1_aPS7HBY4SiwuhfRFmgaeJVnOWy00SOmIetnj4LjGBv7lCPeUr_9vZpdq2IsWSAuW3i8jvhKEtaPuIX7AWmCqxE1a9WyDiRHAQobcqj0gzgGWYu9yXQxDwicxDY"/>
+<span class="text-xs font-semibold">Siddharth Gupta</span>
+</div>
+</td>
+<td class="px-6 py-3 text-xs text-slate-500">Inventory Audit</td>
+<td class="px-6 py-3 text-xs font-bold text-right">0.4m</td>
+<td class="px-6 py-3 text-xs font-bold text-right text-tertiary">98.5%</td>
+<td class="px-6 py-3 text-center">
+<span class="px-2 py-1 bg-tertiary-fixed text-tertiary text-[9px] font-bold rounded-full">ON TRACK</span>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<!-- Critical SLA Breach Alerts -->
+<section class="col-span-12 space-y-3">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h3 class="text-on-surface-variant uppercase tracking-widest text-[10px] font-extrabold">Critical SLA Breach Alerts</h3>
+</div>
+<div class="bg-error-container/20 border-l-4 border-error p-4 rounded-r-lg flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-bold text-on-error-container bg-error-container px-2 py-1 rounded">10:42 AM</span>
+<p class="text-xs font-medium text-on-surface">Wave #89221: Packing SLA exceeded by 14 minutes in Zone C. Intervention required.</p>
+</div>
+<button class="text-[10px] font-bold text-primary uppercase hover:underline">Acknowledge</button>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-bold text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded">09:15 AM</span>
+<p class="text-xs font-medium text-slate-600">Carrier DHL Express failed scheduled pickup window. Shipment SLA affected.</p>
+</div>
+<button class="text-[10px] font-bold text-primary uppercase hover:underline">Log Incident</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-220px)] h-8 bg-slate-50 dark:bg-slate-950 flex justify-between items-center px-4 ml-[220px] border-t border-slate-200 dark:border-slate-800 z-50">
+<p class="text-[10px] uppercase tracking-widest font-bold text-slate-400">System Health: Optimal | Version 19.4.2</p>
+<div class="flex gap-4">
+<a class="text-[10px] uppercase tracking-widest font-bold text-slate-400 hover:text-[#714B67] transition-all" href="#">Documentation</a>
+<a class="text-[10px] uppercase tracking-widest font-bold text-slate-400 hover:text-[#714B67] transition-all" href="#">Support</a>
+</div>
+</footer>
+</body></html>

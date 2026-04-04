@@ -92,7 +92,7 @@ export const createSyncEngine = (options) => {
   };
 
   const isLiveMode = () => {
-    return odooConfig.enabled && odooConfig.useMock === false && odooConfig.url;
+    return odooConfig.enabled && odooConfig.url;
   };
 
   // ── Calculate next poll interval ──

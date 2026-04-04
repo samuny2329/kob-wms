@@ -16,7 +16,7 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
     const syncingRef = useRef(false);
 
     const odooConfig = apiConfigs?.odoo || {};
-    const isLiveMode = odooConfig.enabled && odooConfig.useMock === false && odooConfig.url;
+    const isLiveMode = odooConfig.enabled && odooConfig.url;
 
     const syncNow = useCallback(async (silent = false) => {
         if (!odooConfig.enabled && !isFirstSync.current) return;
@@ -53,7 +53,13 @@ const useOdooSync = ({ apiConfigs, salesOrders, setSalesOrders, inventory, setIn
                     const merged = ordersData.map(remoteOrder => {
                         const localOrder = prev.find(lo => lo.id === remoteOrder.id);
                         if (localOrder) {
-                            if (remoteOrder.status === 'rts') return remoteOrder;
+                            // Remote is done/shipped — accept only if local is also rts or beyond
+                            if (remoteOrder.status === 'rts') {
+                                if (['rts', 'locked'].includes(localOrder.status)) return remoteOrder;
+                                // Local is still being worked on — keep local, don't overwrite active work
+                                if (['picking', 'packing'].includes(localOrder.status)) return localOrder;
+                                return remoteOrder;
+                            }
                             const localProgress = localOrder.items?.reduce((s, i) => s + (i.picked || 0) + (i.packed || 0), 0) || 0;
                             const remoteProgress = remoteOrder.items?.reduce((s, i) => s + (i.picked || 0) + (i.packed || 0), 0) || 0;
                             if (localProgress > remoteProgress) {

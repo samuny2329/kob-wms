@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SLA Compliance Tracker - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-surface": "#2e3132",
+                    "surface-dim": "#d9dadb",
+                    "outline": "#80747a",
+                    "surface-container-high": "#e7e8e9",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#85d3d9",
+                    "on-primary-container": "#f0bfe0",
+                    "surface-container": "#edeeef",
+                    "inverse-primary": "#e9b8d9",
+                    "surface": "#f8f9fa",
+                    "surface-bright": "#f8f9fa",
+                    "on-secondary-fixed": "#002022",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#d5eab4",
+                    "tertiary": "#34451e",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "inverse-on-surface": "#f0f1f2",
+                    "on-surface": "#191c1d",
+                    "secondary-fixed": "#a1f0f5",
+                    "on-secondary-container": "#0c6d72",
+                    "error": "#ba1a1a",
+                    "primary": "#57344f",
+                    "primary-container": "#714b67",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#4b5d33",
+                    "background": "#f8f9fa",
+                    "on-surface-variant": "#4e444a",
+                    "on-primary-fixed": "#2f1029",
+                    "surface-variant": "#e1e3e4",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "secondary": "#00696e",
+                    "on-tertiary-fixed": "#112000",
+                    "on-background": "#191c1d",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#9eedf2",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#ffd7f1",
+                    "surface-tint": "#79526f",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "outline-variant": "#d1c3ca",
+                    "surface-container-low": "#f3f4f5",
+                    "on-tertiary-container": "#c0d5a0",
+                    "on-secondary-fixed-variant": "#004f53"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #191c1d;
+        }
+        .editorial-shadow {
+            box-shadow: 0px 4px 20px rgba(25, 28, 29, 0.06);
+        }
+        .plum-gradient {
+            background: linear-gradient(135deg, #57344f 0%, #714b67 100%);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen p-6 md:p-8">
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+<div class="space-y-1">
+<h1 class="text-2xl font-bold tracking-tight text-primary">SLA Compliance Tracker</h1>
+<p class="text-sm text-on-surface-variant font-medium">Warehouse Management System SLA Control Center</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="px-4 py-1.5 text-xs font-semibold bg-surface-container-lowest text-primary rounded shadow-sm">This Week</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors">This Month</button>
+<button class="px-4 py-1.5 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors">Custom</button>
+</div>
+<button class="plum-gradient text-on-primary px-5 py-2 rounded text-sm font-semibold flex items-center gap-2 editorial-shadow transition-opacity hover:opacity-90">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                    Download Report
+                </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="space-y-6">
+<!-- Overall SLA Score Card (Hero Section) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-surface-container-lowest p-6 rounded-xl editorial-shadow">
+<div class="lg:col-span-4 flex flex-col items-center justify-center border-r-0 lg:border-r border-outline-variant/20 py-4">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-secondary" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-dasharray="552.92" stroke-dashoffset="32" stroke-width="12"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-4xl font-extrabold tracking-tighter text-on-surface">94.2%</span>
+<span class="text-[10px] uppercase font-bold tracking-widest text-secondary mt-1">Overall SLA</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-8 flex flex-col justify-center space-y-6 px-0 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Pick SLA</span>
+<span class="text-sm font-bold text-on-surface">92%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Pack SLA</span>
+<span class="text-sm font-bold text-on-surface">96%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Ship SLA</span>
+<span class="text-sm font-bold text-on-surface">88%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Inventory Accuracy</span>
+<span class="text-sm font-bold text-on-surface">99.8%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 99%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Metrics Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Pick SLA Card -->
+<div class="bg-surface-container-lowest p-5 rounded-lg editorial-shadow space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Pick Performance</p>
+<h3 class="text-lg font-bold text-primary mt-1">104 min <span class="text-xs font-normal text-on-surface-variant">avg</span></h3>
+</div>
+<div class="bg-secondary-container/30 px-2 py-1 rounded">
+<span class="text-[10px] font-bold text-on-secondary-container">TARGET ≤ 120m</span>
+</div>
+</div>
+<div class="h-16 flex items-end gap-1 px-1">
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-3/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-4/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-2/5"></div>
+<div class="flex-1 bg-secondary h-full rounded-t-sm"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-3/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-4/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-2/5"></div>
+</div>
+<div class="flex justify-between pt-2 border-t border-outline-variant/10">
+<span class="text-xs text-on-surface-variant">SLA Compliance</span>
+<span class="text-xs font-bold text-secondary">91.4%</span>
+</div>
+</div>
+<!-- Pack SLA Card -->
+<div class="bg-surface-container-lowest p-5 rounded-lg editorial-shadow space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Pack Performance</p>
+<h3 class="text-lg font-bold text-primary mt-1">42 min <span class="text-xs font-normal text-on-surface-variant">avg</span></h3>
+</div>
+<div class="bg-secondary-container/30 px-2 py-1 rounded">
+<span class="text-[10px] font-bold text-on-secondary-container">TARGET ≤ 60m</span>
+</div>
+</div>
+<div class="h-16 flex items-end gap-1 px-1">
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-2/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-3/5"></div>
+<div class="flex-1 bg-secondary h-full rounded-t-sm"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-4/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-2/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-3/5"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-4/5"></div>
+</div>
+<div class="flex justify-between pt-2 border-t border-outline-variant/10">
+<span class="text-xs text-on-surface-variant">SLA Compliance</span>
+<span class="text-xs font-bold text-secondary">95.8%</span>
+</div>
+</div>
+<!-- Ship SLA Card -->
+<div class="bg-surface-container-lowest p-5 rounded-lg editorial-shadow space-y-4 border-l-4 border-error/40">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Ship Performance</p>
+<h3 class="text-lg font-bold text-primary mt-1">262 min <span class="text-xs font-normal text-on-surface-variant">avg</span></h3>
+</div>
+<div class="bg-error-container/40 px-2 py-1 rounded">
+<span class="text-[10px] font-bold text-on-error-container">TARGET ≤ 240m</span>
+</div>
+</div>
+<div class="h-16 flex items-end gap-1 px-1">
+<div class="flex-1 bg-error/20 rounded-t-sm h-4/5"></div>
+<div class="flex-1 bg-error/20 rounded-t-sm h-5/6"></div>
+<div class="flex-1 bg-error h-full rounded-t-sm"></div>
+<div class="flex-1 bg-error/20 rounded-t-sm h-2/5"></div>
+<div class="flex-1 bg-error/20 rounded-t-sm h-3/5"></div>
+<div class="flex-1 bg-error/20 rounded-t-sm h-1/2"></div>
+<div class="flex-1 bg-error/20 rounded-t-sm h-2/3"></div>
+</div>
+<div class="flex justify-between pt-2 border-t border-outline-variant/10">
+<span class="text-xs text-on-surface-variant text-error font-medium">SLA Compliance</span>
+<span class="text-xs font-bold text-error">84.2%</span>
+</div>
+</div>
+</section>
+<!-- Worker Table Section -->
+<section class="bg-surface-container-lowest rounded-lg overflow-hidden editorial-shadow">
+<div class="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-low/30">
+<h2 class="text-sm font-bold text-primary uppercase tracking-wider">Worker SLA Performance</h2>
+<span class="text-[10px] text-on-surface-variant font-semibold">LAST UPDATED: 2 MIN AGO</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high/40 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+<tr>
+<th class="px-6 py-3">Worker</th>
+<th class="px-6 py-3">Role</th>
+<th class="px-6 py-3 text-center">Pick Time (Avg)</th>
+<th class="px-6 py-3 text-center">Pack Time (Avg)</th>
+<th class="px-6 py-3 text-center">Ship Time (Avg)</th>
+<th class="px-6 py-3 text-center">Overall Compliance</th>
+<th class="px-6 py-3 text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10 text-sm">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="professional male warehouse worker portrait against industrial background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBViLGv4gylxp5HqkVvIK2ojXnFs9uYb9pgAEGoxrQNtKxvBFnyRKIVz8z7sTyWEGB3f9AXekXkke6nFsdi2TjQGQ1FY5xzA0KrpCCN-YcS1mQMHevvjQ83nVZemt-3UB3IMp7EEFJpggYrjsB2zKO2LgAfeUAy7DK7toN6orxeEw_44PWFGmaaJMY4V_mSHjYAoQot2oO-voMqBllhAok-_fin1uuD6URt_wYr9nc-vjLT8qnd2GNcBGLj3Ft_Y_a4Z2XBN06wZi6E"/>
+<span class="font-semibold text-on-surface">Marcus Chen</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Lead Picker</td>
+<td class="px-6 py-4 text-center font-medium">98m</td>
+<td class="px-6 py-4 text-center font-medium">35m</td>
+<td class="px-6 py-4 text-center font-medium">185m</td>
+<td class="px-6 py-4 text-center">
+<span class="text-secondary font-bold">96.8%</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">On Track</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="focused female logistics specialist with headset in modern distribution center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCagrUNWrLpny0foheDKqqifM4vG0ba5fYd2Q9fOcjubJsHJGbHUbt7D56nfkLxPysxGN0QX7e2f06DkDhuAo7jsFv0774ZYYFH_SDOtZDJFRE3oj0Cs27efdOTxtLo818Z4asp3-8a1uS4uNrhNYLm1H1NgaR5_SxlVRMm8dqFh3F_AKnqpEBcmuo7leHxiy0PrOCe9FsGxsfMHhb5U5FzvGoKvKL1TNf436LMEC4CsqWZ5guzxsT81TUGRyJlAHiY22eo04S419E6"/>
+<span class="font-semibold text-on-surface">Sarah Jenkins</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Inventory Specialist</td>
+<td class="px-6 py-4 text-center font-medium">132m</td>
+<td class="px-6 py-4 text-center font-medium">48m</td>
+<td class="px-6 py-4 text-center font-medium">210m</td>
+<td class="px-6 py-4 text-center">
+<span class="text-on-surface font-bold">89.2%</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="bg-primary-fixed text-on-primary-fixed text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">At Risk</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="senior warehouse floor manager looking at tablet with industrial shelving background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSrI8Y7srgK5LJgqWiH7V7QQoh40jaxU0XSjVoQQGae7lDifJQKE9rDNR0_jub9wBeTwH3AtKHw_sv5SYkv5cVFWE1atChLLLJ25KB7oSnyUs4K-8WZaaYkcUc4QtKfmZxm1oQ5NSvDrE1uTmjkbmJGeFPCVu_DrJhEEIveghArSAlq3VhoW0uqchw1ZnPIProBVnok2_p32JiYdM4obZFy5sU9xJ_av4LV-Zw3fTHqQvR9gsb_G3YhJOIiO9UDbo2VOCVbRAICEM0"/>
+<span class="font-semibold text-on-surface">David Miller</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Picker / Packer</td>
+<td class="px-6 py-4 text-center font-medium">154m</td>
+<td class="px-6 py-4 text-center font-medium">72m</td>
+<td class="px-6 py-4 text-center font-medium">295m</td>
+<td class="px-6 py-4 text-center">
+<span class="text-error font-bold">76.4%</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">Below SLA</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Bottom Alerts Section -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="lg:col-span-12 bg-surface-container-lowest p-6 rounded-lg editorial-shadow">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<h2 class="text-sm font-bold text-primary uppercase tracking-wider">Critical SLA Breach Alerts</h2>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 bg-error-container/20 rounded border border-error/10">
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<div class="space-y-0.5">
+<p class="text-sm font-bold text-on-surface">Order #WMS-94231 delayed in Shipping Stage</p>
+<p class="text-xs text-on-surface-variant">SLA Breach: +45m past deadline | Assigned to: David Miller</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">14:22 PM</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded border border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="space-y-0.5">
+<p class="text-sm font-medium text-on-surface">Picking SLA Breach for Priority Order #WMS-94188</p>
+<p class="text-xs text-on-surface-variant">SLA Breach: +12m past deadline | Zone A-12</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">13:05 PM</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded border border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="space-y-0.5">
+<p class="text-sm font-medium text-on-surface">Batch Pick #B-202 Compliance Failure</p>
+<p class="text-xs text-on-surface-variant">Accuracy Audit Failed: 92% (Required 99%)</p>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">11:30 AM</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Metadata -->
+<footer class="flex justify-between items-center pt-4 opacity-60">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em]">KOB WMS Pro Compliance Engine v4.2.0</span>
+<div class="flex gap-4">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">System Status: Nominal</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Encryption: AES-256</span>
+</div>
+</footer>
+</div>
+</body></html>

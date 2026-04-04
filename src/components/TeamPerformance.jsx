@@ -1,57 +1,54 @@
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Trophy, TrendingUp, TrendingDown, Zap, Users, Clock, Target, Award, Activity, Layers, LayoutGrid, List, Columns } from 'lucide-react';
+import { Trophy, TrendingUp, TrendingDown, Zap, Users, Clock, Target, Award, Activity, Layers, LayoutGrid, List, Columns, Calendar, Download, ChevronUp, ChevronDown, Star, Medal, Flame } from 'lucide-react';
 import { TIER_CONFIG, getTaskDistribution, calculateTaskDifficulty } from '../utils/taskScoring';
 import { ROLE_KPI_CONFIG, computeOkrResults, getOkrGrade, SAMPLE_OKR_WORKERS } from '../constants';
 
 const TARGET_UPH = 50;
-const GAUGE_COLORS = { red: '#ef4444', yellow: '#eab308', green: '#10b981', blue: '#3b82f6' };
 
 function getGaugeColor(uph) {
-    if (uph < 20) return GAUGE_COLORS.red;
-    if (uph < 40) return GAUGE_COLORS.yellow;
-    if (uph < 60) return GAUGE_COLORS.green;
-    return GAUGE_COLORS.blue;
+    if (uph < 20) return 'var(--odoo-danger)';
+    if (uph < 40) return 'var(--odoo-warning)';
+    if (uph < 60) return 'var(--odoo-success)';
+    return 'var(--odoo-purple)';
 }
 
+function getGaugeHex(uph) {
+    if (uph < 20) return '#E46F78';
+    if (uph < 40) return '#E8A940';
+    if (uph < 60) return '#017E84';
+    return '#714B67';
+}
+
+/* ─── Speed Gauge (sidebar widget) ─── */
 function SpeedGauge({ name, uph, maxUph = 80 }) {
-    const radius = 40;
-    const stroke = 7;
+    const radius = 44;
+    const stroke = 8;
     const circumference = 2 * Math.PI * radius;
     const progress = Math.min(uph / maxUph, 1);
     const dashOffset = circumference * (1 - progress);
-    const color = getGaugeColor(uph);
+    const color = getGaugeHex(uph);
 
     return (
-        <div className="flex flex-col items-center gap-1 min-w-[100px]">
-            <svg width={100} height={100} viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r={radius} fill="none" stroke="#1e293b" strokeWidth={stroke} />
+        <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+            padding: '12px', borderRadius: '12px',
+            backgroundColor: 'var(--odoo-surface-low)',
+            border: '1px solid var(--odoo-border-ghost)',
+        }}>
+            <svg width={110} height={110} viewBox="0 0 110 110">
+                <circle cx="55" cy="55" r={radius} fill="none" stroke="var(--odoo-surface-high)" strokeWidth={stroke} />
                 <circle
-                    cx="50" cy="50" r={radius} fill="none"
+                    cx="55" cy="55" r={radius} fill="none"
                     stroke={color} strokeWidth={stroke} strokeLinecap="round"
                     strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                    transform="rotate(-90 50 50)"
+                    transform="rotate(-90 55 55)"
                     style={{ transition: 'stroke-dashoffset 0.6s ease' }}
                 />
-                <text x="50" y="46" textAnchor="middle" fill={color} fontSize="20" fontWeight="bold">{uph}</text>
-                <text x="50" y="62" textAnchor="middle" fill="#94a3b8" fontSize="10">UPH</text>
+                <text x="55" y="50" textAnchor="middle" fill={color} fontSize="22" fontWeight="800">{uph}</text>
+                <text x="55" y="68" textAnchor="middle" fill="var(--odoo-text-muted)" fontSize="10" fontWeight="600">UPH</text>
             </svg>
-            <span className="text-xs text-slate-400 truncate max-w-[96px] text-center">{name}</span>
-        </div>
-    );
-}
-
-function HeatmapCell({ value, maxValue }) {
-    const intensity = maxValue > 0 ? value / maxValue : 0;
-    const bg = intensity === 0
-        ? 'bg-slate-800'
-        : intensity < 0.25 ? 'bg-emerald-900/50'
-        : intensity < 0.5 ? 'bg-emerald-700/60'
-        : intensity < 0.75 ? 'bg-emerald-500/70'
-        : 'bg-emerald-400/80';
-    return (
-        <div className={`w-8 h-8 rounded-sm ${bg} flex items-center justify-center`} title={`${value} actions`}>
-            {value > 0 && <span className="text-[9px] text-white/70">{value}</span>}
+            <span style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)', fontWeight: 600, maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>{name}</span>
         </div>
     );
 }
@@ -60,10 +57,11 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
     const [sortCol, setSortCol] = useState('total');
     const [sortAsc, setSortAsc] = useState(false);
     const [okrView, setOkrView] = useState('kanban');
+    const [dateRange, setDateRange] = useState('today');
 
     const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-    // Username → role lookup
+    // Username -> role lookup
     const userRoleMap = useMemo(() => {
         const map = {};
         (users || []).forEach(u => { map[u.username] = u.role || 'admin'; });
@@ -100,7 +98,7 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
             if (log.timestamp > s.lastAction) s.lastAction = log.timestamp;
         });
 
-        // Role-specific action sets for UPH — matches KPI Assessment auto KPIs
+        // Role-specific action sets for UPH
         const ROLE_ACTIONS = {
             picker: ['pick'], packer: ['pack', 'pack-handheld', 'pack-pos'],
             outbound: ['scan'], admin: ['pick', 'pack', 'pack-handheld', 'pack-pos', 'scan'],
@@ -112,7 +110,6 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
             s.roleConfig = ROLE_KPI_CONFIG[s.role] || ROLE_KPI_CONFIG.admin;
             const targetForRole = s.roleConfig.targetUPH || TARGET_UPH;
 
-            // Use role-specific actions for UPH (aligned with KPI Assessment)
             const roleActions = ROLE_ACTIONS[s.role] || ROLE_ACTIONS.admin;
             const roleCount = todayLogs.filter(l => l.username === s.username && roleActions.includes(l.action)).length;
             let hours = (s.lastAction - s.firstAction) / 3600000;
@@ -120,7 +117,6 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
             s.uph = Math.round(roleCount / hours);
             s.efficiency = Math.round((s.uph / targetForRole) * 100);
 
-            // Use shared OKR data if available
             if (workerOkrData[s.username]?.okrToday) {
                 s.sharedOkr = workerOkrData[s.username].okrToday;
             }
@@ -128,7 +124,7 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
         });
     }, [todayLogs, userRoleMap]);
 
-    // Historical stats for trend (mock from past 7 days of activityLogs)
+    // Historical stats for trend (past 7 days)
     const historicalData = useMemo(() => {
         const days = [];
         for (let i = 6; i >= 0; i--) {
@@ -143,7 +139,6 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
             });
 
             const totalUnits = dayLogs.length;
-            // Compute avg UPH for the day
             const byUser = {};
             dayLogs.forEach(l => {
                 const k = l.username || 'unknown';
@@ -220,9 +215,9 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
         const scan = todayLogs.filter(l => l.action === 'scan').length;
         if (pick + pack + scan === 0) return [];
         return [
-            { name: 'Pick', value: pick, color: '#3b82f6' },
-            { name: 'Pack', value: pack, color: '#10b981' },
-            { name: 'Scan', value: scan, color: '#f59e0b' },
+            { name: 'Pick', value: pick, color: '#714B67' },
+            { name: 'Pack', value: pack, color: '#017E84' },
+            { name: 'Scan', value: scan, color: '#E8A940' },
         ];
     }, [todayLogs]);
 
@@ -254,9 +249,8 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
         return max;
     }, [heatmapData, historicalData]);
 
-    // Summary cards
+    // Summary stats
     const summaryStats = useMemo(() => {
-        // Peak hour
         let peakHour = '--';
         let peakCount = 0;
         hourlyData.forEach(h => {
@@ -264,14 +258,12 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
             if (total > peakCount) { peakCount = total; peakHour = h.hour; }
         });
 
-        // Avg time per order estimate
         const totalOrders = orders?.length || 0;
         const totalActions = todayLogs.length;
         const avgTimePerOrder = totalOrders > 0 && totalActions > 0
             ? `${Math.round((totalActions / totalOrders) * 2.5)}min`
             : '--';
 
-        // Best day this week
         const bestDay = historicalData.reduce((best, d) => d.totalUnits > (best?.totalUnits || 0) ? d : best, null);
 
         return {
@@ -282,18 +274,16 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
         };
     }, [hourlyData, orders, todayLogs, historicalData]);
 
-    // Task difficulty distribution from salesOrders/orders
+    // Task difficulty distribution
     const tierDistribution = useMemo(() => {
         if (!orders?.length) return null;
         const dist = getTaskDistribution(orders);
         const total = orders.length;
 
-        // Per-worker tier breakdown
         const workerTiers = {};
         todayLogs.forEach(log => {
             const key = log.username || 'unknown';
             if (!workerTiers[key]) workerTiers[key] = { name: log.name || key, username: key, tiers: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, weightedTotal: 0 };
-            // Match log to an order and get tier
             const matchedOrder = orders.find(o => log.details?.order === o.ref || log.details?.orderId === o.ref);
             const { tier, weight } = calculateTaskDifficulty(matchedOrder);
             workerTiers[key].tiers[tier]++;
@@ -308,51 +298,400 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
         if (sortCol === col) setSortAsc(!sortAsc);
         else { setSortCol(col); setSortAsc(false); }
     };
-    const SortArrow = ({ col }) => sortCol === col ? (sortAsc ? ' ▲' : ' ▼') : '';
 
     const hasLogs = todayLogs.length > 0;
 
+    // Export CSV handler
+    const handleExportCSV = () => {
+        const headers = ['Rank', 'Member', 'Role', 'Pick', 'Pack', 'Scan', 'Total', 'UPH', 'Efficiency'];
+        const rows = leaderboard.map((w, i) => [
+            i + 1, w.name, w.roleConfig?.label || w.role, w.pick, w.pack, w.scan, w.total, w.uph, `${w.efficiency}%`
+        ]);
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `team-performance-${today}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // Recharts tooltip style
+    const tooltipStyle = {
+        backgroundColor: 'var(--odoo-surface)',
+        border: '1px solid var(--odoo-border)',
+        borderRadius: '8px',
+        color: 'var(--odoo-text)',
+        boxShadow: '0 4px 12px rgba(113,75,103,0.08)',
+    };
+
     return (
-        <div className="space-y-6">
-            {/* ─── SECTION 1: KPI CARDS ─── */}
-            {hasLogs && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+            {/* ─── HEADER: Title + Date Range + Export ─── */}
+            <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
+                padding: '20px 24px', borderRadius: '12px',
+                backgroundColor: 'var(--odoo-surface)',
+                border: '1px solid var(--odoo-border-ghost)',
+            }}>
+                <div>
+                    <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--odoo-text)', margin: 0, letterSpacing: '-0.02em' }}>
+                        Team Performance
+                    </h1>
+                    <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', marginTop: '2px' }}>
+                        Monitor productivity, UPH, and team efficiency in real-time
+                    </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                        padding: '4px', borderRadius: '8px',
+                        backgroundColor: 'var(--odoo-surface-low)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
+                        {['today', '7d', '30d'].map(range => (
+                            <button key={range} onClick={() => setDateRange(range)} style={{
+                                padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                                fontSize: '12px', fontWeight: 600, transition: 'all 0.2s',
+                                backgroundColor: dateRange === range ? 'var(--odoo-purple)' : 'transparent',
+                                color: dateRange === range ? '#fff' : 'var(--odoo-text-secondary)',
+                            }}>
+                                {range === 'today' ? 'Today' : range === '7d' ? '7 Days' : '30 Days'}
+                            </button>
+                        ))}
+                    </div>
+                    <button onClick={handleExportCSV} style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--odoo-border)',
+                        backgroundColor: 'var(--odoo-surface)', cursor: 'pointer',
+                        fontSize: '12px', fontWeight: 600, color: 'var(--odoo-text-secondary)',
+                        transition: 'all 0.2s',
+                    }}>
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                    </button>
+                </div>
+            </div>
+
+            {/* ─── KPI STRIP (4 cards) ─── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                <KpiCard
+                    icon={<Activity className="w-5 h-5" />}
+                    label="Total Tasks Today"
+                    value={kpis.totalUnits}
+                    color="var(--odoo-purple)"
+                    bgColor="rgba(113,75,103,0.08)"
+                />
                 <KpiCard
                     icon={<Zap className="w-5 h-5" />}
-                    label="Avg Team UPH"
+                    label="Average UPH"
                     value={kpis.avgUph}
-                    accent="blue"
                     trend={kpis.uphTrend}
+                    color="var(--odoo-success)"
+                    bgColor="rgba(1,126,132,0.08)"
                 />
                 <KpiCard
                     icon={<Trophy className="w-5 h-5" />}
                     label="Top Performer"
                     value={kpis.topPerformer?.name || '--'}
                     sub={kpis.topPerformer ? `${kpis.topPerformer.uph} UPH` : ''}
-                    accent="amber"
-                />
-                <KpiCard
-                    icon={<Activity className="w-5 h-5" />}
-                    label="Total Units Today"
-                    value={kpis.totalUnits}
-                    accent="emerald"
+                    color="var(--odoo-warning)"
+                    bgColor="rgba(232,169,64,0.08)"
                 />
                 <KpiCard
                     icon={<Target className="w-5 h-5" />}
-                    label="Team Efficiency"
+                    label="Efficiency Rate"
                     value={`${kpis.teamEfficiency}%`}
-                    accent={kpis.teamEfficiency >= 80 ? 'emerald' : kpis.teamEfficiency >= 50 ? 'amber' : 'red'}
                     sub={`Target: ${TARGET_UPH} UPH`}
+                    color={kpis.teamEfficiency >= 80 ? 'var(--odoo-success)' : kpis.teamEfficiency >= 50 ? 'var(--odoo-warning)' : 'var(--odoo-danger)'}
+                    bgColor={kpis.teamEfficiency >= 80 ? 'rgba(1,126,132,0.08)' : kpis.teamEfficiency >= 50 ? 'rgba(232,169,64,0.08)' : 'rgba(228,111,120,0.08)'}
                 />
-            </div>}
+            </div>
 
-            {/* ─── SECTION: OKR SCORECARD (Multi-View) ─── */}
+            {/* ─── MAIN GRID: 8-col Table + 4-col Sidebar ─── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }} className="lg:!grid-cols-[2fr_1fr]">
+
+                {/* LEFT: Performance Table */}
+                <div style={{
+                    borderRadius: '12px', overflow: 'hidden',
+                    backgroundColor: 'var(--odoo-surface)',
+                    border: '1px solid var(--odoo-border-ghost)',
+                }}>
+                    {/* Table header */}
+                    <div style={{
+                        padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        borderBottom: '1px solid var(--odoo-border-ghost)',
+                        backgroundColor: 'var(--odoo-surface-low)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{
+                                width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))', color: '#fff',
+                            }}>
+                                <Award className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Team Leaderboard</h3>
+                                <p style={{ fontSize: '11px', color: 'var(--odoo-text-muted)', margin: 0 }}>{workerStats.length} active members today</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Table */}
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                                    {[
+                                        { key: 'rank', label: 'Rank', sortable: false },
+                                        { key: 'name', label: 'Member', sortable: true },
+                                        { key: 'role', label: 'Role', sortable: false },
+                                        { key: 'pick', label: 'Pick', sortable: true },
+                                        { key: 'pack', label: 'Pack', sortable: true },
+                                        { key: 'scan', label: 'Scan', sortable: true },
+                                        { key: 'total', label: 'Total', sortable: true },
+                                        { key: 'uph', label: 'UPH', sortable: true },
+                                        { key: 'trend', label: 'Trend', sortable: false },
+                                    ].map(col => (
+                                        <th
+                                            key={col.key}
+                                            onClick={() => col.sortable && handleSort(col.key)}
+                                            style={{
+                                                padding: '10px 14px', textAlign: col.key === 'rank' || col.key === 'trend' ? 'center' : 'left',
+                                                fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+                                                color: 'var(--odoo-text-muted)', whiteSpace: 'nowrap',
+                                                cursor: col.sortable ? 'pointer' : 'default',
+                                                userSelect: 'none',
+                                            }}
+                                        >
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                                                {col.label}
+                                                {sortCol === col.key && (
+                                                    sortAsc
+                                                        ? <ChevronUp style={{ width: '12px', height: '12px' }} />
+                                                        : <ChevronDown style={{ width: '12px', height: '12px' }} />
+                                                )}
+                                            </span>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {leaderboard.length === 0 && (
+                                    <tr>
+                                        <td colSpan={9} style={{ padding: '40px', textAlign: 'center', color: 'var(--odoo-text-muted)', fontSize: '13px' }}>
+                                            No activity data yet. Performance data will appear as team members complete tasks.
+                                        </td>
+                                    </tr>
+                                )}
+                                {leaderboard.map((w, i) => {
+                                    const rank = i + 1;
+                                    const isTop = kpis.topPerformer && w.username === kpis.topPerformer.username;
+                                    const avgFromHistory = historicalData.length > 1
+                                        ? Math.round(historicalData.slice(0, -1).reduce((a, d) => a + d.avgUph, 0) / (historicalData.length - 1))
+                                        : 0;
+                                    const trendUp = w.uph >= avgFromHistory;
+
+                                    return (
+                                        <tr
+                                            key={w.username}
+                                            onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}
+                                            style={{
+                                                borderBottom: '1px solid var(--odoo-border-ghost)',
+                                                cursor: 'pointer',
+                                                backgroundColor: isTop ? 'rgba(232,169,64,0.04)' : 'transparent',
+                                                transition: 'background-color 0.15s',
+                                            }}
+                                            onMouseEnter={e => { if (!isTop) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
+                                            onMouseLeave={e => { if (!isTop) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                                        >
+                                            <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: 700, fontSize: '13px' }}>
+                                                {rank <= 3 ? (
+                                                    <span style={{
+                                                        display: 'inline-flex', width: '26px', height: '26px', borderRadius: '50%',
+                                                        alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800,
+                                                        backgroundColor: rank === 1 ? 'rgba(232,169,64,0.15)' : rank === 2 ? 'rgba(113,75,103,0.10)' : 'rgba(1,126,132,0.10)',
+                                                        color: rank === 1 ? 'var(--odoo-warning)' : rank === 2 ? 'var(--odoo-purple)' : 'var(--odoo-success)',
+                                                    }}>
+                                                        {rank}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: 'var(--odoo-text-muted)' }}>{rank}</span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '12px 14px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <div style={{
+                                                        width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        fontSize: '12px', fontWeight: 700, color: '#fff',
+                                                        backgroundColor: w.roleConfig?.color || 'var(--odoo-purple)',
+                                                    }}>
+                                                        {w.name?.charAt(0)?.toUpperCase()}
+                                                    </div>
+                                                    <span style={{ fontWeight: 600, color: 'var(--odoo-text)' }}>{w.name}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '12px 14px' }}>
+                                                <span style={{
+                                                    fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '4px',
+                                                    backgroundColor: (w.roleConfig?.color || '#714B67') + '15',
+                                                    color: w.roleConfig?.color || 'var(--odoo-purple)',
+                                                }}>
+                                                    {w.roleConfig?.label || w.role}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '12px 14px', color: 'var(--odoo-purple)', fontWeight: 600 }}>{w.pick}</td>
+                                            <td style={{ padding: '12px 14px', color: 'var(--odoo-success)', fontWeight: 600 }}>{w.pack}</td>
+                                            <td style={{ padding: '12px 14px', color: 'var(--odoo-warning)', fontWeight: 600 }}>{w.scan}</td>
+                                            <td style={{ padding: '12px 14px', fontWeight: 800, color: 'var(--odoo-text)' }}>{w.total}</td>
+                                            <td style={{ padding: '12px 14px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{
+                                                        width: '56px', height: '6px', borderRadius: '3px', overflow: 'hidden',
+                                                        backgroundColor: 'var(--odoo-surface-high)',
+                                                    }}>
+                                                        <div style={{
+                                                            height: '100%', borderRadius: '3px', transition: 'width 0.5s',
+                                                            width: `${Math.min(w.efficiency, 100)}%`,
+                                                            backgroundColor: getGaugeHex(w.uph),
+                                                        }} />
+                                                    </div>
+                                                    <span style={{ fontWeight: 800, color: getGaugeColor(w.uph), fontSize: '13px' }}>{w.uph}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                                                {trendUp
+                                                    ? <TrendingUp style={{ width: '16px', height: '16px', color: 'var(--odoo-success)', display: 'inline' }} />
+                                                    : <TrendingDown style={{ width: '16px', height: '16px', color: 'var(--odoo-danger)', display: 'inline' }} />
+                                                }
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* RIGHT: Sidebar (Speed Gauge + Hourly Chart + Badges) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                    {/* Speed Gauges */}
+                    <div style={{
+                        borderRadius: '12px', padding: '16px',
+                        backgroundColor: 'var(--odoo-surface)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                            <Users className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} />
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--odoo-text)' }}>Live Speed</span>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                            {workerStats.length > 0 ? (
+                                workerStats.slice(0, 4).map(w => (
+                                    <SpeedGauge key={w.username} name={w.name} uph={w.uph} />
+                                ))
+                            ) : (
+                                <p style={{ fontSize: '12px', color: 'var(--odoo-text-muted)', padding: '20px 0', textAlign: 'center', width: '100%' }}>
+                                    No active workers
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Hourly Throughput mini chart */}
+                    <div style={{
+                        borderRadius: '12px', padding: '16px',
+                        backgroundColor: 'var(--odoo-surface)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                            <Clock className="w-4 h-4" style={{ color: 'var(--odoo-success)' }} />
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--odoo-text)' }}>Hourly Throughput</span>
+                        </div>
+                        {hourlyData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={180}>
+                                <AreaChart data={hourlyData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--odoo-border-ghost)" />
+                                    <XAxis dataKey="hour" tick={{ fontSize: 9, fill: 'var(--odoo-text-muted)' }} stroke="var(--odoo-border-ghost)" />
+                                    <YAxis tick={{ fontSize: 9, fill: 'var(--odoo-text-muted)' }} stroke="var(--odoo-border-ghost)" />
+                                    <Tooltip contentStyle={tooltipStyle} />
+                                    <Area type="monotone" dataKey="Pick" stackId="1" stroke="#714B67" fill="#714B67" fillOpacity={0.3} />
+                                    <Area type="monotone" dataKey="Pack" stackId="1" stroke="#017E84" fill="#017E84" fillOpacity={0.3} />
+                                    <Area type="monotone" dataKey="Scan" stackId="1" stroke="#E8A940" fill="#E8A940" fillOpacity={0.3} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--odoo-text-muted)', fontSize: '12px' }}>
+                                No hourly data yet
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Badges / Action Distribution */}
+                    <div style={{
+                        borderRadius: '12px', padding: '16px',
+                        backgroundColor: 'var(--odoo-surface)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                            <Target className="w-4 h-4" style={{ color: 'var(--odoo-warning)' }} />
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--odoo-text)' }}>Action Mix</span>
+                        </div>
+                        {actionDistribution.length > 0 ? (
+                            <>
+                                <ResponsiveContainer width="100%" height={160}>
+                                    <PieChart>
+                                        <Pie
+                                            data={actionDistribution}
+                                            cx="50%" cy="50%"
+                                            innerRadius={40} outerRadius={65}
+                                            paddingAngle={4}
+                                            dataKey="value"
+                                        >
+                                            {actionDistribution.map((entry, idx) => (
+                                                <Cell key={idx} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip contentStyle={tooltipStyle} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px' }}>
+                                    {actionDistribution.map(d => (
+                                        <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: d.color }} />
+                                            <span style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)', fontWeight: 600 }}>{d.name}</span>
+                                            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--odoo-text)' }}>{d.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--odoo-text-muted)', fontSize: '12px' }}>
+                                No data
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Performance Summary cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <MiniStat icon={<Clock className="w-4 h-4" />} label="Peak Hour" value={summaryStats.peakHour} color="var(--odoo-purple)" />
+                        <MiniStat icon={<Zap className="w-4 h-4" />} label="Avg / Order" value={summaryStats.avgTimePerOrder} color="var(--odoo-warning)" />
+                        <MiniStat icon={<Award className="w-4 h-4" />} label="Best Day" value={summaryStats.bestDay} color="var(--odoo-success)" />
+                        <MiniStat icon={<Target className="w-4 h-4" />} label="Quality" value={summaryStats.qualityScore} color="var(--odoo-purple)" />
+                    </div>
+                </div>
+            </div>
+
+            {/* ─── OKR SCORECARD ─── */}
             {(() => {
                 const displayWorkers = workerStats.length > 0
                     ? workerStats.map(w => ({ ...w, role: w.role || 'admin' }))
                     : [];
                 const roles = ['picker', 'packer', 'outbound', 'accounting'];
 
-                // Compute OKR for all workers
                 const allWorkerOkrs = displayWorkers.map(w => {
                     const wLogs = workerStats.length > 0 ? todayLogs.filter(l => l.username === w.username) : [];
                     const okr = computeOkrResults(w.role, wLogs, orders || []);
@@ -361,32 +700,50 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                 });
 
                 const ViewBtn = ({ mode, icon, label }) => (
-                    <button onClick={() => setOkrView(mode)} className="p-1.5 rounded transition-colors" title={label}
-                        style={{ backgroundColor: okrView === mode ? '#714B67' : 'transparent', color: okrView === mode ? '#fff' : '#64748b' }}>
+                    <button onClick={() => setOkrView(mode)} title={label} style={{
+                        padding: '6px', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                        backgroundColor: okrView === mode ? 'var(--odoo-purple)' : 'transparent',
+                        color: okrView === mode ? '#fff' : 'var(--odoo-text-muted)',
+                        display: 'flex', alignItems: 'center',
+                    }}>
                         {icon}
                     </button>
                 );
 
                 return (
-                    <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
+                    <div style={{
+                        borderRadius: '12px', padding: '20px',
+                        backgroundColor: 'var(--odoo-surface)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
                         {/* Header with view switcher */}
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                                    <Target className="w-4 h-4 text-purple-400" /> OKR Scorecard
-                                </h3>
-                                <p className="text-[10px] text-slate-500 mt-0.5">Objectives & Key Results — role-based performance</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{
+                                    width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))', color: '#fff',
+                                }}>
+                                    <Target className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>OKR Scorecard</h3>
+                                    <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', margin: 0 }}>Objectives & Key Results -- role-based performance</p>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-0.5 bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '2px', padding: '3px',
+                                borderRadius: '8px', backgroundColor: 'var(--odoo-surface-low)',
+                                border: '1px solid var(--odoo-border-ghost)',
+                            }}>
                                 <ViewBtn mode="scorecard" icon={<Columns className="w-3.5 h-3.5" />} label="Scorecard" />
                                 <ViewBtn mode="kanban" icon={<LayoutGrid className="w-3.5 h-3.5" />} label="Kanban" />
                                 <ViewBtn mode="list" icon={<List className="w-3.5 h-3.5" />} label="List" />
                             </div>
                         </div>
 
-                        {/* ── VIEW: Scorecard (default) ── */}
+                        {/* VIEW: Scorecard */}
                         {okrView === 'scorecard' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
                                 {roles.map(roleKey => {
                                     const rc = ROLE_KPI_CONFIG[roleKey];
                                     if (!rc?.keyResults) return null;
@@ -395,33 +752,44 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                                     const roleLogs = workerStats.length > 0 ? todayLogs.filter(l => roleWorkers.some(w => w.username === l.username)) : [];
                                     const teamOkr = computeOkrResults(roleKey, roleLogs, orders || []);
                                     return (
-                                        <div key={roleKey} className="bg-slate-800/60 rounded-xl border border-slate-700 overflow-hidden flex flex-col">
-                                            {/* Role header with score */}
-                                            <div className="px-4 py-3 flex items-center gap-3" style={{ borderBottom: `2px solid ${rc.color}44` }}>
-                                                <span className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black" style={{ backgroundColor: rc.color + '22', color: rc.color }}>
+                                        <div key={roleKey} style={{
+                                            borderRadius: '10px', overflow: 'hidden',
+                                            backgroundColor: 'var(--odoo-surface-low)',
+                                            border: '1px solid var(--odoo-border-ghost)',
+                                            display: 'flex', flexDirection: 'column',
+                                        }}>
+                                            {/* Role header */}
+                                            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: `2px solid ${rc.color}22` }}>
+                                                <span style={{
+                                                    width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: '14px', fontWeight: 900, backgroundColor: rc.color + '15', color: rc.color,
+                                                }}>
                                                     {rc.label.charAt(0)}
                                                 </span>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-bold truncate" style={{ color: rc.color }}>{rc.label}</div>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontSize: '13px', fontWeight: 700, color: rc.color }}>{rc.label}</div>
                                                 </div>
-                                                <div className="text-center">
-                                                    <span className="text-2xl font-black" style={{ color: teamOkr.grade.color }}>{teamOkr.totalScore}%</span>
-                                                    <div className="text-[8px] font-bold px-1.5 py-0.5 rounded mt-0.5" style={{ backgroundColor: teamOkr.grade.bg, color: teamOkr.grade.color }}>{teamOkr.grade.grade}</div>
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <span style={{ fontSize: '22px', fontWeight: 900, color: teamOkr.grade.color }}>{teamOkr.totalScore}%</span>
+                                                    <div style={{
+                                                        fontSize: '8px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', marginTop: '2px',
+                                                        backgroundColor: teamOkr.grade.bg, color: teamOkr.grade.color,
+                                                    }}>{teamOkr.grade.grade}</div>
                                                 </div>
                                             </div>
 
-                                            {/* Compact KR bars */}
-                                            <div className="px-3 py-2.5 space-y-2 flex-1">
+                                            {/* KR bars */}
+                                            <div style={{ padding: '10px 14px', flex: 1 }}>
                                                 {teamOkr.results.slice(0, 5).map(kr => {
-                                                    const barColor = kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444';
+                                                    const barColor = kr.score >= 100 ? 'var(--odoo-success)' : kr.score >= 75 ? 'var(--odoo-warning)' : 'var(--odoo-danger)';
                                                     return (
-                                                        <div key={kr.key}>
-                                                            <div className="flex items-center justify-between mb-0.5">
-                                                                <span className="text-[10px] text-slate-400 truncate flex-1">{kr.label}</span>
-                                                                <span className="text-[10px] font-bold ml-2" style={{ color: barColor }}>{kr.score}%</span>
+                                                        <div key={kr.key} style={{ marginBottom: '8px' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                                                                <span style={{ fontSize: '10px', color: 'var(--odoo-text-secondary)' }}>{kr.label}</span>
+                                                                <span style={{ fontSize: '10px', fontWeight: 700, color: barColor }}>{kr.score}%</span>
                                                             </div>
-                                                            <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
-                                                                <div className="h-full rounded-full" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: barColor, transition: 'width 0.5s' }} />
+                                                            <div style={{ height: '4px', backgroundColor: 'var(--odoo-surface-high)', borderRadius: '2px', overflow: 'hidden' }}>
+                                                                <div style={{ height: '100%', borderRadius: '2px', width: `${Math.min(kr.score, 100)}%`, backgroundColor: barColor, transition: 'width 0.5s' }} />
                                                             </div>
                                                         </div>
                                                     );
@@ -429,16 +797,30 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                                             </div>
 
                                             {/* Workers */}
-                                            <div className="px-3 py-2 border-t border-slate-700/60 bg-slate-800/30 space-y-0.5">
+                                            <div style={{ padding: '8px 12px', borderTop: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface)' }}>
                                                 {roleWorkers.map(w => (
-                                                    <div key={w.username} className="flex items-center justify-between py-1 cursor-pointer hover:bg-slate-700/40 rounded px-1.5 -mx-1.5" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ backgroundColor: rc.color }}>{w.name?.charAt(0)}</span>
-                                                            <span className="text-[11px] text-slate-300">{w.name}</span>
+                                                    <div key={w.username}
+                                                        onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}
+                                                        style={{
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                            padding: '5px 6px', borderRadius: '6px', cursor: 'pointer', transition: 'background-color 0.15s',
+                                                        }}
+                                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
+                                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <span style={{
+                                                                width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                fontSize: '9px', fontWeight: 700, color: '#fff', backgroundColor: rc.color,
+                                                            }}>{w.name?.charAt(0)}</span>
+                                                            <span style={{ fontSize: '11px', color: 'var(--odoo-text)' }}>{w.name}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="text-[10px] font-bold" style={{ color: getGaugeColor(w.uph) }}>{w.uph}</span>
-                                                            <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ backgroundColor: w.okr.grade.bg, color: w.okr.grade.color }}>{w.okr.grade.grade}</span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <span style={{ fontSize: '10px', fontWeight: 800, color: getGaugeColor(w.uph) }}>{w.uph}</span>
+                                                            <span style={{
+                                                                fontSize: '8px', fontWeight: 700, padding: '2px 4px', borderRadius: '3px',
+                                                                backgroundColor: w.okr.grade.bg, color: w.okr.grade.color,
+                                                            }}>{w.okr.grade.grade}</span>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -449,9 +831,9 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                             </div>
                         )}
 
-                        {/* ── VIEW: Kanban (by Grade) ── */}
+                        {/* VIEW: Kanban */}
                         {okrView === 'kanban' && (
-                            <div className="flex gap-3 overflow-x-auto pb-2" style={{ minHeight: '200px' }}>
+                            <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', minHeight: '200px' }}>
                                 {[
                                     { grade: 'S', label: 'Outstanding', color: '#7c3aed', bg: '#ede9fe' },
                                     { grade: 'A', label: 'Excellent', color: '#059669', bg: '#d1fae5' },
@@ -461,33 +843,60 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                                 ].map(col => {
                                     const colWorkers = allWorkerOkrs.filter(w => w.okr.grade.grade === col.grade);
                                     return (
-                                        <div key={col.grade} className="flex-1 min-w-[180px] bg-slate-800/40 rounded-lg border border-slate-700 flex flex-col">
-                                            <div className="px-3 py-2 border-b border-slate-700 flex items-center gap-2">
-                                                <span className="text-sm font-black" style={{ color: col.color }}>{col.grade}</span>
-                                                <span className="text-[10px] text-slate-400 flex-1">{col.label}</span>
-                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-400">{colWorkers.length}</span>
+                                        <div key={col.grade} style={{
+                                            flex: 1, minWidth: '180px',
+                                            backgroundColor: 'var(--odoo-surface-low)', borderRadius: '10px',
+                                            border: '1px solid var(--odoo-border-ghost)',
+                                            display: 'flex', flexDirection: 'column',
+                                        }}>
+                                            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--odoo-border-ghost)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontSize: '14px', fontWeight: 900, color: col.color }}>{col.grade}</span>
+                                                <span style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', flex: 1 }}>{col.label}</span>
+                                                <span style={{
+                                                    fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '10px',
+                                                    backgroundColor: 'var(--odoo-surface-high)', color: 'var(--odoo-text-muted)',
+                                                }}>{colWorkers.length}</span>
                                             </div>
-                                            <div className="flex-1 p-2 space-y-2 overflow-y-auto" style={{ maxHeight: '400px' }}>
+                                            <div style={{ flex: 1, padding: '8px', overflowY: 'auto', maxHeight: '400px' }}>
                                                 {colWorkers.map(w => (
-                                                    <div key={w.username} className="bg-slate-800 rounded-lg p-3 border border-slate-700 cursor-pointer hover:border-slate-500 transition-colors" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-xs font-bold text-slate-200">{w.name}</span>
-                                                            <span className="text-sm font-black" style={{ color: col.color }}>{w.okr.totalScore}%</span>
+                                                    <div key={w.username}
+                                                        onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}
+                                                        style={{
+                                                            backgroundColor: 'var(--odoo-surface)', borderRadius: '8px',
+                                                            padding: '12px', marginBottom: '8px',
+                                                            border: '1px solid var(--odoo-border-ghost)',
+                                                            cursor: 'pointer', transition: 'border-color 0.15s',
+                                                        }}
+                                                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--odoo-border)'}
+                                                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--odoo-border-ghost)'}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--odoo-text)' }}>{w.name}</span>
+                                                            <span style={{ fontSize: '14px', fontWeight: 900, color: col.color }}>{w.okr.totalScore}%</span>
                                                         </div>
-                                                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.rc.color + '22', color: w.rc.color }}>{w.rc.label}</span>
-                                                        <div className="mt-2 space-y-1">
+                                                        <span style={{
+                                                            fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px',
+                                                            backgroundColor: w.rc.color + '15', color: w.rc.color,
+                                                        }}>{w.rc.label}</span>
+                                                        <div style={{ marginTop: '8px' }}>
                                                             {w.okr.results.slice(0, 3).map(kr => (
-                                                                <div key={kr.key} className="flex items-center gap-1.5">
-                                                                    <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                                                                        <div className="h-full rounded-full" style={{ width: `${Math.min(kr.score, 100)}%`, backgroundColor: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }} />
+                                                                <div key={kr.key} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                                                    <div style={{ flex: 1, height: '3px', backgroundColor: 'var(--odoo-surface-high)', borderRadius: '2px', overflow: 'hidden' }}>
+                                                                        <div style={{
+                                                                            height: '100%', borderRadius: '2px', transition: 'width 0.5s',
+                                                                            width: `${Math.min(kr.score, 100)}%`,
+                                                                            backgroundColor: kr.score >= 100 ? '#017E84' : kr.score >= 75 ? '#E8A940' : '#E46F78',
+                                                                        }} />
                                                                     </div>
-                                                                    <span className="text-[8px] text-slate-500 w-6 text-right">{kr.score}%</span>
+                                                                    <span style={{ fontSize: '8px', color: 'var(--odoo-text-muted)', width: '24px', textAlign: 'right' }}>{kr.score}%</span>
                                                                 </div>
                                                             ))}
                                                         </div>
                                                     </div>
                                                 ))}
-                                                {colWorkers.length === 0 && <div className="text-center text-[10px] text-slate-600 py-6">No workers</div>}
+                                                {colWorkers.length === 0 && (
+                                                    <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--odoo-text-muted)', padding: '24px 0' }}>No workers</div>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -495,40 +904,53 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                             </div>
                         )}
 
-                        {/* ── VIEW: List (Table) ── */}
+                        {/* VIEW: List */}
                         {okrView === 'list' && (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                                     <thead>
-                                        <tr className="border-b border-slate-700 text-slate-400">
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase">Employee</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase">Role</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">Score</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">Grade</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">UPH</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">KR1</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">KR2</th>
-                                            <th className="py-2 px-3 text-[10px] font-bold uppercase text-center">KR3</th>
+                                        <tr style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                                            {['Employee', 'Role', 'Score', 'Grade', 'UPH', 'KR1', 'KR2', 'KR3'].map(h => (
+                                                <th key={h} style={{
+                                                    padding: '10px 14px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+                                                    letterSpacing: '0.06em', color: 'var(--odoo-text-muted)',
+                                                    textAlign: ['Score', 'Grade', 'UPH', 'KR1', 'KR2', 'KR3'].includes(h) ? 'center' : 'left',
+                                                }}>{h}</th>
+                                            ))}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {allWorkerOkrs.sort((a, b) => b.okr.totalScore - a.okr.totalScore).map(w => (
-                                            <tr key={w.username} className="border-b border-slate-800 hover:bg-slate-800/50 cursor-pointer" onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}>
-                                                <td className="py-2.5 px-3 text-slate-200 font-medium">{w.name}</td>
-                                                <td className="py-2.5 px-3">
-                                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.rc.color + '22', color: w.rc.color }}>{w.rc.label}</span>
+                                            <tr key={w.username}
+                                                onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}
+                                                style={{ borderBottom: '1px solid var(--odoo-border-ghost)', cursor: 'pointer', transition: 'background-color 0.15s' }}
+                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
+                                                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            >
+                                                <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--odoo-text)' }}>{w.name}</td>
+                                                <td style={{ padding: '10px 14px' }}>
+                                                    <span style={{
+                                                        fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px',
+                                                        backgroundColor: w.rc.color + '15', color: w.rc.color,
+                                                    }}>{w.rc.label}</span>
                                                 </td>
-                                                <td className="py-2.5 px-3 text-center font-bold" style={{ color: w.okr.grade.color }}>{w.okr.totalScore}%</td>
-                                                <td className="py-2.5 px-3 text-center">
-                                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: w.okr.grade.bg, color: w.okr.grade.color }}>{w.okr.grade.grade}</span>
+                                                <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: w.okr.grade.color }}>{w.okr.totalScore}%</td>
+                                                <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                                    <span style={{
+                                                        fontSize: '9px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px',
+                                                        backgroundColor: w.okr.grade.bg, color: w.okr.grade.color,
+                                                    }}>{w.okr.grade.grade}</span>
                                                 </td>
-                                                <td className="py-2.5 px-3 text-center" style={{ color: getGaugeColor(w.uph) }}>{w.uph}</td>
+                                                <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: getGaugeColor(w.uph) }}>{w.uph}</td>
                                                 {w.okr.results.slice(0, 3).map(kr => (
-                                                    <td key={kr.key} className="py-2.5 px-3 text-center">
-                                                        <div className="text-[10px] font-bold" style={{ color: kr.score >= 100 ? '#10b981' : kr.score >= 75 ? '#f59e0b' : '#ef4444' }}>{kr.score}%</div>
+                                                    <td key={kr.key} style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                                        <span style={{
+                                                            fontSize: '11px', fontWeight: 700,
+                                                            color: kr.score >= 100 ? 'var(--odoo-success)' : kr.score >= 75 ? 'var(--odoo-warning)' : 'var(--odoo-danger)',
+                                                        }}>{kr.score}%</span>
                                                     </td>
                                                 ))}
-                                                {w.okr.results.length < 3 && Array.from({ length: 3 - w.okr.results.length }).map((_, i) => <td key={`e${i}`} className="py-2.5 px-3" />)}
+                                                {w.okr.results.length < 3 && Array.from({ length: 3 - w.okr.results.length }).map((_, i) => <td key={`e${i}`} style={{ padding: '10px 14px' }} />)}
                                             </tr>
                                         ))}
                                     </tbody>
@@ -539,39 +961,54 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                 );
             })()}
 
-            {/* ─── REMAINING SECTIONS (only with real data) ─── */}
-            {hasLogs && <>
-            {/* ─── SECTION: TASK DIFFICULTY DISTRIBUTION ─── */}
-            {tierDistribution && (
-                <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-purple-400" /> Task Difficulty Breakdown
-                    </h3>
+            {/* ─── TASK DIFFICULTY DISTRIBUTION ─── */}
+            {hasLogs && tierDistribution && (
+                <div style={{
+                    borderRadius: '12px', padding: '20px',
+                    backgroundColor: 'var(--odoo-surface)',
+                    border: '1px solid var(--odoo-border-ghost)',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))', color: '#fff',
+                        }}>
+                            <Layers className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Task Difficulty Breakdown</h3>
+                            <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', margin: 0 }}>{tierDistribution.total} total orders analyzed</p>
+                        </div>
+                    </div>
 
                     {/* Tier overview bar */}
-                    <div className="mb-5">
-                        <div className="flex h-8 rounded-lg overflow-hidden">
+                    <div style={{ marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', height: '32px', borderRadius: '8px', overflow: 'hidden' }}>
                             {[1, 2, 3, 4, 5].map(tier => {
                                 const d = tierDistribution.dist[tier];
                                 if (d.pct === 0) return null;
                                 return (
                                     <div
                                         key={tier}
-                                        className="flex items-center justify-center text-xs font-bold text-white transition-all"
-                                        style={{ width: `${d.pct}%`, backgroundColor: TIER_CONFIG[tier].color, minWidth: d.pct > 0 ? '40px' : 0 }}
-                                        title={`Tier ${tier}: ${TIER_CONFIG[tier].label} — ${d.count} orders (${d.pct}%)`}
+                                        title={`Tier ${tier}: ${TIER_CONFIG[tier].label} -- ${d.count} orders (${d.pct}%)`}
+                                        style={{
+                                            width: `${d.pct}%`, minWidth: d.pct > 0 ? '40px' : 0,
+                                            backgroundColor: TIER_CONFIG[tier].color, transition: 'all 0.3s',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: '12px', fontWeight: 700, color: '#fff',
+                                        }}
                                     >
                                         {d.pct >= 8 && `${TIER_CONFIG[tier].icon} ${d.pct}%`}
                                     </div>
                                 );
                             })}
                         </div>
-                        <div className="flex justify-between mt-2">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
                             {[1, 2, 3, 4, 5].map(tier => (
-                                <div key={tier} className="flex items-center gap-1 text-[10px] text-slate-400">
+                                <div key={tier} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: 'var(--odoo-text-muted)' }}>
                                     <span>{TIER_CONFIG[tier].icon}</span>
                                     <span>{TIER_CONFIG[tier].label}</span>
-                                    <span className="font-bold text-slate-300">({tierDistribution.dist[tier].count})</span>
+                                    <span style={{ fontWeight: 700, color: 'var(--odoo-text-secondary)' }}>({tierDistribution.dist[tier].count})</span>
                                 </div>
                             ))}
                         </div>
@@ -579,18 +1016,18 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
 
                     {/* Per-worker tier table */}
                     {tierDistribution.workerTiers.length > 0 && (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                                 <thead>
-                                    <tr className="text-slate-400 border-b border-slate-700">
-                                        <th className="py-2 px-3 text-left">Employee</th>
+                                    <tr style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                                        <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--odoo-text-muted)' }}>Employee</th>
                                         {[1, 2, 3, 4, 5].map(tier => (
-                                            <th key={tier} className="py-2 px-2 text-center" title={TIER_CONFIG[tier].label}>
+                                            <th key={tier} style={{ padding: '10px 8px', textAlign: 'center', fontSize: '12px' }} title={TIER_CONFIG[tier].label}>
                                                 {TIER_CONFIG[tier].icon}
                                             </th>
                                         ))}
-                                        <th className="py-2 px-3 text-right">Weighted Score</th>
-                                        <th className="py-2 px-3 text-left">Difficulty Profile</th>
+                                        <th style={{ padding: '10px 14px', textAlign: 'right', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--odoo-text-muted)' }}>Weighted</th>
+                                        <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--odoo-text-muted)' }}>Profile</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -601,32 +1038,40 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                                             const avgTier = totalTasks > 0
                                                 ? (Object.entries(w.tiers).reduce((s, [t, c]) => s + Number(t) * c, 0) / totalTasks).toFixed(1)
                                                 : '0';
-                                            // Mini bar showing tier distribution
                                             return (
-                                                <tr key={w.username} onClick={() => onSelectWorker?.({ username: w.username, name: w.name })} className="border-b border-slate-800 cursor-pointer hover:bg-slate-800/50">
-                                                    <td className="py-2.5 px-3 text-slate-200 font-medium">{w.name}</td>
+                                                <tr key={w.username}
+                                                    onClick={() => onSelectWorker?.({ username: w.username, name: w.name })}
+                                                    style={{ borderBottom: '1px solid var(--odoo-border-ghost)', cursor: 'pointer', transition: 'background-color 0.15s' }}
+                                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'}
+                                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                                >
+                                                    <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--odoo-text)' }}>{w.name}</td>
                                                     {[1, 2, 3, 4, 5].map(tier => (
-                                                        <td key={tier} className="py-2.5 px-2 text-center">
+                                                        <td key={tier} style={{ padding: '10px 8px', textAlign: 'center' }}>
                                                             {w.tiers[tier] > 0 ? (
-                                                                <span className="inline-block min-w-[24px] px-1 py-0.5 rounded text-xs font-bold" style={{ backgroundColor: TIER_CONFIG[tier].color + '22', color: TIER_CONFIG[tier].color }}>
+                                                                <span style={{
+                                                                    display: 'inline-block', minWidth: '24px', padding: '2px 4px',
+                                                                    borderRadius: '4px', fontSize: '12px', fontWeight: 700,
+                                                                    backgroundColor: TIER_CONFIG[tier].color + '15', color: TIER_CONFIG[tier].color,
+                                                                }}>
                                                                     {w.tiers[tier]}
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-slate-700">-</span>
+                                                                <span style={{ color: 'var(--odoo-surface-high)' }}>-</span>
                                                             )}
                                                         </td>
                                                     ))}
-                                                    <td className="py-2.5 px-3 text-right font-bold text-purple-400">{w.weightedTotal.toFixed(1)}</td>
-                                                    <td className="py-2.5 px-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex h-3 w-24 rounded-full overflow-hidden bg-slate-800">
+                                                    <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 700, color: 'var(--odoo-purple)' }}>{w.weightedTotal.toFixed(1)}</td>
+                                                    <td style={{ padding: '10px 14px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ display: 'flex', height: '10px', width: '96px', borderRadius: '5px', overflow: 'hidden', backgroundColor: 'var(--odoo-surface-high)' }}>
                                                                 {[1, 2, 3, 4, 5].map(tier => {
                                                                     const pct = totalTasks > 0 ? (w.tiers[tier] / totalTasks) * 100 : 0;
                                                                     if (pct === 0) return null;
                                                                     return <div key={tier} style={{ width: `${pct}%`, backgroundColor: TIER_CONFIG[tier].color }} />;
                                                                 })}
                                                             </div>
-                                                            <span className="text-[10px] text-slate-500">avg {avgTier}</span>
+                                                            <span style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>avg {avgTier}</span>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -639,254 +1084,177 @@ export default function TeamPerformance({ activityLogs, orders, users = [], t, o
                 </div>
             )}
 
-            {/* ─── SECTION 2: LIVE SPEED GAUGES ─── */}
-            <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-blue-400" /> Live Worker Speed
-                </h3>
-                <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
-                    {workerStats.map(w => (
-                        <SpeedGauge key={w.username} name={w.name} uph={w.uph} />
-                    ))}
-                </div>
-            </div>
+            {/* ─── 7-DAY TREND + HEATMAP ─── */}
+            {hasLogs && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }} className="lg:!grid-cols-[2fr_1fr]">
 
-            {/* ─── SECTION 3: HOURLY THROUGHPUT ─── */}
-            <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-emerald-400" /> Hourly Throughput
-                </h3>
-                <ResponsiveContainer width="100%" height={280}>
-                    <AreaChart data={hourlyData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                        <XAxis dataKey="hour" stroke="#64748b" tick={{ fontSize: 11 }} />
-                        <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
-                        <Tooltip
-                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#e2e8f0' }}
-                            labelStyle={{ color: '#94a3b8' }}
-                        />
-                        <Legend />
-                        <Area type="monotone" dataKey="Pick" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
-                        <Area type="monotone" dataKey="Pack" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.4} />
-                        <Area type="monotone" dataKey="Scan" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.4} />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </div>
-
-            {/* ─── SECTION 4: TEAM LEADERBOARD ─── */}
-            <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Award className="w-4 h-4 text-amber-400" /> Team Leaderboard
-                </h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="text-slate-400 border-b border-slate-700">
-                                {[
-                                    { key: 'rank', label: '#' },
-                                    { key: 'name', label: 'Employee' },
-                                    { key: 'pick', label: 'Pick' },
-                                    { key: 'pack', label: 'Pack' },
-                                    { key: 'scan', label: 'Scan' },
-                                    { key: 'total', label: 'Total' },
-                                    { key: 'uph', label: 'UPH' },
-                                    { key: 'efficiency', label: 'Efficiency' },
-                                    { key: 'trend', label: 'Trend' },
-                                ].map(col => (
-                                    <th
-                                        key={col.key}
-                                        className="py-2 px-3 text-left cursor-pointer hover:text-slate-200 select-none whitespace-nowrap"
-                                        onClick={() => col.key !== 'rank' && col.key !== 'trend' && handleSort(col.key)}
-                                    >
-                                        {col.label}<SortArrow col={col.key} />
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {leaderboard.map((w, i) => {
-                                const rank = i + 1;
-                                const medal = rank === 1 ? '\u{1F947}' : rank === 2 ? '\u{1F948}' : rank === 3 ? '\u{1F949}' : `${rank}`;
-                                const isTop = kpis.topPerformer && w.username === kpis.topPerformer.username;
-                                const avgFromHistory = historicalData.length > 1
-                                    ? Math.round(historicalData.slice(0, -1).reduce((a, d) => a + d.avgUph, 0) / (historicalData.length - 1))
-                                    : 0;
-                                const trendUp = w.uph >= avgFromHistory;
-
-                                return (
-                                    <tr key={w.username} onClick={() => onSelectWorker?.({ username: w.username, name: w.name })} className={`border-b border-slate-800 cursor-pointer ${isTop ? 'bg-amber-500/5' : 'hover:bg-slate-800/50'}`}>
-                                        <td className="py-2.5 px-3 font-medium">{medal}</td>
-                                        <td className="py-2.5 px-3 text-slate-200 font-medium">
-                                            {w.name}
-                                            {w.roleConfig && (
-                                                <span className="ml-2 text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: w.roleConfig.color + '22', color: w.roleConfig.color }}>
-                                                    {w.roleConfig.label}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="py-2.5 px-3 text-blue-400">{w.pick}</td>
-                                        <td className="py-2.5 px-3 text-emerald-400">{w.pack}</td>
-                                        <td className="py-2.5 px-3 text-amber-400">{w.scan}</td>
-                                        <td className="py-2.5 px-3 text-slate-200 font-bold">{w.total}</td>
-                                        <td className="py-2.5 px-3 font-bold" style={{ color: getGaugeColor(w.uph) }}>{w.uph}</td>
-                                        <td className="py-2.5 px-3">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-500"
-                                                        style={{
-                                                            width: `${Math.min(w.efficiency, 100)}%`,
-                                                            backgroundColor: getGaugeColor(w.uph),
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span className="text-xs text-slate-400">{w.efficiency}%</span>
-                                            </div>
-                                        </td>
-                                        <td className="py-2.5 px-3">
-                                            {trendUp
-                                                ? <TrendingUp className="w-4 h-4 text-emerald-400 inline" />
-                                                : <TrendingDown className="w-4 h-4 text-red-400 inline" />}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* ─── ROW: 7-DAY TREND + ACTION DISTRIBUTION ─── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* SECTION 5: 7-DAY TREND */}
-                <div className="lg:col-span-2 bg-slate-900 border border-slate-700 rounded-lg p-5">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-blue-400" /> 7-Day Performance Trend
-                    </h3>
-                    <ResponsiveContainer width="100%" height={260}>
-                        <LineChart data={historicalData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                            <XAxis dataKey="day" stroke="#64748b" tick={{ fontSize: 11 }} />
-                            <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#e2e8f0' }}
-                            />
-                            <Legend />
-                            <Line type="monotone" dataKey="avgUph" name="Avg UPH" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                            <Line type="monotone" dataKey="totalUnits" name="Total Units" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                            <Line type="monotone" dataKey="target" name="Target" stroke="#f59e0b" strokeWidth={2} strokeDasharray="8 4" dot={false} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* SECTION 7: ACTION DISTRIBUTION */}
-                <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
-                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <Target className="w-4 h-4 text-emerald-400" /> Action Distribution
-                    </h3>
-                    {actionDistribution.length > 0 ? (
+                    {/* 7-Day Performance Trend */}
+                    <div style={{
+                        borderRadius: '12px', padding: '20px',
+                        backgroundColor: 'var(--odoo-surface)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                            <div style={{
+                                width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))', color: '#fff',
+                            }}>
+                                <TrendingUp className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>7-Day Performance Trend</h3>
+                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', margin: 0 }}>Average UPH vs daily target</p>
+                            </div>
+                        </div>
                         <ResponsiveContainer width="100%" height={260}>
-                            <PieChart>
-                                <Pie
-                                    data={actionDistribution}
-                                    cx="50%" cy="50%"
-                                    innerRadius={55} outerRadius={85}
-                                    paddingAngle={4}
-                                    dataKey="value"
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                >
-                                    {actionDistribution.map((entry, idx) => (
-                                        <Cell key={idx} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#e2e8f0' }}
-                                />
+                            <LineChart data={historicalData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--odoo-border-ghost)" />
+                                <XAxis dataKey="day" stroke="var(--odoo-text-muted)" tick={{ fontSize: 11 }} />
+                                <YAxis stroke="var(--odoo-text-muted)" tick={{ fontSize: 11 }} />
+                                <Tooltip contentStyle={tooltipStyle} />
                                 <Legend />
-                            </PieChart>
+                                <Line type="monotone" dataKey="avgUph" name="Avg UPH" stroke="#714B67" strokeWidth={2} dot={{ r: 4, fill: '#714B67' }} activeDot={{ r: 6 }} />
+                                <Line type="monotone" dataKey="totalUnits" name="Total Units" stroke="#017E84" strokeWidth={2} dot={{ r: 4, fill: '#017E84' }} />
+                                <Line type="monotone" dataKey="target" name="Target" stroke="#E8A940" strokeWidth={2} strokeDasharray="8 4" dot={false} />
+                            </LineChart>
                         </ResponsiveContainer>
-                    ) : (
-                        <div className="flex items-center justify-center h-60 text-slate-500 text-sm">No data</div>
-                    )}
-                </div>
-            </div>
+                    </div>
 
-            {/* ─── SECTION 6: PERFORMANCE HEATMAP ─── */}
-            <div className="bg-slate-900 border border-slate-700 rounded-lg p-5">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-emerald-400" /> Performance Heatmap
-                </h3>
-                <div className="overflow-x-auto">
-                    <div className="inline-grid gap-1" style={{ gridTemplateColumns: `60px repeat(${historicalData.length}, 32px)` }}>
-                        {/* Header row */}
-                        <div />
-                        {historicalData.map(d => (
-                            <div key={d.day} className="text-[10px] text-slate-500 text-center">{d.day}</div>
-                        ))}
-                        {/* Data rows */}
-                        {heatmapData.map(row => (
-                            <React.Fragment key={row.hour}>
-                                <div className="text-[10px] text-slate-500 flex items-center">{`${row.hour.toString().padStart(2, '0')}:00`}</div>
+                    {/* Performance Heatmap */}
+                    <div style={{
+                        borderRadius: '12px', padding: '20px',
+                        backgroundColor: 'var(--odoo-surface)',
+                        border: '1px solid var(--odoo-border-ghost)',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                            <div style={{
+                                width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: 'linear-gradient(135deg, var(--odoo-purple-dark), var(--odoo-purple))', color: '#fff',
+                            }}>
+                                <Activity className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--odoo-text)', margin: 0 }}>Activity Heatmap</h3>
+                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', margin: 0 }}>Hourly activity distribution</p>
+                            </div>
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                            <div style={{
+                                display: 'inline-grid', gap: '3px',
+                                gridTemplateColumns: `52px repeat(${historicalData.length}, 30px)`,
+                            }}>
+                                {/* Header row */}
+                                <div />
                                 {historicalData.map(d => (
-                                    <HeatmapCell key={`${row.hour}-${d.day}`} value={row[d.day] || 0} maxValue={heatmapMax} />
+                                    <div key={d.day} style={{ fontSize: '9px', color: 'var(--odoo-text-muted)', textAlign: 'center', fontWeight: 600 }}>{d.day}</div>
                                 ))}
-                            </React.Fragment>
-                        ))}
+                                {/* Data rows */}
+                                {heatmapData.map(row => (
+                                    <React.Fragment key={row.hour}>
+                                        <div style={{ fontSize: '9px', color: 'var(--odoo-text-muted)', display: 'flex', alignItems: 'center', fontWeight: 500 }}>
+                                            {`${row.hour.toString().padStart(2, '0')}:00`}
+                                        </div>
+                                        {historicalData.map(d => {
+                                            const value = row[d.day] || 0;
+                                            const intensity = heatmapMax > 0 ? value / heatmapMax : 0;
+                                            const bgColor = intensity === 0
+                                                ? 'var(--odoo-surface-low)'
+                                                : intensity < 0.25 ? 'rgba(1,126,132,0.15)'
+                                                : intensity < 0.5 ? 'rgba(1,126,132,0.30)'
+                                                : intensity < 0.75 ? 'rgba(1,126,132,0.50)'
+                                                : 'rgba(1,126,132,0.70)';
+                                            return (
+                                                <div
+                                                    key={`${row.hour}-${d.day}`}
+                                                    title={`${value} actions`}
+                                                    style={{
+                                                        width: '30px', height: '24px', borderRadius: '4px',
+                                                        backgroundColor: bgColor,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        transition: 'background-color 0.2s',
+                                                    }}
+                                                >
+                                                    {value > 0 && <span style={{ fontSize: '8px', color: intensity > 0.5 ? '#fff' : 'var(--odoo-text-muted)', fontWeight: 600 }}>{value}</span>}
+                                                </div>
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            {/* ─── SECTION 8: PERFORMANCE SUMMARY ─── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <SummaryCard icon={<Clock className="w-5 h-5 text-blue-400" />} label="Peak Hour" value={summaryStats.peakHour} />
-                <SummaryCard icon={<Zap className="w-5 h-5 text-amber-400" />} label="Avg Time / Order" value={summaryStats.avgTimePerOrder} />
-                <SummaryCard icon={<Award className="w-5 h-5 text-emerald-400" />} label="Best Day This Week" value={summaryStats.bestDay} />
-                <SummaryCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Quality Score" value={summaryStats.qualityScore} />
-            </div>
-            </>
-            }
+            )}
         </div>
     );
 }
 
 /* ─── Sub-components ─── */
 
-function KpiCard({ icon, label, value, sub, accent = 'blue', trend }) {
-    const accentMap = {
-        blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', icon: 'text-blue-400' },
-        emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', icon: 'text-emerald-400' },
-        amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: 'text-amber-400' },
-        red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', icon: 'text-red-400' },
-    };
-    const a = accentMap[accent] || accentMap.blue;
-
+function KpiCard({ icon, label, value, sub, trend, color, bgColor }) {
     return (
-        <div className={`${a.bg} border ${a.border} rounded-lg p-4 flex items-center gap-4`}>
-            <div className={`p-2.5 rounded-lg bg-slate-800 ${a.icon}`}>{icon}</div>
-            <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-                <div className="flex items-baseline gap-2">
-                    <p className={`text-2xl font-bold ${a.text} truncate`}>{value}</p>
+        <div style={{
+            borderRadius: '12px', padding: '18px 20px',
+            backgroundColor: 'var(--odoo-surface)',
+            border: '1px solid var(--odoo-border-ghost)',
+            display: 'flex', alignItems: 'center', gap: '14px',
+            transition: 'box-shadow 0.2s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(113,75,103,0.08)'}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+        >
+            <div style={{
+                width: '44px', height: '44px', borderRadius: '10px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                backgroundColor: bgColor, color: color,
+            }}>
+                {icon}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--odoo-text-muted)', margin: 0 }}>
+                    {label}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <p style={{
+                        fontSize: '24px', fontWeight: 800, color: color, margin: 0,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                        {value}
+                    </p>
                     {trend !== undefined && trend !== null && (
-                        <span className={`text-xs font-medium flex items-center gap-0.5 ${trend >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                        <span style={{
+                            fontSize: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px',
+                            color: trend >= 0 ? 'var(--odoo-success)' : 'var(--odoo-danger)',
+                        }}>
+                            {trend >= 0 ? <TrendingUp style={{ width: '12px', height: '12px' }} /> : <TrendingDown style={{ width: '12px', height: '12px' }} />}
                             {trend >= 0 ? '+' : ''}{trend}
                         </span>
                     )}
                 </div>
-                {sub && <p className="text-[10px] text-slate-500 mt-0.5">{sub}</p>}
+                {sub && <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)', margin: '2px 0 0 0' }}>{sub}</p>}
             </div>
         </div>
     );
 }
 
-function SummaryCard({ icon, label, value }) {
+function MiniStat({ icon, label, value, color }) {
     return (
-        <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-slate-800">{icon}</div>
+        <div style={{
+            borderRadius: '10px', padding: '12px',
+            backgroundColor: 'var(--odoo-surface)',
+            border: '1px solid var(--odoo-border-ghost)',
+            display: 'flex', alignItems: 'center', gap: '10px',
+        }}>
+            <div style={{
+                width: '32px', height: '32px', borderRadius: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                backgroundColor: 'var(--odoo-surface-low)', color: color,
+            }}>
+                {icon}
+            </div>
             <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-                <p className="text-lg font-bold text-slate-200">{value}</p>
+                <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--odoo-text-muted)', margin: 0 }}>{label}</p>
+                <p style={{ fontSize: '15px', fontWeight: 800, color: 'var(--odoo-text)', margin: 0 }}>{value}</p>
             </div>
         </div>
     );

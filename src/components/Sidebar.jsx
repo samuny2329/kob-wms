@@ -184,9 +184,9 @@ const Sidebar = ({ t, user, userRole, activeTab, setActiveTab, tabInfo, rolesInf
                             {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
                         </button>
                         <button onClick={handleLogout}
-                            className="p-1 rounded transition-colors hover:bg-red-50"
-                            style={{ color: 'var(--odoo-text-muted)' }} title={t('signOut') || 'Sign Out'}>
-                            <LogOut className="w-3.5 h-3.5" />
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded transition-colors hover:bg-red-50 active:bg-red-100"
+                            style={{ color: 'var(--odoo-danger)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', minHeight: '32px' }} title={t('signOut') || 'Sign Out'}>
+                            <LogOut className="w-4 h-4" /> Sign Out
                         </button>
                     </div>
                 </div>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - New Packing Station</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 247, 249, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#e9e0e3",
+                      "on-primary-fixed": "#2f1029",
+                      "surface-container-lowest": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#78d5db",
+                      "primary-container": "#714b67",
+                      "on-primary-container": "#f0bfe0",
+                      "outline": "#80747a",
+                      "surface-container": "#f4ecee",
+                      "primary-fixed-dim": "#e9b8d9",
+                      "secondary-fixed": "#95f1f8",
+                      "on-surface-variant": "#4e444a",
+                      "on-primary": "#ffffff",
+                      "on-secondary-fixed": "#002022",
+                      "inverse-surface": "#342f31",
+                      "surface": "#fff7f9",
+                      "tertiary-fixed-dim": "#b9ce9a",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#006e73",
+                      "background": "#fff7f9",
+                      "surface-dim": "#e0d8da",
+                      "inverse-on-surface": "#f7eef1",
+                      "on-background": "#1e1b1d",
+                      "on-surface": "#1e1b1d",
+                      "tertiary": "#34451e",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffd7f1",
+                      "on-tertiary-container": "#c0d5a0",
+                      "surface-tint": "#79526f",
+                      "secondary-container": "#92eff5",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed": "#d5eab4",
+                      "surface-bright": "#fff7f9",
+                      "outline-variant": "#d1c3ca",
+                      "on-secondary-fixed-variant": "#004f53",
+                      "surface-container-high": "#efe6e9",
+                      "on-error-container": "#93000a",
+                      "tertiary-container": "#4b5d33",
+                      "inverse-primary": "#e9b8d9",
+                      "secondary": "#00696e",
+                      "on-tertiary-fixed-variant": "#3b4c24",
+                      "surface-container-highest": "#e9e0e3",
+                      "on-primary-fixed-variant": "#5f3b56",
+                      "primary": "#57344f",
+                      "surface-container-low": "#faf1f4",
+                      "on-tertiary-fixed": "#112000"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<!-- Top Navigation -->
+<header class="w-full sticky top-0 z-40 bg-[#f4ecee] border-none shadow-sm shadow-[#57324f]/10 font-inter text-sm antialiased flex justify-between items-center h-14 px-6">
+<div class="flex items-center gap-6">
+<span class="text-lg font-bold bg-gradient-to-br from-[#57344f] to-[#714b67] bg-clip-text text-transparent">KOB WMS Pro</span>
+<div class="hidden md:flex items-center space-x-1">
+<button class="px-4 py-2 text-slate-600 hover:bg-[#faf1f4] transition-colors cursor-pointer">Dashboard</button>
+<button class="px-4 py-2 text-[#714B67] border-b-2 border-[#714B67] cursor-pointer">Packing</button>
+<button class="px-4 py-2 text-slate-600 hover:bg-[#faf1f4] transition-colors cursor-pointer">Inventory</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-high rounded-lg border-none focus:ring-2 focus:ring-primary w-64 text-sm" placeholder="Search orders..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-[#714B67] cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-[#714B67] cursor-pointer">apps</span>
+<img alt="Manager Profile" class="w-8 h-8 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmy24tpTZHpPXUJlSzomUJqcz0jUzekvc6Y_qTQ6vbNRYpLJHkjMRZojvm5mmgnS59MIoyTpWg_yAzGmNohXO9SVgErh_SF8upIqfJovSWAtTErVsKSkCjUn576HIU-I2mczhNOsRfhgMxkGOdJWlkAIcEeic-tFQ-G9ICGLUqdgB_5bXjX4h-eTwozxJN7sTLyT7mAW7gMc5wYG8wzr45z6xOGUsUKQSlYHIYB-w9b_GSfs3Xjwucy4nz4wEwTSkkA5L1hNBPoAiH"/>
+</div>
+</header>
+<main class="max-w-[1600px] mx-auto p-6 flex flex-col gap-6">
+<!-- Step 1: Scan Order Input Field (NEW) -->
+<section class="bg-primary shadow-lg rounded-xl overflow-hidden">
+<div class="flex items-center gap-4 p-5 bg-primary-container/20">
+<div class="p-2 bg-primary rounded-lg text-white">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+</div>
+<div class="flex-1">
+<h2 class="text-sm font-bold text-white uppercase tracking-wider">Step 1: Scan Order Barcode</h2>
+<div class="relative mt-2">
+<input autofocus="" class="w-full bg-white border-none rounded-lg py-3 px-12 text-lg font-bold text-on-surface focus:ring-4 focus:ring-secondary/30 placeholder:text-outline-variant/60" placeholder="Scan Order ID (e.g. #ORD-9921) to begin packing..." type="text"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold">barcode_reader</span>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+<span class="text-[10px] font-bold text-outline-variant uppercase">Press Enter</span>
+<span class="material-symbols-outlined text-outline-variant text-base">keyboard_return</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- (1) Order Header -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="col-span-1 md:col-span-3 bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between border border-outline-variant/15">
+<div class="flex items-center gap-6">
+<div class="p-3 bg-primary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-primary-container text-3xl">inventory_2</span>
+</div>
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface">#ORD-9921</h1>
+<p class="text-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">person</span> Customer: Jonathan Edwards
+                        </p>
+</div>
+<div class="h-10 w-px bg-outline-variant/30 hidden lg:block mx-4"></div>
+<div class="hidden lg:block">
+<span class="text-[0.6875rem] font-bold uppercase text-on-surface-variant">Priority</span>
+<div class="flex items-center gap-1.5 text-[#ba1a1a]">
+<span class="material-symbols-outlined text-sm">priority_high</span>
+<span class="text-sm font-semibold">High Priority</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-[0.6875rem] font-bold uppercase text-on-surface-variant">Marketplace</span>
+<div class="flex items-center gap-2 bg-[#f4ecee] px-3 py-1.5 rounded-full border border-outline-variant/30">
+<img alt="Carrier" class="w-5 h-5 rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi-9lCjvPd85p2U6nT1JBSAsWcjZDDx-qsqL_CMO8d4QJL1y77c6Us7moIf-6lLs5gugsswLGIyoZ6m3NxvLFXdhtmgUJkxTtBN5H2lm0zOUP92oFvLuDZMgQWhA-YjFum7_mp_QsMXFdRuerlTKwh7G5xCuhPzQz4xxQrN6_1PHQ-2VuqVRtJpiQQyX6qg9okz20df4ah_5RYtdNMczn8ogsJN9PsPYTplq-gyXxH7KDwIT3J6iY3P2uZkqJ5MvE53DbdN9tNRyeS"/>
+<span class="text-sm font-bold text-on-surface">Shopee Express</span>
+</div>
+</div>
+</div>
+<div class="bg-secondary-container p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between">
+<div>
+<span class="text-[0.6875rem] font-bold uppercase text-on-secondary-fixed-variant">Packing Station</span>
+<h3 class="text-lg font-bold text-on-secondary-container">Zone A-01-42</h3>
+</div>
+<div class="flex items-center gap-2 text-on-secondary-container">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-xs font-medium">Session: 4h 12m</span>
+</div>
+</div>
+</section>
+<!-- Main Content Area -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- (2) Main Section: Verification Checklist -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/15 overflow-hidden">
+<div class="p-4 border-b border-outline-variant/10 bg-surface-container-low flex items-center justify-between">
+<h2 class="font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">fact_check</span>
+                            Items Verification
+                        </h2>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end">
+<span class="text-[0.6875rem] font-bold text-on-surface-variant uppercase">Packed Status</span>
+<span class="text-sm font-bold text-[#00696e]">2 / 3 Items</span>
+</div>
+<div class="w-32 h-2.5 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 66%"></div>
+</div>
+</div>
+</div>
+<div class="p-6">
+<div class="relative mb-6">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary">barcode_scanner</span>
+<input class="w-full bg-surface-container-high border-none rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary text-base font-medium placeholder:text-outline/60 shadow-inner" placeholder="Scan SKU barcode to verify items..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
+<kbd class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] rounded border border-outline-variant/30">Enter</kbd>
+</div>
+</div>
+<div class="space-y-3">
+<!-- Item 1: Verified -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant/5">
+<img alt="SKU-8821" class="w-16 h-16 rounded-lg object-cover bg-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHDgWraR7WaV2nlEfFbsxxVq8elc9aRjE8uj_LiCOFa3keQy_SO5-ItouJCxtv8yP5WP3Ko0c7BtjL1JnC-so84aCPtgQ0yN-vvc0NluHnPOftiRUrhUphapZPkthf2zHug88oceys0aRUmaWtfDFQ694pynMCz8aUng4dczP8Qkgt2OgA58U12ULUu8objXPUvJskr6QDpinG42rF0sgHuXyZmGC1ovCyuh1SByQiEcJcFY45zT6V0b9jd9SYNmK-xKxY4OhNGwP_"/>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-on-surface">Mechanical Keyboard K88</h4>
+<p class="text-xs text-on-surface-variant font-mono">SKU: TECH-8821-BL</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="text-xs px-2 py-0.5 bg-inverse-surface text-on-surface-variant text-[10px] rounded uppercase font-bold tracking-wider">Bin: B-12-C</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="px-2.5 py-1 bg-tertiary-container text-on-tertiary-container text-[10px] rounded-full font-bold uppercase tracking-wide">Verified</span>
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Item 2: Verified -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant/5">
+<img alt="SKU-4412" class="w-16 h-16 rounded-lg object-cover bg-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFJHmfVzX3Q6-kieBLVa2ZEm7kt9A89ngR9Ja0xmAOykfhxCTe6_LL6Usdh6G-cY9CpCsR1QyJ-lVg6LbbYrV9WBv_Rl8QUc-HthVACDm7fasL3YIu0XMBXMleYHPy7WFt1J4T4932zeLU3Aeg8Ydma-g5lL2HuoYkM_G8af5T9kJY1orVtxK42GrtmLtn1UEojLZC_q2tE4_FPNeOcjc4zq3insmSEPA0OHDeSgWTtf53EZN-hNvcaYLKddHY0Ir1P77TqPMw97oL"/>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-on-surface">Ultra-Speed USB-C Cable (2m)</h4>
+<p class="text-xs text-on-surface-variant font-mono">SKU: ACC-4412-GR</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="text-xs px-2 py-0.5 bg-inverse-surface text-on-surface-variant text-[10px] rounded uppercase font-bold tracking-wider">Bin: A-04-F</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="px-2.5 py-1 bg-tertiary-container text-on-tertiary-container text-[10px] rounded-full font-bold uppercase tracking-wide">Verified</span>
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Item 3: Pending -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-surface border-2 border-dashed border-outline-variant/50">
+<img alt="SKU-1029" class="w-16 h-16 rounded-lg object-cover opacity-50 grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOAZdhSsgjHpi9zdbfUm1p80pLsdgZEvS0QdcVCMsgDv_lLmXvVbEuD0Xc4qgd7avqyvTFKU8qPajAd-_YslVtpb1QsituD6vMD9-hAbxxLQCR6JeVHbvgw34Jo7EkYJBtgEGIa4wSDRvQbsx5bFva9SiLdchaLx-yP12dYZh4u8DxVeO339PU1OGbkSYvO1qFywMInHFhEOb_xWrTVchEufefAPVeJH_st6V24DuIbgf-Bq-Zkb1A3vseReaQFl3Tn_7FNI0HjhUk"/>
+<div class="flex-1">
+<h4 class="text-sm font-bold text-on-surface opacity-50">Ergonomic Foam Wrist Rest</h4>
+<p class="text-xs text-on-surface-variant font-mono opacity-50">SKU: ACC-1029-BK</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="text-xs px-2 py-0.5 bg-inverse-surface text-on-surface-variant text-[10px] rounded uppercase font-bold tracking-wider">Bin: C-01-A</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="px-2.5 py-1 bg-surface-container-high text-on-surface-variant text-[10px] rounded-full font-bold uppercase tracking-wide">Waiting for Scan</span>
+<span class="material-symbols-outlined text-outline-variant text-2xl">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- (3) Packaging selection -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-6">
+<h2 class="font-bold text-on-surface flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary-container">package_2</span>
+                        Packaging Selection
+                    </h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<button class="flex flex-col items-center gap-3 p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all border border-outline-variant/20 group">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:scale-110 duration-150">inventory_2</span>
+<div class="text-center">
+<p class="text-xs font-bold text-on-surface">Box A</p>
+<p class="text-[10px] text-on-surface-variant">20x15x10cm</p>
+</div>
+</button>
+<button class="flex flex-col items-center gap-3 p-4 rounded-xl bg-[#f4ecee] border-2 border-primary ring-2 ring-primary/20 group relative">
+<span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 duration-150" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<div class="text-center">
+<p class="text-xs font-bold text-primary">Box B</p>
+<p class="text-[10px] text-primary/70">30x25x15cm</p>
+</div>
+<span class="absolute top-2 right-2 material-symbols-outlined text-primary text-sm">check_circle</span>
+</button>
+<button class="flex flex-col items-center gap-3 p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all border border-outline-variant/20 group">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:scale-110 duration-150">inventory_2</span>
+<div class="text-center">
+<p class="text-xs font-bold text-on-surface">Box C</p>
+<p class="text-[10px] text-on-surface-variant">45x35x20cm</p>
+</div>
+</button>
+<button class="flex flex-col items-center gap-3 p-4 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all border border-outline-variant/20 group">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:scale-110 duration-150">bubble_chart</span>
+<div class="text-center">
+<p class="text-xs font-bold text-on-surface">Bubble Wrap</p>
+<p class="text-[10px] text-on-surface-variant">Small Pouch</p>
+</div>
+</button>
+</div>
+</div>
+</div>
+<!-- (4) Action Panel -->
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/15 overflow-hidden shadow-lg shadow-primary/5">
+<div class="p-6 bg-primary-container text-on-primary-container">
+<h3 class="text-lg font-bold">Finalize Shipment</h3>
+<p class="text-xs opacity-80">Update weight and destination details</p>
+</div>
+<div class="p-6 space-y-6">
+<!-- Weight Input -->
+<div>
+<label class="block text-[0.6875rem] font-bold uppercase text-on-surface-variant mb-2">Measured Weight (kg)</label>
+<div class="relative">
+<input class="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-xl font-bold focus:ring-2 focus:ring-primary" step="0.01" type="number" value="1.45"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">KG</span>
+</div>
+</div>
+<!-- Destination Card -->
+<div class="p-4 bg-surface-container rounded-xl border border-outline-variant/15">
+<label class="block text-[0.6875rem] font-bold uppercase text-on-surface-variant mb-3">Destination</label>
+<div class="flex gap-3">
+<div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shrink-0 border border-outline-variant/10">
+<span class="material-symbols-outlined text-primary">location_on</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Central Jakarta, ID</p>
+<p class="text-[11px] text-on-surface-variant leading-tight">Jalan Merdeka No. 42, Gambir, Jakarta Pusat, 10110</p>
+</div>
+</div>
+<div class="mt-4 w-full h-24 rounded-lg bg-surface-variant overflow-hidden">
+<img alt="Destination Map" class="w-full h-full object-cover grayscale opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6XjWg54_fJTb-KD5PXl85909gwroZKwuXz6TI6iNMtv0FG0s9yJQZlBijpX3A0V6dqb2-AQ__JcbTUqu4cXTn1SHrpV3aZ3-kHbh1hv2TW3_YfING1rto2HG_ZLzrzNuexhV_oplouriiqsz5Dy6JnSPp86JS-13d_IeVX1l50sJNxzAPY7I-U4NYWev-WViXN-YWoaCdiZL0eF9Yi5Jw89l2KqLmwbPsxoY0eClmh8baxeLA4ZDjbf-2Tn1JnrsGSHLdCRgMaxCY"/>
+</div>
+</div>
+<!-- Shipping Service -->
+<div class="space-y-2">
+<label class="block text-[0.6875rem] font-bold uppercase text-on-surface-variant">Service Class</label>
+<div class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">bolt</span>
+<span class="text-sm font-semibold">Standard Express</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">Est: 2 Days</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full py-4 rounded-xl bg-gradient-to-br from-[#57344f] to-[#714b67] text-white font-bold text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">print</span>
+                            Generate Label
+                        </button>
+<button class="w-full py-3 rounded-xl text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-base">report</span>
+                            Report Issue
+                        </button>
+</div>
+</div>
+<!-- Floating Pick List Widget (Glassmorphism) -->
+<div class="glass-panel p-4 rounded-xl border border-white/20 shadow-xl shadow-[#57324f]/10">
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-bold text-on-surface">Recent Pick-ups</span>
+<span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full">Zone A</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between py-1 border-b border-outline-variant/10">
+<span class="text-[11px] font-mono text-on-surface-variant">#ORD-9918</span>
+<span class="text-[11px] font-bold text-on-surface">SHIPPED</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-outline-variant/10">
+<span class="text-[11px] font-mono text-on-surface-variant">#ORD-9919</span>
+<span class="text-[11px] font-bold text-on-surface">SHIPPED</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-[11px] font-mono text-on-surface-variant">#ORD-9920</span>
+<span class="text-[11px] font-bold text-on-surface text-secondary">PACKING</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Side Navigation (Mobile Hidden) -->
+<aside class="hidden xl:flex h-screen w-16 fixed left-0 top-0 bg-[#faf1f4] flex-col items-center py-6 space-y-6 z-50 border-r border-outline-variant/10">
+<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined">warehouse</span>
+</div>
+<nav class="flex flex-col gap-6 pt-10">
+<span class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer">dashboard</span>
+<span class="material-symbols-outlined text-primary cursor-pointer" style="font-variation-settings: 'FILL' 1;">conveyor_belt</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer">inventory_2</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer">local_shipping</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer">analytics</span>
+</nav>
+<div class="mt-auto flex flex-col gap-6">
+<span class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer">settings</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer">help</span>
+</div>
+</aside>
+<!-- Bottom Nav for Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest flex items-center justify-around border-t border-outline-variant/10 px-6 z-50">
+<span class="material-symbols-outlined text-on-surface-variant">dashboard</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">conveyor_belt</span>
+<span class="material-symbols-outlined text-on-surface-variant">inventory_2</span>
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</nav>
+</body></html>

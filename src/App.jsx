@@ -20,7 +20,7 @@ import Settings from './components/Settings';
 import Manual from './components/Manual';
 import Login from './components/Login';
 import HandheldPack from './components/HandheldPack';
-import POSPack from './components/POSPack';
+// POSPack removed — merged into Pack.jsx
 import Inventory from './components/Inventory';
 import Sorting from './components/Sorting';
 import Fulfillment from './components/Fulfillment';
@@ -90,7 +90,7 @@ const App = () => {
     const [activityLogs, setActivityLogs] = useState(() => safeParse('wms_logs', []));
     const [apiConfigs, setApiConfigs] = useState(() => {
         const stored = safeParse('wms_apis', {});
-        const odooDefaults = { enabled: true, useMock: false, url: 'https://odoo-uat.kissgroupbim.work', db: 'kiss-production_2026-03-09', username: 'admin', password: 'admin' };
+        const odooDefaults = { enabled: true, url: 'https://odoo-uat.kissgroupbim.work', db: 'kiss-production_2026-03-09', username: 'admin', password: 'admin' };
         return {
             odoo: { ...odooDefaults, ...stored.odoo, url: stored.odoo?.url || odooDefaults.url, db: stored.odoo?.db || odooDefaults.db, username: stored.odoo?.username || odooDefaults.username },
             shopee: stored.shopee || { enabled: false, shopId: '', partnerId: '', partnerKey: '' },
@@ -316,37 +316,44 @@ const App = () => {
             const t = ctx.currentTime;
 
             if (type === 'success') {
-                // Bright chime — C6 → E6 → G6 arpeggio
-                [1047, 1319, 1568].forEach((freq, i) => {
+                // Ungerburg Event — elegant double-bell chime (G5 → B5 with harmonic shimmer)
+                const notes = [
+                    { freq: 784, delay: 0, dur: 0.35, gain: 0.12, wave: 'sine' },
+                    { freq: 988, delay: 0.12, dur: 0.45, gain: 0.10, wave: 'sine' },
+                    { freq: 1568, delay: 0.08, dur: 0.25, gain: 0.04, wave: 'sine' }, // harmonic overtone
+                ];
+                notes.forEach(({ freq, delay, dur, gain, wave }) => {
                     const g = ctx.createGain(); g.connect(ctx.destination);
-                    const start = t + i * 0.08;
-                    g.gain.setValueAtTime(0.15, start);
-                    g.gain.exponentialRampToValueAtTime(0.001, start + 0.2);
-                    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
-                    o.connect(g); o.start(start); o.stop(start + 0.2);
+                    const s = t + delay;
+                    g.gain.setValueAtTime(gain, s);
+                    g.gain.exponentialRampToValueAtTime(0.001, s + dur);
+                    const o = ctx.createOscillator(); o.type = wave; o.frequency.value = freq;
+                    o.connect(g); o.start(s); o.stop(s + dur);
                 });
             } else if (type === 'error') {
-                // SAP System Error — classic ERP triple-beep alert
-                [0, 0.12, 0.24].forEach((offset) => {
+                // Ungerburg Event — soft descending two-tone alert (E5 → C5)
+                const notes = [
+                    { freq: 659, delay: 0, dur: 0.18, gain: 0.18 },
+                    { freq: 523, delay: 0.2, dur: 0.25, gain: 0.15 },
+                ];
+                notes.forEach(({ freq, delay, dur, gain }) => {
                     const g = ctx.createGain(); g.connect(ctx.destination);
-                    const s = t + offset;
-                    g.gain.setValueAtTime(0.22, s);
-                    g.gain.setValueAtTime(0.22, s + 0.06);
-                    g.gain.linearRampToValueAtTime(0, s + 0.09);
-                    const o = ctx.createOscillator(); o.type = 'sine';
-                    o.frequency.value = 750;
-                    o.connect(g); o.start(s); o.stop(s + 0.09);
+                    const s = t + delay;
+                    g.gain.setValueAtTime(gain, s);
+                    g.gain.linearRampToValueAtTime(0, s + dur);
+                    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+                    o.connect(g); o.start(s); o.stop(s + dur);
                 });
             } else if (type === 'click') {
-                // Crisp pop
+                // Ungerburg Event — subtle tap
                 const g = ctx.createGain(); g.connect(ctx.destination);
-                g.gain.setValueAtTime(0.12, t);
-                g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-                const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 800;
-                o.connect(g); o.start(t); o.stop(t + 0.04);
+                g.gain.setValueAtTime(0.08, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+                const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 1200;
+                o.connect(g); o.start(t); o.stop(t + 0.06);
             }
 
-            setTimeout(() => ctx.close(), 1200);
+            setTimeout(() => ctx.close(), 1500);
         } catch (e) { }
     };
 
@@ -432,13 +439,21 @@ const App = () => {
         const archives = safeParse('wms_eod_archives', []);
         if (archives.some(a => a.date === today)) return;
         const snapshot = { salesOrders, activityLogs, inventory, invoices };
-        const updated = [{ date: today, data: snapshot }, ...archives].slice(0, 30);
-        localStorage.setItem('wms_eod_archives', JSON.stringify(updated));
+        const updated = [{ date: today, data: snapshot }, ...archives].slice(0, 7); // Keep only 7 days
+        try {
+            localStorage.setItem('wms_eod_archives', JSON.stringify(updated));
+        } catch (e) {
+            // localStorage full — clear old archives and retry
+            try {
+                localStorage.removeItem('wms_eod_archives');
+                localStorage.setItem('wms_eod_archives', JSON.stringify([{ date: today, data: snapshot }]));
+            } catch { /* silently fail */ }
+        }
     }, [salesOrders, activityLogs, inventory, invoices]);
 
     const handleLogout = () => {
-        saveEodArchive();
-        auditLog('logout', { username: user?.username });
+        try { saveEodArchive(); } catch { /* don't block logout */ }
+        try { auditLog('logout', { username: user?.username }); } catch { /* don't block logout */ }
         destroySession();
         setUser(null);
         setUserRole('picker'); // Don't default to admin!
@@ -755,6 +770,12 @@ window.onload=function(){
     };
 
     const handleFulfillmentAndAWB = async (order) => {
+        // Gate: only packed orders can transition to rts
+        if (!['packed', 'packing'].includes(order.status)) {
+            addToast(`Cannot ship order with status "${order.status}" — must be packed first`, 'error');
+            playSound('error');
+            return;
+        }
         setIsProcessingAPI(true);
         try {
             // Use real Odoo picking ID if available; fallback to ref string for lookup in Odoo
@@ -774,23 +795,10 @@ window.onload=function(){
             const newOutbound = { barcode: awbCode, courier: order.courier || order.platform, expectedQty: 1, scannedQty: 0, orderNumber: order.ref, shopName: order.platform };
             updateAndSyncData([...orderData, newOutbound]);
         } catch (err) {
-            // Odoo validate failed — generate AWB locally but warn user
-            addToast(`Odoo: ${err.message} — AWB generated locally`, 'warning');
+            // Odoo validate failed — DO NOT change status to rts, keep as packed
+            addToast(`RTS failed: ${err.message} — order remains packed, please retry`, 'error');
             console.warn('confirmRTS failed:', err);
-            const platformPrefixes = { 'Shopee Express': 'SPXTH', 'Lazada Express': 'LZTH', 'Flash Express': 'FLTH', 'Kerry Express': 'KETH', 'J&T Express': 'JTTH', 'Thai Post': 'TPTH', 'TikTok Shop': 'TTTH' };
-            const prefix = platformPrefixes[order.courier || order.platform] || 'TH';
-            const awbCode = prefix + Math.floor(Math.random() * 88888888 + 10000000);
-            const updatedOrder = { ...order, status: 'rts', awb: awbCode };
-            const updatedOrders = salesOrders.map(o => o.id === order.id ? updatedOrder : o);
-            setSalesOrders(updatedOrders);
-            addToast('AWB ready: ' + awbCode);
-            if (selectedPackOrder && selectedPackOrder.id === order.id) {
-                setSelectedPackOrder(updatedOrder);
-            }
-            printAwbLabel(updatedOrder, awbCode);
-            // expectedQty = 1 because 1 AWB = 1 box (not item count)
-            const newOutbound = { barcode: awbCode, courier: order.courier || order.platform, expectedQty: 1, scannedQty: 0, orderNumber: order.ref, shopName: order.platform };
-            updateAndSyncData([...orderData, newOutbound]);
+            playSound('error');
         } finally {
             setIsProcessingAPI(false);
         }
@@ -879,16 +887,22 @@ window.onload=function(){
 
         // Auto create + post invoice after AWB scan
         const scannedOrder = salesOrders.find(o => o.awb?.toUpperCase() === barcode);
-        if (scannedOrder && apiConfigs?.odoo?.enabled && !apiConfigs?.odoo?.useMock) {
+        if (scannedOrder && apiConfigs?.odoo?.enabled) {
             const pickingRef = scannedOrder.odooPickingId || scannedOrder.ref;
             createInvoiceFromPicking(apiConfigs.odoo, pickingRef)
                 .then(result => {
-                    if (result.status === 'success' && result.invoiceName) {
-                        addToast(`Invoice ${result.invoiceName} created & posted`, 'success');
+                    if (result.posted) {
+                        addToast(`Invoice ${result.invoiceName} created & posted ✓`, 'success');
+                    } else if (result.status === 'success' && result.invoiceId) {
+                        addToast(`Invoice ${result.invoiceName || result.invoiceId} created (draft — post pending)`, 'warning');
+                    } else if (result.postError) {
+                        addToast(`Invoice created but post failed: ${result.postError}`, 'error');
+                    } else if (result.status === 'warning') {
+                        addToast(`Invoice: ${result.message}`, 'warning');
                     }
                 })
                 .catch(err => {
-                    console.warn('Auto-invoice after scan failed:', err.message);
+                    addToast(`Auto-invoice failed: ${err.message}`, 'error');
                 });
         }
         txRing?.emit?.('scan', { barcode, courier, bin });
@@ -1244,21 +1258,21 @@ window.onload=function(){
                 <main className="flex-1 overflow-y-auto p-5 custom-scrollbar relative z-30" style={{ backgroundColor: 'var(--odoo-bg)' }}>
                     {activeTab === 'dashboard' && <Dashboard t={t} totalExpected={totalExpected} totalScanned={totalScanned} uph={uph} dailyBoxUsage={dailyBoxUsage} totalDelayed={totalDelayed} courierDistributionData={courierDistributionData} progressPercent={progressPercent} delayedOrdersData={delayedOrdersData} userRole={userRole} activityLogs={activityLogs} isDarkMode={isDarkMode} salesOrders={salesOrders} inventory={inventory} waves={waves} invoices={invoices} user={user} />}
                     {activeTab === 'pick' && <Pick salesOrders={salesOrders} selectedPickOrder={selectedPickOrder} setSelectedPickOrder={setSelectedPickOrder} syncPlatformOrders={syncPlatformOrders} isProcessingImport={isProcessingImport} handlePickScanSubmit={handlePickScanSubmit} pickScanInput={pickScanInput} setPickScanInput={setPickScanInput} pickInputRef={pickInputRef} inventory={inventory} clearDummyOrders={clearDummyOrders} onCreateSOInOdoo={handleCreateSOInOdoo} isCreatingSO={isCreatingSO} stockFrozen={stockFrozen} />}
-                    {activeTab === 'pack' && <Pack salesOrders={salesOrders} selectedPackOrder={selectedPackOrder} setSelectedPackOrder={setSelectedPackOrder} handlePackScanSubmit={handlePackScanSubmit} packScanInput={packScanInput} setPackScanInput={setPackScanInput} packInputRef={packInputRef} handleBoxSelect={handleBoxSelect} isProcessingAPI={isProcessingAPI} packAwbInput={packAwbInput} setPackAwbInput={setPackAwbInput} packAwbRef={packAwbRef} handleAwbConfirmScan={handleAwbConfirmScan} printAwbLabel={printAwbLabel} stockFrozen={stockFrozen} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} user={user} />}
+                    {activeTab === 'pack' && <Pack salesOrders={salesOrders} selectedPackOrder={selectedPackOrder} setSelectedPackOrder={setSelectedPackOrder} handlePackScanSubmit={handlePackScanSubmit} packScanInput={packScanInput} setPackScanInput={setPackScanInput} packInputRef={packInputRef} handleBoxSelect={handleBoxSelect} isProcessingAPI={isProcessingAPI} packAwbInput={packAwbInput} setPackAwbInput={setPackAwbInput} packAwbRef={packAwbRef} handleAwbConfirmScan={handleAwbConfirmScan} printAwbLabel={printAwbLabel} stockFrozen={stockFrozen} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} user={user} setSalesOrders={setSalesOrders} playSound={playSound} handleFulfillmentAndAWB={handleFulfillmentAndAWB} />}
                     {activeTab === 'handheldPack' && <HandheldPack salesOrders={salesOrders} setSalesOrders={setSalesOrders} playSound={playSound} logActivity={logActivity} addToast={addToast} boxUsageLog={boxUsageLog} setBoxUsageLog={setBoxUsageLog} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} apiConfigs={apiConfigs} />}
-                    {activeTab === 'posPack' && <POSPack salesOrders={salesOrders} setSalesOrders={setSalesOrders} playSound={playSound} logActivity={logActivity} addToast={addToast} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} boxUsageLog={boxUsageLog} setBoxUsageLog={setBoxUsageLog} printAwbLabel={printAwbLabel} />}
+                    {/* POSPack removed — merged into Pack & Verify */}
                     {activeTab === 'scan' && <Scan currentBatchId={activeOrderId.split('-')[1]} totalScanned={totalScanned} totalExpected={totalExpected} progressPercent={progressPercent} inputRef={inputRef} scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} scanBinHint={scanBinHint} lastScans={lastScans} orderData={orderData} />}
                     {activeTab === 'list' && <List t={t} searchInput={searchInput} setSearchInput={setSearchInput} paginatedListData={paginatedListData} currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} ITEMS_PER_PAGE={ITEMS_PER_PAGE} filteredListData={filteredListData} />}
                     {activeTab === 'dispatch' && <Dispatch readyToDispatchCouriers={readyToDispatchCouriers} dispatchCourier={dispatchCourier} setDispatchCourier={setDispatchCourier} clearSignature={clearSignature} canvasRef={canvasRef} startDrawing={startDrawing} draw={draw} endDrawing={endDrawing} signatureEmpty={signatureEmpty} handleDispatchSubmit={handleDispatchSubmit} />}
                     {activeTab === 'report' && <Reports reportViewMode={reportViewMode} setReportViewMode={setReportViewMode} reportFilterCourier={reportFilterCourier} setReportFilterCourier={setReportFilterCourier} orderData={orderData} reportFilterBatchId={reportFilterBatchId} setReportFilterBatchId={setReportFilterBatchId} historyData={historyData} courierBatches={{}} orderId={activeOrderId} salesOrders={salesOrders} activityLogs={activityLogs} inventory={inventory} invoices={invoices} onSaveArchive={saveEodArchive} />}
                     {activeTab === 'users' && <Users t={t} userRole={userRole} newUserName={newUserName} setNewUserName={setNewUserName} newUserUsername={newUserUsername} setNewUserUsername={setNewUserUsername} newUserRole={newUserRole} setNewUserRole={setNewUserRole} handleAddUser={handleAddUser} rolesInfo={rolesInfo} users={users} handleResetPassword={handleResetPassword} handleDeleteUser={handleDeleteUser} />}
-                    {activeTab === 'inventory' && <Inventory inventory={inventory} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} />}
+                    {activeTab === 'inventory' && <Inventory inventory={inventory} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} activeCompanies={activeCompanies} />}
                     {activeTab === 'cycleCount' && <CycleCount inventory={inventory} activityLogs={activityLogs} salesOrders={salesOrders} addToast={addToast} user={user} users={users} logActivity={logActivity} apiConfigs={apiConfigs} />}
                     {activeTab === 'gwp' && <GWPManager inventory={inventory} addToast={addToast} logActivity={logActivity} user={user} apiConfigs={apiConfigs} />}
                     {activeTab === 'sorting' && <Sorting salesOrders={salesOrders} waves={waves} setWaves={setWaves} addToast={addToast} />}
                     {activeTab === 'fulfillment' && <Fulfillment salesOrders={salesOrders} handleFulfillmentAndAWB={handleFulfillmentAndAWB} isProcessingAPI={isProcessingAPI} addToast={addToast} />}
                     {activeTab === 'platformMonitor' && <PlatformMonitor salesOrders={salesOrders} addToast={addToast} syncStatus={syncStatus} apiConfigs={apiConfigs} activityLogs={activityLogs} inventory={inventory} users={users} orders={orderData} />}
-                    {activeTab === 'invoice' && <Invoice invoices={invoices} setInvoices={setInvoices} salesOrders={salesOrders} addToast={addToast} />}
+                    {activeTab === 'invoice' && <Invoice invoices={invoices} setInvoices={setInvoices} salesOrders={salesOrders} addToast={addToast} apiConfigs={apiConfigs} />}
                     {activeTab === 'settings' && <Settings t={t} language={language} setLanguage={setLanguage} userRole={userRole} apiConfigs={apiConfigs} setApiConfigs={setApiConfigs} workDate={workDate} setWorkDate={setWorkDate} triggerConfirm={triggerConfirm} updateAndSyncData={updateAndSyncData} showAlert={showAlert} syncStatus={syncStatus} />}
                     {activeTab === 'teamPerformance' && <TeamPerformance activityLogs={activityLogs} orders={orderData} users={users} t={t} onSelectWorker={(w) => setSelectedWorker(w)} workerOkrData={workerOkrData} />}
                     {activeTab === 'slaTracker' && <SLATracker activityLogs={activityLogs} orders={orderData} salesOrders={salesOrders} onSelectWorker={(w) => setSelectedWorker(w)} t={t} />}

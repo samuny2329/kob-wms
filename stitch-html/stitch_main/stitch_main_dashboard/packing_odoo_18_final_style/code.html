@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - Packing Operations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#80747a",
+                    "on-secondary-fixed-variant": "#004f53",
+                    "on-primary-fixed": "#2f1029",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#79526f",
+                    "surface-container-low": "#faf1f4",
+                    "on-surface": "#1e1b1d",
+                    "surface-container": "#f4ecee",
+                    "outline-variant": "#d1c3ca",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#4b5d33",
+                    "secondary-fixed-dim": "#78d5db",
+                    "on-primary-container": "#f0bfe0",
+                    "background": "#fff7f9",
+                    "on-background": "#1e1b1d",
+                    "secondary": "#00696e",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#342f31",
+                    "on-tertiary-fixed": "#112000",
+                    "on-secondary-fixed": "#002022",
+                    "surface-container-high": "#efe6e9",
+                    "on-secondary-container": "#006e73",
+                    "tertiary-fixed": "#d5eab4",
+                    "secondary-fixed": "#95f1f8",
+                    "primary-fixed": "#ffd7f1",
+                    "tertiary": "#34451e",
+                    "surface": "#fff7f9",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#714b67",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "inverse-primary": "#e9b8d9",
+                    "primary": "#57344f",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#92eff5",
+                    "surface-dim": "#e0d8da",
+                    "on-surface-variant": "#4e444a",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e9e0e3",
+                    "inverse-on-surface": "#f7eef1",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "surface-bright": "#fff7f9",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "surface-variant": "#e9e0e3",
+                    "on-tertiary-container": "#c0d5a0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4ecee; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar Shell -->
+<header class="flex justify-between items-center w-full px-6 py-2 sticky top-0 z-50 bg-[#fff7f9] dark:bg-slate-950 shadow-sm font-inter text-sm antialiased">
+<div class="flex items-center gap-8">
+<span class="text-lg font-bold bg-gradient-to-br from-[#57344f] to-[#714b67] bg-clip-text text-transparent">KOB WMS Pro</span>
+<div class="hidden md:flex gap-6">
+<span class="text-slate-600 cursor-pointer hover:bg-[#f4ecee] transition-colors px-2 py-1">Dashboard</span>
+<span class="text-slate-600 cursor-pointer hover:bg-[#f4ecee] transition-colors px-2 py-1">Inventory</span>
+<span class="text-slate-600 cursor-pointer hover:bg-[#f4ecee] transition-colors px-2 py-1">Picking</span>
+<span class="text-[#714B67] font-semibold border-b-2 border-[#714B67] pb-1 cursor-pointer">Packing</span>
+<span class="text-slate-600 cursor-pointer hover:bg-[#f4ecee] transition-colors px-2 py-1">Shipping</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-high px-3 py-1.5 rounded-lg border-none">
+<span class="material-symbols-outlined text-outline text-lg" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-48" placeholder="Search orders..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-[#f4ecee] rounded-full transition-colors active:opacity-80"><span class="material-symbols-outlined text-[#714B67]" data-icon="notifications">notifications</span></button>
+<button class="p-2 hover:bg-[#f4ecee] rounded-full transition-colors active:opacity-80"><span class="material-symbols-outlined text-[#714B67]" data-icon="apps">apps</span></button>
+<button class="p-2 hover:bg-[#f4ecee] rounded-full transition-colors active:opacity-80"><span class="material-symbols-outlined text-[#714B67]" data-icon="help">help</span></button>
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img alt="Manager Avatar" data-alt="close up of a professional male warehouse manager with friendly expression and modern spectacles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_ONemg72y76hZYQ7nZ6bgf0DrFX7q5G2HMnSkIL5N1O_0eKYJCiAkoUkWFcqMkm508zGUdufizWNb2lw2ee6ubJYV0G8jVNUh5UpouUazJRxTSRdybGs3NhAn3qjZnHVkHp3w-7Bxl5xUYNir8KuHXbWLlS4c4ryU-tulTuqzR2vkFvEqYqiAA7bMUUhB26xkJovINoXOv8tFkP8CBBZgCHKh7RPcPe_jPAYLI_1oUdgNv_cuAugKgb5BLm--xWVX9zMdo5QPSs_e"/>
+</div>
+</div>
+</header>
+<div class="flex h-[calc(100vh-52px)] overflow-hidden">
+<!-- SideNavBar Shell -->
+<nav class="fixed left-0 top-0 h-full flex flex-col pt-16 bg-[#faf1f4] w-64 font-inter text-[0.875rem] font-medium z-40">
+<div class="px-6 py-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="warehouse">warehouse</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Main Facility</p>
+<p class="text-[0.6875rem] text-on-surface-variant font-bold uppercase tracking-wider">Sector A-12</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1 pr-4">
+<div class="flex items-center gap-3 text-slate-500 py-3 px-6 hover:bg-[#f4ecee] cursor-pointer transition-all duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 text-slate-500 py-3 px-6 hover:bg-[#f4ecee] cursor-pointer transition-all duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</div>
+<div class="flex items-center gap-3 text-slate-500 py-3 px-6 hover:bg-[#f4ecee] cursor-pointer transition-all duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined" data-icon="conveyor_belt">conveyor_belt</span>
+<span>Picking</span>
+</div>
+<div class="flex items-center gap-3 bg-[#ffffff] text-[#714B67] rounded-r-full py-3 px-6 shadow-sm translate-x-1">
+<span class="material-symbols-outlined" data-icon="package_2">package_2</span>
+<span>Packing</span>
+</div>
+<div class="flex items-center gap-3 text-slate-500 py-3 px-6 hover:bg-[#f4ecee] cursor-pointer transition-all duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span>Shipping</span>
+</div>
+<div class="mt-auto pt-10">
+<div class="flex items-center gap-3 text-slate-500 py-3 px-6 hover:bg-[#f4ecee] cursor-pointer transition-all duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Workarea -->
+<main class="ml-64 w-full bg-surface-container p-6 overflow-y-auto">
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- Header Stats & Barcode Focus Area -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+<div class="md:col-span-2">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border-none relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<h2 class="text-label-sm font-bold text-primary uppercase tracking-[0.1em] mb-4">Operational Focus</h2>
+<div class="relative">
+<span class="absolute inset-y-0 left-4 flex items-center">
+<span class="material-symbols-outlined text-outline" data-icon="barcode_scanner">barcode_scanner</span>
+</span>
+<input class="w-full pl-12 pr-4 py-5 bg-surface-container-high rounded-lg border-none text-xl font-medium focus:ring-2 focus:ring-primary-container transition-all" placeholder="Scan Order ID or AWB to Start Packing..." type="text"/>
+<span class="absolute inset-y-0 right-4 flex items-center gap-2">
+<span class="px-2 py-1 bg-surface-container-highest rounded text-[0.6875rem] font-bold text-outline uppercase">F1 to Scan</span>
+</span>
+</div>
+</div>
+</div>
+<div class="bg-primary text-white p-6 rounded-xl shadow-sm flex flex-col justify-between h-full min-h-[160px]">
+<div>
+<p class="text-xs font-bold uppercase tracking-wider opacity-70">Shift Packing Target</p>
+<h3 class="text-3xl font-bold mt-1">142 / 200</h3>
+</div>
+<div class="w-full bg-white/20 h-2 rounded-full mt-4">
+<div class="bg-secondary-fixed h-full rounded-full" style="width: 71%"></div>
+</div>
+<p class="text-[0.6875rem] mt-2 font-medium opacity-90">Estimated finish in 2h 45m</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Item Verification -->
+<div class="lg:col-span-8 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" data-icon="fact_check">fact_check</span>
+<h3 class="text-lg font-bold text-on-surface">Item Verification Checklist</h3>
+</div>
+<span class="text-[0.6875rem] font-bold bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full uppercase">Order #ORD-88291</span>
+</div>
+<div class="space-y-3">
+<!-- Item Row -->
+<div class="flex items-center p-4 rounded-lg bg-surface-container hover:bg-surface-container-low transition-colors group">
+<div class="h-14 w-14 rounded-lg bg-white p-1 overflow-hidden border border-outline-variant/10">
+<img alt="SKU Product" class="w-full h-full object-cover" data-alt="High quality professional photography of a sleek wireless minimalist computer mouse on a white studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0GCeAcCNLKoFsRRLgfDW1G_4wdXBd0FAltx0qhPRrJ7Ufenv7gORj7_gbt3IrV3qejg_h3LVKUZOzSHrGNtfwFBjEHed61irwPdcc7U5ggP0nMH55E3GZ_hKOW24UkQ_wWcFYVuIkfilSbwN4R6gsgRBIQ365rByYqb7J-wvyC8XrwMYzpOQpNb9cuLR-k5sE8M1xz2mKXw5ScNfj-gAM7tDponkyl6fDmGzh_YUIIHy829pfxx1eIQyeTvuoeQYXqI2J6F6gOoQU"/>
+</div>
+<div class="ml-4 flex-grow">
+<h4 class="text-[0.875rem] font-medium text-on-surface">Precision Wireless Mouse v4</h4>
+<p class="text-[0.6875rem] font-bold text-outline uppercase mt-0.5">SKU: TECH-9912-BLK • BIN: A-12-04</p>
+</div>
+<div class="text-right flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-on-surface">1</span>
+<span class="text-xs text-outline">/ 1</span>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-primary-container flex items-center justify-center text-primary-container bg-white">
+<span class="material-symbols-outlined text-lg" data-icon="check" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+</div>
+</div>
+<!-- Item Row -->
+<div class="flex items-center p-4 rounded-lg bg-surface-container hover:bg-surface-container-low transition-colors group">
+<div class="h-14 w-14 rounded-lg bg-white p-1 overflow-hidden border border-outline-variant/10">
+<img alt="SKU Product" class="w-full h-full object-cover" data-alt="top view of a premium mechanical keyboard with dark gray keycaps and subtle rgb lighting on a clean workstation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsXKBGSZF12tZSFSSVqJ1mhactXKp63F9hSDt1Ywr73CRsjZthn9SbFXZHc-MvpLcLheHQtx_tHven_wasZ4diXC2C0jHsk_aUXmKiKi1OWXTO1XfCFGuDLxuPO4sywfvQPnr2IRhMR5nZBkdUiVrFzXcdicNcs0RCWs554w_ElrsOpIed5Pfn-VbYDOJGqQgkjBQQfsB25zlgSyuvc-OXH4fWEn3yP8S-5R5a_17MV0lIekMUwYNPW_hEdjZ4BAf0Yb1SU-il27IU"/>
+</div>
+<div class="ml-4 flex-grow">
+<h4 class="text-[0.875rem] font-medium text-on-surface">Mechanical Gaming Keyboard (Blue Switches)</h4>
+<p class="text-[0.6875rem] font-bold text-outline uppercase mt-0.5">SKU: TECH-4421-RGB • BIN: B-05-11</p>
+</div>
+<div class="text-right flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-on-surface">0</span>
+<span class="text-xs text-outline">/ 1</span>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center text-outline bg-white group-hover:border-primary-container/40">
+</div>
+</div>
+</div>
+<!-- Item Row -->
+<div class="flex items-center p-4 rounded-lg bg-surface-container hover:bg-surface-container-low transition-colors group opacity-60">
+<div class="h-14 w-14 rounded-lg bg-white p-1 overflow-hidden border border-outline-variant/10">
+<img alt="SKU Product" class="w-full h-full object-cover" data-alt="close up of an ultra high speed braided usb-c cable coiled neatly on a light gray surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY0to052BTncDTHwKarZlOLCESYLGth-HShciRhZ4wTnMcE7vxQxM7uqY4Ciz4V6CsvwfBM8nvUMgtIqzk79GGJ7-zBpnrE1QP2Jq9Kq__SNoUpGANWuNvJ7ZrIHEX0WKFXprkh2OfFH-Iznb4AjToYwxb8l2EgbT6S_FT9yYYHDjPfeQV-RMHPLC0TxuwJwsR9z_qy4QV2U5ITsNA8QjeSMEisus_Cb3ZFFiTxxt07HGOClLEP4KaRX0QD3YTCzrA2vrk_nmekfvT"/>
+</div>
+<div class="ml-4 flex-grow">
+<h4 class="text-[0.875rem] font-medium text-on-surface">USB-C Braided Cable 2m</h4>
+<p class="text-[0.6875rem] font-bold text-outline uppercase mt-0.5">SKU: ACC-1002-CBL • BIN: C-01-02</p>
+</div>
+<div class="text-right flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-on-surface">0</span>
+<span class="text-xs text-outline">/ 2</span>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center text-outline bg-white">
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Packaging Selection -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary-container" data-icon="inventory">inventory</span>
+<h3 class="text-lg font-bold text-on-surface">Packaging Selection</h3>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-primary-container bg-primary-container/5 text-primary-container transition-all">
+<span class="material-symbols-outlined text-3xl mb-2" data-icon="package_2">package_2</span>
+<span class="text-[0.6875rem] font-bold uppercase">Box A</span>
+<span class="text-[0.6rem] font-medium text-outline-variant">Small (15x15x10)</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-transparent bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">
+<span class="material-symbols-outlined text-3xl mb-2" data-icon="package_2">package_2</span>
+<span class="text-[0.6875rem] font-bold uppercase">Box B</span>
+<span class="text-[0.6rem] font-medium text-outline-variant">Medium (30x30x20)</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-transparent bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">
+<span class="material-symbols-outlined text-3xl mb-2" data-icon="package_2">package_2</span>
+<span class="text-[0.6875rem] font-bold uppercase">Box C</span>
+<span class="text-[0.6rem] font-medium text-outline-variant">Large (50x40x40)</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-transparent bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">
+<span class="material-symbols-outlined text-3xl mb-2" data-icon="layers">layers</span>
+<span class="text-[0.6875rem] font-bold uppercase">Bubble Wrap</span>
+<span class="text-[0.6rem] font-medium text-outline-variant">Fragile Fill</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Details -->
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border-none sticky top-24">
+<div class="mb-8">
+<h3 class="text-[0.6875rem] font-bold text-outline uppercase tracking-wider mb-6">Weight &amp; Measurement</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center p-4 bg-surface-container-high rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="scale">scale</span>
+<span class="text-[0.875rem] font-medium">Actual Weight</span>
+</div>
+<span class="text-lg font-bold text-primary">1.24 kg</span>
+</div>
+<div class="flex justify-between items-center p-4 bg-surface-container-high/50 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="straighten">straighten</span>
+<span class="text-[0.875rem] font-medium text-on-surface-variant">Volumetric</span>
+</div>
+<span class="text-[0.875rem] font-bold text-on-surface-variant">0.88 kg</span>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h3 class="text-[0.6875rem] font-bold text-outline uppercase tracking-wider mb-4">Destination</h3>
+<div class="bg-surface-container-high/30 p-4 rounded-lg flex gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="location_on">location_on</span>
+<div>
+<p class="text-[0.875rem] font-bold">Thomas J. Anderson</p>
+<p class="text-[0.75rem] text-on-surface-variant mt-1 leading-relaxed">
+                                            Metacortex Logistics Hub<br/>
+                                            404 Simulation Way, Sector 4<br/>
+                                            Palo Alto, CA 94301, US
+                                        </p>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h3 class="text-[0.6875rem] font-bold text-outline uppercase tracking-wider mb-4">Shipping Method</h3>
+<div class="flex items-center justify-between p-3 border border-outline-variant rounded-lg">
+<div class="flex items-center gap-3">
+<img alt="Carrier Logo" class="h-4" data-alt="Official professional logo of a major international courier delivery services company" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlhJ0S5AucE4QnJlqp3xaCOpRCvRNgMi0f62GFpTbIAZocCiLF6-nL0KU-04H9K8Ye2KukqI122WsO-ANhVwwyjVqPOfI8xfNc6mrHF4-t5BpvGU4g3NYOhG9fhDCmtm3st54rR54h5XKQ3JpE_kvD0nIVftcg6hiDG58qEzuKau7gK6YaQX0fuFoiH3GZZEhd3RkMZCIBFgB5zm9X7FhRdhkkLPE4StDS5VoEZ_NRIOd9JDTLaUOLaPbqrKSrT-tXfBZTFczyZC-7"/>
+<span class="text-[0.75rem] font-bold uppercase">Priority Express</span>
+</div>
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<button class="w-full bg-gradient-to-br from-[#57344f] to-[#714b67] text-white py-4 rounded-lg font-bold text-sm shadow-lg shadow-primary-container/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined" data-icon="label">label</span>
+                                GENERATE LABEL
+                            </button>
+<button class="w-full mt-3 border border-outline-variant text-on-surface py-3 rounded-lg font-bold text-[0.6875rem] uppercase tracking-wider hover:bg-surface-container transition-colors">
+                                Hold Order
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Glassmorphism Floating Picker Widget -->
+<div class="fixed bottom-6 right-6 glass-panel border border-white/40 shadow-xl rounded-2xl p-4 flex items-center gap-6 z-30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<p class="text-[0.6875rem] font-bold text-outline uppercase">Active Packer</p>
+<p class="text-[0.875rem] font-semibold text-primary">Marcus Jensen</p>
+</div>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/30"></div>
+<div class="flex flex-col text-right">
+<p class="text-[0.6875rem] font-bold text-outline uppercase">Next In Queue</p>
+<p class="text-[0.875rem] font-semibold text-on-surface">ORD-88292 <span class="text-[0.6rem] ml-1 bg-surface-container-highest px-1 rounded">BOX-B</span></p>
+</div>
+<button class="bg-surface-container-highest p-2 rounded-lg hover:bg-outline-variant/20 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="keyboard_arrow_right">keyboard_arrow_right</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

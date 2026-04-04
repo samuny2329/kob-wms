@@ -36,11 +36,11 @@ export const getCompany = (key) => COMPANIES[key] || COMPANIES.kob;
 export const getCompanyById = (id) => Object.values(COMPANIES).find(c => c.id === id) || COMPANIES.kob;
 
 export const rolesInfo = {
-    senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'txRing', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
-    admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'txRing', 'pick', 'pack', 'handheldPack', 'posPack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
-    picker: { label: 'Picker Specialist', tabs: ['dashboard', 'pick', 'pack', 'handheldPack', 'posPack', 'scan', 'list', 'dispatch', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'sorting', 'fulfillment', 'manual'], icon: <ShoppingCart />, desc: 'Inventory Picking' },
-    packer: { label: 'Packer & QC', tabs: ['dashboard', 'pick', 'pack', 'handheldPack', 'posPack', 'scan', 'list', 'dispatch', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'manual'], icon: <Box />, desc: 'Packing & Validation' },
-    outbound: { label: 'Outbound Ops', tabs: ['dashboard', 'pick', 'pack', 'handheldPack', 'posPack', 'scan', 'list', 'dispatch', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'report', 'manual'], icon: <ScanLine />, desc: 'Scanning & Logistics' },
+    senior: { label: 'Senior Management', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'txRing', 'pick', 'pack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <UserCheck />, desc: 'Senior Management — Full Access + Strategic' },
+    admin: { label: 'Administrator', tabs: ['dashboard', 'teamPerformance', 'slaTracker', 'kpiAssessment', 'aiAnalyzer', 'marketIntelligence', 'activityHistory', 'txRing', 'pick', 'pack', 'inventory', 'cycleCount', 'gwp', 'sorting', 'fulfillment', 'platformMonitor', 'invoice', 'scan', 'list', 'dispatch', 'timeAttendance', 'report', 'users', 'chat', 'settings', 'manual'], icon: <LayoutDashboard />, desc: 'Full System Access' },
+    picker: { label: 'Picker Specialist', tabs: ['dashboard', 'pick', 'pack', 'scan', 'list', 'dispatch', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'sorting', 'fulfillment', 'manual'], icon: <ShoppingCart />, desc: 'Inventory Picking' },
+    packer: { label: 'Packer & QC', tabs: ['dashboard', 'pick', 'pack', 'scan', 'list', 'dispatch', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'manual'], icon: <Box />, desc: 'Packing & Validation' },
+    outbound: { label: 'Outbound Ops', tabs: ['dashboard', 'pick', 'pack', 'scan', 'list', 'dispatch', 'cycleCount', 'gwp', 'kpiAssessment', 'timeAttendance', 'fulfillment', 'report', 'manual'], icon: <ScanLine />, desc: 'Scanning & Logistics' },
     // accounting: HOLD — will be added later
     // accounting: { label: 'Accounting', tabs: ['dashboard', 'invoice', 'kpiAssessment', 'timeAttendance', 'report', 'manual'], icon: <Receipt />, desc: 'Invoices & Finance' }
 };
@@ -532,8 +532,6 @@ export const tabInfo = {
     dashboard: { icon: <LayoutDashboard className="w-5 h-5" />, section: 'Operations' },
     pick: { icon: <ShoppingCart className="w-5 h-5" />, section: 'Operations' },
     pack: { icon: <Box className="w-5 h-5" />, section: 'Operations' },
-    handheldPack: { icon: <Smartphone className="w-5 h-5" />, section: 'Operations' },
-    posPack: { icon: <Monitor className="w-5 h-5" />, section: 'Operations' },
     inventory: { icon: <Warehouse className="w-5 h-5" />, section: 'Inventory' },
     cycleCount: { icon: <ClipboardCheck className="w-5 h-5" />, section: 'Inventory' },
     gwp: { icon: <Gift className="w-5 h-5" />, section: 'Inventory' },

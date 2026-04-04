@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Executive Atelier - Enterprise Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {background: "#f8f9fa", "surface-container-highest": "#e1e3e4", "secondary-container": "#f5dbea", "on-tertiary-fixed": "#112000", "on-primary-fixed": "#2f1029", "on-tertiary-fixed-variant": "#3b4c24", "primary-container": "#714b67", "surface-bright": "#f8f9fa", "surface-container-high": "#e7e8e9", "on-tertiary-container": "#c0d5a0", "on-tertiary": "#ffffff", "tertiary-container": "#4b5d33", "tertiary-fixed": "#d5eab4", "primary-fixed": "#ffd7f1", "on-primary": "#ffffff", "tertiary-fixed-dim": "#b9ce9a", "surface-container-lowest": "#ffffff", tertiary: "#34451e", surface: "#f8f9fa", "inverse-primary": "#e9b8d9", "on-primary-fixed-variant": "#5f3b56", "surface-variant": "#e1e3e4", "surface-dim": "#d9dadb", outline: "#80747a", "on-secondary": "#ffffff", "on-error": "#ffffff", "secondary-fixed-dim": "#d8c0ce", "on-secondary-fixed-variant": "#53424d", "on-primary-container": "#f0bfe0", "secondary-fixed": "#f5dbea", "outline-variant": "#d1c3ca", "on-surface": "#191c1d", "primary-fixed-dim": "#e9b8d9", secondary: "#6c5965", "inverse-on-surface": "#f0f1f2", "on-background": "#191c1d", "on-secondary-container": "#725f6b", "surface-container": "#edeeef", "on-error-container": "#93000a", "surface-container-low": "#f3f4f5", "on-secondary-fixed": "#251721", "error-container": "#ffdad6", "surface-tint": "#79526f", error: "#ba1a1a", primary: "#714B67", "on-surface-variant": "#4e444a", "inverse-surface": "#2e3132", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-6 py-2 fixed z-50 bg-[#714B67] dark:bg-[#57344f] shadow-[0_12px_32px_rgba(113,75,103,0.08)]">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-white">The Executive Atelier</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-white font-bold border-b-2 border-white/40 pb-1 font-['Inter'] font-medium tracking-tight text-sm" href="#">Apps</a>
+<a class="text-white/80 font-medium hover:bg-white/10 transition-colors duration-200 font-['Inter'] font-medium tracking-tight text-sm px-2 py-1 rounded" href="#">Dashboards</a>
+<a class="text-white/80 font-medium hover:bg-white/10 transition-colors duration-200 font-['Inter'] font-medium tracking-tight text-sm px-2 py-1 rounded" href="#">Settings</a>
+</nav>
+</div>
+<!-- Global Search within TopBar -->
+<div class="hidden lg:flex flex-1 max-w-md mx-8">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-sm">search</span>
+<input class="w-full bg-white/10 border-none rounded-lg py-1.5 pl-10 pr-4 text-white text-sm placeholder:text-white/50 focus:ring-2 focus:ring-white/20 transition-all" placeholder="Search apps..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-white hover:bg-white/10 p-2 rounded transition-colors"><span class="material-symbols-outlined">apps</span></button>
+<button class="text-white hover:bg-white/10 p-2 rounded transition-colors relative">
+<span class="material-symbols-outlined">chat</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-on-tertiary-container rounded-full"></span>
+</button>
+<button class="text-white hover:bg-white/10 p-2 rounded transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-white/20 ml-2">
+<img alt="Executive User Profile" data-alt="close-up portrait of a professional executive in a minimal studio setting, soft cinematic lighting, neutral color palette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4X_U-dKU_szcV5jEhTL9MkjW9haaEyOKx72zUj6HfCaBj4kF9DiIWFcqB-Asld5bzWmM6gAAreU50gNHn1b2aIis48bK69SU3exgRd7mrHrlc28aLd-HPaawC4zd_8I_Q7nQurLlZDv15PgXfHtO8UF49YGbL5NIh9fm7hTaunriTZQWev5C5-ckeBJkoPWrK2Mx3yA0W9AeWfQgWBG8a5NhUG3CpNzt4IP5b9e7wWu_sfdTAXggN8knOCDwk7Wiy1GCsrzjEtifl"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-12 h-[calc(100vh-48px)] flex flex-col py-4 z-40 bg-[#f3f4f5] dark:bg-[#1e1e1e] h-full w-64 border-r-0 tonal-layering background-shift from surface-container-low to surface">
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3 py-4">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined">workspace_premium</span>
+</div>
+<div>
+<h3 class="font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#714B67] dark:text-[#e1e3e4]">Atelier Modules</h3>
+<p class="text-[10px] text-on-surface-variant/70 uppercase tracking-widest">Enterprise Suite</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider bg-[#f8f9fa] dark:bg-[#2d2d2d] text-[#714B67] dark:text-white rounded-r-full shadow-sm font-bold border-r-4 border-[#714B67] translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>CRM</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="monetization_on">monetization_on</span>
+<span>Sales</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span>Accounting</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+<span>Manufacturing</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span>Project</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
+<span>POS</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 font-['Inter'] font-semibold text-xs uppercase tracking-wider text-[#4e444a] dark:text-gray-400 hover:bg-[#e1e3e4] dark:hover:bg-gray-800 transition-all hover:pl-2" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-64 mt-12 mb-8 p-12 bg-surface">
+<div class="max-w-4xl mx-auto">
+<!-- Hero Heading -->
+<div class="mb-12 text-center">
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2 font-headline">Welcome back, Executive</h1>
+<p class="text-on-surface-variant font-medium">Select an atelier module to begin your workflow.</p>
+</div>
+<!-- Bento App Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+<!-- CRM -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#9C27B0] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="hub">hub</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">CRM</span>
+</div>
+<!-- Sales -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#00BCD4] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="monetization_on">monetization_on</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">Sales</span>
+</div>
+<!-- Inventory -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#009688] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="inventory_2">inventory_2</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">Inventory</span>
+</div>
+<!-- Accounting -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#3F51B5] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="account_balance">account_balance</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">Accounting</span>
+</div>
+<!-- Manufacturing -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#FF9800] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="factory">factory</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">Manufacturing</span>
+</div>
+<!-- Project -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#2196F3] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="assignment">assignment</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">Project</span>
+</div>
+<!-- POS -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#FFC107] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="point_of_sale">point_of_sale</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">POS</span>
+</div>
+<!-- Settings -->
+<div class="group flex flex-col items-center gap-4 cursor-pointer">
+<div class="w-20 h-20 bg-[#607D8B] rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg shadow-sm">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="settings">settings</span>
+</div>
+<span class="text-sm font-semibold text-on-surface tracking-wide">Settings</span>
+</div>
+</div>
+<!-- Insights Section (Tonal Layering Demo) -->
+<div class="mt-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/15">
+<div class="flex justify-between items-start mb-6">
+<h3 class="text-lg font-bold text-primary-container">Workflow Analytics</h3>
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant">trending_up</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<span class="text-sm font-medium">Pending Approvals</span>
+<span class="bg-secondary-container px-2 py-1 rounded text-xs font-bold text-on-secondary-container">12</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<span class="text-sm font-medium">Active Sprints</span>
+<span class="bg-primary-fixed px-2 py-1 rounded text-xs font-bold text-on-primary-fixed">04</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/15">
+<div class="flex justify-between items-start mb-6">
+<h3 class="text-lg font-bold text-primary-container">Recent Activity</h3>
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant">history</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-xs text-on-surface-variant">Inventory update - Warehouse A</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-xs text-on-surface-variant">New lead assigned to CRM</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<span class="text-xs text-on-surface-variant">Settings modified by Admin</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full flex justify-between items-center px-8 py-2 z-30 bg-[#f8f9fa] dark:bg-[#0a0a0a] border-t border-[#d1c3ca]/15 font-['Inter'] text-[0.75rem] font-medium">
+<div class="flex items-center gap-2 text-green-600 dark:text-green-400">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span>All systems operational</span>
+</div>
+<div class="flex items-center gap-6 text-on-surface-variant">
+<a class="hover:text-[#714B67] transition-colors" href="#">Status Page</a>
+<a class="hover:text-[#714B67] transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-[#714B67] transition-colors" href="#">Enterprise Support</a>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - KPI Assessment</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Source+Code+Pro:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "outline": "#80747a",
+                        "secondary-container": "#f5dbea",
+                        "on-tertiary-container": "#c0d5a0",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "secondary": "#6c5965",
+                        "primary": "#57344f",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#4b5d33",
+                        "inverse-primary": "#e9b8d9",
+                        "surface-container-low": "#f3f3f3",
+                        "on-secondary-fixed-variant": "#53424d",
+                        "on-background": "#1a1c1c",
+                        "surface-tint": "#79526f",
+                        "surface-container": "#eeeeee",
+                        "on-primary-container": "#f0bfe0",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "on-secondary-container": "#725f6b",
+                        "secondary-fixed": "#f5dbea",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#34451e",
+                        "on-surface-variant": "#4e444a",
+                        "primary-fixed": "#ffd7f1",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "primary-container": "#714b67",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f1f1",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "surface-bright": "#f9f9f9",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed": "#2f1029"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["Source Code Pro"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .perspective-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+        .custom-range::-webkit-slider-runnable-track {
+            background: #eeeeee;
+            height: 4px;
+        }
+        .custom-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #57344f;
+            margin-top: -4px;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface">
+<!-- TopNavBar Implementation -->
+<header class="fixed top-0 w-full z-50 h-14 bg-gradient-to-r from-[#57344f] to-[#714b67] shadow-sm flex justify-between items-center px-6 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-white font-headline">KOB WMS Pro</span>
+<div class="hidden md:flex items-center gap-6">
+<nav class="flex items-center gap-4">
+<span class="text-white/80 font-medium hover:bg-white/10 transition-colors px-3 py-1 cursor-pointer">Dashboard</span>
+<span class="text-white/80 font-medium hover:bg-white/10 transition-colors px-3 py-1 cursor-pointer">Inventory</span>
+<span class="border-b-2 border-white text-white font-semibold px-3 py-1 cursor-pointer">KPI Assessment</span>
+</nav>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-sm">search</span>
+<input class="bg-white/10 border-none text-white text-sm pl-9 pr-4 py-1.5 focus:ring-0 w-64 rounded-DEFAULT placeholder-white/40" placeholder="Search data..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-white hover:bg-white/10 p-2 cursor-pointer transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-white hover:bg-white/10 p-2 cursor-pointer transition-colors" data-icon="settings">settings</span>
+<img alt="Warehouse Manager Profile" class="w-8 h-8 rounded-full border border-white/20" data-alt="Professional portrait of a male warehouse manager in a clean industrial setting with soft warehouse shelving in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU2yhEBxhi0gprNPIwf0FVVferzVme_gaMl7eqoPkdiNZURwLy9Bf6fl-3QEg2KL6kH08-3H_azYGR7hfXQSF1XhcV1FyUJ2niJRSbXROU_WaXvKf9hDms1Z5h72FU8QmsG6Kox_QpNsEf9hsfOP_5EHz7TdevEQbm8Quiev4XFdrkpDmOj68nz0YxQ4YanrPCiSGUkjuph8uS7J_YjOT2OwEqEtywXvb3IDVrGTRbYvWCNSiwMRontpySQ3Cbk8XeNqDD5G0hF-Dw"/>
+</div>
+</header>
+<!-- SideNavBar Implementation -->
+<aside class="fixed left-0 top-14 h-full w-[240px] bg-[#f3f3f3] dark:bg-slate-900 flex flex-col h-full py-4 z-40 hidden md:flex">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary" data-icon="factory">factory</span>
+<span class="text-xs font-bold text-primary dark:text-[#d1c3ca] uppercase tracking-wider">Warehouse Alpha</span>
+</div>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-[0.2em]">Zone 4-B</p>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-6 py-3 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="text-sm font-semibold uppercase tracking-wider">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-6 py-3 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span>
+<span class="text-sm font-semibold uppercase tracking-wider">Inventory</span>
+</div>
+<div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-6 py-3 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]" data-icon="precision_manufacturing">precision_manufacturing</span>
+<span class="text-sm font-semibold uppercase tracking-wider">Picking</span>
+</div>
+<div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-6 py-3 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]" data-icon="local_shipping">local_shipping</span>
+<span class="text-sm font-semibold uppercase tracking-wider">Shipping</span>
+</div>
+<div class="flex items-center gap-3 bg-[#eeeeee] dark:bg-slate-800 text-[#57344f] dark:text-white border-l-4 border-[#57344f] px-[20px] py-3 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]" data-icon="analytics">analytics</span>
+<span class="text-sm font-semibold uppercase tracking-wider">KPI Assessment</span>
+</div>
+<div class="flex items-center gap-3 text-slate-600 dark:text-slate-400 px-6 py-3 hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span class="text-sm font-semibold uppercase tracking-wider">Settings</span>
+</div>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-[240px] mt-14 p-8 min-h-screen">
+<!-- Employee Header Section -->
+<section class="bg-surface-container-lowest p-6 rounded shadow-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+<div class="flex items-center gap-6">
+<div class="relative">
+<img alt="Johnathan Doe Profile" class="w-20 h-20 rounded-lg object-cover" data-alt="Close up of a focused worker in a bright, modern warehouse environment with neutral lighting and sharp detail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZzDWho7bQczxB6KPpjXWiNMPVSOsyjOVetBxICLBdvH9KVeFDXYz26BjDh-au3sEbCyixr6IcDh9NmQS2IqSO7OzqRc6SLwzb7jiicQ2nZw7uSm-r09OkNdWVm6eDQe-nmnqJY8F5qk2CCUUO2VeumUrcq_4IRoJXhZ9_xIkxhyfGOPMMS_dGpMFdfkDgYEoiyF71E_AC6FBvl4_J5yi0EJYGZ3GfZkCe-Z4-hx_ea3MaScs_GzzGGGHvchyVAVqeMGtfD_6irM36"/>
+<div class="absolute -bottom-2 -right-2 bg-tertiary-container text-white p-1 rounded-full border-4 border-surface-container-lowest">
+<span class="material-symbols-outlined text-xs" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface">Johnathan Doe</h1>
+<div class="flex items-center gap-3 mt-1">
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-widest rounded-DEFAULT">Senior Picker</span>
+<span class="text-outline text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_month">calendar_month</span>
+                            Assessment Period: <span class="font-bold text-on-surface">Q1 2026</span>
+</span>
+</div>
+</div>
+</div>
+<!-- Summary Score Display -->
+<div class="flex items-center gap-8 border-l border-surface-container pl-8">
+<div class="text-center">
+<p class="text-[10px] font-bold text-outline uppercase tracking-tighter mb-1">Total Weighted Score</p>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-black text-primary tracking-tighter">4.2</span>
+<span class="text-outline text-sm font-semibold">/ 5.0</span>
+</div>
+</div>
+<div class="h-16 w-16 flex items-center justify-center rounded-full border-4 border-tertiary-container text-tertiary text-2xl font-black bg-tertiary-container/10">
+                    A
+                </div>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Left Column: KPI Perspectives -->
+<div class="xl:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-bold uppercase tracking-wider text-outline">OKR Perspectives</h2>
+<div class="flex items-center gap-4 text-xs font-semibold">
+<span class="flex items-center gap-1 text-tertiary"><span class="w-2 h-2 rounded-full bg-tertiary"></span> Auto Tracking</span>
+<span class="flex items-center gap-1 text-primary"><span class="w-2 h-2 rounded-full bg-primary"></span> Manual Entry</span>
+</div>
+</div>
+<div class="perspective-grid">
+<!-- Perspective Cards -->
+<!-- Develop People -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-primary shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Develop People</h3>
+<span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase">Manual</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Mentorship Hours</span>
+<span class="text-on-surface font-bold">12 / 10</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Skill Certifications</span>
+<span class="text-on-surface font-bold">2 / 2</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Team Training</span>
+<span class="text-on-surface font-bold">100%</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 15%</span>
+<span class="text-primary font-black">SCORE: 4.8</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="4.8"/>
+</div>
+</div>
+<!-- Drive Value -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Drive Value</h3>
+<span class="text-[9px] bg-tertiary text-white px-2 py-0.5 rounded-full font-bold uppercase">Auto</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Process Optimization</span>
+<span class="text-on-surface font-bold">+5% Eff.</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Waste Reduction</span>
+<span class="text-on-surface font-bold">-12%</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Value Stream Map</span>
+<span class="text-on-surface font-bold">Done</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 10%</span>
+<span class="text-blue-600 font-black">SCORE: 4.0</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="4.0"/>
+</div>
+</div>
+<!-- Make Revenue -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-emerald-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Make Revenue</h3>
+<span class="text-[9px] bg-tertiary text-white px-2 py-0.5 rounded-full font-bold uppercase">Auto</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Upsell Inquiries</span>
+<span class="text-on-surface font-bold">45 Unit</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Client Retention Support</span>
+<span class="text-on-surface font-bold">High</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>New Channel Lead</span>
+<span class="text-on-surface font-bold">2 / 1</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 10%</span>
+<span class="text-emerald-600 font-black">SCORE: 4.5</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="4.5"/>
+</div>
+</div>
+<!-- Champion Progress -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-amber-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Champion Progress</h3>
+<span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase">Manual</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>WMS Migration Help</span>
+<span class="text-on-surface font-bold">Core</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Standard Procedure Dev</span>
+<span class="text-on-surface font-bold">3 Sops</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 15%</span>
+<span class="text-amber-600 font-black">SCORE: 4.2</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="4.2"/>
+</div>
+</div>
+<!-- Deliver Financial -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-indigo-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Deliver Financial</h3>
+<span class="text-[9px] bg-tertiary text-white px-2 py-0.5 rounded-full font-bold uppercase">Auto</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Overtime Efficiency</span>
+<span class="text-on-surface font-bold">94%</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Packaging Cost</span>
+<span class="text-on-surface font-bold">-3% YoY</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 10%</span>
+<span class="text-indigo-600 font-black">SCORE: 3.9</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="3.9"/>
+</div>
+</div>
+<!-- Manage Risk -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-red-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Manage Risk</h3>
+<span class="text-[9px] bg-tertiary text-white px-2 py-0.5 rounded-full font-bold uppercase">Auto</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Safety Incidents</span>
+<span class="text-on-surface font-bold">0</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Compliance Score</span>
+<span class="text-on-surface font-bold">100%</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 15%</span>
+<span class="text-red-600 font-black">SCORE: 5.0</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="5.0"/>
+</div>
+</div>
+<!-- Live Values -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-violet-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Live Values</h3>
+<span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase">Manual</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Culture Contribution</span>
+<span class="text-on-surface font-bold">High</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Ethics Compliance</span>
+<span class="text-on-surface font-bold">Pass</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 15%</span>
+<span class="text-violet-600 font-black">SCORE: 4.4</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="4.4"/>
+</div>
+</div>
+<!-- Go Above Beyond -->
+<div class="bg-surface-container-lowest p-5 border-l-4 border-sky-500 shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-bold text-on-surface">Go Above Beyond</h3>
+<span class="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase">Manual</span>
+</div>
+<ul class="space-y-3 mb-6">
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Extra-Shift Pickup</span>
+<span class="text-on-surface font-bold">4 Times</span>
+</li>
+<li class="flex justify-between text-[11px] font-medium text-on-surface-variant">
+<span>Innovation Award</span>
+<span class="text-on-surface font-bold">Nominated</span>
+</li>
+</ul>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold text-outline">
+<span>PERSPECTIVE WEIGHT: 10%</span>
+<span class="text-sky-600 font-black">SCORE: 4.7</span>
+</div>
+<input class="w-full custom-range appearance-none cursor-pointer" max="5" min="1" step="0.1" type="range" value="4.7"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Visual Summary & Feedback -->
+<div class="space-y-8">
+<!-- Radar Visualization Placeholder -->
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm">
+<h2 class="text-xs font-bold uppercase tracking-wider text-outline mb-6">Performance Radar</h2>
+<div class="relative w-full aspect-square flex items-center justify-center">
+<!-- Abstract Radar Chart SVG -->
+<svg class="w-full max-w-[280px]" viewbox="0 0 200 200">
+<circle cx="100" cy="100" fill="none" r="80" stroke="#eeeeee" stroke-width="1"></circle>
+<circle cx="100" cy="100" fill="none" r="60" stroke="#eeeeee" stroke-width="1"></circle>
+<circle cx="100" cy="100" fill="none" r="40" stroke="#eeeeee" stroke-width="1"></circle>
+<circle cx="100" cy="100" fill="none" r="20" stroke="#eeeeee" stroke-width="1"></circle>
+<!-- Lines -->
+<line stroke="#eeeeee" stroke-width="1" x1="100" x2="100" y1="20" y2="180"></line>
+<line stroke="#eeeeee" stroke-width="1" x1="20" x2="180" y1="100" y2="100"></line>
+<line stroke="#eeeeee" stroke-width="1" x1="43.4" x2="156.6" y1="43.4" y2="156.6"></line>
+<line stroke="#eeeeee" stroke-width="1" x1="43.4" x2="156.6" y1="156.6" y2="43.4"></line>
+<!-- Data Shape -->
+<polygon fill="rgba(87, 52, 79, 0.2)" points="100,30 140,60 170,100 140,140 100,165 60,140 35,100 65,60" stroke="#57344f" stroke-width="2"></polygon>
+<!-- Labels (Simplified) -->
+<text fill="#80747a" font-size="6" font-weight="bold" text-anchor="middle" x="100" y="15">DEVELOP</text>
+<text fill="#80747a" font-size="6" font-weight="bold" text-anchor="start" x="185" y="102">REVENUE</text>
+<text fill="#80747a" font-size="6" font-weight="bold" text-anchor="middle" x="100" y="195">FINANCIAL</text>
+<text fill="#80747a" font-size="6" font-weight="bold" text-anchor="end" x="15" y="102">VALUES</text>
+</svg>
+</div>
+</div>
+<!-- 360 Feedback -->
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xs font-bold uppercase tracking-wider text-outline">360 Peer Feedback</h2>
+<span class="text-[10px] font-bold text-tertiary">14 Respondents</span>
+</div>
+<div class="space-y-5">
+<!-- Bar Chart Items -->
+<div class="space-y-1">
+<div class="flex justify-between text-[11px] font-bold">
+<span>Teamwork</span>
+<span class="text-primary">4.8</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 96%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[11px] font-bold">
+<span>Integrity</span>
+<span class="text-primary">5.0</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 100%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[11px] font-bold">
+<span>Ownership</span>
+<span class="text-primary">4.2</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 84%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[11px] font-bold">
+<span>Innovation</span>
+<span class="text-primary">3.9</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 78%"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[11px] font-bold">
+<span>Customer Focus</span>
+<span class="text-primary">4.5</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 90%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Feed (Industrial Feel) -->
+<div class="bg-surface-container-low p-4 rounded-lg">
+<h2 class="text-[10px] font-bold uppercase tracking-widest text-outline mb-4">Assessment History</h2>
+<div class="space-y-4">
+<div class="flex gap-3">
+<div class="w-1 bg-tertiary-container rounded"></div>
+<div>
+<p class="text-[11px] font-bold text-on-surface">Auto-KPI Import Complete</p>
+<p class="text-[10px] font-mono text-outline">LOG_ID: 9928-PickingSpeed</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="w-1 bg-primary rounded"></div>
+<div>
+<p class="text-[11px] font-bold text-on-surface">Manager Review Initiated</p>
+<p class="text-[10px] font-mono text-outline">By: Supervisor_Smith</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Bar -->
+<footer class="fixed bottom-0 left-0 md:left-[240px] right-0 h-16 bg-white/80 backdrop-blur-xl border-t border-surface-container-highest px-8 flex items-center justify-between z-50">
+<div class="hidden sm:flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Weight calculation: Final = Σ(Score * Weight)</span>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-6 py-2 border border-primary text-primary text-xs font-bold uppercase tracking-widest rounded-DEFAULT hover:bg-primary/5 transition-colors">
+                Submit for Review
+            </button>
+<button class="flex-1 sm:flex-none px-10 py-2 bg-gradient-to-br from-[#57344f] to-[#714b67] text-white text-xs font-bold uppercase tracking-widest rounded-DEFAULT hover:opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-95">
+                Approve
+            </button>
+</div>
+</footer>
+</body></html>

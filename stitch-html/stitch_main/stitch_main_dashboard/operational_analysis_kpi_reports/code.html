@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reports &amp; Analysis | KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed": "#95f1f8", background: "#f9f9f9", outline: "#80747a", "on-secondary-fixed": "#002022", "on-tertiary-fixed": "#40000c", tertiary: "#791e2a", "secondary-container": "#92eff5", "surface-container-high": "#e8e8e8", "on-surface": "#1a1c1c", error: "#ba1a1a", "surface-dim": "#dadada", secondary: "#00696e", "tertiary-fixed": "#ffdada", "surface-tint": "#79526f", surface: "#f9f9f9", "outline-variant": "#d1c3ca", "tertiary-container": "#983540", "primary-container": "#714b67", "on-tertiary-fixed-variant": "#822430", "surface-container": "#eeeeee", "error-container": "#ffdad6", "on-tertiary-container": "#ffbdbf", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-surface-variant": "#4e444a", "on-primary-container": "#f0bfe0", "inverse-surface": "#2f3131", "inverse-on-surface": "#f1f1f1", "inverse-primary": "#e9b8d9", "primary-fixed-dim": "#e9b8d9", "on-background": "#1a1c1c", "surface-container-highest": "#e2e2e2", "on-error-container": "#93000a", "surface-variant": "#e2e2e2", "secondary-fixed-dim": "#78d5db", "tertiary-fixed-dim": "#ffb3b6", "primary-fixed": "#ffd7f1", "surface-container-low": "#f3f3f3", primary: "#714B67", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "on-tertiary": "#ffffff", "on-secondary": "#ffffff", "on-primary-fixed-variant": "#5f3b56", "on-secondary-fixed-variant": "#004f53", "on-secondary-container": "#006e73", "on-primary-fixed": "#2f1029", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-[#57344f] dark:bg-slate-950 text-white flex justify-between items-center w-full px-6 h-14 shadow-sm z-50 fixed top-0">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-white tracking-tight">KOB WMS Pro</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-white/80 hover:text-white transition-colors body-md" href="#">Dashboard</a>
+<a class="text-white/80 hover:text-white transition-colors body-md" href="#">Logistics</a>
+<a class="text-white/80 hover:text-white transition-colors body-md" href="#">E-commerce</a>
+<a class="text-white/80 hover:text-white transition-colors body-md" href="#">Inventory</a>
+<a class="text-white font-bold border-b-2 border-white pb-1 body-md" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined cursor-pointer p-2 hover:bg-white/10 rounded-full transition-all duration-200">notifications</span>
+</div>
+<span class="material-symbols-outlined cursor-pointer p-2 hover:bg-white/10 rounded-full transition-all duration-200">settings</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+<img alt="Executive User Profile" class="w-full h-full object-cover" data-alt="Professional executive headshot of a business manager in a clean corporate setting with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6Mr9tJ87ikS5bJw4f2ADupOXtBgPx8c6yzWF6l8oozbdIzdOAQPW1wNbvm2mocynLzNHojxr0phJFvFkoMKN9Bsaf0StyRdf30S-IGQjGdpdrD1TA7KUd1Y96u3ghUCETRWg6K7Wyf71TL7oX3YQAvG9a7HcrrmuXvJeHnXzgwpHy3GSBzr3ccp6T2YW7euwWtpwUm-Q4sHqu04MW-ePpFttgnIhT6D9dwUNjgAwuVrWYoZsgd1zP-gvj0wF6YMudUC5xh-Ki-WNM"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-14">
+<!-- SideNavBar -->
+<aside class="bg-[#f3f3f3] dark:bg-slate-900 h-screen w-64 border-r border-transparent flex flex-col py-4 gap-2 fixed left-0 overflow-y-auto no-scrollbar">
+<div class="px-6 mb-6">
+<h2 class="text-[#57344f] dark:text-[#d1c3ca] font-['Inter'] label-sm uppercase tracking-wider font-bold">Logistics Ops</h2>
+<p class="text-slate-500 text-[10px] uppercase tracking-widest">Primary Module</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-[#57344f] px-4 py-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Vehicle Scheduling</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-[#57344f] px-4 py-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Order Fulfillment</span>
+</a>
+<a class="bg-white dark:bg-slate-800 text-[#57344f] dark:text-white font-semibold rounded-l-lg ml-2 shadow-sm flex items-center gap-3 px-4 py-3 transition-all duration-200 scale-98" href="#">
+<span class="material-symbols-outlined" data-icon="speed" style="font-variation-settings: 'FILL' 1;">speed</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">SLA Monitoring</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-[#57344f] px-4 py-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Warehouse Zones</span>
+</a>
+</nav>
+<div class="px-4 mt-auto space-y-4">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-white py-3 rounded-lg font-semibold shadow-md hover:opacity-90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+<span>Create New Order</span>
+</button>
+<div class="pt-4 border-t border-outline-variant/20">
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-[#57344f] px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Support</span>
+</a>
+<a class="flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-[#57344f] px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">User Manual</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col bg-surface overflow-x-hidden">
+<!-- Analysis Control Header (Odoo Style) -->
+<div class="bg-surface-container-lowest px-8 py-6 shadow-sm border-b-0">
+<div class="flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<h1 class="headline-sm font-bold text-on-surface">Analysis: Logistics Performance</h1>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-high rounded-lg text-primary font-semibold body-md flex items-center gap-2 hover:bg-surface-dim transition-all">
+<span class="material-symbols-outlined text-sm">insert_chart</span>
+<span>Measures</span>
+</button>
+<button class="px-4 py-2 bg-surface-container-high rounded-lg text-primary font-semibold body-md flex items-center gap-2 hover:bg-surface-dim transition-all">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+<span>Filters</span>
+</button>
+<button class="px-4 py-2 bg-surface-container-high rounded-lg text-primary font-semibold body-md flex items-center gap-2 hover:bg-surface-dim transition-all">
+<span class="material-symbols-outlined text-sm">account_tree</span>
+<span>Group By</span>
+</button>
+<button class="px-4 py-2 bg-primary text-white rounded-lg font-semibold body-md flex items-center gap-2 hover:shadow-lg transition-all ml-4">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Export XLSX</span>
+</button>
+</div>
+</div>
+<!-- Filter Strip -->
+<div class="flex flex-wrap gap-4 items-end bg-surface-container-low p-4 rounded-xl">
+<div class="flex flex-col gap-1">
+<span class="label-sm uppercase tracking-widest text-on-surface-variant font-bold">Report Type</span>
+<select class="bg-surface-container-lowest border-none rounded-md body-md text-on-surface-variant focus:ring-primary w-48 shadow-sm">
+<option>Inventory Turnover</option>
+<option selected="">Delivery On-Time Rate</option>
+<option>Picking Accuracy</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<span class="label-sm uppercase tracking-widest text-on-surface-variant font-bold">Date Range</span>
+<div class="flex items-center bg-surface-container-lowest rounded-md shadow-sm px-3 py-1 gap-2">
+<span class="material-symbols-outlined text-sm text-outline">calendar_today</span>
+<input class="bg-transparent border-none body-md text-on-surface focus:ring-0 w-52" type="text" value="Oct 01, 2023 - Oct 31, 2023"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="label-sm uppercase tracking-widest text-on-surface-variant font-bold">Warehouse</span>
+<select class="bg-surface-container-lowest border-none rounded-md body-md text-on-surface-variant focus:ring-primary w-36 shadow-sm">
+<option>All Warehouses</option>
+<option>WH1 - North</option>
+<option>WH2 - South</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<span class="label-sm uppercase tracking-widest text-on-surface-variant font-bold">Segment</span>
+<select class="bg-surface-container-lowest border-none rounded-md body-md text-on-surface-variant focus:ring-primary w-36 shadow-sm">
+<option>Retailers</option>
+<option>Wholesale</option>
+<option>Direct-to-Consumer</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<div class="p-8 space-y-8 max-w-[1600px]">
+<!-- KPI High-Density Strip -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary">
+<p class="label-sm uppercase tracking-widest text-on-surface-variant font-bold mb-2">On-Time Delivery</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">94.8%</span>
+<span class="text-secondary text-sm font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 2.1%</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">vs. previous month</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-secondary">
+<p class="label-sm uppercase tracking-widest text-on-surface-variant font-bold mb-2">Inventory Value</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">$2.4M</span>
+<span class="text-error text-sm font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 8.4%</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Cap-Ex utilization</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-primary-container">
+<p class="label-sm uppercase tracking-widest text-on-surface-variant font-bold mb-2">Avg. Pick Time</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">14.2m</span>
+<span class="text-secondary text-sm font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_downward</span> 1.5m</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Efficiency gain</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-l-4 border-tertiary">
+<p class="label-sm uppercase tracking-widest text-on-surface-variant font-bold mb-2">Stock-out Incidents</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">12</span>
+<span class="text-error text-sm font-bold flex items-center"><span class="material-symbols-outlined text-xs">priority_high</span> Critical</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Last 30 days</p>
+</div>
+</div>
+<!-- Pivot Table & Chart Bento -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Analytics Pivot Table (Odoo Classic Style) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="p-6 border-b border-surface-container flex justify-between items-center">
+<h3 class="font-bold text-on-surface body-lg">Delivery Breakdown by Region &amp; Carrier</h3>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">view_list</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">table_chart</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">fullscreen</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left body-sm border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-4 py-3 font-bold border-r border-surface-container w-48">Dimensions</th>
+<th class="px-4 py-3 font-bold text-center border-r border-surface-container" colspan="3">Northeast Region</th>
+<th class="px-4 py-3 font-bold text-center border-r border-surface-container" colspan="3">Southeast Region</th>
+<th class="px-4 py-3 font-bold text-center">Total</th>
+</tr>
+<tr class="bg-surface-container-lowest border-b border-surface-container">
+<th class="px-4 py-2 font-semibold italic text-outline border-r border-surface-container">Carrier / Status</th>
+<th class="px-2 py-2 text-center text-[10px] uppercase font-bold text-outline">Delivered</th>
+<th class="px-2 py-2 text-center text-[10px] uppercase font-bold text-outline">Delayed</th>
+<th class="px-2 py-2 text-center text-[10px] uppercase font-bold border-r border-surface-container text-secondary">Rate %</th>
+<th class="px-2 py-2 text-center text-[10px] uppercase font-bold text-outline">Delivered</th>
+<th class="px-2 py-2 text-center text-[10px] uppercase font-bold text-outline">Delayed</th>
+<th class="px-2 py-2 text-center text-[10px] uppercase font-bold border-r border-surface-container text-secondary">Rate %</th>
+<th class="px-4 py-2 text-center font-bold">Total Orders</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hover:bg-surface-container-low border-b border-surface-container transition-colors">
+<td class="px-4 py-4 font-semibold border-r border-surface-container flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">remove_circle_outline</span>
+                                            Global Logistics
+                                        </td>
+<td class="px-2 py-4 text-center">1,204</td>
+<td class="px-2 py-4 text-center">42</td>
+<td class="px-2 py-4 text-center font-bold text-secondary border-r border-surface-container">96.5%</td>
+<td class="px-2 py-4 text-center">890</td>
+<td class="px-2 py-4 text-center">56</td>
+<td class="px-2 py-4 text-center font-bold text-secondary border-r border-surface-container">93.7%</td>
+<td class="px-4 py-4 text-center font-bold bg-surface-container-low">2,192</td>
+</tr>
+<tr class="hover:bg-surface-container-low border-b border-surface-container transition-colors">
+<td class="px-4 py-4 font-semibold border-r border-surface-container flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">remove_circle_outline</span>
+                                            FastTrack Express
+                                        </td>
+<td class="px-2 py-4 text-center">854</td>
+<td class="px-2 py-4 text-center">12</td>
+<td class="px-2 py-4 text-center font-bold text-secondary border-r border-surface-container">98.6%</td>
+<td class="px-2 py-4 text-center">432</td>
+<td class="px-2 py-4 text-center">8</td>
+<td class="px-2 py-4 text-center font-bold text-secondary border-r border-surface-container">98.1%</td>
+<td class="px-4 py-4 text-center font-bold bg-surface-container-low">1,306</td>
+</tr>
+<tr class="hover:bg-surface-container-low border-b border-surface-container transition-colors">
+<td class="px-4 py-4 font-semibold border-r border-surface-container flex items-center gap-2 pl-8">
+                                            - Ground Shipping
+                                        </td>
+<td class="px-2 py-4 text-center">610</td>
+<td class="px-2 py-4 text-center">9</td>
+<td class="px-2 py-4 text-center font-medium text-secondary border-r border-surface-container">98.5%</td>
+<td class="px-2 py-4 text-center">310</td>
+<td class="px-2 py-4 text-center">5</td>
+<td class="px-2 py-4 text-center font-medium text-secondary border-r border-surface-container">98.3%</td>
+<td class="px-4 py-4 text-center font-medium bg-surface-container-low">934</td>
+</tr>
+<tr class="hover:bg-surface-container-low border-b border-surface-container transition-colors">
+<td class="px-4 py-4 font-semibold border-r border-surface-container flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">add_circle_outline</span>
+                                            Prime Delivery
+                                        </td>
+<td class="px-2 py-4 text-center">2,410</td>
+<td class="px-2 py-4 text-center">310</td>
+<td class="px-2 py-4 text-center font-bold text-error border-r border-surface-container">87.1%</td>
+<td class="px-2 py-4 text-center">1,980</td>
+<td class="px-2 py-4 text-center">245</td>
+<td class="px-2 py-4 text-center font-bold text-error border-r border-surface-container">88.9%</td>
+<td class="px-4 py-4 text-center font-bold bg-surface-container-low">4,945</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="bg-surface-container-high font-bold">
+<td class="px-4 py-4 border-r border-surface-container">Grand Total</td>
+<td class="px-2 py-4 text-center">4,468</td>
+<td class="px-2 py-4 text-center">364</td>
+<td class="px-2 py-4 text-center text-secondary border-r border-surface-container">91.8%</td>
+<td class="px-2 py-4 text-center">3,302</td>
+<td class="px-2 py-4 text-center">309</td>
+<td class="px-2 py-4 text-center text-secondary border-r border-surface-container">90.6%</td>
+<td class="px-4 py-4 text-center text-primary">8,443</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+<!-- Complex Data Visualization -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+<!-- Chart 1: Daily Throughput -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col h-full">
+<h3 class="font-bold text-on-surface body-lg mb-6">Volume Trend</h3>
+<div class="flex-1 flex items-end gap-2 px-2 relative min-h-[160px]">
+<!-- Faux Graph Bars -->
+<div class="w-full bg-secondary/10 rounded-t-sm relative group h-[40%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/20 rounded-t-sm relative group h-[55%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/30 rounded-t-sm relative group h-[75%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/40 rounded-t-sm relative group h-[60%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/50 rounded-t-sm relative group h-[85%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/60 rounded-t-sm relative group h-[95%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/70 rounded-t-sm relative group h-[80%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/80 rounded-t-sm relative group h-[70%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-secondary/90 rounded-t-sm relative group h-[90%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-secondary mb-1 opacity-0 group-hover:opacity-100 transition-opacity"></div></div>
+<div class="w-full bg-primary rounded-t-sm relative group h-[100%]"><div class="absolute bottom-full left-0 right-0 h-1 bg-primary mb-1 opacity-100 transition-opacity"></div></div>
+</div>
+<div class="flex justify-between mt-4 text-[10px] uppercase font-bold text-outline tracking-wider">
+<span>Oct 01</span>
+<span>Oct 15</span>
+<span>Oct 31</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-4 italic">Volume peaked on Oct 30 with 2,492 units processed.</p>
+</div>
+<!-- Chart 2: Warehouse Distribution -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<h3 class="font-bold text-on-surface body-lg mb-6">Inventory Distribution</h3>
+<div class="flex items-center gap-6">
+<div class="relative w-24 h-24 rounded-full border-[12px] border-surface-container" style="border-top-color: #57344f; border-right-color: #57344f; border-bottom-color: #00696e;">
+<div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-on-surface">62/38</div>
+</div>
+<div class="flex-1 space-y-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="body-sm font-semibold">WH1 North</span>
+</div>
+<span class="body-sm font-bold">62%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="body-sm font-semibold">WH2 South</span>
+</div>
+<span class="body-sm font-bold">38%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Data Insights Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h4 class="font-bold text-on-surface">Top Delayed SKUs</h4>
+<p class="text-xs text-on-surface-variant">Potential supply chain bottlenecks</p>
+</div>
+<span class="material-symbols-outlined text-tertiary">warning</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<span class="body-sm font-bold">SKU-99201 (Industrial Valve)</span>
+<span class="text-error font-bold">18% Delay</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<span class="body-sm font-bold">SKU-48292 (Hydraulic Pump)</span>
+<span class="text-error font-bold">12% Delay</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg">
+<span class="body-sm font-bold">SKU-10293 (Control Unit)</span>
+<span class="text-error font-bold">9% Delay</span>
+</div>
+</div>
+</div>
+<div class="md:col-span-2 bg-primary dark:bg-slate-900 rounded-xl p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<h3 class="text-2xl font-extrabold text-white mb-2">Automated Optimization Insight</h3>
+<p class="text-on-primary-container max-w-md body-md leading-relaxed">
+                                Our AI analysis suggests shifting 15% of Northeast inventory to WH2 South could reduce delivery times by 1.2 days for high-frequency retail clients.
+                            </p>
+<button class="mt-6 px-6 py-2 bg-white text-primary rounded-lg font-bold hover:bg-on-primary-container transition-all">
+                                Run Simulation
+                            </button>
+</div>
+<div class="absolute top-0 right-0 h-full w-1/3 bg-white/5 skew-x-[-20deg] transform translate-x-12 group-hover:translate-x-4 transition-transform duration-1000"></div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-white/10 text-9xl pointer-events-none" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

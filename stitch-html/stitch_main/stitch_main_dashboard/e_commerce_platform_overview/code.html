@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - OmniChannel Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#4b5d33",
+                    "surface-tint": "#79526f",
+                    "on-secondary-container": "#725f6b",
+                    "inverse-surface": "#2e3132",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#d8c0ce",
+                    "secondary-container": "#f5dbea",
+                    "on-background": "#191c1d",
+                    "outline-variant": "#d1c3ca",
+                    "surface-bright": "#f8f9fa",
+                    "on-tertiary-container": "#c0d5a0",
+                    "on-surface-variant": "#4e444a",
+                    "tertiary": "#34451e",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#d5eab4",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "inverse-primary": "#e9b8d9",
+                    "primary-fixed": "#ffd7f1",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-secondary-fixed": "#251721",
+                    "surface-container": "#edeeef",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#112000",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8f9fa",
+                    "surface-container-low": "#f3f4f5",
+                    "surface": "#f8f9fa",
+                    "primary": "#57344f",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "primary-container": "#714b67",
+                    "outline": "#80747a",
+                    "on-primary-fixed": "#2f1029",
+                    "tertiary-fixed-dim": "#b9ce9a",
+                    "secondary": "#6c5965",
+                    "on-secondary-fixed-variant": "#53424d",
+                    "surface-variant": "#e1e3e4",
+                    "surface-dim": "#d9dadb",
+                    "on-tertiary-fixed-variant": "#3b4c24",
+                    "on-primary-container": "#f0bfe0",
+                    "secondary-fixed": "#f5dbea",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-high": "#e7e8e9",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-[0px_4px_20px_rgba(25,28,29,0.06)] flex justify-between items-center px-6 h-14 w-full">
+<div class="flex items-center gap-8">
+<span class="text-lg font-semibold text-[#714B67]">OmniChannel Ledger</span>
+<nav class="hidden md:flex gap-6 h-14 items-center">
+<a class="text-[#714B67] border-b-2 border-[#714B67] h-full flex items-center px-2 font-inter body-sm tracking-tight" href="#">Dashboard</a>
+<a class="text-zinc-500 hover:bg-zinc-100/50 transition-colors h-full flex items-center px-2 font-inter body-sm tracking-tight" href="#">Orders</a>
+<a class="text-zinc-500 hover:bg-zinc-100/50 transition-colors h-full flex items-center px-2 font-inter body-sm tracking-tight" href="#">Inventory</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-gradient-to-br from-[#57344f] to-[#714b67] text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                Sync Orders
+            </button>
+<div class="flex items-center gap-2 text-zinc-500">
+<button class="p-2 hover:bg-zinc-100/50 rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-zinc-100/50 rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-zinc-200 overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Professional headshot of a business manager in a clean corporate office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHSu4hXW9YHPjzfsP71KGKs4ZVDknMtIWzA039hePHkjnyQQcGxuolphvt4T1zpriPco_zR-xORrrlW4W_bM4k9ZuCACybKuXN4UeUrQYq8L3rTRcS0rEk1q2B26j4T0JBP8kVaYxA28FFg9gPJB2XqrQ6P-SLMl-EqTsB6Dr_aiGrKsXiWLZ6fWjarP95k42rjjODIZmXZPPrXMYEjahcbDzhPZobVZByZkV22zbNsEZfaXOTCHEU27-CDZPSADwm-QjWBgiti6zQ"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-0 h-full w-[220px] z-[60] bg-zinc-100 flex flex-col h-full pt-16 pb-4 px-3">
+<div class="mb-8 px-2">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+</div>
+<div>
+<h2 class="text-sm font-bold text-zinc-900 leading-none">Enterprise Core</h2>
+<p class="text-[0.65rem] text-zinc-500">V19.4 Operational</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-white text-[#714B67] border-l-4 border-[#714B67] font-inter text-[0.75rem] font-medium transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">inventory</span>
+                Products
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">leaderboard</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto space-y-1 pt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+                Help
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-600 hover:bg-zinc-200 transition-all duration-150 font-inter text-[0.75rem] font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[220px] pt-20 p-8 min-h-screen">
+<!-- Header & Breadcrumbs -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-2xl font-medium text-zinc-900 mb-1">KOB WMS Pro Dashboard</h1>
+<p class="text-on-surface-variant text-sm">Real-time omnichannel synchronization and logistics monitoring.</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-high hover:bg-surface-container-highest px-4 py-2 rounded text-sm font-medium transition-colors">
+                    Inventory Audit
+                </button>
+<button class="bg-primary text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sync</span>
+                    Manual Force Pull
+                </button>
+</div>
+</div>
+<!-- Metrics Grid (Asymmetric) -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<div class="col-span-12 lg:col-span-8 grid grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-primary-container/20">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider mb-2">Total Orders</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-zinc-900">2,842</span>
+<span class="text-tertiary text-xs font-medium">+12.5%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-primary-container/20">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider mb-2">Pending Sync</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-zinc-900">14</span>
+<span class="text-error text-xs font-medium">Action Req.</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-primary-container/20">
+<p class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider mb-2">RTS Rate</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-zinc-900">98.2%</span>
+<span class="text-tertiary text-xs font-medium">Stable</span>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4">
+<div class="bg-primary text-white p-6 rounded-xl shadow-lg h-full relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="text-lg font-medium mb-1">Global Stock Status</h3>
+<p class="text-primary-container/80 text-sm mb-4">Last sync: 2 mins ago</p>
+<div class="flex items-center gap-4">
+<div class="flex-1 bg-white/20 h-2 rounded-full overflow-hidden">
+<div class="bg-white h-full w-[84%]"></div>
+</div>
+<span class="text-sm font-bold">84% Capacity</span>
+</div>
+</div>
+<!-- Decorative element -->
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 1;">warehouse</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Platform Integration Status -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<!-- Shopee -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 group hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 bg-[#EE4D2D] rounded-lg flex items-center justify-center text-white font-bold text-xl">S</div>
+<div class="flex-1">
+<h4 class="font-bold text-sm">Shopee Official</h4>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-xs text-on-surface-variant">Connected • API v2.4</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-zinc-400 group-hover:text-primary">arrow_forward_ios</button>
+</div>
+<!-- Lazada -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 group hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 bg-[#000083] rounded-lg flex items-center justify-center text-white font-bold text-xl">L</div>
+<div class="flex-1">
+<h4 class="font-bold text-sm">Lazada Flagship</h4>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-xs text-on-surface-variant">Connected • Seller Center</span>
+</div>
+</div>
+<button class="material-symbols-outlined text-zinc-400 group-hover:text-primary">arrow_forward_ios</button>
+</div>
+<!-- TikTok -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 group hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl">
+<span class="material-symbols-outlined text-2xl">music_note</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-sm">TikTok Shop MY</h4>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-xs text-on-surface-variant">Token Expired</span>
+</div>
+</div>
+<button class="text-xs bg-error text-white px-2 py-1 rounded">Refresh</button>
+</div>
+</div>
+<!-- Recent Orders Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-surface-container flex justify-between items-center bg-white">
+<h3 class="text-base font-semibold text-zinc-900">Recent Omni-Orders</h3>
+<div class="flex gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1.5 text-zinc-400 text-sm">search</span>
+<input class="pl-8 pr-4 py-1.5 bg-surface-container-low border-none rounded text-xs focus:ring-1 focus:ring-primary" placeholder="Search order ID..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 bg-surface-container hover:bg-surface-container-high rounded transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                    </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Order ID</th>
+<th class="px-6 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Platform</th>
+<th class="px-6 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Customer</th>
+<th class="px-6 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">SKU Qty</th>
+<th class="px-6 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-primary">#SHP-28491-X</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-[#EE4D2D] rounded-sm flex items-center justify-center text-[10px] text-white font-bold">S</div>
+<span class="text-xs text-zinc-600">Shopee</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium">Muhammad Amirul</div>
+<div class="text-[10px] text-zinc-400">Selangor, MY</div>
+</td>
+<td class="px-6 py-4 text-sm text-zinc-600">3 Items</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-bold">READY TO SHIP</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline text-xs font-medium">Pack Now</button>
+</td>
+</tr>
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-primary">#LAZ-00293-M</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-[#000083] rounded-sm flex items-center justify-center text-[10px] text-white font-bold">L</div>
+<span class="text-xs text-zinc-600">Lazada</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium">Siti Nurhaliza</div>
+<div class="text-[10px] text-zinc-400">Kuala Lumpur, MY</div>
+</td>
+<td class="px-6 py-4 text-sm text-zinc-600">1 Item</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold">PENDING PICKUP</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline text-xs font-medium">AWB Print</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-primary">#TIK-44211-P</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-black rounded-sm flex items-center justify-center text-[10px] text-white">
+<span class="material-symbols-outlined text-[12px]">music_note</span>
+</div>
+<span class="text-xs text-zinc-600">TikTok</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium">Jason Wong</div>
+<div class="text-[10px] text-zinc-400">Penang, MY</div>
+</td>
+<td class="px-6 py-4 text-sm text-zinc-600">5 Items</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container text-[10px] font-bold">SYNC FAILED</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-error hover:underline text-xs font-medium">Retry Sync</button>
+</td>
+</tr>
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium text-primary">#SHP-28495-Y</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-[#EE4D2D] rounded-sm flex items-center justify-center text-[10px] text-white font-bold">S</div>
+<span class="text-xs text-zinc-600">Shopee</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-medium">Lim Kok Wing</div>
+<div class="text-[10px] text-zinc-400">Johor, MY</div>
+</td>
+<td class="px-6 py-4 text-sm text-zinc-600">2 Items</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-600 text-[10px] font-bold">DELIVERED</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-zinc-400 text-xs font-medium cursor-not-allowed">Archived</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-zinc-50 border-t border-surface-container flex items-center justify-between">
+<span class="text-xs text-zinc-500">Showing 4 of 2,842 total orders</span>
+<div class="flex gap-1">
+<button class="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-white transition-colors">Prev</button>
+<button class="px-2 py-1 text-xs bg-primary text-white rounded">1</button>
+<button class="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-white transition-colors">2</button>
+<button class="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-white transition-colors">3</button>
+<button class="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-white transition-colors">Next</button>
+</div>
+</div>
+</div>
+<!-- Sync Control Panel (Bento Grid Style) -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-container-high/40 p-6 rounded-xl border-l-4 border-tertiary">
+<div class="flex items-start gap-4">
+<div class="bg-tertiary-fixed text-on-tertiary-fixed p-3 rounded-lg">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-zinc-900 mb-1">Inventory Master Sync</h3>
+<p class="text-xs text-zinc-600 mb-4">Update all marketplace stock levels based on current WMS physical inventory (4,203 SKUs).</p>
+<div class="flex gap-2">
+<button class="bg-[#714B67] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-primary transition-colors">Push Updates</button>
+<button class="bg-white text-[#714B67] border border-primary/20 text-xs font-semibold px-4 py-2 rounded-lg hover:bg-zinc-100 transition-colors">View Discrepancies</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-high/40 p-6 rounded-xl border-l-4 border-primary">
+<div class="flex items-start gap-4">
+<div class="bg-primary-fixed text-on-primary-fixed p-3 rounded-lg">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-zinc-900 mb-1">Order Pull Schedule</h3>
+<p class="text-xs text-zinc-600 mb-4">Automatically fetching orders every 5 minutes. Last successful fetch included 28 new orders.</p>
+<div class="flex gap-2">
+<button class="bg-white text-[#714B67] border border-primary/20 text-xs font-semibold px-4 py-2 rounded-lg hover:bg-zinc-100 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+                                Edit Webhooks
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav for Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-surface-container px-6 py-2 flex justify-between items-center z-50">
+<button class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center text-zinc-400">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-[10px] font-medium">Orders</span>
+</button>
+<div class="bg-primary text-white p-3 rounded-full -mt-8 shadow-lg">
+<span class="material-symbols-outlined">sync</span>
+</div>
+<button class="flex flex-col items-center text-zinc-400">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium">Stock</span>
+</button>
+<button class="flex flex-col items-center text-zinc-400">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Account</span>
+</button>
+</nav>
+</body></html>

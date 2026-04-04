@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Picking Operations - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        .odoo-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        /* Slim sidebar width */
+        .sidebar-w { width: 210px; }
+        .main-ml { margin-left: 210px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#e1e1e1",
+                      "on-secondary-fixed-variant": "#004f53",
+                      "on-primary-fixed": "#2f1029",
+                      "error-container": "#f8d7da",
+                      "surface-tint": "#714B67",
+                      "surface-container-low": "#ffffff",
+                      "on-surface": "#111827",
+                      "surface-container": "#f8f9fa",
+                      "outline-variant": "#e1e1e1",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#d4edda",
+                      "secondary-fixed-dim": "#78d5db",
+                      "on-primary-container": "#ffffff",
+                      "background": "#ffffff",
+                      "on-background": "#111827",
+                      "secondary": "#00a09d",
+                      "on-error-container": "#721c24",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#342f31",
+                      "on-tertiary-fixed": "#112000",
+                      "on-secondary-fixed": "#002022",
+                      "surface-container-high": "#f0f0f0",
+                      "on-secondary-container": "#006e73",
+                      "tertiary-fixed": "#d5eab4",
+                      "secondary-fixed": "#95f1f8",
+                      "primary-fixed": "#ffd7f1",
+                      "tertiary": "#34451e",
+                      "surface": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-container": "#714B67",
+                      "tertiary-fixed-dim": "#b9ce9a",
+                      "inverse-primary": "#e9b8d9",
+                      "primary": "#714B67",
+                      "on-tertiary": "#ffffff",
+                      "error": "#dc3545",
+                      "secondary-container": "#c1f1f3",
+                      "surface-dim": "#e0d8da",
+                      "on-surface-variant": "#4b5563",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e9ecef",
+                      "inverse-on-surface": "#f7eef1",
+                      "primary-fixed-dim": "#e9b8d9",
+                      "surface-bright": "#ffffff",
+                      "on-primary-fixed-variant": "#5f3b56",
+                      "on-tertiary-fixed-variant": "#3b4c24",
+                      "surface-variant": "#e9ecef",
+                      "on-tertiary-container": "#155724"
+              },
+              "borderRadius": {
+                      "DEFAULT": "4px",
+                      "lg": "6px",
+                      "xl": "8px",
+                      "full": "9999px"
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-[#f8f9fa] text-on-surface antialiased min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-4 py-2 sticky top-0 z-50 bg-white border-b border-outline shadow-sm font-inter text-sm antialiased">
+<div class="flex items-center gap-6">
+<div class="text-base font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">apps</span>
+            KOB WMS Pro
+        </div>
+<div class="hidden md:flex items-center gap-4">
+<nav class="flex gap-2">
+<span class="text-on-surface-variant hover:text-primary px-2 py-1 transition-colors cursor-pointer rounded">Operations</span>
+<span class="text-primary font-bold border-b-2 border-primary pb-1 px-2 cursor-pointer">Picking</span>
+<span class="text-on-surface-variant hover:text-primary px-2 py-1 transition-colors cursor-pointer rounded">Inventory</span>
+<span class="text-on-surface-variant hover:text-primary px-2 py-1 transition-colors cursor-pointer rounded">Reports</span>
+</nav>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="bg-gray-100 border-none rounded-md pl-9 pr-4 py-1.5 text-sm w-56 focus:ring-1 focus:ring-primary focus:bg-white transition-all" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-1 border-l border-outline pl-3">
+<button class="p-1.5 text-on-surface-variant hover:bg-gray-100 rounded transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span></button>
+<button class="p-1.5 text-on-surface-variant hover:bg-gray-100 rounded transition-colors"><span class="material-symbols-outlined text-[20px]">help</span></button>
+</div>
+<img alt="Manager Avatar" class="w-7 h-7 rounded-full border border-outline" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxoXlxzbLI30lL8ZV4LgiaXqZuUF0ZQFFh132kAWLtBOCKiXJGgq6fFIrdK0BitkUkMokGOWpAbAju_hwlrqatUyhg1HKgqBv-0DeSCJFveKxoQ_UQxOFj8L96MTzooI9fd24qnbYgzGHUDTT63BO35TU3d1uKxXEeWMS5w3q6pw2IhePDwM3ChMPYVKPHiUOs6hiUynoWCQmnEUeJC-aQAx6SvCq3DG-9BhrvmEKLoMIg2ko6Y3mQSbzMqbk_er66a6j7GQOnMin5"/>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-12 bg-white border-r border-outline sidebar-w z-40">
+<div class="px-4 py-4 mb-2">
+<div class="flex items-center gap-2 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Main Facility
+        </div>
+<div class="text-[10px] text-primary/70 font-bold ml-6">SECTOR A-12</div>
+</div>
+<nav class="flex-1 px-2 space-y-0.5">
+<div class="flex items-center gap-3 text-on-surface-variant py-2 px-3 hover:bg-gray-100 rounded transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant py-2 px-3 hover:bg-gray-100 rounded transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-medium text-sm">Inventory</span>
+</div>
+<div class="flex items-center gap-3 bg-primary text-white py-2 px-3 rounded shadow-sm transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">conveyor_belt</span>
+<span class="font-medium text-sm">Picking</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant py-2 px-3 hover:bg-gray-100 rounded transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">package_2</span>
+<span class="font-medium text-sm">Packing</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant py-2 px-3 hover:bg-gray-100 rounded transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+<span class="font-medium text-sm">Shipping</span>
+</div>
+<div class="pt-4 mt-4 border-t border-gray-100">
+<div class="flex items-center gap-3 text-on-surface-variant py-2 px-3 hover:bg-gray-100 rounded transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-medium text-sm">Settings</span>
+</div>
+</div>
+</nav>
+</aside>
+<!-- Main Content Workarea -->
+<main class="main-ml pt-4 px-6 bg-[#f8f9fa] min-h-[calc(100vh-56px)]">
+<!-- Action Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+<div>
+<div class="flex items-center gap-2 text-xs font-bold text-primary/70 uppercase tracking-widest mb-1">Session Tracking</div>
+<h1 class="text-xl font-bold text-on-surface flex items-center gap-3">
+                Active Picking Session
+                <span class="text-sm font-normal text-on-surface-variant bg-gray-200 px-2 py-0.5 rounded">WH/PICK/2024/0842</span>
+</h1>
+<p class="text-[11px] text-on-surface-variant mt-1">Assigned to: <span class="font-bold">Marcus Aurelius</span> • Started 2h ago</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-1.5 bg-white border border-outline text-on-surface rounded font-bold text-xs flex items-center gap-2 hover:bg-gray-50 transition-colors odoo-shadow">
+<span class="material-symbols-outlined text-[18px]">print</span>
+                Print Picklist
+            </button>
+<button class="px-4 py-1.5 bg-primary text-white rounded font-bold text-xs shadow hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+                Validate Wave
+            </button>
+</div>
+</div>
+<!-- Scanning Central Hub -->
+<div class="mb-6 grid grid-cols-12 gap-4">
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-white p-4 rounded border border-outline odoo-shadow">
+<label class="block text-[10px] font-bold uppercase text-primary mb-2 tracking-widest">Immediate Scanning Action</label>
+<div class="flex gap-2">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70 text-[20px]">barcode_scanner</span>
+<input class="w-full bg-gray-50 border border-gray-200 rounded py-2.5 pl-10 pr-4 text-base font-medium focus:ring-1 focus:ring-primary focus:bg-white focus:border-primary transition-all placeholder:text-gray-400" placeholder="Scan Barcode or Enter SKU..." type="text"/>
+</div>
+<button class="bg-primary text-white px-6 rounded font-bold text-sm hover:opacity-90 transition-colors">
+                        ENTER
+                    </button>
+</div>
+<div class="mt-2 flex gap-4 text-[10px] text-on-surface-variant font-medium">
+<span class="flex items-center gap-1 opacity-70"><span class="material-symbols-outlined text-[12px]">keyboard_return</span> ENTER to manual add</span>
+<span class="flex items-center gap-1 opacity-70"><span class="material-symbols-outlined text-[12px]">sensors</span> Laser scanner active</span>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4">
+<div class="bg-white p-4 rounded border border-outline odoo-shadow h-full flex flex-col justify-center">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Session Progress</span>
+<span class="text-lg font-bold text-primary">68%</span>
+</div>
+<div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 68%"></div>
+</div>
+<div class="mt-3 flex justify-between text-[10px] font-bold">
+<span class="text-secondary uppercase">42 Items Picked</span>
+<span class="text-on-surface-variant uppercase">20 Items Remaining</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Picking Table -->
+<div class="bg-white rounded border border-outline odoo-shadow overflow-hidden mb-8">
+<div class="grid grid-cols-12 px-4 py-2 bg-gray-50 border-b border-outline">
+<div class="col-span-2 text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Location</div>
+<div class="col-span-2 text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">SKU</div>
+<div class="col-span-3 text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Product Name</div>
+<div class="col-span-1 text-center text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Target</div>
+<div class="col-span-2 text-center text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Picked</div>
+<div class="col-span-2 text-right text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Status</div>
+</div>
+<!-- Item Row 1 -->
+<div class="grid grid-cols-12 px-4 py-2.5 items-center border-b border-gray-100 hover:bg-gray-50 transition-colors group">
+<div class="col-span-2">
+<span class="bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded font-bold">A-12-04-B</span>
+</div>
+<div class="col-span-2 font-semibold text-xs text-on-surface">SKU-99231-X</div>
+<div class="col-span-3 flex items-center gap-2">
+<div class="w-8 h-8 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
+<img alt="Product thumbnail" class="w-full h-full object-cover" data-alt="close up professional studio product photo of a high-end minimalist mechanical keyboard in matte black with subtle backlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZtmiNOLNym9vZVWNQTRMDWLp1d4ppnZHXV8lzD3eVQdn-WWZC0t_TCTdgDLl3gNjUT4iCH12EJ4mVlXD1nPhlqIvY6nAA2gPzDBjc-F78-2m68ngDrnImMVEdVJF79QnE_bOSzAK7CyK3T8bLt3r2XCTrMCLT6QysgHV_eiT2XRwstK8AHdjOFE-NtAkna5CJm_MCOgT33DttJP1UnRs93BXVLtgYSP8naRuSCJHBcwvDiHyEU_PweH4qgn-WlpkG_Jv1ctntJ_W-"/>
+</div>
+<span class="text-xs font-medium truncate">Ergo-Logix Keyboard Pro v2</span>
+</div>
+<div class="col-span-1 text-center font-bold text-xs text-on-surface-variant">12</div>
+<div class="col-span-2 px-4">
+<div class="flex items-center gap-2">
+<input class="w-12 text-center bg-gray-50 border border-gray-200 rounded py-0.5 text-xs font-bold text-secondary focus:ring-primary focus:bg-white" type="number" value="12"/>
+<span class="text-[10px] font-bold text-on-surface-variant">/ 12</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-[9px] font-bold uppercase tracking-wider">
+                    PICKED
+                </span>
+</div>
+</div>
+<!-- Item Row 2 (Partial) -->
+<div class="grid grid-cols-12 px-4 py-2.5 items-center border-b border-gray-100 hover:bg-gray-50 transition-colors group">
+<div class="col-span-2">
+<span class="bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded font-bold">B-01-22-A</span>
+</div>
+<div class="col-span-2 font-semibold text-xs text-on-surface">SKU-44120-L</div>
+<div class="col-span-3 flex items-center gap-2">
+<div class="w-8 h-8 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
+<img alt="Product thumbnail" class="w-full h-full object-cover" data-alt="professional product shot of sleek wireless noise-canceling headphones in slate grey on a clean white surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaIZfKDBgcQU1JtqM2OOTVxb4vmLXtypB60bsrmvslZyqZk0bIiDt7qfFXy93N0ZttZazD5A9ZAXEH9Fh1zGbwvshjercTbA2JjE39gOXbjbuHe6I85HOFswCZL_XnLHCyPRpxFLsc3q2iteqK-_YUzvyDY4wY-o9J-vyOleQ18VFp9Qz3jZbZ_KdDGF6GqzIft5Vf4NdwYWa98w_YmnQdQtP50m3yBuZ0dXKYuhUvcjtBfH7_6zQf9gob_I73Qt4X5v7rh7gcV_EB"/>
+</div>
+<span class="text-xs font-medium truncate">Aero-Sound Wireless ANC 500</span>
+</div>
+<div class="col-span-1 text-center font-bold text-xs text-on-surface-variant">50</div>
+<div class="col-span-2 px-4">
+<div class="flex items-center gap-2">
+<input class="w-12 text-center bg-gray-50 border border-gray-200 rounded py-0.5 text-xs font-bold text-primary focus:ring-primary focus:bg-white" type="number" value="34"/>
+<span class="text-[10px] font-bold text-on-surface-variant">/ 50</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[9px] font-bold uppercase tracking-wider">
+                    IN PROGRESS
+                </span>
+</div>
+</div>
+<!-- Item Row 3 (Alert/Delayed) -->
+<div class="grid grid-cols-12 px-4 py-2.5 items-center border-b border-gray-100 hover:bg-gray-50 transition-colors group">
+<div class="col-span-2">
+<span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold">STOCK-OUT</span>
+</div>
+<div class="col-span-2 font-semibold text-xs text-on-surface">SKU-88210-P</div>
+<div class="col-span-3 flex items-center gap-2">
+<div class="w-8 h-8 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
+<img alt="Product thumbnail" class="w-full h-full object-cover" data-alt="macro close-up photo of a modern ergonomic computer mouse with carbon fiber texture and precision scroll wheel" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_KHSXGvrkAEc9MUhQZfZF7VFWPPu6y8kkGKb6A7Cc5T_Cd4nd8neIlBujzq9z8Iae31JeepXBW0FYv1tVrBiuLX4oM4KXoqtb8ryw054_IPRpiMF2sQ7way0YEq6DxTVeTD-eaH3zNnpno9AuKwKMs1xHgB9hdAN3xmC9LgPFBGPbk6T64S22j36Yng6_WhNfNzwrZxidq9hO6izPNY8TeWRebw2BIzxlnk8U3my73kMg-qpH8m5CIvYyl1LjoMQ4Zr32yOsvd-tB"/>
+</div>
+<span class="text-xs font-medium truncate">Precision-Glide Laser Mouse</span>
+</div>
+<div class="col-span-1 text-center font-bold text-xs text-on-surface-variant">8</div>
+<div class="col-span-2 px-4">
+<div class="flex items-center gap-2">
+<input class="w-12 text-center bg-gray-50 border border-gray-200 rounded py-0.5 text-xs font-bold text-red-600 focus:ring-red-500 focus:bg-white" type="number" value="0"/>
+<span class="text-[10px] font-bold text-on-surface-variant">/ 8</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[9px] font-bold uppercase tracking-wider">
+                    DELAYED
+                </span>
+</div>
+</div>
+<!-- Item Row 4 (Pending) -->
+<div class="grid grid-cols-12 px-4 py-2.5 items-center hover:bg-gray-50 transition-colors group">
+<div class="col-span-2">
+<span class="bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded font-bold">C-04-11-F</span>
+</div>
+<div class="col-span-2 font-semibold text-xs text-on-surface">SKU-10229-M</div>
+<div class="col-span-3 flex items-center gap-2">
+<div class="w-8 h-8 rounded border border-gray-200 overflow-hidden flex-shrink-0 bg-gray-50">
+<img alt="Product thumbnail" class="w-full h-full object-cover" data-alt="softly lit studio shot of a designer smart desk lamp with a warm glowing LED ring and wooden base" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmRqJwu2x_U_-_q94oLpt9FhQMWbehGdZ-moUq9PeyoZX3s7c3kTri3aQ7DelZmIgcXrtIf0V6mdOq32xZI_vHnjTouz4bY3fvHsx9aUp_TIDvyY8_dkJbi5w9i-UMCPONy1Edn07m8U4g5ln7UwNH5aoypzzTJZ8kGORU22hvLs5c_Tsa5Q6ZDIY7YZQcTEQq7rCFvAtRPL29Lqmez3qodFghR9r7Em46vxYoBYfC0c9mxINZjsnebaLN_XAEHpnToKf91tSP8J43"/>
+</div>
+<span class="text-xs font-medium truncate">Lumina Smart Desk Lamp</span>
+</div>
+<div class="col-span-1 text-center font-bold text-xs text-on-surface-variant">5</div>
+<div class="col-span-2 px-4">
+<div class="flex items-center gap-2">
+<input class="w-12 text-center bg-gray-50 border border-gray-200 rounded py-0.5 text-xs font-bold text-on-surface-variant focus:ring-primary focus:bg-white" type="number" value="0"/>
+<span class="text-[10px] font-bold text-on-surface-variant">/ 5</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-on-surface-variant text-[9px] font-bold uppercase tracking-wider">
+                    PENDING
+                </span>
+</div>
+</div>
+</div>
+<!-- Floating Glass Summary -->
+<div class="fixed bottom-6 right-6 z-50 glass-panel border border-outline p-5 rounded border border-outline shadow-xl w-72">
+<h3 class="text-xs font-bold text-primary mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+            Session Intelligence
+        </h3>
+<div class="space-y-2.5">
+<div class="flex justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Avg Pick Time</span>
+<span class="font-bold">24s / Item</span>
+</div>
+<div class="flex justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Efficiency Rating</span>
+<span class="text-secondary font-bold uppercase">Optimal</span>
+</div>
+<div class="flex justify-between text-[11px]">
+<span class="text-on-surface-variant font-medium">Est. Completion</span>
+<span class="font-bold text-on-surface">14:42 PM</span>
+</div>
+<div class="pt-3 mt-3 border-t border-gray-200">
+<button class="w-full py-2 bg-gray-800 text-white text-[10px] font-bold rounded flex items-center justify-center gap-2 hover:bg-black transition-colors">
+<span class="material-symbols-outlined text-[14px]">troubleshoot</span>
+                    REQUEST STOCK CHECK
+                </button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

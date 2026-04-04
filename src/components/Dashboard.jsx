@@ -1,47 +1,37 @@
 import React, { useMemo } from 'react';
-import { Package, CheckCircle2, Clock, TrendingUp, Box, AlertTriangle, PieChart as PieChartIcon, Target, ShoppingCart, PackageCheck, Truck, ScanLine, Warehouse, Layers, Receipt, Award, Zap, Activity } from 'lucide-react';
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { ShoppingCart, Package, PackageCheck, Truck, Clock, Zap, Activity, BarChart3, Filter, Download, MoreVertical, AlertTriangle, CheckCircle2, ScanLine, Search, Printer, ScanBarcode } from 'lucide-react';
+import { PRODUCT_CATALOG, PLATFORM_LABELS } from '../constants';
 
 const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDelayed, courierDistributionData, progressPercent, delayedOrdersData, userRole, activityLogs, isDarkMode, salesOrders = [], inventory = null, waves = [], invoices = [], user }) => {
     const isWorker = ['picker', 'packer', 'outbound'].includes(userRole);
 
+    // ── Data computations ──
     const kpiPerformanceData = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
         const todayLogs = activityLogs.filter(log => {
             if (!log.timestamp) return false;
             return new Date(log.timestamp).toISOString().split('T')[0] === today;
         });
-
         const stats = {};
         todayLogs.forEach(log => {
             if (!stats[log.username]) {
-                stats[log.username] = {
-                    name: log.name, username: log.username,
-                    pick: 0, pack: 0, scan: 0, total: 0,
-                    firstAction: log.timestamp, lastAction: log.timestamp
-                };
+                stats[log.username] = { name: log.name, username: log.username, pick: 0, pack: 0, scan: 0, total: 0, firstAction: log.timestamp, lastAction: log.timestamp };
             }
             if (log.action === 'pick') stats[log.username].pick++;
             if (log.action === 'pack') stats[log.username].pack++;
             if (log.action === 'scan') stats[log.username].scan++;
             stats[log.username].total++;
-
             if (log.timestamp < stats[log.username].firstAction) stats[log.username].firstAction = log.timestamp;
             if (log.timestamp > stats[log.username].lastAction) stats[log.username].lastAction = log.timestamp;
         });
-
-        const result = Object.values(stats).map(stat => {
+        return Object.values(stats).map(stat => {
             let hours = (stat.lastAction - stat.firstAction) / 3600000;
             if (hours < 0.016) hours = 0.016;
             stat.uph = Math.round(stat.total / hours);
             return stat;
         }).sort((a, b) => b.total - a.total);
-
-        // No mock data — return empty when no real activity
-        return result;
     }, [activityLogs]);
 
-    // My Performance (for worker roles)
     const myPerf = useMemo(() => {
         if (!isWorker || !user?.username) return null;
         const today = new Date().toISOString().split('T')[0];
@@ -58,11 +48,9 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
         const myUph = total > 0 ? Math.round(total / hours) : 0;
         const target = userRole === 'picker' ? 60 : userRole === 'packer' ? 45 : 55;
         const uphPct = Math.min(Math.round((myUph / target) * 100), 100);
-        // Rank among peers
         const allWorkers = kpiPerformanceData || [];
         const myRank = allWorkers.findIndex(w => w.username === user.username) + 1;
         const totalWorkers = allWorkers.length;
-        // 7-day trend
         const trend = [];
         for (let d = 6; d >= 0; d--) {
             const date = new Date(); date.setDate(date.getDate() - d);
@@ -76,74 +64,74 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
         return { pick, pack, scan, count, total, myUph, target, uphPct, myRank, totalWorkers, trend, shiftStart, shiftDuration };
     }, [isWorker, user, activityLogs, userRole, kpiPerformanceData]);
 
-    // Sales Order Pipeline Stats
     const orderStats = useMemo(() => {
         const pending = salesOrders.filter(o => o.status === 'pending').length;
-        const picked = salesOrders.filter(o => o.status === 'picked' || o.status === 'picking').length;
-        const packed = salesOrders.filter(o => o.status === 'packed' || o.status === 'packing').length;
+        const picking = salesOrders.filter(o => o.status === 'picking').length;
+        const picked = salesOrders.filter(o => o.status === 'picked').length;
+        const packing = salesOrders.filter(o => o.status === 'packing').length;
+        const packed = salesOrders.filter(o => o.status === 'packed').length;
         const rts = salesOrders.filter(o => o.status === 'rts').length;
         const total = salesOrders.length;
-        const totalItems = salesOrders.reduce((s, o) => s + (o.items ? o.items.reduce((si, i) => si + (i.expected || 0), 0) : 0), 0);
-        return { pending, picked, packed, rts, total, totalItems };
+        const rtsPercent = total > 0 ? Math.round(((packed + rts) / total) * 100) : 0;
+        return { pending: pending + picking, picked, packing: picked + packing, packed, rts, total, rtsPercent };
     }, [salesOrders]);
 
-    const pipelineData = useMemo(() => {
-        if (!salesOrders.length) return [];
-        const courierMap = {};
-        salesOrders.forEach(o => {
-            const c = o.courier || o.platform || 'Unknown';
-            if (!courierMap[c]) courierMap[c] = 0;
-            courierMap[c]++;
-        });
-        return Object.entries(courierMap).map(([name, value]) => ({ name, value }));
-    }, [salesOrders]);
+    // Split orders into 3 columns
+    const pickOrders = salesOrders.filter(o => o.status === 'pending' || o.status === 'picking').slice(0, 8);
+    const packOrders = salesOrders.filter(o => o.status === 'picked' || o.status === 'packing').slice(0, 8);
+    const shipOrders = salesOrders.filter(o => o.status === 'packed' || o.status === 'rts').slice(0, 8);
 
-    // Odoo-style stat card
-    const StatCard = ({ label, val, icon, borderColor, textColor }) => (
-        <div style={{
-            backgroundColor: 'var(--odoo-surface)',
-            border: '1px solid var(--odoo-border-ghost)',
-            borderLeft: `3px solid ${borderColor}`,
-            borderRadius: '4px',
-            padding: '1rem 1.25rem',
-        }}>
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--odoo-text-secondary)' }}>{label}</p>
-                    <p className="text-2xl font-bold" style={{ color: textColor || 'var(--odoo-text)' }}>{val}</p>
-                </div>
-                <div className="p-2.5 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', color: borderColor }}>
-                    {icon}
-                </div>
-            </div>
-        </div>
-    );
+    const getPlatformBadge = (order) => {
+        const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
+        if (!pl) return null;
+        return pl.name || order.platform;
+    };
 
-    // Pipeline mini card
-    const PipelineCard = ({ label, val, icon, color, bgColor }) => (
-        <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', padding: '0.875rem 1rem' }}>
-            <div className="flex items-center gap-2 mb-1.5">
-                <span style={{ color }}>{icon}</span>
-                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-secondary)' }}>{label}</span>
-            </div>
-            <p className="text-xl font-bold" style={{ color }}>{val}</p>
-        </div>
-    );
+    const getProgress = (order) => {
+        if (!order.items) return 0;
+        const total = order.items.reduce((s, i) => s + (i.expected || 0), 0);
+        const done = order.items.reduce((s, i) => s + (i.picked || 0), 0);
+        return total > 0 ? Math.round((done / total) * 100) : 0;
+    };
 
     return (
-        <div className="space-y-5 animate-fade-in">
+        <div className="animate-fade-in flex flex-col">
 
-            {/* ── My Performance (worker roles) ── */}
+            {/* ═══════ HEADER SECTION ═══════ */}
+            {!isWorker && (
+                <div className="flex justify-between items-end mb-8">
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--odoo-text)' }}>E-commerce Fulfillment</h1>
+                        <p className="text-sm mt-1" style={{ color: 'var(--odoo-text-secondary)' }}>High-Velocity Operations: BTV-WH2 Warehouse</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center rounded-lg shadow-sm px-1" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
+                            <ScanBarcode className="w-4 h-4 ml-3" style={{ color: 'var(--odoo-text-secondary)' }} />
+                            <input
+                                className="bg-transparent border-none py-2.5 px-3 text-sm focus:ring-0 focus:outline-none w-64 placeholder:text-gray-400"
+                                placeholder="Scan SKU or Order ID..."
+                                type="text"
+                                style={{ color: 'var(--odoo-text)' }}
+                            />
+                        </div>
+                        <button onClick={() => window.print()} className="text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center gap-2 hover:opacity-90"
+                            style={{ backgroundColor: 'var(--odoo-purple)' }}>
+                            <Printer className="w-4 h-4" />
+                            Batch Print
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Worker: My Performance Strip ── */}
             {isWorker && myPerf && (
-                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div className="mb-6 rounded-xl overflow-hidden shadow-sm" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
                     <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded flex items-center justify-center text-white shrink-0" style={{ backgroundColor: 'var(--odoo-purple)' }}>
-                                <Activity className="w-4 h-4" />
-                            </div>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: 'var(--odoo-purple)' }}><Activity className="w-4 h-4" /></div>
                             <div>
-                                <h2 className="font-bold" style={{ fontSize: '14px', color: 'var(--odoo-text)' }}>My Performance</h2>
-                                <p style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)' }}>Today — {user?.name || user?.username} ({userRole})</p>
+                                <h2 className="font-bold text-sm" style={{ color: 'var(--odoo-text)' }}>My Performance</h2>
+                                <p className="text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>Today — {user?.name || user?.username} ({userRole})</p>
                             </div>
                         </div>
                         <div className="text-right">
@@ -151,215 +139,325 @@ const Dashboard = ({ t, totalExpected, totalScanned, uph, dailyBoxUsage, totalDe
                             <p className="text-xs font-bold" style={{ color: 'var(--odoo-purple)' }}>{myPerf.shiftDuration}</p>
                         </div>
                     </div>
-                    <div className="p-5">
-                        {/* KPI gauges */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                            {/* UPH */}
-                            <div className="text-center">
-                                <div className="relative w-20 h-20 mx-auto mb-2">
-                                    <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#f0f0f0" strokeWidth="3" />
-                                        <circle cx="18" cy="18" r="15.5" fill="none" stroke={myPerf.uphPct >= 80 ? 'var(--odoo-success)' : myPerf.uphPct >= 50 ? 'var(--odoo-warning)' : 'var(--odoo-danger)'} strokeWidth="3"
-                                            strokeDasharray={`${myPerf.uphPct * 0.975} 97.5`} strokeLinecap="round" />
-                                    </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-lg font-black" style={{ color: 'var(--odoo-text)' }}>{myPerf.myUph}</span>
-                                    </div>
-                                </div>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>UPH</p>
-                                <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Target: {myPerf.target}</p>
-                            </div>
-                            {/* Orders Done */}
-                            <div className="text-center">
-                                <p className="text-3xl font-black mb-1" style={{ color: 'var(--odoo-purple)' }}>{myPerf.total}</p>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Orders Done</p>
-                                <div className="flex justify-center gap-3 mt-1 text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>
-                                    {myPerf.pick > 0 && <span>Pick: {myPerf.pick}</span>}
-                                    {myPerf.pack > 0 && <span>Pack: {myPerf.pack}</span>}
-                                    {myPerf.scan > 0 && <span>Scan: {myPerf.scan}</span>}
+                    <div className="p-5 grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="text-center">
+                            <div className="relative w-16 h-16 mx-auto mb-1">
+                                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke="#f0f0f0" strokeWidth="3" />
+                                    <circle cx="18" cy="18" r="15.5" fill="none" stroke={myPerf.uphPct >= 80 ? 'var(--odoo-success)' : myPerf.uphPct >= 50 ? 'var(--odoo-warning)' : 'var(--odoo-danger)'} strokeWidth="3" strokeDasharray={`${myPerf.uphPct * 0.975} 97.5`} strokeLinecap="round" />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-base font-black" style={{ color: 'var(--odoo-text)' }}>{myPerf.myUph}</span>
                                 </div>
                             </div>
-                            {/* Rank */}
-                            <div className="text-center">
-                                <p className="text-3xl font-black mb-1" style={{ color: myPerf.myRank <= 3 ? 'var(--odoo-success)' : 'var(--odoo-text)' }}>
-                                    {myPerf.myRank > 0 ? `#${myPerf.myRank}` : '—'}
-                                </p>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Rank</p>
-                                <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>of {myPerf.totalWorkers} workers</p>
-                            </div>
-                            {/* Count Tasks */}
-                            <div className="text-center">
-                                <p className="text-3xl font-black mb-1" style={{ color: myPerf.count > 0 ? 'var(--odoo-success)' : 'var(--odoo-text-muted)' }}>
-                                    {myPerf.count}
-                                </p>
-                                <p className="text-[11px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Counts Done</p>
-                                <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>Cycle Count tasks</p>
-                            </div>
+                            <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>UPH</p>
                         </div>
-                        {/* 7-day trend */}
-                        <div>
-                            <p className="text-[11px] font-bold uppercase mb-2" style={{ color: 'var(--odoo-text-secondary)' }}>7-Day Trend</p>
-                            <div className="flex items-end gap-1 h-12">
+                        <div className="text-center flex flex-col justify-center">
+                            <p className="text-2xl font-extrabold" style={{ color: 'var(--odoo-purple)' }}>{myPerf.total}</p>
+                            <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Done</p>
+                        </div>
+                        <div className="text-center flex flex-col justify-center">
+                            <p className="text-2xl font-extrabold" style={{ color: myPerf.myRank <= 3 ? 'var(--odoo-success)' : 'var(--odoo-text)' }}>{myPerf.myRank > 0 ? `#${myPerf.myRank}` : '—'}</p>
+                            <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Rank</p>
+                        </div>
+                        <div className="text-center flex flex-col justify-center">
+                            <p className="text-2xl font-extrabold" style={{ color: myPerf.count > 0 ? 'var(--odoo-success)' : 'var(--odoo-text-muted)' }}>{myPerf.count}</p>
+                            <p className="text-[10px] font-bold uppercase" style={{ color: 'var(--odoo-text-secondary)' }}>Counts</p>
+                        </div>
+                        <div className="flex flex-col justify-center">
+                            <p className="text-[10px] font-bold uppercase mb-1" style={{ color: 'var(--odoo-text-secondary)' }}>7-Day</p>
+                            <div className="flex items-end gap-0.5 h-8">
                                 {myPerf.trend.map((d, i) => {
                                     const maxVal = Math.max(...myPerf.trend.map(t => t.val), 1);
-                                    const h = Math.max((d.val / maxVal) * 100, 4);
+                                    const h = Math.max((d.val / maxVal) * 100, 8);
                                     const isToday = i === myPerf.trend.length - 1;
-                                    return (
-                                        <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                                            <div className="w-full rounded-t-sm transition-all" style={{
-                                                height: `${h}%`, minHeight: '2px',
-                                                backgroundColor: isToday ? 'var(--odoo-purple)' : 'var(--odoo-surface-high)',
-                                            }} />
-                                            <span className="text-[8px]" style={{ color: isToday ? 'var(--odoo-purple)' : 'var(--odoo-text-muted)' }}>{d.day}</span>
-                                        </div>
-                                    );
+                                    return <div key={i} className="flex-1 rounded-t-sm" style={{ height: `${h}%`, minHeight: '2px', backgroundColor: isToday ? 'var(--odoo-purple)' : 'var(--odoo-surface-high)' }} />;
                                 })}
                             </div>
                         </div>
-                        {/* No activity message */}
-                        {myPerf.total === 0 && (
-                            <div className="text-center py-4 mt-3" style={{ backgroundColor: 'var(--odoo-surface-low)', borderRadius: '4px' }}>
-                                <Zap className="w-6 h-6 mx-auto mb-2" style={{ color: 'var(--odoo-text-muted)' }} />
-                                <p className="text-xs" style={{ color: 'var(--odoo-text-secondary)' }}>No activity yet today — start your first task!</p>
-                            </div>
-                        )}
                     </div>
                 </div>
             )}
 
-            {/* Order Pipeline */}
-            {salesOrders.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-                    {[
-                        { label: 'Pending', val: orderStats.pending, icon: <Clock className="w-4 h-4" />, color: 'var(--odoo-warning)' },
-                        { label: 'Picked', val: orderStats.picked, icon: <ShoppingCart className="w-4 h-4" />, color: 'var(--odoo-info)' },
-                        { label: 'Packed', val: orderStats.packed, icon: <PackageCheck className="w-4 h-4" />, color: 'var(--odoo-purple)' },
-                        { label: 'RTS / Shipped', val: orderStats.rts, icon: <Truck className="w-4 h-4" />, color: 'var(--odoo-teal)' },
-                        { label: 'Total Orders', val: orderStats.total, icon: <Package className="w-4 h-4" />, color: 'var(--odoo-text-secondary)' },
-                    ].map((stat, i) => (
-                        <PipelineCard key={i} {...stat} />
-                    ))}
-                </div>
-            )}
-
-            {/* Inventory / Wave / Invoice KPI */}
-            {(inventory || waves.length > 0 || invoices.length > 0) && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[
-                        { label: 'Stock Value', val: inventory ? `฿${inventory.reduce((s, i) => s + i.onHand * i.unitCost, 0).toLocaleString()}` : '—', icon: <Warehouse className="w-4 h-4" />, borderColor: 'var(--odoo-purple)', textColor: 'var(--odoo-purple)' },
-                        { label: 'Low Stock SKUs', val: inventory ? inventory.filter(i => i.available <= i.reorderPoint).length : '—', icon: <AlertTriangle className="w-4 h-4" />, borderColor: 'var(--odoo-danger)', textColor: 'var(--odoo-danger)' },
-                        { label: 'Active Waves', val: waves.filter(w => w.status === 'active').length, icon: <Layers className="w-4 h-4" />, borderColor: 'var(--odoo-info)', textColor: 'var(--odoo-info)' },
-                        { label: 'Invoiced Today', val: invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).length, icon: <Receipt className="w-4 h-4" />, borderColor: 'var(--odoo-success)', textColor: 'var(--odoo-success)' },
-                    ].map((stat, i) => (
-                        <StatCard key={i} {...stat} />
-                    ))}
-                </div>
-            )}
-
-            {/* Outbound KPI Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            {/* ═══════ KPI SUMMARY STRIP ═══════ */}
+            <div className="flex gap-4 mb-6">
                 {[
-                    { label: t('statExpected'), val: totalExpected, icon: <Package className="w-4 h-4" />, borderColor: 'var(--odoo-purple)' },
-                    { label: t('statScanned'), val: totalScanned, icon: <CheckCircle2 className="w-4 h-4" />, borderColor: 'var(--odoo-teal)' },
-                    { label: t('statUPH'), val: uph, icon: <TrendingUp className="w-4 h-4" />, borderColor: 'var(--odoo-info)' },
-                    { label: t('statSLA'), val: totalDelayed, icon: <AlertTriangle className="w-4 h-4" />, borderColor: 'var(--odoo-danger)', textColor: totalDelayed > 0 ? 'var(--odoo-danger)' : 'var(--odoo-text)' }
-                ].map((stat, i) => (
-                    <StatCard key={i} {...stat} />
+                    { label: 'Pending Pick', val: orderStats.pending, color: '#714B67', bgIcon: '#ffd7f1', icon: <ShoppingCart className="w-5 h-5" style={{ color: '#714B67' }} /> },
+                    { label: 'Packaging', val: orderStats.packing, color: '#00696e', bgIcon: '#95f1f8', icon: <PackageCheck className="w-5 h-5" style={{ color: '#00696e' }} /> },
+                    { label: 'RTS Rate', val: `${orderStats.rtsPercent}%`, color: '#791e2a', bgIcon: '#ffdada', icon: <Zap className="w-5 h-5" style={{ color: '#791e2a' }} /> },
+                    { label: 'Shipped Today', val: orderStats.rts, color: 'var(--odoo-text)', bgIcon: 'var(--odoo-surface-high)', icon: <Truck className="w-5 h-5" style={{ color: '#4e444a' }} /> },
+                ].map((kpi, i) => (
+                    <div key={i} className="flex-1 p-6 rounded-xl shadow-sm flex items-center justify-between"
+                        style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
+                        <div>
+                            <div className="text-[10px] font-bold tracking-wider uppercase mb-1" style={{ color: 'var(--odoo-text-muted)' }}>{kpi.label}</div>
+                            <div className="text-3xl font-extrabold" style={{ color: kpi.color }}>{typeof kpi.val === 'number' ? kpi.val.toLocaleString() : kpi.val}</div>
+                        </div>
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: kpi.bgIcon }}>
+                            {kpi.icon}
+                        </div>
+                    </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Distribution Chart */}
-                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
-                    <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
-                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
-                            <PieChartIcon className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> {t('chartCourier')}
-                        </h3>
+            {/* ═══════ FULFILLMENT FLOW (3 COLUMNS) ═══════ */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" style={{ minHeight: '340px' }}>
+
+                {/* Column: Orders to Pick */}
+                <div className="flex flex-col rounded-xl p-4 gap-3 overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                    <div className="flex justify-between items-center px-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#714B67' }} />
+                            <h3 className="font-bold uppercase text-xs tracking-widest" style={{ color: 'var(--odoo-text)' }}>Orders to Pick</h3>
+                        </div>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: 'rgba(113, 75, 103, 0.15)', color: '#714B67' }}>
+                            {pickOrders.length} {pickOrders.length > 0 ? 'NEW' : ''}
+                        </span>
                     </div>
-                    <div className="p-5 h-64">
-                        {courierDistributionData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RechartsPieChart>
-                                    <Pie data={courierDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={2}>
-                                        {courierDistributionData.map((entry, index) => <Cell key={`cell-${index}`} fill={['var(--odoo-purple)', 'var(--odoo-teal)', '#00A09D', 'var(--odoo-warning)', 'var(--odoo-danger)'][index % 5]} />)}
-                                    </Pie>
-                                    <RechartsTooltip />
-                                    <Legend />
-                                </RechartsPieChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center" style={{ color: 'var(--odoo-text-muted)' }}>
-                                <PieChartIcon className="w-10 h-10 mb-2 opacity-20" />
-                                <span className="text-sm">{t('insufficientData')}</span>
+                    <div className="flex-1 overflow-y-auto pr-1 space-y-3" style={{ maxHeight: '400px' }}>
+                        {pickOrders.length === 0 ? (
+                            <div className="text-center py-12 opacity-40">
+                                <ShoppingCart className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--odoo-text-muted)' }} />
+                                <p className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>No orders to pick</p>
                             </div>
-                        )}
+                        ) : pickOrders.map(order => {
+                            const progress = getProgress(order);
+                            const platform = getPlatformBadge(order);
+                            return (
+                                <div key={order.id} className="p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'var(--odoo-surface)', borderLeft: '4px solid #714B67' }}>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-xs font-bold" style={{ color: '#714B67' }}>{order.ref}</span>
+                                        {platform && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--odoo-surface-low)', color: 'var(--odoo-text-secondary)' }}>{platform}</span>}
+                                    </div>
+                                    <p className="text-xs mb-3" style={{ color: 'var(--odoo-text-secondary)' }}>
+                                        {order.customer} &bull; {order.items?.length || 0} SKUs &bull; {order.items?.reduce((s, i) => s + (i.expected || 0), 0)} pcs
+                                    </p>
+                                    <div className="h-1.5 w-full rounded-full overflow-hidden mb-2" style={{ backgroundColor: 'var(--odoo-surface-high)' }}>
+                                        <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: '#714B67' }} />
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>{progress}% picked</span>
+                                        <span className="text-[10px] font-bold cursor-pointer" style={{ color: '#714B67' }}>START PICKING</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
-                {/* Delay Chart */}
-                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
-                    <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
-                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
-                            <AlertTriangle className="w-4 h-4" style={{ color: 'var(--odoo-danger)' }} /> {t('chartDelayed')}
-                        </h3>
+                {/* Column: Orders to Pack */}
+                <div className="flex flex-col rounded-xl p-4 gap-3 overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                    <div className="flex justify-between items-center px-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#00696e' }} />
+                            <h3 className="font-bold uppercase text-xs tracking-widest" style={{ color: 'var(--odoo-text)' }}>Orders to Pack</h3>
+                        </div>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: 'rgba(0, 105, 110, 0.15)', color: '#00696e' }}>
+                            {packOrders.length} ACTIVE
+                        </span>
                     </div>
-                    <div className="p-5 h-64">
-                        {delayedOrdersData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={delayedOrdersData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--odoo-surface-high)" />
-                                    <XAxis dataKey="platform" tick={{ fontSize: 11, fill: 'var(--odoo-text-secondary)' }} axisLine={false} tickLine={false} />
-                                    <YAxis tick={{ fontSize: 11, fill: 'var(--odoo-text-secondary)' }} axisLine={false} tickLine={false} />
-                                    <RechartsTooltip cursor={{ fill: 'var(--odoo-surface-low)' }} />
-                                    <Bar dataKey="count" radius={[2, 2, 0, 0]} maxBarSize={40}>
-                                        {delayedOrdersData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                    <div className="flex-1 overflow-y-auto pr-1 space-y-3" style={{ maxHeight: '400px' }}>
+                        {packOrders.length === 0 ? (
+                            <div className="text-center py-12 opacity-40">
+                                <PackageCheck className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--odoo-text-muted)' }} />
+                                <p className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>No orders to pack</p>
+                            </div>
+                        ) : packOrders.map(order => {
+                            const platform = getPlatformBadge(order);
+                            const itemCount = order.items?.reduce((s, i) => s + (i.expected || 0), 0) || 0;
+                            return (
+                                <div key={order.id} className="p-4 rounded-lg shadow-sm" style={{ backgroundColor: 'var(--odoo-surface)', borderLeft: '4px solid #00696e' }}>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-xs font-bold" style={{ color: '#00696e' }}>{order.ref}</span>
+                                        {platform && <span className="text-[10px] font-bold" style={{ color: 'var(--odoo-text-muted)' }}>{platform}</span>}
+                                    </div>
+                                    <div className="space-y-1 mb-3">
+                                        {(order.items || []).slice(0, 3).map((item, idx) => (
+                                            <div key={idx} className="flex justify-between text-[10px]">
+                                                <span style={{ color: 'var(--odoo-text-muted)' }}>{PRODUCT_CATALOG[item.sku]?.shortName || item.name}</span>
+                                                <span className="font-bold" style={{ color: 'var(--odoo-text)' }}>x{item.expected}</span>
+                                            </div>
+                                        ))}
+                                        {(order.items || []).length > 3 && <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>+{order.items.length - 3} more items</p>}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => alert(`Generate label for ${order.ref}`)} className="flex-1 py-2 rounded font-bold text-[10px] text-white shadow-sm" style={{ backgroundColor: '#00696e' }}>GENERATE LABEL</button>
+                                        <button onClick={() => alert(`Scan ${order.ref}`)} className="w-9 flex items-center justify-center rounded" style={{ backgroundColor: 'var(--odoo-surface-low)', color: 'var(--odoo-text-secondary)' }}>
+                                            <ScanLine className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Column: Ready to Ship */}
+                <div className="flex flex-col rounded-xl p-4 gap-3 overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                    <div className="flex justify-between items-center px-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#9ca3af' }} />
+                            <h3 className="font-bold uppercase text-xs tracking-widest" style={{ color: 'var(--odoo-text)' }}>Ready to Ship</h3>
+                        </div>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: '#e5e7eb', color: '#4b5563' }}>
+                            {shipOrders.length} WAIT
+                        </span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto pr-1" style={{ maxHeight: '400px' }}>
+                        {shipOrders.length === 0 ? (
+                            <div className="text-center py-12 opacity-40">
+                                <Truck className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--odoo-text-muted)' }} />
+                                <p className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>No orders ready to ship</p>
+                            </div>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center" style={{ color: 'var(--odoo-teal)' }}>
-                                <CheckCircle2 className="w-10 h-10 mb-2 opacity-20" />
-                                <span className="text-sm font-semibold italic">All clear!</span>
+                            <div className="rounded-lg shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
+                                <table className="w-full text-left text-[10px]">
+                                    <thead style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                                        <tr>
+                                            <th className="px-3 py-2 font-bold uppercase tracking-tight" style={{ color: 'var(--odoo-text-muted)' }}>Order</th>
+                                            <th className="px-3 py-2 font-bold uppercase tracking-tight" style={{ color: 'var(--odoo-text-muted)' }}>Carrier</th>
+                                            <th className="px-3 py-2 font-bold uppercase tracking-tight" style={{ color: 'var(--odoo-text-muted)' }}>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {shipOrders.map(order => (
+                                            <tr key={order.id} className="hover:opacity-80 transition-colors" style={{ borderBottom: '1px solid var(--odoo-surface-low)' }}>
+                                                <td className="px-3 py-3 font-bold" style={{ color: 'var(--odoo-text)' }}>{order.ref}</td>
+                                                <td className="px-3 py-3" style={{ color: 'var(--odoo-text-secondary)' }}>{getPlatformBadge(order) || order.courier || '—'}</td>
+                                                <td className="px-3 py-3">
+                                                    <span className="px-2 py-0.5 rounded font-bold uppercase" style={{
+                                                        backgroundColor: order.status === 'rts' ? '#dcfce7' : '#fef9c3',
+                                                        color: order.status === 'rts' ? '#15803d' : '#a16207',
+                                                    }}>{order.status === 'rts' ? 'MANIFESTED' : 'PACKED'}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {shipOrders.length > 0 && (
+                                    <div className="p-3" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                        <button onClick={() => alert(`Confirming shipment for ${shipOrders.length} orders`)} className="w-full py-2.5 rounded font-bold text-xs text-white shadow-md transition-all" style={{ backgroundColor: '#57344f' }}>
+                                            CONFIRM SHIPMENT ({shipOrders.length})
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Performance Table */}
-            {userRole === 'admin' && (
-                <div style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--odoo-border-ghost)', backgroundColor: 'var(--odoo-surface-low)' }}>
-                        <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--odoo-text)' }}>
-                            <Target className="w-4 h-4" style={{ color: 'var(--odoo-purple)' }} /> {t('kpiSpeed')} — Team Performance
-                        </h3>
+            {/* ═══════ ACTIVE ORDER SKU DETAILS TABLE ═══════ */}
+            {!isWorker && salesOrders.length > 0 && (
+                <div className="rounded-xl shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
+                    <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                        <h4 className="font-bold" style={{ color: 'var(--odoo-text)' }}>Active Order SKU Details</h4>
+                        <div className="flex gap-3">
+                            <button onClick={() => alert('Filter options coming soon')} className="text-xs font-semibold flex items-center gap-1 transition-colors hover:opacity-70" style={{ color: 'var(--odoo-text-muted)' }}>
+                                <Filter className="w-3.5 h-3.5" /> Filter
+                            </button>
+                            <button onClick={() => { const csv = ['Order,Customer,Items,Qty,Status', ...salesOrders.slice(0,10).map(o => `${o.ref},${o.customer||''},${o.items?.length||0},${o.items?.reduce((s,i)=>s+(i.expected||0),0)||0},${o.status}`)].join('\n'); const blob = new Blob([csv],{type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orders.csv'; a.click(); }} className="text-xs font-semibold flex items-center gap-1 transition-colors hover:opacity-70" style={{ color: 'var(--odoo-text-muted)' }}>
+                                <Download className="w-3.5 h-3.5" /> Export
+                            </button>
+                        </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left odoo-table">
+                        <table className="w-full text-left">
                             <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th className="text-center">Pick</th>
-                                    <th className="text-center">Pack</th>
-                                    <th className="text-center">Scan</th>
-                                    <th className="text-center">Total</th>
-                                    <th className="text-right">UPH</th>
+                                <tr style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Order ID</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Customer</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Items</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Qty</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>SLA Status</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--odoo-text-muted)' }}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {salesOrders.slice(0, 10).map(order => {
+                                    const totalQty = order.items?.reduce((s, i) => s + (i.expected || 0), 0) || 0;
+                                    const slaOk = order.status !== 'pending'; // simplified
+                                    return (
+                                        <tr key={order.id} className="hover:opacity-90 transition-colors text-sm" style={{ borderBottom: '1px solid var(--odoo-surface-low)' }}>
+                                            <td className="px-6 py-4 font-bold" style={{ color: '#714B67' }}>{order.ref}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{order.customer || '—'}</div>
+                                                <div className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>{getPlatformBadge(order) || ''}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium" style={{ color: 'var(--odoo-text)' }}>{order.items?.length || 0} SKUs</div>
+                                                <div className="text-xs" style={{ color: 'var(--odoo-text-muted)' }}>{order.items?.[0]?.sku || ''}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center font-bold" style={{ color: '#00696e' }}>{totalQty}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface-high)', minWidth: '60px' }}>
+                                                        <div className="h-full rounded-full" style={{ width: slaOk ? '85%' : '30%', backgroundColor: slaOk ? '#00696e' : '#791e2a' }} />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold" style={{ color: slaOk ? '#00696e' : '#791e2a' }}>{slaOk ? 'OK' : 'URGENT'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <MoreVertical className="w-4 h-4 cursor-pointer" style={{ color: 'var(--odoo-text-muted)' }} />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {salesOrders.length === 0 && (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-16 text-center">
+                                            <Package className="w-10 h-10 mx-auto mb-2 opacity-30" style={{ color: 'var(--odoo-text-muted)' }} />
+                                            <p className="text-sm" style={{ color: 'var(--odoo-text-muted)' }}>No active orders</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* ═══════ TEAM PERFORMANCE (admin only, no orders) ═══════ */}
+            {!isWorker && salesOrders.length === 0 && (
+                <div className="rounded-xl shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)' }}>
+                    <div className="px-6 py-4 flex justify-between items-center" style={{ backgroundColor: 'var(--odoo-surface-low)', borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                        <h3 className="text-[11px] uppercase tracking-wider font-bold" style={{ color: 'var(--odoo-text-secondary)' }}>{t('kpiSpeed')} — Team Performance</h3>
+                        <div className="flex gap-2">
+                            <button className="px-3 py-1 text-[10px] font-bold rounded shadow-sm uppercase flex items-center gap-1" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border-ghost)', color: 'var(--odoo-text-secondary)' }}>
+                                <Download className="w-3 h-3" /> Export CSV
+                            </button>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                    <th className="px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest" style={{ color: 'var(--odoo-text-muted)' }}>Member</th>
+                                    <th className="px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-center" style={{ color: 'var(--odoo-text-muted)' }}>Pick</th>
+                                    <th className="px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-center" style={{ color: 'var(--odoo-text-muted)' }}>Pack</th>
+                                    <th className="px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-center" style={{ color: 'var(--odoo-text-muted)' }}>Scan</th>
+                                    <th className="px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-center" style={{ color: 'var(--odoo-text-muted)' }}>Total</th>
+                                    <th className="px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-right" style={{ color: 'var(--odoo-text-muted)' }}>UPH</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {kpiPerformanceData.map(stat => (
-                                    <tr key={stat.username}>
-                                        <td className="font-semibold" style={{ color: 'var(--odoo-text)' }}>{stat.name}</td>
-                                        <td className="text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.pick}</td>
-                                        <td className="text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.pack}</td>
-                                        <td className="text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.scan}</td>
-                                        <td className="text-center font-bold" style={{ color: 'var(--odoo-purple)' }}>{stat.total}</td>
-                                        <td className="text-right font-bold" style={{ color: 'var(--odoo-teal)' }}>{stat.uph}</td>
+                                    <tr key={stat.username} className="hover:opacity-90 transition-colors" style={{ borderBottom: '1px solid var(--odoo-border-ghost)' }}>
+                                        <td className="px-6 py-3 font-semibold text-sm" style={{ color: 'var(--odoo-text)' }}>{stat.name}</td>
+                                        <td className="px-6 py-3 text-sm text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.pick}</td>
+                                        <td className="px-6 py-3 text-sm text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.pack}</td>
+                                        <td className="px-6 py-3 text-sm text-center" style={{ color: 'var(--odoo-text-secondary)' }}>{stat.scan}</td>
+                                        <td className="px-6 py-3 text-sm text-center font-bold" style={{ color: '#714B67' }}>{stat.total}</td>
+                                        <td className="px-6 py-3 text-sm text-right font-bold" style={{ color: '#00696e' }}>{stat.uph}</td>
                                     </tr>
                                 ))}
                                 {kpiPerformanceData.length === 0 && (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-10" style={{ color: 'var(--odoo-text-muted)' }}>No data available for today.</td>
+                                        <td colSpan="6" className="px-6 py-16 text-center">
+                                            <Activity className="w-10 h-10 mx-auto mb-2 opacity-30" style={{ color: 'var(--odoo-text-muted)' }} />
+                                            <p className="text-sm" style={{ color: 'var(--odoo-text-muted)' }}>No data available for today</p>
+                                            <p className="text-[10px] uppercase mt-1" style={{ color: 'var(--odoo-text-muted)' }}>Performance sync every 15 minutes</p>
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>

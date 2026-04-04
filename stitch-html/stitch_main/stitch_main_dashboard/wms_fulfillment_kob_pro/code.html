@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - Fulfillment Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f3f3f3",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#4e444a",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#714b67",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "on-primary-container": "#f0bfe0",
+                        "secondary-container": "#92eff5",
+                        "inverse-on-surface": "#f1f1f1",
+                        "outline": "#80747a",
+                        "tertiary-fixed": "#ffdada",
+                        "primary-fixed": "#ffd7f1",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#ffbdbf",
+                        "tertiary-container": "#983540",
+                        "surface-tint": "#79526f",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-fixed": "#40000c",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "tertiary": "#791e2a",
+                        "surface-container-highest": "#e2e2e2",
+                        "primary": "#57344f",
+                        "surface-dim": "#dadada",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "surface": "#f9f9f9",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "on-secondary-container": "#006e73",
+                        "outline-variant": "#d1c3ca",
+                        "secondary-fixed": "#95f1f8",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#e9b8d9",
+                        "secondary": "#00696e",
+                        "on-primary-fixed": "#2f1029",
+                        "on-secondary-fixed": "#002022",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-variant": "#e2e2e2",
+                        "secondary-fixed-dim": "#78d5db",
+                        "on-secondary-fixed-variant": "#004f53",
+                        "on-tertiary-fixed-variant": "#822430",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1c3ca; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex h-screen overflow-hidden">
+<!-- SideNavBar Anchor -->
+<aside class="hidden md:flex flex-col h-full py-4 px-3 gap-1 bg-surface-container-low dark:bg-slate-900 w-[240px] border-none font-medium text-[0.875rem]">
+<div class="flex flex-col gap-1 mb-8 px-2">
+<h2 class="text-primary font-bold text-lg tracking-tight">KOB WMS Pro</h2>
+<div class="flex items-center gap-3 mt-4 mb-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional male warehouse operations manager portrait with blurred warehouse logistics background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlfEEJeNnhP7vBS6Q5Vqt20yok47G3Heb4tGKANPrrenxGnPqDc6Z5zhSqJqEL9TKO1RFdYn0pqOOiG0aG5ezNJAeSqA5SfegAMNZbcAg5p1CtEvC9oRvO7UH9HjDZp8Gz8WlOfP8nlHq709feOeFa7JqgTlK3tdkk4uEE0pPrlCB3NKNpLfw0Evwubgb31eTDFWGbamKMSE-SIDPtZjOcyJYb5VDMMq2cexFlNyZExWCVfuM5gyTnueOmSPlNTVtqalPV6NtsxQCn"/>
+</div>
+<div class="flex flex-col">
+<span class="text-on-surface font-semibold text-sm">Fulfillment Center</span>
+<span class="text-on-surface-variant text-[11px] uppercase tracking-wider">Zone A-42</span>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-white/50 transition-all rounded-[4px]" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white text-primary rounded-[4px] shadow-sm scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">package_2</span>
+<span>Fulfillment</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-white/50 transition-all rounded-[4px]" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span>Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-white/50 transition-all rounded-[4px]" href="#">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+<span>Shipments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-white/50 transition-all rounded-[4px]" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-white/50 transition-all rounded-[4px]" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<button class="mt-auto mx-2 bg-secondary text-white py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Shipment
+        </button>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+<!-- TopAppBar Anchor -->
+<header class="bg-gradient-to-r from-[#57344F] to-[#714B67] text-white flex justify-between items-center w-full px-6 h-14 shadow-sm z-10 antialiased tracking-tight">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined md:hidden">menu</span>
+<span class="text-lg font-semibold text-white tracking-wide">Fulfillment Dashboard</span>
+</div>
+<div class="flex items-center gap-5">
+<div class="flex items-center bg-white/10 rounded-lg px-3 py-1.5 gap-2">
+<span class="material-symbols-outlined text-[18px] text-white/80">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm placeholder-white/60 w-48" placeholder="Search Order ID..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-white/80 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer">apps</span>
+<span class="material-symbols-outlined text-white/80 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-white/80 hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Dashboard Body -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- KPI Strip -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-sm border-t-4 border-secondary">
+<p class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Fulfillment Rate</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-extrabold text-secondary tracking-tight">98.2%</span>
+<span class="text-secondary text-sm font-medium pb-1 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +1.2%
+                        </span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-sm">
+<p class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Orders Processed Today</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-extrabold text-on-surface tracking-tight">1,284</span>
+<span class="text-on-surface-variant text-xs pb-1">Units</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-sm">
+<p class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Avg Processing Time</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-extrabold text-on-surface tracking-tight">14m</span>
+<span class="text-on-surface-variant text-xs pb-1">Per Order</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-sm border-t-4 border-tertiary-container">
+<p class="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider mb-1">Backlog Count</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-extrabold text-on-tertiary-fixed-variant tracking-tight">45</span>
+<span class="text-tertiary text-xs font-medium pb-1 uppercase tracking-tighter">Needs Action</span>
+</div>
+</div>
+</section>
+<!-- Filter Bar -->
+<div class="bg-surface-container-low p-3 rounded-lg flex flex-wrap items-center gap-4 text-sm font-medium">
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+<span>Today, Oct 24</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-outline-variant/20">
+<span class="text-on-surface-variant">Platform:</span>
+<span class="font-bold">All Channels</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded border border-outline-variant/20">
+<span class="text-on-surface-variant">Courier:</span>
+<span class="font-bold">DHL, J&amp;T</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<div class="ml-auto flex gap-2">
+<button class="bg-surface-container-highest px-4 py-2 rounded text-on-surface hover:bg-surface-dim transition-colors">Clear</button>
+<button class="bg-primary text-white px-4 py-2 rounded hover:opacity-90 transition-all">Apply Filters</button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-6">
+<!-- Kanban Orders Pipeline -->
+<div class="col-span-12 lg:col-span-9">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Column: Pending -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center px-1">
+<h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
+                                    Pending <span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">12</span>
+</h3>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">more_horiz</span>
+</div>
+<div class="space-y-3">
+<!-- Urgent Card -->
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm border border-tertiary-container/30 relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-tertiary"></div>
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-xs text-tertiary">#ORD-8829</span>
+<span class="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Shopee</span>
+</div>
+<p class="text-sm font-semibold text-on-surface">Eleanor Fant</p>
+<p class="text-[11px] text-on-surface-variant mb-3">3 Items • Fragile</p>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 text-tertiary font-bold text-xs">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+<span>45m left</span>
+</div>
+<img class="w-6 h-6 rounded-full border border-white" data-alt="close up headshot of female customer service profile icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQKg8_amGZatTqLFiLwZHpne52CXDYHEs6rCXmWmjIC-7hEJUmqHpFiaggnmzGlAJjhcmLcV7He9XoF21EkDp6Pm5reRZNGCV4u_8rRaEadiH4sNVe1pmm-ch56IBxUPhozCi0EJo9pYIjwNNweE0_6Jp1rVhngUeUYaHquC4aE9apThSWaLP8TSR9bkeuhdsz4SVJNgS8t_BGjCiFhr035a-NbFNBDg4drT7JwyAxEay0Qqy55Mq-WFSA9GCOWS7Ah_ZRJ5dULatG"/>
+</div>
+</div>
+<!-- Normal Card -->
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm border-t border-transparent hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-xs text-primary">#ORD-8835</span>
+<span class="text-[10px] bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full font-bold">Lazada</span>
+</div>
+<p class="text-sm font-semibold text-on-surface">Marcus Tille</p>
+<p class="text-[11px] text-on-surface-variant mb-3">1 Item • Standard</p>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+<span>2h 15m</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Processing -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center px-1">
+<h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
+                                    Processing <span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">8</span>
+</h3>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm border-t border-transparent">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-xs text-primary">#ORD-8812</span>
+<span class="text-[10px] bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full font-bold">TikTok</span>
+</div>
+<p class="text-sm font-semibold text-on-surface">Sarah Connor</p>
+<p class="text-[11px] text-on-surface-variant mb-3">5 Items • Pick List Ready</p>
+<div class="flex items-center justify-between text-xs font-medium">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[8px] text-white border-2 border-white">JD</div>
+<div class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[8px] text-white border-2 border-white">AK</div>
+</div>
+<span class="text-secondary">Picking...</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Packed -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center px-1">
+<h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
+                                    Packed <span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">24</span>
+</h3>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm border-t border-transparent">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-xs text-primary">#ORD-8799</span>
+<span class="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Website</span>
+</div>
+<p class="text-sm font-semibold text-on-surface">James Wilson</p>
+<p class="text-[11px] text-on-surface-variant mb-3">2 Items • Awaiting Courier</p>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary w-full h-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Shipped -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center px-1">
+<h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
+                                    Shipped <span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px]">142</span>
+</h3>
+</div>
+<div class="space-y-3 opacity-80">
+<div class="bg-surface-container-lowest p-4 rounded-lg shadow-sm border-t border-transparent">
+<div class="flex justify-between items-start mb-2">
+<span class="font-bold text-xs text-on-surface-variant">#ORD-8780</span>
+<span class="material-symbols-outlined text-secondary text-[16px]">check_circle</span>
+</div>
+<p class="text-sm font-semibold text-on-surface">Linda Grey</p>
+<p class="text-[11px] text-on-surface-variant">Shipped via DHL</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar: Charts & Alerts -->
+<div class="col-span-12 lg:col-span-3 space-y-6">
+<!-- Platform Breakdown Donut -->
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-sm">
+<h4 class="text-sm font-bold text-on-surface mb-6">Platform Breakdown</h4>
+<div class="relative w-40 h-40 mx-auto mb-6 flex items-center justify-center">
+<!-- Simple CSS donut chart representation -->
+<div class="w-full h-full rounded-full border-[12px] border-surface-container" style="background: conic-gradient(#00696e 0% 40%, #57344f 40% 70%, #983540 70% 90%, #92eff5 90% 100%);"></div>
+<div class="absolute inset-0 m-6 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Total</span>
+<span class="text-xl font-extrabold text-on-surface">1.2k</span>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs items-center">
+<div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-secondary"></div><span>Shopee</span></div>
+<span class="font-bold">40%</span>
+</div>
+<div class="flex justify-between text-xs items-center">
+<div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-primary"></div><span>Lazada</span></div>
+<span class="font-bold">30%</span>
+</div>
+<div class="flex justify-between text-xs items-center">
+<div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary-container"></div><span>TikTok</span></div>
+<span class="font-bold">20%</span>
+</div>
+<div class="flex justify-between text-xs items-center">
+<div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-secondary-container"></div><span>Website</span></div>
+<span class="font-bold">10%</span>
+</div>
+</div>
+</div>
+<!-- SLA Alerts Panel -->
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-sm border-t-4 border-tertiary">
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-sm font-bold text-tertiary flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+                                SLA Alerts
+                            </h4>
+<span class="text-[10px] font-bold text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded">CRITICAL</span>
+</div>
+<div class="space-y-4">
+<div class="group cursor-pointer">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-bold text-on-surface">#ORD-8820</span>
+<span class="text-[10px] text-tertiary font-bold">-12m Overdue</span>
+</div>
+<div class="text-[11px] text-on-surface-variant flex justify-between">
+<span>B. Henderson • 4 Items</span>
+<span class="underline group-hover:text-tertiary">Escalate</span>
+</div>
+</div>
+<div class="h-px bg-surface-container"></div>
+<div class="group cursor-pointer">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-bold text-on-surface">#ORD-8822</span>
+<span class="text-[10px] text-tertiary font-bold">5m Remaining</span>
+</div>
+<div class="text-[11px] text-on-surface-variant flex justify-between">
+<span>L. Robertson • 1 Item</span>
+<span class="underline group-hover:text-tertiary">Flash Pick</span>
+</div>
+</div>
+<div class="h-px bg-surface-container"></div>
+<div class="group cursor-pointer">
+<div class="flex justify-between mb-1">
+<span class="text-xs font-bold text-on-surface">#ORD-8831</span>
+<span class="text-[10px] text-tertiary font-bold">14m Remaining</span>
+</div>
+<div class="text-[11px] text-on-surface-variant flex justify-between">
+<span>K. Sterling • 2 Items</span>
+<span class="underline group-hover:text-tertiary">Assign Now</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-tertiary/20 text-tertiary text-xs font-bold rounded hover:bg-tertiary-fixed transition-colors">
+                            View All Breaches
+                        </button>
+</div>
+<!-- Map/Warehouse Visualization (Aesthetic element) -->
+<div class="rounded-lg overflow-hidden h-40 relative group">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="high angle view of busy modern warehouse floor with organized high density shelving and fork lifts" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkz3ryo2ET9hFYTzPlgTJFiFuYJwr0aBGSCLKxt7YgpZhNBauQuc8MQZ7Ab2JNm853WLW4y544LskLO_a3NVA-86vrnJv5atAj9fsazqj7ZUQP9T7UpOXlYMZPBufvUh4QOVAmQ88OycL_Hke0W0SrMMCQveAE5nvthv9lRpnaklwNcHD0GqkPdMXK4Q-o1VrmtHnnJFTRfxFR7PbdVmX5rUEAljvTwVJFc9UWpjy0UGQuNAL0fWGtHZusZRwYIAhKWR3XdpdeNAOD"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+<span class="text-white font-bold text-xs">Live Facility View</span>
+<span class="text-white/80 text-[10px] flex items-center gap-1">
+<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                42 Pickers Active
+                            </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar for Mobile Shell Pivot -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant/10 flex justify-around items-center py-3 px-2 z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">package_2</span>
+<span class="text-[10px] font-medium">Orders</span>
+</a>
+<div class="bg-secondary p-3 rounded-full -mt-10 shadow-lg text-white">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+</div>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium">Stock</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+</body></html>

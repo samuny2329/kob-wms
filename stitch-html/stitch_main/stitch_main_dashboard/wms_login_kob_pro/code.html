@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#f9f9f9",
+                    "surface-container-highest": "#e2e2e2",
+                    "tertiary": "#791e2a",
+                    "tertiary-fixed": "#ffdada",
+                    "primary-fixed": "#ffd7f1",
+                    "surface-tint": "#79526f",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#ffbdbf",
+                    "tertiary-container": "#983540",
+                    "on-background": "#1a1c1c",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#40000c",
+                    "on-surface": "#1a1c1c",
+                    "on-primary-fixed-variant": "#5f3b56",
+                    "on-primary-container": "#f0bfe0",
+                    "inverse-on-surface": "#f1f1f1",
+                    "secondary-container": "#fdccee",
+                    "outline": "#80747a",
+                    "surface-container-low": "#f3f3f3",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#e9b8d9",
+                    "on-surface-variant": "#4e444a",
+                    "surface-container": "#eeeeee",
+                    "primary-container": "#714b67",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-variant": "#e2e2e2",
+                    "secondary-fixed-dim": "#e8b8da",
+                    "on-secondary-fixed-variant": "#5f3b56",
+                    "on-tertiary-fixed-variant": "#822430",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#e9b8d9",
+                    "secondary": "#79526f",
+                    "on-primary-fixed": "#2f1029",
+                    "on-secondary-fixed": "#2e1029",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "on-secondary-container": "#795370",
+                    "outline-variant": "#d1c3ca",
+                    "secondary-fixed": "#ffd7f1",
+                    "error": "#ba1a1a",
+                    "primary": "#57344f",
+                    "surface-dim": "#dadada",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "surface": "#f9f9f9",
+                    "surface-bright": "#f9f9f9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+        }
+        .signature-gradient {
+            background: linear-gradient(135deg, #57344F 0%, #714B67 100%);
+        }
+        .ghost-border {
+            border: 1px solid rgba(209, 195, 202, 0.2);
+        }
+        .coral-alert {
+            background-color: rgba(228, 111, 120, 0.1);
+            color: #E46F78;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body h-full flex flex-col text-on-surface antialiased">
+<!-- TopNavBar (Suppressed as per "The Destination Rule" for Transactional Screens) -->
+<!-- Main Canvas -->
+<main class="flex-grow flex items-center justify-center px-4 py-12 relative overflow-hidden">
+<!-- Subtle background texture (Simulated as tonal layering) -->
+<div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
+<div class="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-primary-fixed-dim blur-[100px]"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] rounded-full bg-secondary-container blur-[100px]"></div>
+</div>
+<!-- Login Card -->
+<div class="relative z-10 w-full max-w-[400px] bg-surface-container-lowest rounded-lg ghost-border shadow-[0px_12px_32px_rgba(87,52,79,0.06)] overflow-hidden">
+<!-- Card Header Section -->
+<div class="pt-10 pb-6 px-8 text-center">
+<div class="inline-flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-4xl signature-gradient bg-clip-text text-transparent" data-icon="monitor">monitor</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface mb-1">WMS Pro</h1>
+<p class="text-sm font-medium text-on-surface-variant tracking-wide">KOB &amp; BTV-Online</p>
+</div>
+<!-- Error Banner -->
+<div class="mx-8 mb-4 coral-alert px-4 py-3 rounded flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px]" data-icon="error">error</span>
+<span class="text-xs font-semibold uppercase tracking-wider">Invalid credentials</span>
+</div>
+<!-- Login Form -->
+<form class="px-8 pb-10 space-y-5">
+<!-- Username Field -->
+<div class="space-y-1.5">
+<label class="text-[0.6875rem] font-semibold text-on-surface-variant uppercase tracking-wider ml-1" for="username">Username</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[20px] text-outline" data-icon="person">person</span>
+</div>
+<input class="block w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 rounded focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all placeholder:text-slate-400" id="username" name="username" placeholder="Enter your username" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-end px-1">
+<label class="text-[0.6875rem] font-semibold text-on-surface-variant uppercase tracking-wider" for="password">Password</label>
+<a class="text-[0.6875rem] font-medium text-primary hover:opacity-80 transition-opacity" href="#">Forgot?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[20px] text-outline" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 rounded focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all placeholder:text-slate-400" id="password" name="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<!-- Sign In Button -->
+<button class="w-full signature-gradient text-on-primary py-3 px-4 rounded text-sm font-bold tracking-wide active:scale-[0.98] transition-all duration-200 mt-2 shadow-sm" type="submit">
+                    Sign In
+                </button>
+</form>
+<!-- Aesthetic tonal shift at bottom -->
+<div class="bg-surface-container-low h-1 w-full"></div>
+</div>
+</main>
+<!-- Footer Component (Based on Shared JSON) -->
+<footer class="fixed bottom-0 w-full flex justify-between items-center px-8 py-4 bg-transparent">
+<div class="flex items-center gap-6">
+<button class="text-[0.6875rem] font-medium text-[#57344F] hover:text-[#714B67] transition-colors font-label">English</button>
+<button class="text-[0.6875rem] text-slate-400 hover:text-[#714B67] transition-colors font-label">Thai</button>
+</div>
+<div class="text-[0.6875rem] text-slate-400 font-label">
+            Version 4.0.0
+        </div>
+</footer>
+</body></html>

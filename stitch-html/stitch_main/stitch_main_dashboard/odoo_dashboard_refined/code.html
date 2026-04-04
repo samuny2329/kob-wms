@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Odoo Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-secondary-fixed-variant": "#00504e", "on-primary-container": "#f0bfe0", "secondary-fixed": "#7ff5f1", outline: "#80747a", "secondary-fixed-dim": "#60d9d5", "on-error": "#ffffff", "on-secondary": "#ffffff", "surface-dim": "#d9dadb", "surface-variant": "#e1e3e4", "inverse-primary": "#e9b8d9", surface: "#f8f9fa", tertiary: "#34451e", "on-primary-fixed-variant": "#5f3b56", "surface-tint": "#79526f", error: "#ba1a1a", primary: "#714B67", "inverse-surface": "#2e3132", "on-surface-variant": "#4e444a", "on-secondary-fixed": "#00201f", "surface-container-low": "#f3f4f5", "error-container": "#ffdad6", "inverse-on-surface": "#f0f1f2", "on-background": "#191c1d", "on-secondary-container": "#006e6c", "surface-container": "#edeeef", "on-error-container": "#93000a", "outline-variant": "#d1c3ca", "on-surface": "#191c1d", "primary-fixed-dim": "#e9b8d9", secondary: "#006a68", "surface-bright": "#f8f9fa", "surface-container-high": "#e7e8e9", "on-primary-fixed": "#2f1029", "on-tertiary-fixed-variant": "#3b4c24", "primary-container": "#714b67", "surface-container-highest": "#e1e3e4", background: "#f8f9fa", "secondary-container": "#7cf2ee", "on-tertiary-fixed": "#112000", "on-primary": "#ffffff", "tertiary-fixed-dim": "#b9ce9a", "surface-container-lowest": "#ffffff", "primary-fixed": "#ffd7f1", "tertiary-fixed": "#d5eab4", "on-tertiary": "#ffffff", "tertiary-container": "#4b5d33", "on-tertiary-container": "#c0d5a0", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .app-icon-shadow {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar Execution -->
+<header class="flex justify-between items-center w-full px-4 h-12 fixed top-0 z-50 bg-[#714b67] dark:bg-[#57344f] font-sans text-[0.875rem] leading-relaxed tracking-normal">
+<div class="flex items-center gap-2 h-full">
+<div class="text-lg font-bold text-white mr-4">Odoo</div>
+<nav class="hidden md:flex h-full items-center">
+<a class="px-3 h-full flex items-center bg-[#57344f] rounded-[0.25rem] text-white font-medium" href="#">Discuss</a>
+<a class="px-3 h-full flex items-center text-white/90 hover:bg-white/10 transition-colors duration-150" href="#">Calendar</a>
+<a class="px-3 h-full flex items-center text-white/90 hover:bg-white/10 transition-colors duration-150" href="#">Contacts</a>
+<a class="px-3 h-full flex items-center text-white/90 hover:bg-white/10 transition-colors duration-150" href="#">CRM</a>
+<a class="px-3 h-full flex items-center text-white/90 hover:bg-white/10 transition-colors duration-150" href="#">Sales</a>
+<a class="px-3 h-full flex items-center text-white/90 hover:bg-white/10 transition-colors duration-150" href="#">Dashboards</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 text-white/90">
+<button class="p-2 hover:bg-white/10 rounded-lg transition-colors active:opacity-80 scale-95">
+<span class="material-symbols-outlined text-[20px]">apps</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-lg transition-colors active:opacity-80 scale-95">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-lg transition-colors active:opacity-80 scale-95 relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+</div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-white/20" data-alt="Close-up professional headshot of a smiling man with a clean beard and friendly expression in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUZxQJTwH5LIiMVuTf8ayODOiy3QLLctbY7HlD0TjYrShPw5wIdqSTfEOb8yCCUbztUc3lrwtCo4-gC4TtpehogKbQ5mWErJR3njncbYGLsr1_vgXZQxn241PUR3H-CGYZiJyTCwWYi_O3C4ckyHgX1uNBCTLosqBISOGNOozKOZzDzhj54DfcEZfDuapF-DT5CQut2diUuMnJYmoroKWw5esmQHUfBtMez71QrjI50EAVA1jTVNqGQE4Tjxvh2u2ImbxWA-2t7Bgt"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 mt-12 flex flex-col items-center">
+<!-- Search Center Section -->
+<section class="w-full max-w-4xl px-6 pt-16 pb-12 flex flex-col items-center">
+<div class="relative w-full max-w-lg group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full py-4 pl-12 pr-6 bg-surface-container-lowest border-none rounded-full shadow-sm text-lg focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline/60" placeholder="Search apps..." type="text"/>
+</div>
+</section>
+<!-- App Grid -->
+<section class="w-full max-w-6xl px-8 pb-20">
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-x-8 gap-y-12">
+<!-- CRM -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#875A7B] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">CRM</span>
+</div>
+<!-- Sales -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#00A09D] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Sales</span>
+</div>
+<!-- Inventory -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#5A8D8C] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Inventory</span>
+</div>
+<!-- Accounting -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#7C7BAD] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Accounting</span>
+</div>
+<!-- Manufacturing -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#D84315] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">factory</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Manufacturing</span>
+</div>
+<!-- Project -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#00BCD4] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">assignment</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Project</span>
+</div>
+<!-- POS -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#FFA000] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">POS</span>
+</div>
+<!-- Settings -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#757575] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">settings</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Settings</span>
+</div>
+<!-- Additional Apps for a fuller look -->
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#4CAF50] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Purchase</span>
+</div>
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#673AB7] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">contact_page</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Employees</span>
+</div>
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#E91E63] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">campaign</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Marketing</span>
+</div>
+<div class="flex flex-col items-center group cursor-pointer">
+<div class="w-16 h-16 bg-[#3F51B5] rounded-xl flex items-center justify-center text-white app-icon-shadow group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">forum</span>
+</div>
+<span class="mt-3 text-sm font-medium text-on-surface-variant tracking-tight">Discuss</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Info -->
+<footer class="w-full bg-surface-container-high py-4 px-8 flex justify-between items-center text-[0.75rem] text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="flex h-2 w-2 rounded-full bg-secondary"></span>
+<span class="font-medium">All systems operational</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="opacity-70">142 Users active</span>
+<div class="h-4 w-px bg-outline-variant/30"></div>
+<a class="hover:text-primary transition-colors" href="#">Odoo Enterprise Edition</a>
+</div>
+</footer>
+<!-- Background Decoration (Subtle Glass Effect) -->
+<div class="fixed inset-0 pointer-events-none -z-10 bg-surface">
+<div class="absolute top-0 right-0 w-full h-[300px] bg-gradient-to-b from-primary/5 to-transparent"></div>
+</div>
+</body></html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - WH/OUT/00124</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-primary-container": "#f0bfe0", "on-primary-fixed": "#2f1029", "tertiary-container": "#983540", "secondary-fixed": "#95f1f8", "on-primary": "#ffffff", "on-tertiary-fixed": "#40000c", "surface-tint": "#79526f", "on-secondary-fixed": "#002022", "on-surface": "#1a1c1c", "on-tertiary-container": "#ffbdbf", error: "#ba1a1a", "secondary-fixed-dim": "#78d5db", "inverse-primary": "#e9b8d9", "on-error-container": "#93000a", surface: "#f9f9f9", "on-background": "#1a1c1c", "surface-bright": "#f9f9f9", "primary-fixed-dim": "#e9b8d9", "primary-fixed": "#ffd7f1", "inverse-on-surface": "#f1f1f1", "outline-variant": "#d1c3ca", "on-secondary-container": "#006e73", "on-tertiary-fixed-variant": "#822430", "tertiary-fixed": "#ffdada", "on-secondary": "#ffffff", "on-surface-variant": "#4e444a", "on-error": "#ffffff", "tertiary-fixed-dim": "#ffb3b6", "primary-container": "#714b67", "on-secondary-fixed-variant": "#004f53", outline: "#80747a", "secondary-container": "#92eff5", "surface-container-lowest": "#ffffff", "surface-container-high": "#e8e8e8", background: "#f9f9f9", "surface-container-low": "#f3f3f3", "surface-dim": "#dadada", secondary: "#00696e", primary: "#714B67", "inverse-surface": "#2f3131", "error-container": "#ffdad6", "on-primary-fixed-variant": "#5f3b56", "on-tertiary": "#ffffff", "surface-container-highest": "#e2e2e2", "surface-variant": "#e2e2e2", "surface-container": "#eeeeee", tertiary: "#791e2a", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}}}};</script>
+<style>
+      body { font-family: 'Inter', sans-serif; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .ghost-border {
+        outline: 1px solid rgba(209, 195, 202, 0.25);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<nav class="flex justify-between items-center w-full px-4 h-12 fixed z-[100] bg-[#57344f] dark:bg-[#4a2c43] font-sans text-sm font-medium tracking-tight top-0">
+<div class="flex items-center gap-4">
+<span class="text-lg font-bold text-white">KOB WMS Pro</span>
+<div class="hidden md:flex items-center gap-1">
+<a class="px-3 py-1 rounded-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors" href="#">Dashboard</a>
+<a class="px-3 py-1 rounded-sm bg-white/10 text-white font-semibold transition-colors" href="#">Inventory</a>
+<a class="px-3 py-1 rounded-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors" href="#">Operations</a>
+<a class="px-3 py-1 rounded-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors" href="#">Reporting</a>
+<a class="px-3 py-1 rounded-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors" href="#">Configuration</a>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative flex items-center bg-white/10 rounded px-2 h-8">
+<span class="material-symbols-outlined text-white/70 text-lg mr-2">search</span>
+<input class="bg-transparent border-none text-white text-xs focus:ring-0 w-32 md:w-64" placeholder="Search..." type="text"/>
+</div>
+<button class="text-white hover:bg-[#714b67] p-1.5 rounded transition-colors"><span class="material-symbols-outlined">apps</span></button>
+<button class="text-white hover:bg-[#714b67] p-1.5 rounded transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-white hover:bg-[#714b67] p-1.5 rounded transition-colors"><span class="material-symbols-outlined">chat</span></button>
+<div class="h-8 w-8 rounded-full overflow-hidden ml-2 bg-surface-container-high border border-white/20">
+<img alt="User Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPRFqufgPJgVjh0lCwGhBe9cj6h_4TpOzMu2PL2wg-vw5-Sfe54fyaTTRipviKrkP2vGo0gJI6w5uw7v1pBgzyTIZ9FUbx2jjyaTqpAK5_1B6f8NfwDcS_CimtEsQnbeHiEvVd_i4PHVbnSrBHJuIhXfD6RCQgVu8zL5ma7027vyA3eodb2-58q-yqSZPEAi93eI9eD35hhAA1h_ubn5aJmFMOTzMpffEVGA22S2zOODHYuL-P0k4aTqMRtSTCPTpKOQ2SrQN2B6fo"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full pt-16 fixed left-0 w-64 bg-[#f3f3f3] dark:bg-[#1e1e1e] font-sans text-sm font-normal z-40">
+<div class="px-6 mb-8">
+<h2 class="text-xl font-black text-[#57344f] dark:text-[#f9f9f9]">KOB WMS Pro</h2>
+<p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Inventory Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span> Transfers
+            </a>
+<a class="flex items-center px-6 py-3 text-[#57344f] dark:text-white font-bold bg-[#ffffff] dark:bg-[#2c2c2c] rounded-r-full transition-all" href="#">
+<span class="material-symbols-outlined mr-3">forklift</span> Picking Operations
+            </a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">receipt_long</span> Physical Inventory
+            </a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">warehouse</span> Locations
+            </a>
+<a class="flex items-center px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined mr-3">settings</span> Settings
+            </a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="md:ml-64 pt-12 min-h-screen">
+<!-- Breadcrumbs & Control Bar -->
+<header class="bg-surface border-b border-outline-variant/10 flex flex-col sm:flex-row items-start sm:items-center justify-between px-8 py-4 gap-4">
+<div class="flex flex-col">
+<nav class="flex text-sm text-on-surface-variant font-medium gap-2 items-center mb-1">
+<span class="hover:text-primary cursor-pointer">Inventory</span>
+<span class="text-outline-variant">/</span>
+<span class="hover:text-primary cursor-pointer">Picking Operations</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-bold">WH/OUT/00124</span>
+</nav>
+<div class="flex gap-2">
+<button class="bg-gradient-to-r from-primary to-primary-container text-white px-6 py-1.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-all shadow-sm">Validate</button>
+<button class="bg-surface-container-highest text-on-primary-fixed-variant px-4 py-1.5 rounded-lg font-medium text-sm hover:bg-surface-container-high transition-all">Mark as Todo</button>
+<button class="text-primary hover:bg-surface-container-low px-4 py-1.5 rounded-lg font-medium text-sm transition-all">Cancel</button>
+</div>
+</div>
+<!-- Stages -->
+<div class="flex items-center gap-1">
+<div class="flex items-center text-xs font-bold uppercase tracking-wider h-8">
+<div class="px-4 text-outline py-2 relative opacity-50">Draft</div>
+<div class="px-4 text-outline py-2 relative opacity-50">Waiting</div>
+<div class="px-4 text-primary py-2 relative border-b-2 border-primary">Ready</div>
+<div class="px-4 text-outline py-2 relative opacity-50">Done</div>
+</div>
+</div>
+</header>
+<!-- Form Content -->
+<div class="p-8 max-w-6xl mx-auto">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10">
+<!-- Order Heading -->
+<div class="mb-10">
+<h1 class="text-3xl font-extrabold text-on-surface tracking-tight">Picking Operation: WH/OUT/00124</h1>
+<p class="text-on-surface-variant text-sm mt-1">Movement created on October 24, 2024</p>
+</div>
+<!-- Form Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 mb-12">
+<div class="space-y-6">
+<div class="group">
+<label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 ml-1">Source Location</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-primary/20 appearance-none">
+<option>WH/Stock</option>
+<option>WH/Stock/Shelf A</option>
+<option>WH/Input</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="group">
+<label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 ml-1">Destination Location</label>
+<div class="p-3 bg-surface-container-low rounded-lg text-sm text-on-surface-variant italic">
+                                WH/Output
+                            </div>
+</div>
+</div>
+<div class="space-y-6">
+<div class="group">
+<label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 ml-1">Scheduled Date</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-primary/20" type="date" value="2024-10-31"/>
+</div>
+<div class="group">
+<label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 ml-1">Shipping Policy</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-primary/20 appearance-none">
+<option>As soon as possible</option>
+<option>When all products are ready</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<div class="border-b border-outline-variant/20 mb-6 flex gap-8">
+<button class="pb-3 text-sm font-bold text-primary border-b-2 border-primary">Operations</button>
+<button class="pb-3 text-sm font-medium text-on-surface-variant hover:text-on-surface">Additional Info</button>
+<button class="pb-3 text-sm font-medium text-on-surface-variant hover:text-on-surface">Note</button>
+</div>
+<!-- Operations Table -->
+<div class="overflow-x-auto mb-8">
+<table class="w-full text-sm text-left">
+<thead class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant border-b border-outline-variant/10">
+<tr>
+<th class="pb-3 pr-4 font-bold">Product</th>
+<th class="pb-3 px-4 font-bold">Lot/Serial Number</th>
+<th class="pb-3 px-4 font-bold">From</th>
+<th class="pb-3 px-4 font-bold">To</th>
+<th class="pb-3 px-4 font-bold text-right">Reserved</th>
+<th class="pb-3 pl-4 font-bold text-right">Done</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="group hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 pr-4 font-medium text-primary">Steel Beam (10m)</td>
+<td class="py-4 px-4 text-on-surface-variant">LOT-SB-2024-99</td>
+<td class="py-4 px-4 text-on-surface-variant">WH/Stock/Shelf A</td>
+<td class="py-4 px-4 text-on-surface-variant">WH/Output</td>
+<td class="py-4 px-4 text-right">10.00</td>
+<td class="py-4 pl-4 text-right font-semibold">10.00</td>
+</tr>
+<tr class="group hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 pr-4 font-medium text-primary">Industrial Bolt M12</td>
+<td class="py-4 px-4 text-on-surface-variant">---</td>
+<td class="py-4 px-4 text-on-surface-variant">WH/Stock/Bin 12</td>
+<td class="py-4 px-4 text-on-surface-variant">WH/Output</td>
+<td class="py-4 px-4 text-right">500.00</td>
+<td class="py-4 pl-4 text-right font-semibold">450.00</td>
+</tr>
+<tr class="group hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 pr-4 font-medium text-primary">Pallet Wrap Heavy Duty</td>
+<td class="py-4 px-4 text-on-surface-variant">---</td>
+<td class="py-4 px-4 text-on-surface-variant">WH/Stock/Zone B</td>
+<td class="py-4 px-4 text-on-surface-variant">WH/Output</td>
+<td class="py-4 px-4 text-right">5.00</td>
+<td class="py-4 pl-4 text-right font-semibold">0.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Add Row Button -->
+<div class="mb-12">
+<button class="flex items-center text-primary font-bold text-sm hover:underline gap-1">
+<span class="material-symbols-outlined text-lg">add_circle</span> Add a line
+                    </button>
+</div>
+<!-- Status/Footer Section -->
+<div class="flex justify-end">
+<div class="w-full md:w-80 space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant font-medium">Total Reserved:</span>
+<span class="text-on-surface font-semibold">515.00 Units</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant font-medium">Total Picked:</span>
+<span class="text-on-surface font-semibold">460.00 Units</span>
+</div>
+<div class="pt-3 border-t border-outline-variant/30 flex justify-between items-center">
+<span class="text-lg font-black text-on-surface">Completion:</span>
+<span class="text-2xl font-black text-primary">89.3%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Discussion / Activity Log (Odoo Style Footer) -->
+<div class="mt-12 bg-surface-container-low rounded-xl p-6 border border-outline-variant/5">
+<div class="flex items-center justify-between mb-6">
+<div class="flex gap-4">
+<button class="bg-primary text-white text-xs font-bold px-4 py-2 rounded shadow-sm">Send Message</button>
+<button class="text-on-surface-variant text-xs font-bold px-4 py-2 rounded hover:bg-surface-container-high transition-all">Log Note</button>
+<button class="text-on-surface-variant text-xs font-bold px-4 py-2 rounded hover:bg-surface-container-high transition-all">Schedule Activity</button>
+</div>
+<div class="flex -space-x-2">
+<div class="h-6 w-6 rounded-full border-2 border-surface overflow-hidden">
+<img alt="Avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbtTeGZoDOxJSnIbAfWM753tVSCzAAHigqy_Sw2-iJao1jRDBVjjTPzBDbR-VBW821oKD1yPLm8nRbAmAXfXWj7TGE7irHrbCGS7lq9yVx64bM7_49t4GqT38h7TTlKW5PMI0S0ayfGFrClUXk1O9fvbjgACw4gY6pxXinZzGBmzSbKGChhnPy16Cmvv-WCPzfbmZF8_cmrwARE5R_Qp7GPH5LbUpt3ksICL03bjBTEp2FeQ_1o7PpH6QjCogTz2imboYA0R4hE146"/>
+</div>
+<div class="h-6 w-6 rounded-full border-2 border-surface overflow-hidden">
+<img alt="Avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj4aZi2akiRrXKyeYA2jIT3JjXbe-FMM6lUMT_bC0yPi6TkiYzSrz3UD2F-R6KLECFfOtzOV4p0UD2ZHIxKOfooR9ywNxqERJ-xfMFabAYOZopSIThRiCr75BeiV-LM2iFSPbCS4IhcN2WnNyvgQ-kSC3Nf50Dm6LnskGu4n4ICYasvL43VKVU03cQKqkdXD8JcjsfrBcPrU5hmeob5tFeZfG7t7VydUOEUc5NcZwHs3qnSQZ5uDSGsdAArSDVfj7joYNMjSQ5KF23"/>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="h-10 w-10 rounded-full overflow-hidden shrink-0 mt-1">
+<img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz_mgfSnBKQZohhYI7UOO6_PgAr-HLH0zBfBSSfb6aLSwU1RRcMK66Pz0_JP8nOKEbIdb4IrWHnkrdTxW6alYO5cfJW6OdF17nc0JSX-w55zF4LVCCPu6pI8XaudAG8JDgR3OG-eaaEl_krIP-AfJyFr66U3-x8VlaEyi_n3h_yJYqrsIXwoiN2thFOgvIIl-qgH6Mbso_9HkvjQZW9aPrk99cOQnO4axB7FF9tp6CmCEjfqKlN1oLJZIf1ahzem0wdtSCO7WxYqIV"/>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-4 rounded-lg shadow-sm border border-outline-variant/5">
+<div class="flex justify-between items-center mb-2">
+<span class="font-bold text-sm text-on-surface">Logistics System</span>
+<span class="text-[10px] text-on-surface-variant">10 minutes ago</span>
+</div>
+<p class="text-sm text-on-surface-variant">Product moved from WH/Stock/Shelf A-01 to WH/Output B-05. Serial verification complete.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="h-10 w-10 rounded-full overflow-hidden shrink-0 mt-1">
+<img alt="User" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj4aZi2akiRrXKyeYA2jIT3JjXbe-FMM6lUMT_bC0yPi6TkiYzSrz3UD2F-R6KLECFfOtzOV4p0UD2ZHIxKOfooR9ywNxqERJ-xfMFabAYOZopSIThRiCr75BeiV-LM2iFSPbCS4IhcN2WnNyvgQ-kSC3Nf50Dm6LnskGu4n4ICYasvL43VKVU03cQKqkdXD8JcjsfrBcPrU5hmeob5tFeZfG7t7VydUOEUc5NcZwHs3qnSQZ5uDSGsdAArSDVfj7joYNMjSQ5KF23"/>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-4 rounded-lg shadow-sm border border-outline-variant/5">
+<div class="flex justify-between items-center mb-2">
+<span class="font-bold text-sm text-on-surface">Inventory Manager</span>
+<span class="text-[10px] text-on-surface-variant">1 hour ago</span>
+</div>
+<p class="text-sm text-on-surface-variant">WH/OUT/00124 scheduled for final validation. All items reserved in main stock area.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

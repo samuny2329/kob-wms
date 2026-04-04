@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - Time &amp; Attendance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#ffbdbf",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#822430",
+                        "secondary-container": "#92eff5",
+                        "outline": "#80747a",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-container": "#eeeeee",
+                        "on-primary-container": "#f0bfe0",
+                        "surface-tint": "#79526f",
+                        "secondary-fixed": "#95f1f8",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#006e73",
+                        "background": "#f9f9f9",
+                        "on-background": "#1a1c1c",
+                        "primary": "#57344f",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary": "#00696e",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#714b67",
+                        "on-surface": "#1a1c1c",
+                        "outline-variant": "#d1c3ca",
+                        "surface": "#f9f9f9",
+                        "surface-bright": "#f9f9f9",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-surface": "#2f3131"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 h-16 bg-gradient-to-r from-[#57344f] to-[#714B67] shadow-lg shadow-[#4e444a]/10 flex justify-between items-center px-6 w-full">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-white tracking-tight">KOB WMS Pro</span>
+<nav class="hidden md:flex ml-8 gap-6 items-center">
+<a class="font-['Inter'] text-sm tracking-wide text-white/80 hover:text-white transition-colors" href="#">Inventory</a>
+<a class="font-['Inter'] text-sm tracking-wide text-white border-b-2 border-white pb-1" href="#">Attendance</a>
+<a class="font-['Inter'] text-sm tracking-wide text-white/80 hover:text-white transition-colors" href="#">Operations</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-sm">search</span>
+<input class="bg-white/10 border-none text-white text-sm rounded-md pl-10 pr-4 py-1.5 focus:ring-1 focus:ring-white/30 w-64" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-white hover:bg-white/10 transition-all duration-200 active:scale-95 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-white hover:bg-white/10 transition-all duration-200 active:scale-95 rounded-full">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User profile" class="h-8 w-8 rounded-full border border-white/20 ml-2" data-alt="close-up portrait of a professional worker in a clean modern environment with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi23RG1DHFBFYXPk7OpNb64uidXKxk8syl8G-dc6_GWYD3AwwrCSTJEULB_3EGFBsdDO5SGYtR6Gso30ysWsvhxB8Mz6THuoaXnE_3vHgAWLczMsVNBNWA7mu8Yr2WwObD-ESzDEZQtN6lrOJlZ7jXPq0gw9rC2TU9sRjQ6fzK9Wvvq6Iknjs9bjzsxZXciwOiWgRvSRrUm4bogVPre0mfICsgMDXuEoMgcmLZZn9Yz6kMxamSOg7bGT2k7fddbu--ahQoGP1soM84"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[240px] bg-[#f3f3f3] dark:bg-slate-900 flex flex-col p-4 gap-2">
+<div class="mb-6 px-2">
+<h2 class="text-[#57344f] font-black text-sm uppercase tracking-wider">KOB WMS Pro</h2>
+<p class="text-xs text-on-surface-variant/60 font-medium">Time &amp; Attendance</p>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-slate-400 hover:bg-[#e8e8e8] rounded-md transition-colors cursor-pointer font-['Inter'] text-[0.875rem] font-medium">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#57344f] font-bold bg-[#ffffff] rounded-md shadow-sm cursor-pointer font-['Inter'] text-[0.875rem]">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Attendance</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-slate-400 hover:bg-[#e8e8e8] rounded-md transition-colors cursor-pointer font-['Inter'] text-[0.875rem] font-medium">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span>My Shifts</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-[#4e444a] dark:text-slate-400 hover:bg-[#e8e8e8] rounded-md transition-colors cursor-pointer font-['Inter'] text-[0.875rem] font-medium">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Team Management</span>
+</div>
+</nav>
+<div class="mt-auto p-4 bg-primary/5 rounded-lg border border-primary/10">
+<p class="text-[0.6875rem] uppercase font-bold text-primary tracking-widest mb-1">Shift Progress</p>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[72%]"></div>
+</div>
+<p class="text-[0.75rem] mt-2 text-on-surface-variant">6.5h / 9h completed</p>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] mt-16 p-8 max-w-[1600px] mx-auto min-h-screen">
+<!-- Today's Status Strip -->
+<section class="mb-8">
+<div class="bg-surface-container-lowest rounded-lg p-6 flex flex-wrap items-center justify-between shadow-sm border border-outline-variant/15">
+<div class="flex items-center gap-8">
+<div>
+<p class="text-[0.6875rem] uppercase tracking-[0.05em] text-on-surface-variant font-bold mb-1">Clock In time</p>
+<p class="text-lg font-semibold text-on-surface">08:30 AM</p>
+</div>
+<div class="h-10 w-[1px] bg-outline-variant/30"></div>
+<div>
+<p class="text-[0.6875rem] uppercase tracking-[0.05em] text-on-surface-variant font-bold mb-1">Clock Out time</p>
+<p class="text-lg font-semibold text-on-surface-variant/40">--:-- --</p>
+</div>
+<div class="h-10 w-[1px] bg-outline-variant/30"></div>
+<div>
+<p class="text-[0.6875rem] uppercase tracking-[0.05em] text-on-surface-variant font-bold mb-1">Total Hours</p>
+<p class="text-lg font-semibold text-primary">6.5h</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-xs font-bold uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                        On Duty
+                    </span>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Controls and Table -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Clock In/Out Control -->
+<div class="bg-surface-container-lowest rounded-lg p-12 flex flex-col items-center justify-center text-center shadow-sm border border-outline-variant/15">
+<p class="text-on-surface-variant font-medium mb-2">Current System Time</p>
+<h1 class="text-5xl font-black text-on-surface tracking-tighter mb-8">03:14:22 PM</h1>
+<!-- Main Action Gradient Button -->
+<button class="group relative px-12 py-6 bg-gradient-to-r from-secondary to-[#2bb6bd] text-white rounded-xl shadow-xl shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 overflow-hidden">
+<div class="flex items-center gap-4 relative z-10">
+<span class="material-symbols-outlined text-3xl" data-icon="logout" data-weight="fill">logout</span>
+<span class="text-2xl font-bold tracking-tight">Clock Out</span>
+</div>
+<div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<p class="mt-6 text-sm text-on-surface-variant">Working since 08:30 AM (Warehouse Sector A)</p>
+</div>
+<!-- This Week's Attendance Table -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm border border-outline-variant/15 overflow-hidden">
+<div class="p-6 border-b border-surface-container-low flex justify-between items-center">
+<h3 class="text-lg font-bold text-on-surface">This Week's Attendance</h3>
+<button class="text-primary text-sm font-semibold hover:underline">Download Report</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant">Date</th>
+<th class="px-6 py-4 text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant">Clock In</th>
+<th class="px-6 py-4 text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant">Clock Out</th>
+<th class="px-6 py-4 text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant">Hours Worked</th>
+<th class="px-6 py-4 text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant">Status</th>
+<th class="px-6 py-4 text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant">Overtime</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">Oct 23, 2023</td>
+<td class="px-6 py-4 text-sm">08:30 AM</td>
+<td class="px-6 py-4 text-sm">05:30 PM</td>
+<td class="px-6 py-4 text-sm">9.0h</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[0.65rem] font-black uppercase rounded">Present</span>
+</td>
+<td class="px-6 py-4 text-sm font-semibold text-secondary">+1.0h</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">Oct 24, 2023</td>
+<td class="px-6 py-4 text-sm">08:45 AM</td>
+<td class="px-6 py-4 text-sm">05:30 PM</td>
+<td class="px-6 py-4 text-sm">8.75h</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[0.65rem] font-black uppercase rounded">Late</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant/40">--</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">Oct 25, 2023</td>
+<td class="px-6 py-4 text-sm">08:28 AM</td>
+<td class="px-6 py-4 text-sm">05:35 PM</td>
+<td class="px-6 py-4 text-sm">9.1h</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[0.65rem] font-black uppercase rounded">Present</span>
+</td>
+<td class="px-6 py-4 text-sm font-semibold text-secondary">+1.1h</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors bg-surface-container-low/20">
+<td class="px-6 py-4 text-sm font-medium italic text-on-surface-variant">Today</td>
+<td class="px-6 py-4 text-sm">08:30 AM</td>
+<td class="px-6 py-4 text-sm italic text-on-surface-variant/50">Active</td>
+<td class="px-6 py-4 text-sm font-bold text-primary">6.5h</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[0.65rem] font-black uppercase rounded animate-pulse">On Duty</span>
+</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant/40">--</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Summary and Team -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Monthly Summary Card -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm border border-outline-variant/15">
+<h3 class="text-lg font-bold text-on-surface mb-6">Monthly Summary</h3>
+<div class="space-y-6">
+<div class="flex justify-between items-end">
+<div>
+<p class="text-[0.6875rem] uppercase tracking-wider font-bold text-on-surface-variant mb-1">Attendance Rate</p>
+<p class="text-3xl font-black text-secondary">98.2%</p>
+</div>
+<div class="h-12 w-24">
+<div class="flex items-end gap-1 h-full">
+<div class="w-2 h-[40%] bg-secondary/20 rounded-t-sm"></div>
+<div class="w-2 h-[60%] bg-secondary/20 rounded-t-sm"></div>
+<div class="w-2 h-[90%] bg-secondary/20 rounded-t-sm"></div>
+<div class="w-2 h-[75%] bg-secondary/20 rounded-t-sm"></div>
+<div class="w-2 h-[100%] bg-secondary rounded-t-sm"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-md">
+<p class="text-[0.625rem] uppercase font-bold text-on-surface-variant/70 mb-1">Days Present</p>
+<p class="text-xl font-bold">18 / 20</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-md">
+<p class="text-[0.625rem] uppercase font-bold text-on-surface-variant/70 mb-1">Total Hours</p>
+<p class="text-xl font-bold">162.5h</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-md">
+<p class="text-[0.625rem] uppercase font-bold text-on-surface-variant/70 mb-1">Late Count</p>
+<p class="text-xl font-bold text-tertiary">2</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-md">
+<p class="text-[0.625rem] uppercase font-bold text-on-surface-variant/70 mb-1">Overtime</p>
+<p class="text-xl font-bold text-secondary">14.0h</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Team View (Admin Only) -->
+<div class="bg-surface-container-lowest rounded-lg shadow-sm border border-outline-variant/15 overflow-hidden">
+<div class="p-6 border-b border-surface-container-low flex justify-between items-center bg-primary/5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="shield">shield</span>
+<h3 class="text-sm font-bold text-primary uppercase tracking-widest">Team Live Status</h3>
+</div>
+<span class="text-[0.65rem] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded">ADMIN</span>
+</div>
+<div class="divide-y divide-surface-container-low">
+<!-- Member 1 -->
+<div class="p-4 flex items-center justify-between hover:bg-surface-container-low/20 transition-colors">
+<div class="flex items-center gap-3">
+<img alt="Sarah J." class="w-10 h-10 rounded-full border-2 border-secondary/20" data-alt="headshot of a smiling female manager in a modern office setting with natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCrwep5PfM29u-reglwRJJFLp1mHxoMUH4paoPpkeQD-CpZtdpSoDxDpyIdYrq9NndDfXwtVHRHPpnMWIO8wLi9uLL8zhc-sx8ln5OjO2TNkko8k2pPxwnqzTZrKI-Edg_PeVwMkW1G4yp-zHhhFbLIn57wYzxrdQmNeIWMM4TUb8TbSTfbisgMD-u3n-PbdmYpsiQfNU5D7YgY7XQIK3vYKarZBvfhEKwB_0aNadGS8jB7p1yq6Oy-0CAuEmsnOPBv-fyyZCh8vEU"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Sarah Jenkins</p>
+<p class="text-[0.6875rem] text-on-surface-variant font-medium">Floor Supervisor</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="flex items-center gap-1.5 text-[0.65rem] font-black uppercase text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                    On Duty
+                                </span>
+<span class="text-[0.625rem] text-on-surface-variant/60 mt-0.5">In at 07:55 AM</span>
+</div>
+</div>
+<!-- Member 2 -->
+<div class="p-4 flex items-center justify-between hover:bg-surface-container-low/20 transition-colors">
+<div class="flex items-center gap-3">
+<img alt="Marcus K." class="w-10 h-10 rounded-full border-2 border-surface-container-high" data-alt="portrait of a focused male warehouse worker wearing a safety vest in a professional logistics environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHHXTGN2TTiFVRlmZ2YUknmVAGG0NHChkSXZb9xdZOEX8t-HE24RWdVFNQ52hrtXVB1yMetkEhb_G8QSjGuIC885cFq59dP0LNU9aVQcp75ms1IJnaNmVXLnvlGJrLQkB5kGjLrE844cvi-ODYk1f6WiQt-G09f2zxDgy_btDAMlPw8aaGPVfjTQypxw6TUMlSWd9CIh1dzKh-5E4MLny7BekAhm-DhKBzzzWkB8ZswlTa7GweuNz2Q5Ru0A-nFlvqMqBGjQYijIX9"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Marcus Knight</p>
+<p class="text-[0.6875rem] text-on-surface-variant font-medium">Logistics Specialist</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="flex items-center gap-1.5 text-[0.65rem] font-black uppercase text-on-surface-variant/40">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant/40"></span>
+                                    Away
+                                </span>
+<span class="text-[0.625rem] text-on-surface-variant/60 mt-0.5">Lunch Break</span>
+</div>
+</div>
+<!-- Member 3 -->
+<div class="p-4 flex items-center justify-between hover:bg-surface-container-low/20 transition-colors">
+<div class="flex items-center gap-3">
+<img alt="Elena R." class="w-10 h-10 rounded-full border-2 border-surface-container-high" data-alt="candid shot of a female analyst looking at a tablet in a bright tech-forward warehouse workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWLGxRGAHWlZLdd3eKKamAV60df-zyba8srxubcdIg0LXLIGwZMSc6RWIjj3MDNLcP8FSH1Zu7ABB8ehF8FQMMyB6mL8DfScIUIJGqPNksmoyEpjP5i0UwiYE2B7Zf9-Wlp-VJGAOlNODr2OKF9GzKLXc-ScjU4efgRlpQoqnZxI7Kj36Zhl9GvtbHgZ5Ctker2KLCTdWE8jeINhJinv9freswE-eTFzFJjZj1_kSrTScd78hy45naWTwOU9W6pdrzXqmqM7sJ1i_B"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Elena Rodriguez</p>
+<p class="text-[0.6875rem] text-on-surface-variant font-medium">Inventory Manager</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="flex items-center gap-1.5 text-[0.65rem] font-black uppercase text-on-surface-variant/40">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant/20"></span>
+                                    Off Duty
+                                </span>
+<span class="text-[0.625rem] text-on-surface-variant/60 mt-0.5">Left at 04:00 PM</span>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low/30 text-center">
+<button class="text-xs font-bold text-primary uppercase tracking-widest hover:text-primary-container transition-colors">View All Team (14)</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

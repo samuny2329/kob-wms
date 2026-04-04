@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro - Outbound Scan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Source+Code+Pro:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#4b5d33",
+                        "surface-bright": "#f9f9f9",
+                        "secondary": "#6c5965",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#d5eab4",
+                        "tertiary": "#34451e",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary-fixed": "#112000",
+                        "on-surface-variant": "#4e444a",
+                        "background": "#f9f9f9",
+                        "inverse-surface": "#2f3131",
+                        "on-surface": "#1a1c1c",
+                        "surface-container": "#eeeeee",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "surface-container-highest": "#e2e2e2",
+                        "outline": "#80747a",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-high": "#e8e8e8",
+                        "primary": "#57344f",
+                        "inverse-primary": "#e9b8d9",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#2f1029",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "on-primary-container": "#f0bfe0",
+                        "primary-fixed": "#ffd7f1",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "surface-variant": "#e2e2e2",
+                        "surface-dim": "#dadada",
+                        "surface": "#f9f9f9",
+                        "surface-tint": "#79526f",
+                        "secondary-container": "#f5dbea",
+                        "secondary-fixed": "#f5dbea",
+                        "on-tertiary-container": "#c0d5a0",
+                        "on-secondary-fixed": "#251721",
+                        "primary-container": "#714b67",
+                        "on-secondary-container": "#725f6b",
+                        "on-secondary-fixed-variant": "#53424d",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#d1c3ca",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#d8c0ce"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["Source Code Pro"]
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-line-rule { border: none !important; }
+        .background-shift { background: linear-gradient(to bottom right, #57344f, #714b67); }
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; }
+    </style>
+</head>
+<body class="text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 w-full z-50 h-16 bg-gradient-to-tr from-[#57344f] to-[#714b67] text-white font-['Inter'] font-bold tracking-tight shadow-sm flex justify-between items-center px-6">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold tracking-tighter">KOB WMS Pro</span>
+<div class="hidden md:flex gap-6 ml-8">
+<a class="text-white border-b-2 border-white py-4 text-sm" href="#">Dashboard</a>
+<a class="text-white/80 hover:bg-white/10 transition-colors py-4 px-2 text-sm" href="#">Inventory</a>
+<a class="text-white/80 hover:bg-white/10 transition-colors py-4 px-2 text-sm" href="#">Shipments</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/60">search</span>
+<input class="bg-white/10 border-none rounded-DEFAULT py-1.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-white/30 placeholder-white/50 w-64" placeholder="Search orders..." type="text"/>
+</div>
+<button class="material-symbols-outlined p-2 hover:bg-white/10 transition-colors">apps</button>
+<button class="material-symbols-outlined p-2 hover:bg-white/10 transition-colors">notifications</button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-white/20 ml-2" data-alt="professional male warehouse operations manager in formal attire, clean studio lighting, high-end profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-ZQfleVwFWE3U9b_Xr7mdn_ZDCDtdz2rt9hjZ6GjZGFl0sONXT2fXbl19NIS9pCrDdhKxeE5KFsryqXCwvOpfg6msBPWCVcGyPr5fWCpqN79iFtOxqY_WlYDv4MDrmlpmW5V4JnwkEv1M4gtXleNhB2koEsa1taQsDhAClSO9ybChf7dm036hVK55xvNUzd-c5UUFFHu3y_085oWsnqWEe-M0uOOmkUybn7p5NnFrr1995G7oH4d0XnGj8wVmnQiTRD-G9e_oOIPD"/>
+</div>
+</header>
+<div class="flex h-screen pt-16">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-16 h-full w-[240px] bg-[#f3f3f3] dark:bg-slate-900 flex flex-col py-4 gap-2 z-40">
+<div class="px-6 mb-6">
+<h2 class="text-[#57344f] text-sm font-semibold uppercase tracking-wider">Outbound</h2>
+<p class="text-[0.6875rem] text-on-surface/40 uppercase font-medium">Scanning platform</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-6 py-3 text-[#1a1c1c]/60 hover:bg-[#e8e8e8] transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] text-sm font-semibold uppercase tracking-wider">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#57344f] font-bold border-l-4 border-[#57344f] bg-[#eeeeee] transition-all duration-200" href="#">
+<span class="material-symbols-outlined">barcode_scanner</span>
+<span class="font-['Inter'] text-sm font-semibold uppercase tracking-wider">Outbound Scan</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#1a1c1c]/60 hover:bg-[#e8e8e8] transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-['Inter'] text-sm font-semibold uppercase tracking-wider">Batch Manifest</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#1a1c1c]/60 hover:bg-[#e8e8e8] transition-all duration-200" href="#">
+<span class="material-symbols-outlined">warehouse</span>
+<span class="font-['Inter'] text-sm font-semibold uppercase tracking-wider">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-[#1a1c1c]/60 hover:bg-[#e8e8e8] transition-all duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Inter'] text-sm font-semibold uppercase tracking-wider">Reports</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[240px] p-6 overflow-y-auto pb-12">
+<!-- Summary Strip -->
+<div class="grid grid-cols-4 gap-4 mb-8">
+<div class="bg-surface-container-lowest p-5 rounded-DEFAULT shadow-[0_4px_12px_rgba(0,0,0,0.02)] border-l-4 border-primary">
+<p class="text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest mb-1">Total Scanned Today</p>
+<p class="text-3xl font-bold tracking-tight text-on-surface">1,482 <span class="text-sm font-medium text-tertiary-container">+12%</span></p>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-DEFAULT shadow-[0_4px_12px_rgba(0,0,0,0.02)] border-l-4 border-primary-container">
+<p class="text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest mb-1">Scan Rate (UPH)</p>
+<p class="text-3xl font-bold tracking-tight text-on-surface">245 <span class="text-sm font-medium text-on-surface/40">pk/h</span></p>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-DEFAULT shadow-[0_4px_12px_rgba(0,0,0,0.02)] border-l-4 border-error">
+<p class="text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest mb-1">Error Rate %</p>
+<p class="text-3xl font-bold tracking-tight text-on-surface">0.42% <span class="text-sm font-medium text-error">Low</span></p>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-DEFAULT shadow-[0_4px_12px_rgba(0,0,0,0.02)] border-l-4 border-secondary">
+<p class="text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest mb-1">Pending Count</p>
+<p class="text-3xl font-bold tracking-tight text-on-surface">318 <span class="text-sm font-medium text-on-surface/40">items</span></p>
+</div>
+</div>
+<!-- Central Barcode Scan Section -->
+<div class="bg-white p-8 rounded-DEFAULT shadow-[0_12px_32px_rgba(87,52,79,0.04)] mb-8">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">barcode_scanner</span>
+<h2 class="text-xl font-bold tracking-tight uppercase">Ready to Scan</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="text-[0.6875rem] font-bold text-on-surface/60 uppercase">Batch Mode</span>
+<div class="w-10 h-5 bg-surface-container-high rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-2 border-l border-surface-container pl-6">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+<span class="text-[0.6875rem] font-bold text-tertiary-container uppercase">Sound On</span>
+</div>
+</div>
+</div>
+<div class="relative group">
+<input autofocus="" class="w-full h-24 bg-surface-container-lowest border-4 border-primary focus:border-primary-container focus:ring-0 text-4xl font-mono px-8 transition-all duration-150 uppercase tracking-widest placeholder:text-on-surface/20" placeholder="Scan AWB or Order ID..." type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-4">
+<button class="bg-primary text-white px-6 py-3 rounded-DEFAULT font-bold uppercase text-xs hover:bg-primary-container transition-all">Submit</button>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-4 text-on-surface/50">
+<span class="text-[0.6875rem] flex items-center gap-1 font-semibold uppercase"><span class="material-symbols-outlined text-sm">keyboard_command_key</span> Press Enter to Manual Submit</span>
+<span class="text-[0.6875rem] flex items-center gap-1 font-semibold uppercase"><span class="material-symbols-outlined text-sm">history</span> Last Scan: 88291004221 (Kerry)</span>
+</div>
+</div>
+<!-- Scan Results Table -->
+<div class="bg-white rounded-DEFAULT shadow-[0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+<div class="bg-surface-container-low px-6 py-4 flex justify-between items-center border-b border-surface-container">
+<h3 class="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">list_alt</span> 
+                        Recent Scans
+                    </h3>
+<div class="flex gap-2">
+<button class="text-xs font-bold uppercase text-primary border border-primary/20 px-3 py-1 rounded-DEFAULT hover:bg-primary/5 transition-colors">Clear All</button>
+<button class="text-xs font-bold uppercase text-on-surface/60 border border-surface-container-highest px-3 py-1 rounded-DEFAULT hover:bg-surface-container-high transition-colors">Export Log</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-lowest border-b border-surface-container">
+<tr>
+<th class="px-6 py-4 text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest">AWB / Tracking Number</th>
+<th class="px-6 py-4 text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest">Order ID</th>
+<th class="px-6 py-4 text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest">Courier</th>
+<th class="px-6 py-4 text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest text-center">Bin Assignment</th>
+<th class="px-6 py-4 text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest">Timestamp</th>
+<th class="px-6 py-4 text-[0.6875rem] font-bold text-on-surface/50 uppercase tracking-widest text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-4 font-mono text-sm font-semibold tracking-tighter">KER99210034421</td>
+<td class="px-6 py-4 text-sm">#ORD-88219</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 bg-orange-500 rounded-DEFAULT flex items-center justify-center text-[10px] text-white font-bold">K</div>
+<span class="text-sm font-medium">Kerry Express</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-primary text-white px-3 py-1 rounded-DEFAULT font-mono font-bold text-base">BIN-A1</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface/60 font-mono">14:22:01</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-4 font-mono text-sm font-semibold tracking-tighter">FLA44210988220</td>
+<td class="px-6 py-4 text-sm">#ORD-88220</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 bg-yellow-400 rounded-DEFAULT flex items-center justify-center text-[10px] text-black font-bold">F</div>
+<span class="text-sm font-medium">Flash Express</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-secondary text-white px-3 py-1 rounded-DEFAULT font-mono font-bold text-base">BIN-D4</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface/60 font-mono">14:21:45</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-4 font-mono text-sm font-semibold tracking-tighter">JNT10002931122</td>
+<td class="px-6 py-4 text-sm font-bold text-error">INVALID_ID</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 opacity-50">
+<div class="w-6 h-6 bg-red-600 rounded-DEFAULT flex items-center justify-center text-[10px] text-white font-bold">J</div>
+<span class="text-sm font-medium">J&amp;T Express</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="border border-error text-error px-3 py-1 rounded-DEFAULT font-mono font-bold text-base">ERROR</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface/60 font-mono">14:21:12</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors group">
+<td class="px-6 py-4 font-mono text-sm font-semibold tracking-tighter">THP99011228410</td>
+<td class="px-6 py-4 text-sm">#ORD-88222</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 bg-red-500 rounded-DEFAULT flex items-center justify-center text-[10px] text-white font-bold">T</div>
+<span class="text-sm font-medium">Thai Post</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="bg-primary text-white px-3 py-1 rounded-DEFAULT font-mono font-bold text-base">BIN-A1</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface/60 font-mono">14:20:58</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-240px)] h-8 bg-[#f9f9f9] dark:bg-slate-950 text-[#1a1c1c] font-['Source_Code_Pro'] text-[0.6875rem] uppercase font-medium flex justify-between items-center px-4 z-50">
+<div class="flex items-center gap-4">
+<span>v2.4.0-pro</span>
+<span class="text-on-surface/20">|</span>
+<span class="text-[#4b5d33]">System Status: Operational</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface/40">
+<span>STATION_ID: SCAN_PACK_04</span>
+<span class="hover:text-[#57344f] cursor-pointer">Support</span>
+</div>
+</footer>
+</div>
+<!-- Feedback Pulse Notification (Invisible by default, but defined in system) -->
+<div class="fixed inset-0 pointer-events-none opacity-0 bg-primary/10 transition-opacity duration-150 z-[100]" id="scan-feedback"></div>
+</body></html>

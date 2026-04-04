@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KOB WMS Pro | SLA Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed": "#95f1f8", background: "#f9f9f9", outline: "#80747a", "on-secondary-fixed": "#002022", "on-tertiary-fixed": "#40000c", tertiary: "#791e2a", "secondary-container": "#92eff5", "surface-container-high": "#e8e8e8", "on-surface": "#1a1c1c", error: "#ba1a1a", "surface-dim": "#dadada", secondary: "#00696e", "tertiary-fixed": "#ffdada", "surface-tint": "#79526f", surface: "#f9f9f9", "outline-variant": "#d1c3ca", "tertiary-container": "#983540", "primary-container": "#714b67", "on-tertiary-fixed-variant": "#822430", "surface-container": "#eeeeee", "error-container": "#ffdad6", "on-tertiary-container": "#ffbdbf", "on-error": "#ffffff", "surface-bright": "#f9f9f9", "on-surface-variant": "#4e444a", "on-primary-container": "#f0bfe0", "inverse-surface": "#2f3131", "inverse-on-surface": "#f1f1f1", "inverse-primary": "#e9b8d9", "primary-fixed-dim": "#e9b8d9", "on-background": "#1a1c1c", "surface-container-highest": "#e2e2e2", "on-error-container": "#93000a", "surface-variant": "#e2e2e2", "secondary-fixed-dim": "#78d5db", "tertiary-fixed-dim": "#ffb3b6", "primary-fixed": "#ffd7f1", "surface-container-low": "#f3f3f3", primary: "#714B67", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "on-tertiary": "#ffffff", "on-secondary": "#ffffff", "on-primary-fixed-variant": "#5f3b56", "on-secondary-fixed-variant": "#004f53", "on-secondary-container": "#006e73", "on-primary-fixed": "#2f1029", "background-light": "#f7f7f7", "background-dark": "#1b171a"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, fontFamily: {headline: ["Inter"], body: ["Inter"], label: ["Inter"], display: "Inter"}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopNavBar -->
+<header class="bg-[#57344f] dark:bg-slate-950 text-white font-['Inter'] body-md tracking-tight docked full-width top-0 shadow-sm flex justify-between items-center w-full px-6 h-14 fixed z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-white">KOB WMS Pro</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-white/80 hover:text-white transition-colors" href="#">Dashboard</a>
+<a class="text-white font-bold border-b-2 border-white pb-1" href="#">Logistics</a>
+<a class="text-white/80 hover:text-white transition-colors" href="#">E-commerce</a>
+<a class="text-white/80 hover:text-white transition-colors" href="#">Inventory</a>
+<a class="text-white/80 hover:text-white transition-colors" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-white/10 rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-full transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-white/20">
+<img alt="Executive User Profile" class="h-full w-full object-cover" data-alt="Corporate executive headshot, professional male in sharp suit with confident expression, high-end office setting background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3aiKxbfTtl-d7El6jwM8mvxyF3qHnm_-VoZuccrFyUn6rmRSdPnNZ8RmnDNZ8Gf1n-NRbzD9oMxv9GyPCM-VPi3REqICBv8Af9ohn3gCNJlqv5RC0HSPcJ20fAfQ4xRGeSHlIacY2tVctvSh5AFJR-ZZ7f6KbqPwon-O0a3PtaqJesN4pdrGkTDA4N4JzkzDrC7bTjNSq2hGFuwDhzru28qGNxyeT9GedAf4oOd1FEa6OGy5ROajHnZo0Dx8bKt0Nu1YhK7OrZsK2"/>
+</div>
+</div>
+</header>
+<div class="flex pt-14">
+<!-- SideNavBar -->
+<aside class="bg-[#f3f3f3] dark:bg-slate-900 text-[#57344f] dark:text-[#d1c3ca] h-screen w-64 border-r border-transparent flex flex-col py-4 gap-2 fixed left-0 top-14">
+<div class="px-6 mb-4">
+<h2 class="font-['Inter'] label-sm uppercase tracking-wider text-on-surface-variant/60">Logistics Ops</h2>
+<p class="text-[10px] text-on-surface-variant/40 uppercase tracking-[0.2em]">Primary Module</p>
+</div>
+<nav class="flex-1">
+<a class="text-slate-600 dark:text-slate-400 hover:text-[#57344f] hover:bg-[#e8e8e8] dark:hover:bg-slate-800 px-4 py-3 mx-2 rounded-lg flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Vehicle Scheduling</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-[#57344f] hover:bg-[#e8e8e8] dark:hover:bg-slate-800 px-4 py-3 mx-2 rounded-lg flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Order Fulfillment</span>
+</a>
+<a class="bg-white dark:bg-slate-800 text-[#57344f] dark:text-white font-semibold rounded-l-lg ml-2 shadow-sm px-4 py-3 flex items-center gap-3 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined">speed</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">SLA Monitoring</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-[#57344f] hover:bg-[#e8e8e8] dark:hover:bg-slate-800 px-4 py-3 mx-2 rounded-lg flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-['Inter'] label-sm uppercase tracking-wider">Warehouse Zones</span>
+</a>
+</nav>
+<div class="px-4 mb-6">
+<button class="w-full py-3 bg-gradient-to-r from-[#57344f] to-[#714b67] text-white rounded-lg font-bold shadow-md hover:opacity-90 transition-opacity">
+                    Create New Order
+                </button>
+</div>
+<div class="mt-auto border-t border-outline-variant/20 pt-4">
+<a class="text-slate-600 dark:text-slate-400 hover:bg-[#e8e8e8] px-4 py-2 mx-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+<span class="font-['Inter'] text-[11px] uppercase tracking-wider">Support</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-[#e8e8e8] px-4 py-2 mx-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-sm">menu_book</span>
+<span class="font-['Inter'] text-[11px] uppercase tracking-wider">User Manual</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-64 p-8 bg-surface">
+<!-- Header Section -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h1 class="text-2xl font-bold text-on-surface">Platform Overview + SLA Dashboard</h1>
+<p class="text-on-surface-variant body-md mt-1">Real-time logistics performance and fulfillment architecture.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-highest px-4 py-2 rounded-lg text-on-primary-fixed-variant font-semibold body-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                    </button>
+<button class="bg-gradient-to-r from-primary to-primary-container px-4 py-2 rounded-lg text-white font-semibold body-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">download</span> Export Report
+                    </button>
+</div>
+</div>
+<!-- KPI Row (The Summary Strip) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex flex-col">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Total Orders Today</span>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">1,284</span>
+<span class="text-secondary text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_upward</span> 12%</span>
+</div>
+<div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-3/4 rounded-full"></div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex flex-col">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Average Lead Time</span>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">4.2<span class="text-sm font-medium ml-1">hrs</span></span>
+<span class="text-secondary text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">arrow_downward</span> 0.5h</span>
+</div>
+<div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-1/2 rounded-full"></div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex flex-col">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">SLA Fulfillment %</span>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">98.2%</span>
+<span class="text-tertiary text-xs font-bold flex items-center"><span class="material-symbols-outlined text-xs">warning</span> Target 99%</span>
+</div>
+<div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container w-[98%] rounded-full"></div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] flex flex-col">
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Active Shipments</span>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-extrabold text-on-surface">412</span>
+<span class="text-on-surface-variant/40 text-xs font-bold">Live Tracking</span>
+</div>
+<div class="mt-4 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-2/3 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Dashboard Grid (Architectural Ledger) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Main SLA Performance Chart (Bento Card Large) -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-lg p-8 flex flex-col shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center mb-10">
+<div>
+<h3 class="text-lg font-bold text-on-surface">SLA Monitoring: Performance vs Targets</h3>
+<p class="text-xs text-on-surface-variant font-medium tracking-tight">Daily aggregated warehouse zone analysis</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">WH1: North</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">WH2: Central</span>
+</div>
+</div>
+</div>
+<!-- SVG Chart Simulation -->
+<div class="flex-1 w-full relative min-h-[300px]">
+<!-- Vertical Axis Labels -->
+<div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] font-bold text-on-surface-variant/30 py-2">
+<span>100%</span>
+<span>75%</span>
+<span>50%</span>
+<span>25%</span>
+<span>0%</span>
+</div>
+<!-- Chart Area -->
+<div class="ml-10 h-full border-b border-l border-outline-variant/20 relative">
+<!-- Grid lines -->
+<div class="absolute w-full h-px bg-outline-variant/10 top-0"></div>
+<div class="absolute w-full h-px bg-outline-variant/10 top-1/4"></div>
+<div class="absolute w-full h-px bg-outline-variant/10 top-2/4"></div>
+<div class="absolute w-full h-px bg-outline-variant/10 top-3/4"></div>
+<!-- Simulated Line Paths -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Target Line (Ghost Dash) -->
+<line stroke="#d1c3ca" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="100" y1="5" y2="5"></line>
+<!-- WH1 Line (Primary) -->
+<path d="M0,20 L15,18 L30,25 L45,15 L60,10 L75,22 L100,8" fill="none" stroke="#57344f" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+<path d="M0,20 L15,18 L30,25 L45,15 L60,10 L75,22 L100,8 L100,100 L0,100 Z" fill="url(#grad1)" opacity="0.05"></path>
+<!-- WH2 Line (Secondary) -->
+<path d="M0,35 L15,30 L30,32 L45,20 L60,28 L75,15 L100,12" fill="none" stroke="#00696e" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#57344f;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#57344f;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<!-- Horizontal Axis Labels -->
+<div class="absolute left-10 right-0 bottom-[-24px] flex justify-between text-[10px] font-bold text-on-surface-variant/30 uppercase tracking-widest">
+<span>Mon</span>
+<span>Tue</span>
+<span>Wed</span>
+<span>Thu</span>
+<span>Fri</span>
+<span>Sat</span>
+<span>Sun</span>
+</div>
+</div>
+</div>
+<!-- Right Side Bento (Gauge + List) -->
+<div class="space-y-8">
+<!-- Real-time SLA Status Gauge Card -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-start mb-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant/60">Live Fulfillment Status</h3>
+<span class="material-symbols-outlined text-secondary">verified_user</span>
+</div>
+<div class="relative flex flex-col items-center justify-center pt-4">
+<!-- Circular Gauge Simulation -->
+<div class="relative w-40 h-40">
+<svg class="w-full h-full transform rotate-[-90deg]" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f3f3f3" stroke-width="3"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#00696e" stroke-dasharray="92, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-extrabold text-on-surface">92<span class="text-sm">%</span></span>
+<span class="text-[8px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/40">Efficiency</span>
+</div>
+</div>
+<div class="mt-6 text-center">
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                                    System operating within <span class="text-secondary font-bold">Optimal Bounds</span>. No critical bottlenecks detected in final mile dispatch.
+                                </p>
+</div>
+</div>
+</div>
+<!-- Zone Quick Stats -->
+<div class="bg-surface-container-low rounded-lg p-6 border-l-4 border-primary shadow-sm">
+<h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">Warehouse Zones Alert</h3>
+<ul class="space-y-4">
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-sm font-semibold text-on-surface">WH1 - North Receiving</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant/60">ACTIVE</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-sm font-semibold text-on-surface">WH2 - E-comm Packing</span>
+</div>
+<span class="text-[10px] font-bold text-tertiary">LATENCY +12m</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<span class="text-sm font-semibold text-on-surface-variant">WH3 - Cold Storage</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant/40">STANDBY</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Lower Section: Performance Insights Table (Alternating Tones, No Lines) -->
+<div class="mt-12">
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-lg font-bold text-on-surface">Logistics Throughput Velocity</h3>
+<button class="text-primary text-xs font-bold uppercase tracking-widest hover:underline">View Detailed Ledger</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface-variant/60">
+<th class="pb-6 px-4">Carrier Name</th>
+<th class="pb-6 px-4">Current Load</th>
+<th class="pb-6 px-4">Avg Processing Time</th>
+<th class="pb-6 px-4">SLA Compliance</th>
+<th class="pb-6 px-4 text-right">Trend</th>
+</tr>
+</thead>
+<tbody class="text-sm font-medium">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-4 px-4 rounded-l-lg">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-lg">local_shipping</span>
+</div>
+<span>Global Express Logistics</span>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">142 Units</td>
+<td class="py-4 px-4 text-on-surface-variant">22.4 min</td>
+<td class="py-4 px-4">
+<span class="px-2 py-1 bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold rounded uppercase">Optimal</span>
+</td>
+<td class="py-4 px-4 text-right rounded-r-lg">
+<span class="material-symbols-outlined text-secondary text-sm">trending_up</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-low transition-colors group">
+<td class="py-4 px-4 rounded-l-lg">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-lg">flight_takeoff</span>
+</div>
+<span>SkyBound Air Freight</span>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">88 Units</td>
+<td class="py-4 px-4 text-on-surface-variant">45.1 min</td>
+<td class="py-4 px-4">
+<span class="px-2 py-1 bg-tertiary-container/30 text-on-tertiary-container text-[10px] font-bold rounded uppercase">Watchlist</span>
+</td>
+<td class="py-4 px-4 text-right rounded-r-lg">
+<span class="material-symbols-outlined text-tertiary text-sm">trending_flat</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-4 px-4 rounded-l-lg">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container text-lg">directions_boat</span>
+</div>
+<span>Oceanic Prime Shipping</span>
+</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">1,240 Units</td>
+<td class="py-4 px-4 text-on-surface-variant">12.5 hrs</td>
+<td class="py-4 px-4">
+<span class="px-2 py-1 bg-secondary-container/30 text-on-secondary-container text-[10px] font-bold rounded uppercase">Optimal</span>
+</td>
+<td class="py-4 px-4 text-right rounded-r-lg">
+<span class="material-symbols-outlined text-secondary text-sm">trending_up</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action Button (SUPPRESSED on detailed dashboard as per rules, but included for reference if it were Home - logic check: Dashboard typically suppresses FAB to focus on canvas) -->
+</body></html>

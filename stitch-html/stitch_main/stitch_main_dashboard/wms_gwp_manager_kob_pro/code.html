@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WMS GWP Manager - KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Source+Code+Pro:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#e8e8e8",
+                        "on-surface-variant": "#4e444a",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "on-tertiary-container": "#c0d5a0",
+                        "surface-tint": "#79526f",
+                        "surface-container-low": "#f3f3f3",
+                        "primary": "#57344f",
+                        "on-secondary-fixed": "#251721",
+                        "on-background": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary-container": "#725f6b",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#112000",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dadada",
+                        "secondary-fixed-dim": "#d8c0ce",
+                        "outline": "#80747a",
+                        "secondary-fixed": "#f5dbea",
+                        "inverse-on-surface": "#f1f1f1",
+                        "tertiary-fixed": "#d5eab4",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#4b5d33",
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#714b67",
+                        "surface-container-highest": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "secondary-container": "#f5dbea",
+                        "outline-variant": "#d1c3ca",
+                        "inverse-primary": "#e9b8d9",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "on-secondary-fixed-variant": "#53424d",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#34451e",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "primary-fixed": "#ffd7f1",
+                        "on-primary-container": "#f0bfe0",
+                        "secondary": "#6c5965",
+                        "on-primary-fixed": "#2f1029"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["Source Code Pro"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-layering { transition: background-color 0.2s ease; }
+        .glass-panel {
+            background: rgba(226, 226, 226, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .active-pulse { position: relative; overflow: hidden; }
+        .active-pulse::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: #714b67;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .active-pulse:active::after { opacity: 0.1; }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 bg-gradient-to-br from-[#57344f] to-[#714b67] text-white font-['Inter'] font-bold tracking-tight h-16 shadow-none">
+<div class="flex items-center gap-8">
+<div class="text-lg font-bold tracking-tighter text-white">WMS GWP Manager</div>
+<nav class="hidden md:flex items-center gap-6 h-16">
+<a class="h-full flex items-center px-2 text-white border-b-2 border-white" href="#">GWP Rules</a>
+<a class="h-full flex items-center px-2 text-white/70 hover:bg-white/10 transition-colors" href="#">Analytics</a>
+<a class="h-full flex items-center px-2 text-white/70 hover:bg-white/10 transition-colors" href="#">Logs</a>
+</nav>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative mr-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-sm">search</span>
+<input class="bg-white/10 border-none rounded-lg py-1.5 pl-9 pr-4 text-sm focus:ring-1 focus:ring-white/30 placeholder-white/50 w-64" placeholder="Search rules or orders..." type="text"/>
+</div>
+<button class="p-2 hover:bg-white/10 transition-colors rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="help">help</span>
+</button>
+<button class="p-2 hover:bg-white/10 transition-colors rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-white/10 transition-colors rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-full w-[240px] bg-[#f3f3f3] dark:bg-slate-900 flex flex-col pt-4 px-3 z-40 transition-all duration-200">
+<div class="mb-8 px-4">
+<div class="text-[#57344f] font-black text-lg">Precision WMS</div>
+<div class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Kinetic Architect v1.0</div>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 font-['Inter'] font-semibold text-sm uppercase tracking-widest hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#57344f] dark:text-white bg-[#e8e8e8] dark:bg-slate-800 font-bold font-['Inter'] text-sm uppercase tracking-widest transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span>GWP Rules</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 font-['Inter'] font-semibold text-sm uppercase tracking-widest hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="conveyor_belt">conveyor_belt</span>
+<span>Fulfillment Queue</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 font-['Inter'] font-semibold text-sm uppercase tracking-widest hover:bg-[#e8e8e8] dark:hover:bg-slate-800 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="ml-[240px] pt-16 min-h-screen p-8 bg-surface">
+<!-- Header Actions -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface">GWP Rules Management</h1>
+<p class="text-on-surface-variant text-sm mt-1">Configure automated gift insertion rules for order fulfillment.</p>
+</div>
+<button class="bg-gradient-to-br from-[#57344f] to-[#714b67] text-white px-6 py-2.5 rounded shadow-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 font-semibold">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Create GWP Rule
+            </button>
+</div>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="bg-surface-container-lowest p-6 flex flex-col justify-between border-l-4 border-primary shadow-sm rounded">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Gifts Distributed Today</span>
+<span class="material-symbols-outlined text-primary/40" data-icon="card_giftcard">card_giftcard</span>
+</div>
+<div class="mt-4">
+<span class="text-4xl font-bold tracking-tighter">1,284</span>
+<span class="text-tertiary-container bg-tertiary-container/10 px-2 py-0.5 rounded text-[10px] font-bold ml-2">+12% vs. Avg</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 border-l-4 border-tertiary-container shadow-sm rounded">
+<div class="flex justify-between items-start mb-4">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Compliance Rate %</span>
+<span class="material-symbols-outlined text-tertiary-container/40" data-icon="verified">verified</span>
+</div>
+<div class="flex items-end gap-4">
+<span class="text-4xl font-bold tracking-tighter">98.2%</span>
+<div class="flex-grow mb-2">
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full" style="width: 98.2%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 border-l-4 border-secondary shadow-sm rounded">
+<div class="flex justify-between items-start mb-4">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Active Rule Coverage</span>
+<span class="material-symbols-outlined text-secondary/40" data-icon="hub">hub</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<div class="text-2xl font-bold">14</div>
+<div class="text-[10px] text-slate-500 font-semibold uppercase">Active Rules</div>
+</div>
+<div>
+<div class="text-2xl font-bold">2,450</div>
+<div class="text-[10px] text-slate-500 font-semibold uppercase">SKUs Covered</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Active GWP Rules Section -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-semibold uppercase tracking-widest text-on-surface-variant">Active GWP Rules</h2>
+<div class="flex gap-2">
+<button class="p-1.5 bg-surface-container-high rounded hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span></button>
+<button class="p-1.5 bg-surface-container-high rounded hover:bg-surface-variant transition-colors"><span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+<div class="flex gap-6 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-hide">
+<!-- Rule Card 1 -->
+<div class="min-w-[340px] bg-surface-container-lowest p-5 rounded shadow-sm hover:shadow-md transition-shadow active-pulse">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-primary">Winter Holiday Gift</h3>
+<span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Tier 1 Bonus</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 object-cover rounded bg-surface-container" data-alt="high quality white wireless headphones on a clean minimalist studio background with soft purple shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd9CXo-VX0kYwhU1q0oP1yPZDCjAmXuBMMNFh8Dndc9ZmSSFXHeGHuNuCStIDbqzD9NZivjTxPfLOb9fqxpFAHyzYR-RQahlArPcWqadW9al9jqSt-IlAakCXXAqcyFXz6pMs99HMApx98iExsoHHn5bW6H43Kc-VkGEmjCdrBZ9OT53NOpsj8B4Qb0cNQB1Aja7A1EfwbQK9TaWHnhsJMmuraMNB_YfdzX4CULgcizxgx2hmaLFPAmldZ7AlYOEd8yUU7BoHWSlws"/>
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Gift Item</div>
+<div class="font-mono text-sm font-semibold">SKU-2024-WINT</div>
+<div class="text-xs text-on-surface-variant">Winter Comfort Set</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2 border-t border-surface-container">
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Min Purchase</div>
+<div class="text-sm font-bold">$150.00</div>
+</div>
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Valid Dates</div>
+<div class="text-xs font-semibold">Dec 01 - Jan 05</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Rule Card 2 -->
+<div class="min-w-[340px] bg-surface-container-lowest p-5 rounded shadow-sm hover:shadow-md transition-shadow active-pulse">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-primary">VIP Loyalty Bonus</h3>
+<span class="text-[10px] bg-tertiary-container/10 text-tertiary-container px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Segment Only</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 object-cover rounded bg-surface-container" data-alt="luxury leather bound journal with gold embossing on a dark wood desk with cinematic side lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzvtHoEuegvHEWNY8pWx7iGODssNZIMLwF82UDPsZpgBVnnZL6PFImI9h6gsydvATRgIdkyMBh5EDAHZD5_6HpltjU7N95Q5lkFy_HYbVKyoK38XzazHI-BRxtWdMcibDJgqx_OChT6hvykwPzkv_tGFImhgJFb4lE9PP5a4d2o6LuN0Ed7Lv--Mxn5ifLKx4fOuiM4cEUJReLXGbXjbHe92FE8PH7RFbWQywrXSY4d2LgWhdcVFOQZeWOlfSscuzldvB-OP_1RgPG"/>
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Gift Item</div>
+<div class="font-mono text-sm font-semibold">SKU-VIP-LDR</div>
+<div class="text-xs text-on-surface-variant">Executive Journal</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2 border-t border-surface-container">
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Min Purchase</div>
+<div class="text-sm font-bold">$500.00</div>
+</div>
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Valid Dates</div>
+<div class="text-xs font-semibold">No Expiry</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Rule Card 3 -->
+<div class="min-w-[340px] bg-surface-container-lowest p-5 rounded shadow-sm hover:shadow-md transition-shadow active-pulse">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-primary">Beauty Bundle Promo</h3>
+<span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded uppercase font-bold tracking-tighter">Category Wise</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-surface-container rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<img class="w-12 h-12 object-cover rounded bg-surface-container" data-alt="elegant perfume bottle with iridescent glass and gold cap sitting on a polished stone pedestal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnFzL9tKaSSzzs6jO_oQ53JSittla1YkLTSyCR_jdJnI102JKlCx19PVrXXBq0qgpVx14tnr9TBrWHNpOjV8Rp6_MhwvZ4c43dMqFn3Lo_Yihfj3k2pnQIeOR6qtPbghwDCcsuMR6EtC_EvlfNaiMG3eP-1C2AmTyQtvcbYSVXNEHGsrYewJAzpFwYdCVwPhLYkm1OX5qpv7-k-Sf7ynxjc7__5um1R_rZxMseYH9p7C3_i-PhbA8ss8z1mbkg3McWtq9AxIET5LX9"/>
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Gift Item</div>
+<div class="font-mono text-sm font-semibold">SKU-SMPL-BTY</div>
+<div class="text-xs text-on-surface-variant">Sample Fragrance Kit</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2 border-t border-surface-container">
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Min Qty</div>
+<div class="text-sm font-bold">3 Items</div>
+</div>
+<div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Valid Dates</div>
+<div class="text-xs font-semibold">Feb 10 - Feb 15</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- GWP Fulfillment Queue -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-semibold uppercase tracking-widest text-on-surface-variant">Fulfillment Queue</h2>
+<div class="flex items-center gap-4">
+<span class="text-xs font-bold text-primary bg-primary-container/20 px-2 py-1 rounded">24 Orders Pending Gift Insertion</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-surface-container">
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Order ID</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Customer</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Qualifying Items</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Gift Item</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Status</th>
+<th class="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-6 py-4 font-mono font-bold text-sm text-primary">#ORD-99021</td>
+<td class="px-6 py-4 text-sm font-semibold">Marcus Holloway</td>
+<td class="px-6 py-4 text-xs">
+<div class="flex flex-wrap gap-1">
+<span class="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 font-mono">SKU-ELEC-44</span>
+<span class="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 font-mono">+2 more</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-xs font-bold">Winter Comfort Set</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tighter text-amber-600 bg-amber-50 px-2 py-1 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                        Pending
+                                    </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:bg-primary/10 p-2 rounded transition-colors"><span class="material-symbols-outlined text-xl" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-6 py-4 font-mono font-bold text-sm text-primary">#ORD-98950</td>
+<td class="px-6 py-4 text-sm font-semibold">Elena Rodriguez</td>
+<td class="px-6 py-4 text-xs">
+<div class="flex flex-wrap gap-1">
+<span class="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 font-mono">SKU-HOME-12</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-xs font-bold">Executive Journal</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tighter text-tertiary-container bg-tertiary-container/10 px-2 py-1 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+                                        Added
+                                    </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:bg-primary/10 p-2 rounded transition-colors"><span class="material-symbols-outlined text-xl" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-6 py-4 font-mono font-bold text-sm text-primary">#ORD-98944</td>
+<td class="px-6 py-4 text-sm font-semibold">Sarah Jenkins</td>
+<td class="px-6 py-4 text-xs">
+<div class="flex flex-wrap gap-1">
+<span class="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 font-mono">SKU-BT-921</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 opacity-30">
+<div class="w-2 h-2 rounded-full bg-slate-500"></div>
+<span class="text-xs font-bold italic">N/A</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tighter text-slate-500 bg-slate-100 px-2 py-1 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                                        Skipped
+                                    </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:bg-primary/10 p-2 rounded transition-colors"><span class="material-symbols-outlined text-xl" data-icon="more_vert">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-6 py-3 bg-surface-container-low flex justify-between items-center">
+<span class="text-xs text-slate-500 font-semibold">Showing 3 of 124 records</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-white border border-surface-container rounded text-xs font-bold hover:bg-surface-container-low transition-all">Previous</button>
+<button class="px-3 py-1 bg-white border border-surface-container rounded text-xs font-bold hover:bg-surface-container-low transition-all">Next</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 glass-panel bg-black/10">
+<div class="bg-surface-container-lowest w-full max-w-2xl rounded shadow-2xl overflow-hidden border border-white/50">
+<div class="bg-gradient-to-br from-[#57344f] to-[#714b67] px-6 py-4 flex justify-between items-center text-white">
+<div>
+<h2 class="text-lg font-bold tracking-tight">Create GWP Rule</h2>
+<p class="text-[10px] text-white/70 uppercase tracking-widest font-semibold">Rule Definition Engine</p>
+</div>
+<button class="p-2 hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-8 space-y-6">
+<!-- Step 1: Basic Info -->
+<div class="grid grid-cols-2 gap-6">
+<div class="col-span-2 md:col-span-1">
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Rule Name</label>
+<input class="w-full bg-surface text-sm border-none border-b-2 border-surface-container focus:border-primary focus:ring-0 transition-all font-semibold" placeholder="e.g. Summer Solstice Gift" type="text"/>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Validity Dates</label>
+<div class="flex items-center gap-2">
+<input class="flex-grow bg-surface text-sm border-none border-b-2 border-surface-container focus:border-primary focus:ring-0 px-0" type="date"/>
+<span class="text-slate-400 text-xs">—</span>
+<input class="flex-grow bg-surface text-sm border-none border-b-2 border-surface-container focus:border-primary focus:ring-0 px-0" type="date"/>
+</div>
+</div>
+</div>
+<!-- Step 2: Product Mapping -->
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Qualifying SKUs</label>
+<div class="bg-surface-container-low p-2 rounded flex flex-wrap gap-2 min-h-[44px]">
+<span class="bg-white px-2 py-1 rounded text-xs font-mono font-bold flex items-center gap-2 border border-outline-variant/30">
+                            SKU-APPR-22 <button class="hover:text-red-500"><span class="material-symbols-outlined text-[14px]" data-icon="close">close</span></button>
+</span>
+<span class="bg-white px-2 py-1 rounded text-xs font-mono font-bold flex items-center gap-2 border border-outline-variant/30">
+                            SKU-APPR-24 <button class="hover:text-red-500"><span class="material-symbols-outlined text-[14px]" data-icon="close">close</span></button>
+</span>
+<button class="text-primary text-[10px] font-bold uppercase hover:underline ml-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span> Add SKU
+                        </button>
+</div>
+</div>
+<!-- Step 3: Gift & Threshold -->
+<div class="grid grid-cols-2 gap-6">
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Gift Item (Scan Barcode)</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-0 bottom-2.5 text-primary/50 text-base" data-icon="barcode_scanner">barcode_scanner</span>
+<input class="w-full bg-surface text-sm font-mono border-none border-b-2 border-surface-container focus:border-primary focus:ring-0 pl-7 transition-all" placeholder="Scan SKU..." type="text"/>
+</div>
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Min Purchase Amount ($)</label>
+<input class="w-full bg-surface text-sm border-none border-b-2 border-surface-container focus:border-primary focus:ring-0 font-bold" placeholder="0.00" type="number"/>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="pt-6 flex flex-col md:flex-row justify-between items-center gap-4 border-t border-surface-container">
+<button class="w-full md:w-auto px-4 py-2 text-primary font-bold text-xs uppercase tracking-widest hover:bg-surface-container-high rounded transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="print">print</span>
+                        Print Barcode Label
+                    </button>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-grow md:flex-none px-6 py-2.5 text-on-surface-variant font-bold text-xs uppercase tracking-widest hover:bg-surface-container-high rounded transition-all">Cancel</button>
+<button class="flex-grow md:flex-none px-10 py-2.5 bg-gradient-to-br from-[#57344f] to-[#714b67] text-white font-bold text-xs uppercase tracking-widest rounded shadow hover:brightness-110 active:scale-95 transition-all">Save Rule</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WMS Cycle Count | KOB WMS Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Source+Code+Pro:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-highest": "#e2e2e2",
+                      "on-primary-fixed-variant": "#5f3b56",
+                      "secondary-fixed": "#f5dbea",
+                      "outline-variant": "#d1c3ca",
+                      "surface-container-low": "#f3f3f3",
+                      "surface-container": "#eeeeee",
+                      "tertiary-container": "#4b5d33",
+                      "secondary-fixed-dim": "#d8c0ce",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#c0d5a0",
+                      "secondary-container": "#f5dbea",
+                      "on-tertiary": "#ffffff",
+                      "tertiary": "#34451e",
+                      "primary-container": "#714b67",
+                      "on-secondary-fixed-variant": "#53424d",
+                      "surface-dim": "#dadada",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "on-primary-container": "#f0bfe0",
+                      "primary": "#57344f",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed": "#112000",
+                      "on-secondary-fixed": "#251721",
+                      "surface-container-high": "#e8e8e8",
+                      "primary-fixed": "#ffd7f1",
+                      "surface": "#f9f9f9",
+                      "on-primary-fixed": "#2f1029",
+                      "background": "#f9f9f9",
+                      "inverse-surface": "#2f3131",
+                      "secondary": "#6c5965",
+                      "inverse-primary": "#e9b8d9",
+                      "on-secondary": "#ffffff",
+                      "surface-tint": "#79526f",
+                      "surface-bright": "#f9f9f9",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f1f1f1",
+                      "outline": "#80747a",
+                      "primary-fixed-dim": "#e9b8d9",
+                      "tertiary-fixed-dim": "#b9ce9a",
+                      "tertiary-fixed": "#d5eab4",
+                      "on-surface-variant": "#4e444a",
+                      "on-background": "#1a1c1c",
+                      "surface-variant": "#e2e2e2",
+                      "on-secondary-container": "#725f6b",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#3b4c24",
+                      "on-surface": "#1a1c1c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"],
+                      "mono": ["Source Code Pro"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; color: #1a1c1c; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .monospace { font-family: 'Source Code Pro', monospace; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full h-12 z-50 bg-gradient-to-r from-[#57344f] to-[#714b67] shadow-sm flex items-center justify-between px-4">
+<div class="flex items-center gap-6">
+<span class="text-lg font-black text-white">WMS Industrial</span>
+<nav class="hidden md:flex gap-1 h-12 items-center">
+<a class="px-3 h-full flex items-center border-b-2 border-white text-white font-bold text-sm font-['Inter'] tracking-tight" href="#">Operations</a>
+<a class="px-3 h-full flex items-center text-white/80 font-medium text-sm font-['Inter'] tracking-tight hover:bg-white/10 transition-colors" href="#">Analytics</a>
+<a class="px-3 h-full flex items-center text-white/80 font-medium text-sm font-['Inter'] tracking-tight hover:bg-white/10 transition-colors" href="#">Tools</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center text-white/80 focus-within:text-white">
+<span class="material-symbols-outlined absolute left-2 text-[20px]">search</span>
+<input class="bg-white/10 border-none text-xs rounded py-1.5 pl-8 pr-3 w-64 placeholder:text-white/50 focus:ring-1 focus:ring-white/30" placeholder="Global Search..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="p-1.5 rounded hover:bg-white/10 transition-colors text-white"><span class="material-symbols-outlined text-[20px]">notifications</span></button>
+<button class="p-1.5 rounded hover:bg-white/10 transition-colors text-white"><span class="material-symbols-outlined text-[20px]">help</span></button>
+<button class="p-1.5 rounded hover:bg-white/10 transition-colors text-white"><span class="material-symbols-outlined text-[20px]">apps</span></button>
+</div>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-white/20" data-alt="professional headshot of a warehouse manager in a clean office setting, soft overhead lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTJSL0VQMZDtbAG8_9qjZehhZffRIR_JwruC0GBCXxvVTL1i1-oTD6OYyRGiWAgymEwhfyV5yoJ5MJM5qPFjTTnonDzMueamHZt6Uyd4tuZCev2dcigTC-9quIggePqfmW1CbOaQR1iLqVTfLiUe-dMVqCy55YaD2bI1Xv3v0dKkU4rcfHSsxgAHftdgVkh8HgjklnLbV0ft0dR6mfCukwGwEl8S5d1QS9Jipa0Gl8BUKuMT0wFKrDTmhj-lu1v5fLUzOi-Pr_a1TE"/>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-12 w-[240px] h-[calc(100vh-48px)] bg-surface-container-low dark:bg-gray-900 flex flex-col py-4 border-r-0">
+<div class="px-4 mb-6">
+<h2 class="text-[#57344f] font-['Inter'] font-semibold text-[13px] uppercase tracking-wider">Kinetic Architect</h2>
+<p class="text-[11px] text-gray-500 font-medium">Zone Alpha-7</p>
+</div>
+<nav class="flex-1 space-y-0.5">
+<a class="flex items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[13px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-white text-[#57344f] border-l-4 border-[#57344f] transition-colors font-['Inter'] font-semibold text-[13px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span> Inventory
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[13px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[20px]">precision_manufacturing</span> Operations
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[13px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span> Shipping
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[13px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span> Reports
+            </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[13px] uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span> Settings
+            </a>
+</nav>
+<div class="px-4 py-4">
+<button class="w-full py-2.5 bg-gradient-to-br from-[#57344f] to-[#714b67] text-white rounded text-xs font-bold uppercase tracking-widest shadow-md hover:opacity-90 active:scale-[0.98] transition-all">New Scan</button>
+</div>
+<div class="border-t border-gray-200/50 mt-auto pt-2">
+<a class="flex items-center gap-3 px-4 py-2 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[12px] uppercase" href="#">
+<span class="material-symbols-outlined text-[18px]">contact_support</span> Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-gray-600 hover:bg-gray-200 transition-colors font-['Inter'] font-semibold text-[12px] uppercase" href="#">
+<span class="material-symbols-outlined text-[18px]">history</span> Logs
+            </a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-[240px] mt-12 flex-1 p-6 overflow-y-auto no-scrollbar">
+<!-- Summary Strip -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="bg-surface-container-lowest p-4 rounded shadow-sm border-l-4 border-primary">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Counts Today</span>
+<span class="material-symbols-outlined text-primary text-[18px]">checklist</span>
+</div>
+<div class="text-2xl font-black text-on-surface mt-1">142</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded shadow-sm border-l-4 border-tertiary-container">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Accuracy Rate</span>
+<span class="material-symbols-outlined text-tertiary-container text-[18px]">trending_up</span>
+</div>
+<div class="text-2xl font-black text-on-surface mt-1">98.2%</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded shadow-sm border-l-4 border-error">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Variance Items</span>
+<span class="material-symbols-outlined text-error text-[18px]">error</span>
+</div>
+<div class="text-2xl font-black text-on-surface mt-1">12</div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded shadow-sm border-l-4 border-secondary">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Pending Locations</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">pin_drop</span>
+</div>
+<div class="text-2xl font-black text-on-surface mt-1">45</div>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-6">
+<!-- Active Count Card -->
+<div class="col-span-12 lg:col-span-7">
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden flex flex-col h-full min-h-[400px]">
+<div class="px-6 py-4 bg-surface-container-low flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">sensors</span>
+<h2 class="text-base font-bold text-primary tracking-tight">Active Cycle Count</h2>
+</div>
+<div class="flex items-center gap-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-2 text-[10px] font-bold text-gray-600 uppercase">Blind Count Mode</span>
+</label>
+</div>
+</div>
+<div class="p-8 flex-1 flex flex-col justify-center items-center">
+<div class="w-full max-w-lg space-y-8">
+<!-- Location Display -->
+<div class="flex flex-col items-center gap-2">
+<span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Current Location</span>
+<div class="text-5xl font-black tracking-tighter text-on-surface bg-surface-container-low px-6 py-3 rounded-lg border-2 border-primary/10">A-01-01</div>
+</div>
+<!-- SKU Scan -->
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Product SKU Scan</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">barcode_scanner</span>
+<input class="w-full h-14 pl-12 pr-4 monospace text-xl font-semibold bg-surface-container-low border-b-2 border-primary focus:ring-0 focus:outline-none transition-all" placeholder="Scan SKU..." type="text"/>
+</div>
+</div>
+<!-- Qty Inputs -->
+<div class="grid grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Expected Qty</label>
+<input class="w-full h-12 bg-surface-container text-center font-bold text-lg opacity-60 rounded cursor-not-allowed border-none" readonly="" type="number" value="12"/>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Counted Qty</label>
+<input class="w-full h-12 bg-white text-center font-bold text-xl rounded border-2 border-primary/20 focus:border-primary focus:ring-0" placeholder="0" type="number"/>
+</div>
+</div>
+<!-- Variance Display -->
+<div class="p-4 rounded bg-tertiary-container/10 border border-tertiary-container/20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary-container">check_circle</span>
+<span class="text-sm font-semibold text-tertiary">Match Confirmed</span>
+</div>
+<div class="text-right">
+<span class="text-[10px] block font-bold text-gray-400 uppercase">Variance</span>
+<span class="text-lg font-black text-tertiary">0</span>
+</div>
+</div>
+<button class="w-full h-14 bg-gradient-to-r from-[#57344f] to-[#714b67] text-white font-bold text-sm uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:translate-y-[-1px] active:translate-y-[1px] transition-all rounded">Validate Count</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Actions & Filters -->
+<div class="col-span-12 lg:col-span-5 space-y-6">
+<!-- Filter Bar -->
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm space-y-4">
+<h3 class="text-xs font-black text-gray-800 uppercase tracking-widest border-b border-gray-100 pb-2">Count Management</h3>
+<div class="space-y-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">location_on</span>
+<input class="w-full text-xs py-2.5 pl-10 pr-3 rounded border-none bg-surface-container-low focus:ring-1 focus:ring-primary/30" placeholder="Search Location..." type="text"/>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">calendar_today</span>
+<input class="w-full text-xs py-2.5 pl-10 pr-3 rounded border-none bg-surface-container-low focus:ring-1 focus:ring-primary/30" placeholder="Date Range" type="text"/>
+</div>
+<div class="flex gap-2 p-1 bg-surface-container-low rounded">
+<button class="flex-1 text-[10px] font-bold py-1.5 rounded bg-white shadow-sm text-primary uppercase">All</button>
+<button class="flex-1 text-[10px] font-bold py-1.5 rounded text-gray-500 uppercase hover:bg-white transition-all">Match</button>
+<button class="flex-1 text-[10px] font-bold py-1.5 rounded text-gray-500 uppercase hover:bg-white transition-all">Mismatch</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2">
+<button class="bg-gradient-to-r from-[#57344f] to-[#714b67] text-white py-2.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90">
+<span class="material-symbols-outlined text-[16px]">add_circle</span> Start New Count
+                        </button>
+<button class="border-2 border-outline-variant text-on-surface-variant py-2.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-gray-50">
+<span class="material-symbols-outlined text-[16px]">ios_share</span> Export Report
+                        </button>
+</div>
+</div>
+<!-- Live Feed / Mini Chart -->
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden p-6 relative">
+<h3 class="text-xs font-black text-gray-800 uppercase tracking-widest mb-4">Storage Map Alpha</h3>
+<div class="aspect-video bg-surface-container-low rounded flex items-center justify-center relative overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" data-alt="industrial warehouse aisles with high shelving units, geometric perspective, soft volumetric lighting, corporate style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgYbUjoxxTgg0oYRhKCEhJjQ1uKyQdMhZaU1UI2BfLlDpSDyT1ROuVsibxFFD1xM6VcmYnsxXd92iVcpRTmD4aldKKK5tP6BRVD3Oi5aR1DC7Xqvajug85Lg2Ya5ACo5pw0k-VcXF-xjWAMFO8hc5o5yE_1PfRChjMALytY0lKjOHcKB7eC9LzV84AaBITk0U6rY7twfkOw2VmDhNQlW-_alEhnPiYmanSe-RdHrZaHWHPfL8guCMyeUsg2-ZEdhsQA2v1yjiB8Juk"/>
+<div class="relative grid grid-cols-6 grid-rows-4 gap-2 w-full h-full p-4">
+<!-- Visual grid representing warehouse layout -->
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-primary/80 rounded-sm animate-pulse"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-error/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+<div class="bg-tertiary-container/60 rounded-sm"></div>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between text-[11px] font-medium text-gray-500">
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary"></span> Current Focus</div>
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span> Verified</div>
+<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-error"></span> Flagged</div>
+</div>
+</div>
+</div>
+<!-- Count History Table -->
+<div class="col-span-12">
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+<h3 class="text-xs font-black text-gray-800 uppercase tracking-widest">Recent Count History</h3>
+<button class="text-primary text-[10px] font-bold uppercase tracking-widest hover:underline">View All Activities</button>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+<th class="px-6 py-3">Location</th>
+<th class="px-6 py-3">Product SKU</th>
+<th class="px-6 py-3 text-center">Expected</th>
+<th class="px-6 py-3 text-center">Counted</th>
+<th class="px-6 py-3 text-center">Variance</th>
+<th class="px-6 py-3">Status</th>
+<th class="px-6 py-3 text-right">Timestamp</th>
+</tr>
+</thead>
+<tbody class="text-sm font-medium">
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-3 font-bold text-primary">A-01-02</td>
+<td class="px-6 py-3 monospace text-xs">SKU-88291-XL</td>
+<td class="px-6 py-3 text-center text-gray-500">45</td>
+<td class="px-6 py-3 text-center">45</td>
+<td class="px-6 py-3 text-center text-tertiary font-bold">0</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2 text-[11px] font-bold uppercase text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Match
+                                    </div>
+</td>
+<td class="px-6 py-3 text-right text-xs text-gray-400">14:22:10</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-3 font-bold text-primary">B-12-05</td>
+<td class="px-6 py-3 monospace text-xs">SKU-99102-SM</td>
+<td class="px-6 py-3 text-center text-gray-500">120</td>
+<td class="px-6 py-3 text-center">118</td>
+<td class="px-6 py-3 text-center text-error font-bold">-2</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2 text-[11px] font-bold uppercase text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Mismatch
+                                    </div>
+</td>
+<td class="px-6 py-3 text-right text-xs text-gray-400">14:15:45</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-3 font-bold text-primary">C-03-09</td>
+<td class="px-6 py-3 monospace text-xs">SKU-44512-MD</td>
+<td class="px-6 py-3 text-center text-gray-500">12</td>
+<td class="px-6 py-3 text-center">12</td>
+<td class="px-6 py-3 text-center text-tertiary font-bold">0</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2 text-[11px] font-bold uppercase text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Match
+                                    </div>
+</td>
+<td class="px-6 py-3 text-right text-xs text-gray-400">14:02:12</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-3 font-bold text-primary">A-04-11</td>
+<td class="px-6 py-3 monospace text-xs">SKU-33211-LG</td>
+<td class="px-6 py-3 text-center text-gray-500">8</td>
+<td class="px-6 py-3 text-center">9</td>
+<td class="px-6 py-3 text-center text-error font-bold">+1</td>
+<td class="px-6 py-3">
+<div class="flex items-center gap-2 text-[11px] font-bold uppercase text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Mismatch
+                                    </div>
+</td>
+<td class="px-6 py-3 text-right text-xs text-gray-400">13:58:04</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</body></html>

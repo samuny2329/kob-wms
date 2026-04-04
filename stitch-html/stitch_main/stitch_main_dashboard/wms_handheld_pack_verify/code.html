@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Source+Code+Pro:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#f0bfe0",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-fixed-dim": "#d8c0ce",
+                        "outline": "#80747a",
+                        "surface-dim": "#dadada",
+                        "on-surface": "#1a1c1c",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#34451e",
+                        "surface": "#f9f9f9",
+                        "primary-container": "#714b67",
+                        "on-secondary-container": "#725f6b",
+                        "tertiary-fixed-dim": "#b9ce9a",
+                        "surface-container": "#eeeeee",
+                        "inverse-surface": "#2f3131",
+                        "primary": "#57344f",
+                        "secondary": "#6c5965",
+                        "tertiary-container": "#4b5d33",
+                        "primary-fixed-dim": "#e9b8d9",
+                        "surface-tint": "#79526f",
+                        "on-secondary-fixed": "#251721",
+                        "tertiary-fixed": "#d5eab4",
+                        "outline-variant": "#d1c3ca",
+                        "on-tertiary-container": "#c0d5a0",
+                        "secondary-fixed": "#f5dbea",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffd7f1",
+                        "on-secondary-fixed-variant": "#53424d",
+                        "secondary-container": "#f5dbea",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#3b4c24",
+                        "on-surface-variant": "#4e444a",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#5f3b56",
+                        "background": "#f9f9f9",
+                        "on-primary-fixed": "#2f1029",
+                        "on-tertiary-fixed": "#112000",
+                        "inverse-primary": "#e9b8d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"],
+                        "mono": ["Source Code Pro", "monospace"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scannable-input:focus {
+            border-bottom: 2px solid #57344f;
+            outline: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen pb-24">
+<!-- TopAppBar -->
+<nav class="flex items-center px-4 py-3 w-full sticky top-0 z-50 bg-[#f9f9f9] dark:bg-[#1a1c1c]">
+<div class="flex items-center gap-4 w-full">
+<button class="material-symbols-outlined text-[#714B67] dark:text-[#d1c3ca] p-2 hover:bg-[#eeeeee] transition-colors rounded">arrow_back</button>
+<h1 class="font-headline font-bold tracking-tight text-xl text-[#714B67] dark:text-[#d1c3ca]">Pack &amp; Verify</h1>
+</div>
+<div class="bg-[#eeeeee] dark:bg-[#2a2a2a] h-[1px] w-full absolute bottom-0 left-0"></div>
+</nav>
+<main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+<!-- Large Scan Input Section -->
+<section class="bg-surface-container-lowest p-6 rounded-lg shadow-sm">
+<div class="flex flex-col items-center justify-center space-y-3">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">barcode_scanner</span>
+<input autofocus="" class="scannable-input w-full text-center font-mono text-lg bg-transparent border-b-2 border-surface-container py-2 placeholder:text-outline/50 placeholder:font-body" placeholder="Scan Order or AWB..." type="text"/>
+<p class="text-[0.6875rem] font-bold text-outline uppercase tracking-widest">Awaiting Scanner Input</p>
+</div>
+</section>
+<!-- Order Detail Card -->
+<div class="bg-surface-container-lowest p-4 rounded shadow-sm border-l-4 border-primary">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="text-[0.6875rem] font-bold text-outline uppercase tracking-wider">Order ID</span>
+<h2 class="text-xl font-headline font-bold leading-tight">#ORD-9921</h2>
+</div>
+<div class="bg-primary/10 px-2 py-1 rounded text-primary font-bold text-xs uppercase tracking-tighter">
+                    Shopee
+                </div>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-4">
+<div>
+<span class="text-[0.6875rem] font-bold text-outline uppercase tracking-wider">Customer</span>
+<p class="text-sm font-semibold">Jonathan Harker</p>
+</div>
+<div class="text-right">
+<span class="text-[0.6875rem] font-bold text-outline uppercase tracking-wider">Items</span>
+<p class="text-sm font-semibold">03 Units</p>
+</div>
+</div>
+</div>
+<!-- Items List Section -->
+<section class="space-y-2">
+<h3 class="text-[0.6875rem] font-bold text-outline uppercase tracking-widest px-1">Items To Pack</h3>
+<div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest p-3 rounded flex items-center gap-3 border border-transparent hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 bg-surface-container rounded overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" data-alt="Close-up of a vibrant red performance running shoe against a neutral studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGcxmS4FNVKxeFLSnpxWtddk6GaROheBiqDOdpGinU26_c1hxfXNMIeCFYneSzN9PHrJG93TcVKNbtKe5dN-wqAjn6ektnRMBy2-Q-ffOvFS2po25mVTl1WZdf1Q9tP6B8Tb9C3_u7ufw-RISq1njYNhXesI4qg0Db13F8t2-jIpFjGMZvuHysF0gsoZSGjMIvJEGAt8bRfkF6D47r3EnpL0xmKE1EZd1ZZONhljygNqwpihh37ELRjLAGrwpYr3-N2AbxDjo9U3NW"/>
+</div>
+<div class="flex-grow">
+<p class="text-xs font-mono text-primary font-bold">SKU: RD-SHOE-42</p>
+<p class="text-sm font-semibold leading-tight">AeroFlow Runner X1 - Red</p>
+</div>
+<div class="text-right flex flex-col items-end">
+<span class="text-[0.6875rem] font-bold text-outline uppercase">Qty</span>
+<p class="text-lg font-headline font-bold text-tertiary-container">1/1</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest p-3 rounded flex items-center gap-3 border border-transparent hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 bg-surface-container rounded overflow-hidden flex-shrink-0">
+<img alt="Product" class="w-full h-full object-cover" data-alt="Minimalist white designer wristwatch with silver accents on a clean white surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXWSpum6NeH47g685mEgTTmTg_S4T8KebzX0Bal4S5IB0FdkzIWqQi_kl9ZtBdbBwx8rewQxqCtwgW9eCMsGtaPuBnM95TIXiZhWsJLw0vlXZb7eRI9C_aXHvK4JQpVXQlZh1N96mSdP13UKlKczi52CPHZeg43n5a1Ju9FXtOa624-3RpmE5faOM97eHDNWoS9pWo7p7xpG9YvZfgB9g9QHOb64QC7iXUKsV15nZ-wEijI7OBi-ygghiuWBUflYiCAh90ElWUuOZv"/>
+</div>
+<div class="flex-grow">
+<p class="text-xs font-mono text-primary font-bold">SKU: WT-CHR-MIN</p>
+<p class="text-sm font-semibold leading-tight">Minimalist Chronograph</p>
+</div>
+<div class="text-right flex flex-col items-end">
+<span class="text-[0.6875rem] font-bold text-outline uppercase">Qty</span>
+<p class="text-lg font-headline font-bold text-error">0/2</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Box Selection -->
+<section class="space-y-2">
+<h3 class="text-[0.6875rem] font-bold text-outline uppercase tracking-widest px-1">Select Shipping Container</h3>
+<div class="grid grid-cols-2 gap-2">
+<button class="bg-surface-container-lowest p-3 rounded border-2 border-primary ring-2 ring-primary/20 text-left transition-all">
+<span class="block text-primary font-bold text-sm">Size S</span>
+<span class="block text-[10px] text-outline font-mono">20x15x10cm</span>
+</button>
+<button class="bg-surface-container-lowest p-3 rounded border-2 border-transparent hover:bg-surface-container-low text-left transition-all">
+<span class="block text-on-surface font-bold text-sm">Size M</span>
+<span class="block text-[10px] text-outline font-mono">35x25x20cm</span>
+</button>
+<button class="bg-surface-container-lowest p-3 rounded border-2 border-transparent hover:bg-surface-container-low text-left transition-all">
+<span class="block text-on-surface font-bold text-sm">Size L</span>
+<span class="block text-[10px] text-outline font-mono">50x40x30cm</span>
+</button>
+<button class="bg-surface-container-lowest p-3 rounded border-2 border-transparent hover:bg-surface-container-low text-left transition-all">
+<span class="block text-on-surface font-bold text-sm">Size XL</span>
+<span class="block text-[10px] text-outline font-mono">80x60x50cm</span>
+</button>
+</div>
+</section>
+<!-- AWB Verification -->
+<section class="bg-surface-container p-4 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">local_shipping</span>
+<div class="flex-grow">
+<span class="text-[0.6875rem] font-bold text-outline uppercase tracking-widest block">AWB Verification</span>
+<input class="w-full font-mono text-sm bg-transparent border-none p-0 focus:ring-0 placeholder:text-outline-variant" placeholder="Scan AWB to finalize courier..." type="text"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Action Buttons -->
+<div class="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md p-4 flex flex-col gap-2 z-50 shadow-[0_-4px_12px_rgba(87,52,79,0.08)]">
+<button class="w-full h-[50px] bg-gradient-to-br from-tertiary-container to-tertiary text-on-tertiary font-bold rounded flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">task_alt</span>
+            COMPLETE PACK
+        </button>
+<button class="w-full h-[44px] border-2 border-outline-variant text-on-surface font-semibold rounded flex items-center justify-center hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+            SKIP ORDER
+        </button>
+</div>
+<!-- BottomNavBar (Hidden on this transactional focused page based on rules, but included for structure if needed in general navigation) -->
+<!-- Suppression logic applied: suppress navigation on task-focused screens -->
+</body></html>

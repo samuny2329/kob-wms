@@ -1,0 +1,76 @@
+# ============================================================
+#  docker-compose.local.yml — ทดสอบ MCP บน local
+#  รัน: docker compose -f docker-compose.local.yml up -d
+# ============================================================
+
+services:
+
+  # Backend FastAPI + MCP
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
+    ports:
+      - "8000:8000"
+    env_file: .env.local
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./backend:/app   # hot reload — แก้ code แล้ว restart อัตโนมัติ
+    restart: unless-stopped
+
+  # Celery Worker
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
+    command: celery -A celery_tasks worker --loglevel=info --concurrency=2
+    env_file: .env.local
+    depends_on:
+      - backend
+      - redis
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  # PostgreSQL
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"    # เปิดให้ access จาก local ด้วย
+    environment:
+      POSTGRES_DB: wms_db
+      POSTGRES_USER: wms_user
+      POSTGRES_PASSWORD: localpassword
+    volumes:
+      - postgres_local:/var/lib/postgresql/data
+      - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wms_user"]
+      interval: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ngrok — เปิด tunnel อัตโนมัติ
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: http backend:8000 --log=stdout
+    ports:
+      - "4040:4040"    # ngrok dashboard: http://localhost:4040
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_local:
