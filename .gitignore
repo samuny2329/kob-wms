@@ -45,3 +45,4 @@ odoo-data/
 
 # Utility scripts (local only)
 *.bat
+.mcp.json 
