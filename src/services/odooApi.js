@@ -709,13 +709,15 @@ export const fetchInventory = async (odooConfig, companyId) => {
     const productIds = [...new Set(Object.values(grouped).map(g => g.productId))];
     let skuMap = {};
     let categMap = {};
+    let costMap = {};
     if (productIds.length > 0) {
         const products = await odooCallKw(odooConfig, 'product.product', 'read',
-            [productIds], { fields: ['id', 'default_code', 'categ_id'] }
+            [productIds], { fields: ['id', 'default_code', 'categ_id', 'standard_price'] }
         );
         for (const p of products) {
             skuMap[p.id] = p.default_code || '';
             if (p.categ_id) categMap[p.id] = p.categ_id[1];
+            costMap[p.id] = p.standard_price || 0;
         }
     }
     return Object.values(grouped).map(g => ({
@@ -724,7 +726,7 @@ export const fetchInventory = async (odooConfig, companyId) => {
         shortName: skuMap[g.productId] || '',
         category: categMap[g.productId] || '',
         available: g.onHand - g.reserved,
-        unitCost: 0,
+        unitCost: costMap[g.productId] || 0,
         reorderPoint: 10,
     }));
 };

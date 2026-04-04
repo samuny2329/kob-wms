@@ -5,7 +5,7 @@ import {
     Package, RefreshCw, Calendar, Filter, ChevronDown, ChevronRight, Hash,
     ArrowUpDown, X, Check, Clock, Target, TrendingUp, TrendingDown, Shuffle,
     Archive, Eye, ChevronLeft, Users, UserCheck, MapPin, Camera, Bell, BellRing,
-    RotateCcw, ShieldCheck, Image, Lock, Unlock, QrCode, Plus, Download
+    RotateCcw, ShieldCheck, Image, Lock, Unlock, QrCode, Plus, Download, Printer, FileText
 } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants';
 import { getActivePickers } from './TimeAttendance';
@@ -233,7 +233,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     const [fullCountSessions, setFullCountSessions] = useState(() => safeParse(LS_FULL_COUNTS, []));
     const [activeSession, setActiveSession] = useState(null);
     const [fcMode, setFcMode] = useState('list');
-    const [fcForm, setFcForm] = useState({ name: '', blindCount: true, requireDoubleCount: false, freezeStock: true, scopeType: 'full', zones: [] });
+    const [fcForm, setFcForm] = useState({ name: '', blindCount: true, requireDoubleCount: false, freezeStock: false, scopeType: 'full', zones: [] });
     const [fcCountInput, setFcCountInput] = useState('');
     const [fcSelectedItem, setFcSelectedItem] = useState(null);
     const [fcScannedLot, setFcScannedLot] = useState('');
@@ -243,7 +243,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     }, [fullCountSessions]);
 
     const stockFrozen = useMemo(() => {
-        return fullCountSessions.some(s => s.status === 'frozen' || s.status === 'counting');
+        return fullCountSessions.some(s => (s.status === 'frozen' || s.status === 'counting') && s.settings?.freezeStock === true);
     }, [fullCountSessions]);
 
     // ── Build product list ──
@@ -601,6 +601,42 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         return summary;
     }, [products, abcClassification, myTasks]);
 
+    // ── Report State ──
+    const [showCycleReport, setShowCycleReport] = useState(false);
+    const [reportDate, setReportDate] = useState(null);
+    const [showFullCountReport, setShowFullCountReport] = useState(null);
+
+    const handleExportCycleCountPDF = useCallback((targetDate) => {
+        setReportDate(targetDate || countDate);
+        setShowCycleReport(true);
+        setTimeout(() => {
+            const el = document.getElementById('cycle-count-report-area');
+            if (!el || !window.html2pdf) { setShowCycleReport(false); return; }
+            window.html2pdf().set({
+                margin: [10, 10, 10, 10], filename: `CycleCount_Report_${targetDate || countDate}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css'] },
+            }).from(el).save().finally(() => setShowCycleReport(false));
+        }, 600);
+    }, [countDate]);
+
+    const handleExportFullCountPDF = useCallback((session) => {
+        setShowFullCountReport(session.id);
+        setTimeout(() => {
+            const el = document.getElementById('full-count-report-area');
+            if (!el || !window.html2pdf) { setShowFullCountReport(null); return; }
+            window.html2pdf().set({
+                margin: [10, 10, 10, 10], filename: `FullCount_${session.name.replace(/\s+/g, '_')}_${session.id}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css'] },
+            }).from(el).save().finally(() => setShowFullCountReport(null));
+        }, 600);
+    }, []);
+
     // ── Count Management filter state ──
     const [locationSearch, setLocationSearch] = useState('');
     const [dateRange, setDateRange] = useState('');
@@ -653,11 +689,12 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         const session = {
             id: `FC-${Date.now()}`,
             name: fcForm.name || `Full Count ${period}`,
-            status: 'planning',
+            status: 'counting',
             settings: { blindCount: isAdmin ? fcForm.blindCount : true, requireDoubleCount: fcForm.requireDoubleCount, freezeStock: fcForm.freezeStock },
             scope: { type: fcForm.scopeType, zones: Object.keys(zoneMap) },
             zoneAssignments: Object.keys(zoneMap).map(z => ({ zone: z, assignees: [] })),
-            frozenAt: null, frozenInventory: [],
+            frozenAt: new Date().toISOString(),
+            frozenInventory: invItems.map(it => ({ sku: it.sku || it.default_code, location: it.location, qty: it.onHand ?? it.quantity ?? 0, lots: (it.lots || []).map(l => ({ lotNumber: l.lotNumber, qty: l.qty, expiryDate: l.expiryDate || null })) })),
             counts: allBins,
             progress: {
                 total: allBins.length, counted: 0, matched: 0, variance: 0,
@@ -718,12 +755,81 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
     const [isApplying, setIsApplying] = useState(false);
     const [applyResult, setApplyResult] = useState(null);
 
+    // Build live + frozen maps for reconciliation (includes lots/expiry)
+    const buildInventoryMaps = useCallback((session) => {
+        const liveInv = inventory?.items || (Array.isArray(inventory) ? inventory : []);
+        const liveMap = {};
+        const liveLotMap = {};
+        liveInv.forEach(item => {
+            const key = `${item.sku || item.default_code}::${item.location || ''}`;
+            liveMap[key] = item.onHand ?? item.quantity ?? 0;
+            if (item.lots?.length) liveLotMap[key] = item.lots;
+        });
+        const frozenMap = {};
+        const frozenLotMap = {};
+        (session.frozenInventory || []).forEach(item => {
+            const key = `${item.sku}::${item.location || ''}`;
+            frozenMap[key] = item.qty ?? item.onHand ?? item.quantity ?? 0;
+            if (item.lots?.length) frozenLotMap[key] = item.lots;
+        });
+        return { liveMap, frozenMap, liveLotMap, frozenLotMap };
+    }, [inventory]);
+
+    // Build price map from inventory for value calculation
+    const priceMap = useMemo(() => {
+        const map = {};
+        const inv = inventory?.items || (Array.isArray(inventory) ? inventory : []);
+        inv.forEach(item => {
+            const sku = item.sku || item.default_code;
+            if (sku && (item.unitCost > 0 || item.lst_price > 0)) map[sku] = item.unitCost || item.lst_price;
+        });
+        return map;
+    }, [inventory]);
+
+    // Reconciliation data — recalculates whenever inventory or session changes (includes lots/expiry + value)
+    const reconciliationData = useMemo(() => {
+        if (!activeSession || (fcMode !== 'reconcile' && activeSession.status !== 'closed')) return null;
+        const { liveMap, frozenMap, liveLotMap, frozenLotMap } = buildInventoryMaps(activeSession);
+        return activeSession.counts
+            .filter(c => c.countedQty !== null)
+            .map(c => {
+                const key = `${c.sku}::${c.location || ''}`;
+                const snapshotQty = frozenMap[key] ?? c.systemQty;
+                const currentQty = liveMap[key] ?? snapshotQty;
+                const movement = currentQty - snapshotQty;
+                const adjustedVariance = c.countedQty - currentQty;
+                const snapshotLots = frozenLotMap[key] || c.lots || [];
+                const currentLots = liveLotMap[key] || [];
+                const unitPrice = priceMap[c.sku] || 0;
+                const varianceValue = adjustedVariance * unitPrice;
+                return { ...c, snapshotQty, currentQty, movement, adjustedVariance, snapshotLots, currentLots, unitPrice, varianceValue };
+            });
+    }, [activeSession, fcMode, buildInventoryMaps, priceMap]);
+
     const closeFullCount = useCallback(async (sessionId) => {
         const session = fullCountSessions.find(s => s.id === sessionId);
         if (!session) return;
 
-        const varianceItems = session.counts.filter(c => c.countedQty !== null && c.variance !== 0);
-        const totalVarianceQty = session.counts.reduce((sum, c) => sum + Math.abs(c.variance || 0), 0);
+        // Movement Delta: compare counted vs CURRENT Odoo qty (not snapshot)
+        const { liveMap, frozenMap, liveLotMap, frozenLotMap } = buildInventoryMaps(session);
+        const reconciledItems = session.counts
+            .filter(c => c.countedQty !== null)
+            .map(c => {
+                const key = `${c.sku}::${c.location || ''}`;
+                const snapshotQty = frozenMap[key] ?? c.systemQty;
+                const currentQty = liveMap[key] ?? snapshotQty;
+                const movement = currentQty - snapshotQty;
+                const adjustedVariance = c.countedQty - currentQty;
+                const snapshotLots = frozenLotMap[key] || c.lots || [];
+                const currentLots = liveLotMap[key] || [];
+                const unitPrice = priceMap[c.sku] || 0;
+                const varianceValue = adjustedVariance * unitPrice;
+                return { ...c, snapshotQty, currentQty, movement, adjustedVariance, snapshotLots, currentLots, unitPrice, varianceValue };
+            });
+
+        const varianceItems = reconciledItems.filter(c => c.adjustedVariance !== 0);
+        const totalVarianceQty = reconciledItems.reduce((sum, c) => sum + Math.abs(c.adjustedVariance), 0);
+        const totalVarianceValue = reconciledItems.reduce((sum, c) => sum + c.varianceValue, 0);
 
         let odooResult = null;
         if (varianceItems.length > 0 && apiConfigs?.odoo) {
@@ -734,8 +840,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                     sessionName: session.name,
                     items: varianceItems.map(c => ({
                         sku: c.sku, location: c.location,
-                        systemQty: c.systemQty, countedQty: c.countedQty,
-                        variance: c.variance,
+                        systemQty: c.currentQty,
+                        countedQty: c.countedQty,
+                        variance: c.adjustedVariance,
                     })),
                     approvedBy: user?.username || 'admin',
                 });
@@ -753,7 +860,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                 setIsApplying(false);
             }
         } else if (varianceItems.length === 0) {
-            addToast?.('Full Count closed — no variances, no adjustments needed', 'success');
+            addToast?.('Full Count closed — no adjusted variances, no adjustments needed', 'success');
         } else {
             addToast?.('Full Count closed locally — connect Odoo to sync adjustments', 'info');
         }
@@ -762,8 +869,10 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
             if (s.id !== sessionId) return s;
             return {
                 ...s, status: 'closed', closedAt: new Date().toISOString(),
+                counts: reconciledItems,
                 reconciliation: {
-                    ...s.reconciliation, totalVarianceQty,
+                    ...s.reconciliation, totalVarianceQty, totalVarianceValue,
+                    totalAdjustedVariances: varianceItems.length,
                     approvedBy: user?.username, approvedAt: new Date().toISOString(),
                     odooResult: odooResult ? {
                         status: odooResult.status, applied: odooResult.applied,
@@ -775,10 +884,10 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
         setActiveSession(null);
         setFcMode('list');
         logActivity?.('full-count-close', {
-            sessionId, totalVarianceQty, varianceItems: varianceItems.length,
+            sessionId, totalVarianceQty, adjustedVariances: varianceItems.length,
             odooApplied: odooResult?.applied || 0, odooFailed: odooResult?.failed || 0,
         });
-    }, [user, addToast, logActivity, fullCountSessions, apiConfigs]);
+    }, [user, addToast, logActivity, fullCountSessions, apiConfigs, buildInventoryMaps]);
 
     useEffect(() => {
         if (activeSession) {
@@ -1166,6 +1275,10 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                     </button>
                     <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--odoo-text)' }}>Count History</h2>
                     <span style={{ fontSize: '12px', color: 'var(--odoo-text-muted)' }}>{countRecords.length} records</span>
+                    <button onClick={() => handleExportCycleCountPDF(expandedDate || countDate)}
+                        style={{ marginLeft: 'auto', padding: '6px 14px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRadius: '4px', border: '1px solid var(--odoo-purple)', background: 'var(--odoo-surface)', color: 'var(--odoo-purple)', cursor: 'pointer', fontWeight: 600 }}>
+                        <Printer className="w-3.5 h-3.5" /> Print Report
+                    </button>
                 </div>
 
                 {historyByDate.length === 0 ? (
@@ -1512,9 +1625,9 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 style={{ ...gradientBtnStyle, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                                 <Plus className="w-4 h-4" /> Start New Count
                             </button>
-                            <button onClick={() => setMode('history')}
+                            <button onClick={() => handleExportCycleCountPDF(countDate)}
                                 style={{ ...outlineBtnStyle, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                <Download className="w-4 h-4" /> Export Report
+                                <Printer className="w-4 h-4" /> Print Report
                             </button>
                         </div>
                     </div>
@@ -1947,7 +2060,7 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                     </button>
                     <div style={{ ...cardStyle, padding: '20px' }}>
                         <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--odoo-text)', marginBottom: '16px' }}>Reconciliation — {activeSession.name}</h3>
-                        <div className="grid grid-cols-4 gap-3 mb-4">
+                        <div className="grid grid-cols-5 gap-3 mb-4">
                             <div style={{ background: 'var(--odoo-surface-low)', borderRadius: '4px', padding: '12px', textAlign: 'center' }}>
                                 <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--odoo-text)' }}>{activeSession.progress.total}</p>
                                 <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>Total Items</p>
@@ -1966,38 +2079,65 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 </p>
                                 <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>Accuracy</p>
                             </div>
+                            <div style={{ background: 'var(--odoo-warning-light)', borderRadius: '4px', padding: '12px', textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--odoo-warning)' }}>
+                                    {reconciliationData ? `฿${Math.abs(reconciliationData.reduce((s, c) => s + (c.varianceValue || 0), 0)).toLocaleString()}` : '—'}
+                                </p>
+                                <p style={{ fontSize: '10px', color: 'var(--odoo-text-muted)' }}>Variance Value</p>
+                            </div>
                         </div>
 
-                        <h4 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--odoo-text-secondary)', marginBottom: '8px' }}>Variance Detail</h4>
+                        <h4 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--odoo-text-secondary)', marginBottom: '8px' }}>
+                            Variance Detail (Movement Delta)
+                            {reconciliationData && <span style={{ fontWeight: 400, color: 'var(--odoo-text-muted)', marginLeft: '8px' }}>
+                                Snapshot: {activeSession.frozenAt?.split('T')[0]} {activeSession.frozenAt?.split('T')[1]?.substring(0, 5)}
+                            </span>}
+                        </h4>
                         <div style={{ overflowX: 'auto', border: '1px solid var(--odoo-border-ghost)', borderRadius: '4px' }}>
                             <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ background: 'var(--odoo-surface-low)', fontSize: '10px', color: 'var(--odoo-text-muted)', textTransform: 'uppercase' }}>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>SKU</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Location</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Lot</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'right' }}>System</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'right' }}>Counted</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'right' }}>Variance</th>
-                                        <th style={{ padding: '8px 12px', textAlign: 'left' }}>Counted By</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'left' }}>SKU</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'left' }}>Location</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'left' }}>Lot / Expiry</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'right' }}>Snapshot</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'right' }}>Current</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'right' }}>Movement</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'right' }}>Counted</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'right' }}>Adj. Variance</th>
+                                        <th style={{ padding: '8px 10px', textAlign: 'left' }}>By</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {activeSession.counts.filter(c => c.variance !== null && c.variance !== 0).map(c => (
-                                        <tr key={`${c.binId}-${c.sku || idx}`} style={{ borderTop: '1px solid var(--odoo-border-ghost)' }}>
-                                            <td style={{ padding: '8px 12px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px', fontWeight: 700 }}>{c.sku}</td>
-                                            <td style={{ padding: '8px 12px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px' }}>{c.location}</td>
-                                            <td style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{c.lot || '—'}</td>
-                                            <td style={{ padding: '8px 12px', textAlign: 'right' }}>{c.systemQty}</td>
-                                            <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700 }}>{c.countedQty}</td>
-                                            <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: c.variance > 0 ? 'var(--odoo-purple)' : 'var(--odoo-danger)' }}>
-                                                {c.variance > 0 ? `+${c.variance}` : c.variance}
+                                    {(reconciliationData || activeSession.counts.filter(c => c.countedQty !== null))
+                                        .filter(c => (c.adjustedVariance ?? c.variance) !== 0)
+                                        .map((c, idx) => (
+                                        <tr key={`${c.binId}-${c.sku}-${idx}`} style={{ borderTop: '1px solid var(--odoo-border-ghost)' }}>
+                                            <td style={{ padding: '6px 10px', fontFamily: '"Source Code Pro", monospace', fontSize: '11px', fontWeight: 700 }}>{c.sku}</td>
+                                            <td style={{ padding: '6px 10px', fontSize: '11px' }}>{c.location}</td>
+                                            <td style={{ padding: '6px 10px', fontSize: '10px' }}>
+                                                {c.lot || (c.snapshotLots || c.lots || []).map(l => l.lotNumber).filter(Boolean).join(', ') || '—'}
+                                                {(() => {
+                                                    const lots = c.snapshotLots || c.lots || [];
+                                                    const exp = lots.find(l => l.expiryDate)?.expiryDate;
+                                                    return exp ? <span style={{ display: 'block', fontSize: '9px', color: 'var(--odoo-warning)' }}>EXP: {exp.split('T')[0]}</span> : null;
+                                                })()}
                                             </td>
-                                            <td style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{c.countedBy}</td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right', color: 'var(--odoo-text-secondary)' }}>{c.snapshotQty ?? c.systemQty}</td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right' }}>{c.currentQty ?? '—'}</td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right', color: (c.movement || 0) !== 0 ? 'var(--odoo-teal)' : 'var(--odoo-text-muted)' }}>
+                                                {(c.movement || 0) > 0 ? '+' : ''}{c.movement ?? 0}
+                                            </td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }}>{c.countedQty}</td>
+                                            <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: (c.adjustedVariance ?? c.variance) > 0 ? 'var(--odoo-purple)' : 'var(--odoo-danger)' }}>
+                                                {(c.adjustedVariance ?? c.variance) > 0 ? '+' : ''}{c.adjustedVariance ?? c.variance}
+                                            </td>
+                                            <td style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--odoo-text-muted)' }}>{c.countedBy}</td>
                                         </tr>
                                     ))}
-                                    {activeSession.counts.filter(c => c.variance !== null && c.variance !== 0).length === 0 && (
-                                        <tr><td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: 'var(--odoo-text-muted)' }}>No variances — perfect match!</td></tr>
+                                    {(reconciliationData || activeSession.counts.filter(c => c.countedQty !== null))
+                                        .filter(c => (c.adjustedVariance ?? c.variance) !== 0).length === 0 && (
+                                        <tr><td colSpan={9} style={{ padding: '24px', textAlign: 'center', color: 'var(--odoo-text-muted)' }}>No adjusted variances — perfect match!</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -2031,6 +2171,10 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                                 ) : (
                                     <><Check className="w-4 h-4" /> Approve & Send to Odoo</>
                                 )}
+                            </button>
+                            <button onClick={() => handleExportFullCountPDF(activeSession)}
+                                style={{ ...outlineBtnStyle, padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Printer className="w-4 h-4" /> Export Report
                             </button>
                             <button onClick={() => setFcMode('counting')} disabled={isApplying}
                                 style={{ ...outlineBtnStyle, padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2265,6 +2409,158 @@ const CycleCount = ({ inventory, activityLogs = [], salesOrders = [], addToast, 
                 </div>
             </div>
             </>}
+
+            {/* ── Off-screen: Cycle Count PDF Report ── */}
+            {showCycleReport && reportDate && (() => {
+                const dayRecords = countRecords.filter(r => r.date === reportDate);
+                const matched = dayRecords.filter(r => r.status === 'matched').length;
+                const variances = dayRecords.filter(r => r.variance !== 0);
+                const recounts = dayRecords.filter(r => r.supervisorCount !== null);
+                const accuracy = dayRecords.length > 0 ? Math.round((matched / dayRecords.length) * 100) : 0;
+                const rptS = { fontSize: '11px', borderCollapse: 'collapse', width: '100%' };
+                const thS = { padding: '6px 8px', textAlign: 'left', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', borderBottom: '2px solid #714B67', color: '#714B67' };
+                const tdS = { padding: '5px 8px', borderBottom: '1px solid #eee', fontSize: '10px' };
+                return (
+                    <div id="cycle-count-report-area" style={{ position: 'fixed', left: '-9999px', top: 0, width: '210mm', background: '#fff', color: '#212529', fontFamily: 'Inter, sans-serif', padding: '20mm' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '24px', borderBottom: '3px solid #714B67', paddingBottom: '16px' }}>
+                            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#714B67', margin: 0 }}>CYCLE COUNT REPORT</h1>
+                            <p style={{ fontSize: '14px', color: '#6c757d', margin: '4px 0 0' }}>Kiss of Beauty / SKINOXY &mdash; {reportDate}</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                            {[
+                                { label: 'Items Counted', val: dayRecords.length, color: '#714B67' },
+                                { label: 'Matched', val: matched, color: '#28a745' },
+                                { label: 'Variances', val: variances.length, color: '#dc3545' },
+                                { label: 'Accuracy', val: `${accuracy}%`, color: accuracy >= 95 ? '#28a745' : '#dc3545' },
+                                { label: 'Recounts', val: recounts.length, color: '#6f42c1' },
+                            ].map(k => (
+                                <div key={k.label} style={{ flex: 1, padding: '12px', border: '1px solid #dee2e6', borderRadius: '4px', textAlign: 'center' }}>
+                                    <p style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', color: '#6c757d', margin: 0 }}>{k.label}</p>
+                                    <p style={{ fontSize: '20px', fontWeight: 800, color: k.color, margin: '4px 0 0' }}>{k.val}</p>
+                                </div>
+                            ))}
+                        </div>
+                        {variances.length > 0 && (<>
+                            <h3 style={{ fontSize: '12px', fontWeight: 700, color: '#714B67', textTransform: 'uppercase', marginBottom: '8px' }}>Variance Items</h3>
+                            <table style={rptS}>
+                                <thead><tr>
+                                    {['SKU', 'Location', 'System', 'Counted', 'Supervisor', 'Variance', 'Status', 'By'].map(h => <th key={h} style={thS}>{h}</th>)}
+                                </tr></thead>
+                                <tbody>
+                                    {variances.map((r, i) => (
+                                        <tr key={i} style={{ background: i % 2 ? '#f8f9fa' : '#fff' }}>
+                                            <td style={{ ...tdS, fontWeight: 700, fontFamily: 'monospace' }}>{r.sku}</td>
+                                            <td style={tdS}>{r.location}</td>
+                                            <td style={{ ...tdS, textAlign: 'right' }}>{r.systemQty}</td>
+                                            <td style={{ ...tdS, textAlign: 'right', fontWeight: 700 }}>{r.countedQty}</td>
+                                            <td style={{ ...tdS, textAlign: 'right' }}>{r.supervisorCount ?? '—'}</td>
+                                            <td style={{ ...tdS, textAlign: 'right', fontWeight: 700, color: (r.finalVariance ?? r.variance) < 0 ? '#dc3545' : '#6f42c1' }}>
+                                                {(r.finalVariance ?? r.variance) > 0 ? '+' : ''}{r.finalVariance ?? r.variance}
+                                            </td>
+                                            <td style={tdS}><span style={{ padding: '2px 6px', borderRadius: '3px', fontSize: '9px', fontWeight: 600, background: r.status === 'recount-done' ? '#f3e8ff' : r.status === 'matched' ? '#e8f5e9' : '#fff3cd', color: r.status === 'recount-done' ? '#6f42c1' : r.status === 'matched' ? '#28a745' : '#856404' }}>{r.status}</span></td>
+                                            <td style={tdS}>{r.countedBy}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>)}
+                        <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #dee2e6', paddingTop: '20px' }}>
+                            <div><p style={{ fontSize: '10px', color: '#6c757d' }}>Prepared by: {user?.name || user?.username || 'Admin'}</p><div style={{ marginTop: '30px', borderTop: '1px solid #adb5bd', width: '160px' }} /><p style={{ fontSize: '9px', color: '#adb5bd' }}>Signature</p></div>
+                            <div><p style={{ fontSize: '10px', color: '#6c757d' }}>Approved by:</p><div style={{ marginTop: '30px', borderTop: '1px solid #adb5bd', width: '160px' }} /><p style={{ fontSize: '9px', color: '#adb5bd' }}>Signature</p></div>
+                        </div>
+                        <p style={{ textAlign: 'center', fontSize: '8px', color: '#adb5bd', marginTop: '16px' }}>Generated by KOB WMS Pro &mdash; {new Date().toISOString()}</p>
+                    </div>
+                );
+            })()}
+
+            {/* ── Off-screen: Full Count PDF Report ── */}
+            {showFullCountReport && (() => {
+                const session = fullCountSessions.find(s => s.id === showFullCountReport);
+                if (!session) return null;
+                const { liveMap, frozenMap } = buildInventoryMaps(session);
+                const items = session.counts.filter(c => c.countedQty !== null).map(c => {
+                    const key = `${c.sku}::${c.location || ''}`;
+                    const snapshotQty = frozenMap[key] ?? c.systemQty;
+                    const currentQty = liveMap[key] ?? snapshotQty;
+                    const movement = currentQty - snapshotQty;
+                    const adjVar = c.countedQty - currentQty;
+                    return { ...c, snapshotQty, currentQty, movement, adjVar };
+                });
+                const matched = items.filter(c => c.adjVar === 0).length;
+                const varItems = items.filter(c => c.adjVar !== 0);
+                const movedItems = items.filter(c => c.movement !== 0);
+                const accuracy = items.length > 0 ? Math.round((matched / items.length) * 100) : 0;
+                const duration = session.frozenAt && session.closedAt ? Math.round((new Date(session.closedAt) - new Date(session.frozenAt)) / 3600000 * 10) / 10 : null;
+                const thS = { padding: '6px 8px', textAlign: 'left', fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', borderBottom: '2px solid #714B67', color: '#714B67' };
+                const tdS = { padding: '4px 8px', borderBottom: '1px solid #eee', fontSize: '9px' };
+                return (
+                    <div id="full-count-report-area" style={{ position: 'fixed', left: '-9999px', top: 0, width: '210mm', background: '#fff', color: '#212529', fontFamily: 'Inter, sans-serif', padding: '15mm' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #714B67', paddingBottom: '12px' }}>
+                            <h1 style={{ fontSize: '20px', fontWeight: 800, color: '#714B67', margin: 0 }}>FULL COUNT REPORT</h1>
+                            <p style={{ fontSize: '13px', color: '#6c757d', margin: '4px 0 0' }}>Kiss of Beauty / SKINOXY</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '11px' }}>
+                            <div style={{ flex: 1 }}>
+                                <p><strong>Session:</strong> {session.name}</p>
+                                <p><strong>Created:</strong> {session.createdAt?.split('T')[0]} {session.createdAt?.split('T')[1]?.substring(0, 5)}</p>
+                                <p><strong>Closed:</strong> {session.closedAt?.split('T')[0] || 'Open'} {session.closedAt?.split('T')[1]?.substring(0, 5) || ''}</p>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <p><strong>Duration:</strong> {duration ? `${duration} hrs` : '—'}</p>
+                                <p><strong>Snapshot at:</strong> {session.frozenAt?.split('T')[0]} {session.frozenAt?.split('T')[1]?.substring(0, 5)}</p>
+                                <p><strong>Approved by:</strong> {session.reconciliation?.approvedBy || '—'}</p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+                            {[
+                                { label: 'Total Items', val: items.length, color: '#714B67' },
+                                { label: 'Matched', val: matched, color: '#28a745' },
+                                { label: 'Adjusted Variances', val: varItems.length, color: '#dc3545' },
+                                { label: 'Accuracy', val: `${accuracy}%`, color: accuracy >= 95 ? '#28a745' : '#dc3545' },
+                                { label: 'Moved During Count', val: movedItems.length, color: '#017E84' },
+                            ].map(k => (
+                                <div key={k.label} style={{ flex: 1, padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px', textAlign: 'center' }}>
+                                    <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', color: '#6c757d', margin: 0 }}>{k.label}</p>
+                                    <p style={{ fontSize: '18px', fontWeight: 800, color: k.color, margin: '2px 0 0' }}>{k.val}</p>
+                                </div>
+                            ))}
+                        </div>
+                        {varItems.length > 0 && (<>
+                            <h3 style={{ fontSize: '11px', fontWeight: 700, color: '#714B67', textTransform: 'uppercase', marginBottom: '6px' }}>Variance Items (Adjusted)</h3>
+                            <table style={{ fontSize: '9px', borderCollapse: 'collapse', width: '100%' }}>
+                                <thead><tr>
+                                    {['SKU', 'Location', 'Snapshot', 'Current', 'Movement', 'Counted', 'Adj. Variance', 'By'].map(h => <th key={h} style={{ ...thS, textAlign: ['Snapshot', 'Current', 'Movement', 'Counted', 'Adj. Variance'].includes(h) ? 'right' : 'left' }}>{h}</th>)}
+                                </tr></thead>
+                                <tbody>
+                                    {varItems.map((c, i) => (
+                                        <tr key={i} style={{ background: i % 2 ? '#f8f9fa' : '#fff' }}>
+                                            <td style={{ ...tdS, fontWeight: 700, fontFamily: 'monospace' }}>{c.sku}</td>
+                                            <td style={tdS}>{c.location}</td>
+                                            <td style={{ ...tdS, textAlign: 'right' }}>{c.snapshotQty}</td>
+                                            <td style={{ ...tdS, textAlign: 'right' }}>{c.currentQty}</td>
+                                            <td style={{ ...tdS, textAlign: 'right', color: c.movement !== 0 ? '#017E84' : '#adb5bd' }}>{c.movement > 0 ? '+' : ''}{c.movement}</td>
+                                            <td style={{ ...tdS, textAlign: 'right', fontWeight: 700 }}>{c.countedQty}</td>
+                                            <td style={{ ...tdS, textAlign: 'right', fontWeight: 700, color: c.adjVar < 0 ? '#dc3545' : '#6f42c1' }}>{c.adjVar > 0 ? '+' : ''}{c.adjVar}</td>
+                                            <td style={tdS}>{c.countedBy}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>)}
+                        {session.reconciliation?.odooResult && (
+                            <div style={{ marginTop: '16px', padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px', fontSize: '10px' }}>
+                                <p style={{ fontWeight: 700, color: '#714B67', marginBottom: '4px' }}>Odoo Sync Result</p>
+                                <p>Status: <strong>{session.reconciliation.odooResult.status}</strong> | Applied: {session.reconciliation.odooResult.applied} | Failed: {session.reconciliation.odooResult.failed}</p>
+                            </div>
+                        )}
+                        <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #dee2e6', paddingTop: '16px' }}>
+                            <div><p style={{ fontSize: '10px', color: '#6c757d' }}>Prepared by: {user?.name || user?.username || 'Admin'}</p><div style={{ marginTop: '30px', borderTop: '1px solid #adb5bd', width: '160px' }} /><p style={{ fontSize: '9px', color: '#adb5bd' }}>Signature</p></div>
+                            <div><p style={{ fontSize: '10px', color: '#6c757d' }}>Approved by: {session.reconciliation?.approvedBy || ''}</p><div style={{ marginTop: '30px', borderTop: '1px solid #adb5bd', width: '160px' }} /><p style={{ fontSize: '9px', color: '#adb5bd' }}>Signature</p></div>
+                        </div>
+                        <p style={{ textAlign: 'center', fontSize: '8px', color: '#adb5bd', marginTop: '12px' }}>Generated by KOB WMS Pro &mdash; {new Date().toISOString()}</p>
+                    </div>
+                );
+            })()}
         </div>
     );
 };

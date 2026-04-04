@@ -1048,7 +1048,7 @@ window.onload=function(){
     // Stock Frozen flag — check if any Full Count session has freezeStock enabled
     const stockFrozen = useMemo(() => {
         try {
-            const sessions = JSON.parse(localStorage.getItem('wms_fullcount_sessions') || '[]');
+            const sessions = JSON.parse(localStorage.getItem('wms_full_counts') || '[]');
             return sessions.some(s => s.status !== 'closed' && s.settings?.freezeStock);
         } catch { return false; }
     }, []);
