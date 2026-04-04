@@ -59,6 +59,11 @@ function escapeXml(str) {
 
 function generateBarcodeSVG(text, w = 260, h = 60) {
     if (!text) return null;
+    // Validate SVG dimensions to prevent DoS via excessively large values
+    const safeW = (Number.isFinite(w) && w > 0 && w <= 2000) ? w : 260;
+    const safeH = (Number.isFinite(h) && h > 0 && h <= 2000) ? h : 60;
+    w = safeW;
+    h = safeH;
     // Sanitize text to prevent XSS in SVG output
     const safeText = escapeXml(text);
     const encode = [];
@@ -108,6 +113,7 @@ function getNextSku(items) {
 }
 function generateBarcode13(sku) {
     // Generate a pseudo-EAN-13 from SKU for scanning
+    if (!sku || typeof sku !== 'string') return '0000000000000';
     const hash = sku.split('').reduce((h, c, i) => h + c.charCodeAt(0) * (i + 1), 0);
     const base = '885999' + String(hash % 1000000).padStart(6, '0');
     // Calculate check digit
@@ -1235,7 +1241,7 @@ export function HandheldGWPQuickAdd({ addToast, logActivity, user }) {
                         </button>
                     </div>
                     {/* Inline barcode preview */}
-                    <div className="mt-2 flex justify-center" ref={el => { if (el) { el.innerHTML = ''; const svg = generateBarcodeSVG(saved.sku, 200, 40); if (svg) { const parser = new DOMParser(); const doc = parser.parseFromString(svg, 'image/svg+xml'); const svgEl = doc.documentElement; if (svgEl.nodeName === 'svg') el.appendChild(svgEl); } } }} />
+                    <div className="mt-2 flex justify-center" ref={el => { if (el) { while (el.firstChild) el.removeChild(el.firstChild); const svg = generateBarcodeSVG(saved.sku, 200, 40); if (svg) { const parser = new DOMParser(); const doc = parser.parseFromString(svg, 'image/svg+xml'); const parseError = doc.querySelector('parsererror'); if (!parseError) { const svgEl = doc.documentElement; if (svgEl.nodeName === 'svg') el.appendChild(document.importNode(svgEl, true)); } } } }} />
                 </div>
             )}
 

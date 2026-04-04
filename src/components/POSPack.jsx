@@ -1,30 +1,57 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Lock, ClipboardList, Trash2 } from 'lucide-react';
-import { PRODUCT_CATALOG, BOX_TYPES, PACKING_SPEC, suggestBox } from '../constants';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Box, CheckCircle2, Package, ScanLine, AlertTriangle, CheckSquare, Barcode, Monitor, Plus, Minus, Printer, RefreshCw, PackageCheck, Search, Tag, X, Lock, ClipboardList, Trash2, ChevronDown } from 'lucide-react';
+import { PRODUCT_CATALOG, BOX_TYPES, PLATFORM_LABELS, PACKING_SPEC, suggestBox } from '../constants';
 import { PlatformBadge } from './PlatformLogo';
 import PackStation from './PackStation';
+import { sanitizeBarcode } from '../utils/barcode';
 
-const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast, handleFulfillmentAndAWB, isProcessingAPI, boxUsageLog, setBoxUsageLog, printAwbLabel }) => {
+const PAGE_SIZE = 30;
+
+const POSPack = React.memo(({ salesOrders, setSalesOrders, playSound, logActivity, addToast, handleFulfillmentAndAWB, isProcessingAPI, boxUsageLog, setBoxUsageLog, printAwbLabel }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [scanInput, setScanInput] = useState('');
     const [awbInput, setAwbInput] = useState('');
     const [lastScanStatus, setLastScanStatus] = useState(null);
     const [searchFilter, setSearchFilter] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const scanRef = useRef(null);
     const awbRef = useRef(null);
     const workOrderRef = useRef(null);
     const [workOrderInput, setWorkOrderInput] = useState('');
     const [showStation, setShowStation] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-    const packableOrders = salesOrders.filter(o => ['picked', 'packing', 'packed', 'rts'].includes(o.status));
-    const filteredOrders = searchFilter
-        ? packableOrders.filter(o => o.ref.toLowerCase().includes(searchFilter.toLowerCase()) || (o.customer || '').toLowerCase().includes(searchFilter.toLowerCase()))
-        : packableOrders;
+    // Debounce search filter (300ms)
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchFilter), 300);
+        return () => clearTimeout(timer);
+    }, [searchFilter]);
+
+    const packableOrders = useMemo(() =>
+        salesOrders.filter(o => ['picked', 'packing', 'packed', 'rts'].includes(o.status)),
+        [salesOrders]
+    );
+
+    const filteredOrders = useMemo(() => {
+        const q = debouncedSearch.toLowerCase();
+        if (!q) return packableOrders;
+        return packableOrders.filter(o =>
+            o.ref.toLowerCase().includes(q) || (o.customer || '').toLowerCase().includes(q)
+        );
+    }, [packableOrders, debouncedSearch]);
+
+    const sortedOrders = useMemo(() =>
+        [...filteredOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
+        [filteredOrders]
+    );
+
+    // Reset pagination when filter changes
+    useEffect(() => { setVisibleCount(PAGE_SIZE); }, [debouncedSearch]);
 
     useEffect(() => {
         if (selectedOrder) {
             const updated = salesOrders.find(o => o.id === selectedOrder.id);
-            if (updated) setSelectedOrder(updated);
+            if (updated && updated !== selectedOrder) setSelectedOrder(updated);
         }
     }, [salesOrders]);
 
@@ -32,10 +59,11 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
         if (!selectedOrder) return;
         if (selectedOrder.status === 'rts' && selectedOrder.awb) {
             setTimeout(() => awbRef.current?.focus(), 100);
-        } else if (!allVerified) {
-            setTimeout(() => scanRef.current?.focus(), 100);
+        } else {
+            const done = (selectedOrder.items || []).every(i => (i.packed || 0) >= (i.picked || i.expected || 0));
+            if (!done) setTimeout(() => scanRef.current?.focus(), 100);
         }
-    }, [selectedOrder?.status, selectedOrder?.awb]);
+    }, [selectedOrder?.status, selectedOrder?.awb, selectedOrder?.items]);
 
     const [flashStatus, setFlashStatus] = useState(null);
 
@@ -67,9 +95,9 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
 
     const handleScanSubmit = (e) => {
         if (e.key !== 'Enter' || !scanInput.trim()) return;
-        const input = scanInput.trim();
+        const input = sanitizeBarcode(scanInput);
         const inputUpper = input.toUpperCase();
-        const items = [...selectedOrder.items];
+        const items = (selectedOrder.items || []).map(i => ({ ...i }));
 
         const isBarcode = /^\d{8,14}$/.test(input);
         const resolvedSku = isBarcode ? findSkuByBarcode(input) : null;
@@ -80,11 +108,11 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
             const catalogBarcodeMatch = catalog && catalog.barcode === input;
             const itemBarcodeMatch = i.barcode && i.barcode === input;
             const resolvedMatch = resolvedSku && i.sku === resolvedSku;
-            return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch || resolvedMatch) && i.packed < i.picked;
+            return (skuMatch || catalogBarcodeMatch || itemBarcodeMatch || resolvedMatch) && (i.packed || 0) < (i.picked || 0);
         });
 
         if (item) {
-            item.packed++;
+            item.packed = (item.packed || 0) + 1;
             const updatedOrders = salesOrders.map(o =>
                 o.id === selectedOrder.id ? { ...o, items, status: 'packing' } : o
             );
@@ -245,6 +273,60 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
 
                 {/* ============ LEFT COLUMN ============ */}
                 <div className="flex-[3] flex flex-col gap-6 min-w-0 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {filteredOrders.length === 0 ? (
+                            <div className="text-center py-16" style={{ color: 'var(--odoo-text-muted)' }}>
+                                <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                                <p style={{ fontSize: '12px', fontWeight: 600 }}>No orders</p>
+                            </div>
+                        ) : (
+                            <div>
+                                {sortedOrders
+                                    .slice(0, visibleCount)
+                                    .map(order => {
+                                        const oTotal = order.items.reduce((s, i) => s + i.picked, 0);
+                                        const oPacked = order.items.reduce((s, i) => s + i.packed, 0);
+                                        const isActive = selectedOrder?.id === order.id;
+                                        const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
+                                        return (
+                                            <button
+                                                key={order.id}
+                                                onClick={() => { setSelectedOrder(order); setLastScanStatus(null); setScanInput(''); setAwbInput(''); }}
+                                                className="w-full p-3 text-left"
+                                                style={{ borderBottom: '1px solid var(--odoo-border-ghost)', borderLeft: `3px solid ${isActive ? 'var(--odoo-purple)' : 'transparent'}`, backgroundColor: isActive ? '#f3edf7' : 'transparent', cursor: 'pointer' }}
+                                                onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
+                                                onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                                            >
+                                                <div className="flex items-center gap-2.5">
+                                                    <PlatformBadge name={order.courier || order.platform} size={32} />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-center">
+                                                            <p style={{ fontWeight: 700, fontSize: '13px', color: 'var(--odoo-text)' }} className="truncate">{order.ref}</p>
+                                                            <span className="odoo-badge ml-2 shrink-0" style={order.status === 'packing' ? { backgroundColor: '#fff8e1', color: '#856404', border: '1px solid var(--odoo-warning)' } : { backgroundColor: '#f3edf7', color: 'var(--odoo-purple)', border: '1px solid #c9a8bc' }}>
+                                                                {oPacked}/{oTotal}
+                                                            </span>
+                                                        </div>
+                                                        <p style={{ fontSize: '11px', color: 'var(--odoo-text-secondary)' }} className="truncate">{order.customer}</p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                {visibleCount < sortedOrders.length && (
+                                    <button
+                                        onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                                        className="w-full p-3 text-center"
+                                        style={{ borderBottom: '1px solid var(--odoo-border-ghost)', fontSize: '12px', fontWeight: 700, color: 'var(--odoo-purple)', cursor: 'pointer', backgroundColor: 'var(--odoo-surface-low)' }}
+                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f3edf7'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--odoo-surface-low)'; }}
+                                    >
+                                        <ChevronDown className="w-4 h-4 inline mr-1" style={{ verticalAlign: 'middle' }} />
+                                        Load more ({sortedOrders.length - visibleCount} remaining)
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {/* --- Customer Details Section --- */}
                     <section style={{
@@ -1020,6 +1102,7 @@ const POSPack = ({ salesOrders, setSalesOrders, playSound, logActivity, addToast
             <PackStation isOpen={showStation} onClose={() => setShowStation(false)} boxUsageLog={boxUsageLog} addToast={addToast} logActivity={logActivity} />
         </div>
     );
-};
+});
 
+POSPack.displayName = 'POSPack';
 export default POSPack;

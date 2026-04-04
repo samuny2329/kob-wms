@@ -499,6 +499,34 @@ const Sorting = ({ salesOrders, waves, setWaves, addToast }) => {
                                                     </button>
                                                 )}
                                             </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                {Object.entries(stats.courierGroups).map(([courier, orders]) => {
+                                                    const pl = PLATFORM_LABELS[courier];
+                                                    const done = orders.filter(o => ['packed', 'rts'].includes(o.status)).length;
+                                                    return (
+                                                        <div key={courier} className="p-3" style={{ backgroundColor: 'var(--odoo-surface)', border: '1px solid var(--odoo-border)', borderRadius: 'var(--odoo-radius)' }}>
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <PlatformBadge name={courier} size={28} />
+                                                                <div className="flex-1">
+                                                                    <p className="font-semibold text-xs" style={{ color: 'var(--odoo-text)' }}>{pl?.name || courier}</p>
+                                                                    <p className="text-[10px]" style={{ color: 'var(--odoo-text-muted)' }}>{orders.length} orders | {done} done</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                {orders.map(o => (
+                                                                    <div key={o.id} className="flex justify-between items-center text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--odoo-surface-low)' }}>
+                                                                        <span className="font-mono font-semibold" style={{ color: 'var(--odoo-text)' }}>{o.ref}</span>
+                                                                        <span className="odoo-badge text-[10px]" style={{
+                                                                            backgroundColor: o.status === 'rts' ? '#e8f5e9' : o.status === 'packed' ? '#e0f4f3' : o.status === 'picked' ? '#e8f4fd' : '#fff8e1',
+                                                                            color: o.status === 'rts' ? 'var(--odoo-success)' : o.status === 'packed' ? 'var(--odoo-teal)' : o.status === 'picked' ? 'var(--odoo-info)' : '#856404',
+                                                                        }}>{o.status}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
                                 </>

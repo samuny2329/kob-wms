@@ -315,8 +315,8 @@ export const createSyncEngine = (options) => {
 
     // Track user activity (throttled)
     const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-    const throttledActivity = requestManager.throttle('userActivity', onUserActivity, 5000);
-    activityEvents.forEach(evt => document.addEventListener(evt, throttledActivity, { passive: true }));
+    _throttledActivity = requestManager.throttle('userActivity', onUserActivity, 5000);
+    activityEvents.forEach(evt => document.addEventListener(evt, _throttledActivity, { passive: true }));
 
     // Initial sync
     sync(true);
@@ -326,6 +326,7 @@ export const createSyncEngine = (options) => {
   };
 
   // ── Destroy (cleanup on unmount) ──
+  let _throttledActivity = null;
   const destroy = () => {
     _destroyed = true;
     if (_pollTimer) clearTimeout(_pollTimer);
@@ -334,6 +335,9 @@ export const createSyncEngine = (options) => {
     document.removeEventListener('visibilitychange', onVisibilityChange);
     window.removeEventListener('online', onOnline);
     window.removeEventListener('offline', onOffline);
+    if (_throttledActivity) {
+      ['mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => document.removeEventListener(evt, _throttledActivity));
+    }
   };
 
   // ── Public API ──

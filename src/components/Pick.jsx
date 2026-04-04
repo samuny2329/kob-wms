@@ -191,11 +191,26 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     // ── Auto Wave Planner ──
     const WAVE_SIZE = 15;
 
+    // Get zones touched by an order
+    const getOrderZones = (order) => {
+        const zones = new Set();
+        (order.items || []).forEach(i => {
+            const loc = getLocation(i.sku, i.location);
+            const parsed = parseLocation(loc);
+            if (parsed.zone !== 'ZZZ') zones.add(parsed.zone);
+            // Also track zone+aisle for finer proximity
+            if (parsed.zone !== 'ZZZ') zones.add(`${parsed.zone}-${String(parsed.aisle).padStart(2, '0')}`);
+        });
+        return zones;
+    };
+
     const autoWavePlan = (orders) => {
         if (orders.length === 0) return [];
+        // Build SKU set + zone set per order
         const remaining = orders.map((o, idx) => ({
             order: o, idx,
             skus: new Set((o.items || []).map(i => i.sku)),
+            zones: getOrderZones(o),
             urgent: o.courierCutoff ? new Date(o.courierCutoff).getTime() : Infinity,
         }));
         remaining.sort((a, b) => a.urgent - b.urgent);
@@ -206,26 +221,35 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         while (used.size < orders.length) {
             const wave = [];
             const waveSkus = new Set();
+            const waveZones = new Set();
 
             const seed = remaining.find(r => !used.has(r.idx));
             if (!seed) break;
             wave.push(seed.order);
             used.add(seed.idx);
             seed.skus.forEach(s => waveSkus.add(s));
+            seed.zones.forEach(z => waveZones.add(z));
 
+            // Greedily add orders with highest combined score (SKU overlap + zone proximity)
             while (wave.length < WAVE_SIZE) {
                 let bestIdx = -1, bestScore = -1;
                 for (const r of remaining) {
                     if (used.has(r.idx)) continue;
-                    let overlap = 0;
-                    for (const s of r.skus) { if (waveSkus.has(s)) overlap++; }
-                    if (overlap > bestScore) { bestScore = overlap; bestIdx = r.idx; }
+                    // SKU overlap score (weight: 2 per match)
+                    let skuScore = 0;
+                    for (const s of r.skus) { if (waveSkus.has(s)) skuScore++; }
+                    // Zone proximity score (weight: 1 per zone/aisle match)
+                    let zoneScore = 0;
+                    for (const z of r.zones) { if (waveZones.has(z)) zoneScore++; }
+                    const totalScore = skuScore * 2 + zoneScore;
+                    if (totalScore > bestScore) { bestScore = totalScore; bestIdx = r.idx; }
                 }
-                if (bestIdx === -1 || bestScore === 0) break;
+                if (bestIdx === -1 || bestScore === 0) break; // no overlapping orders
                 const picked = remaining.find(r => r.idx === bestIdx);
                 wave.push(picked.order);
                 used.add(picked.idx);
                 picked.skus.forEach(s => waveSkus.add(s));
+                picked.zones.forEach(z => waveZones.add(z));
             }
 
             while (wave.length < WAVE_SIZE && used.size < orders.length) {
@@ -243,13 +267,32 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
     const [showWavePlan, setShowWavePlan] = useState(false);
     const [wavePlan, setWavePlan] = useState(null);
     const [expandedWave, setExpandedWave] = useState(0);
-    const [pickPathEnabled, setPickPathEnabled] = useState(true);
+    // Pick mode: 'off' → 'path' → 'wave' (cycle)
+    const [pickMode, setPickMode] = useState('path');
+    const pickPathEnabled = pickMode === 'path' || pickMode === 'wave';
+
+    const cyclePickMode = () => {
+        if (pickMode === 'off') {
+            setPickMode('path');
+        } else if (pickMode === 'path') {
+            // Switch to wave: also open the wave plan
+            setPickMode('wave');
+            const waves = autoWavePlan(pendingOrders);
+            setWavePlan(waves);
+            setShowWavePlan(true);
+            setExpandedWave(0);
+        } else {
+            setPickMode('off');
+            setShowWavePlan(false);
+        }
+    };
 
     const handleAutoWave = () => {
         const waves = autoWavePlan(pendingOrders);
         setWavePlan(waves);
         setShowWavePlan(true);
         setExpandedWave(0);
+        setPickMode('wave');
     };
 
     const printWave = (waveOrders, waveIdx) => {
@@ -357,7 +400,7 @@ const Pick = ({ salesOrders, selectedPickOrder, setSelectedPickOrder, syncPlatfo
         }).join('');
 
         const barcodeInits = orders.map((order, idx) =>
-            `JsBarcode("#bc-${idx}","${order.ref}",{format:"CODE128",width:1.8,height:40,displayValue:false,margin:1});`
+            `JsBarcode("#bc-${idx}",${JSON.stringify(order.ref || '')},{format:"CODE128",width:1.8,height:40,displayValue:false,margin:1});`
         ).join('\n    ');
 
         const win = window.open('', '_blank', 'width=400,height=600');
@@ -584,25 +627,16 @@ window.onload=function(){
                             </div>
                             {pendingOrders.length > 0 && (
                                 <>
-                                <button onClick={() => setPickPathEnabled(!pickPathEnabled)}
-                                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded shadow-sm uppercase transition-colors"
+                                <button onClick={cyclePickMode}
+                                    className="odoo-btn flex items-center gap-1.5"
                                     style={{
-                                        backgroundColor: pickPathEnabled ? 'var(--odoo-teal)' : 'var(--odoo-surface)',
-                                        color: pickPathEnabled ? '#fff' : 'var(--odoo-text-secondary)',
-                                        border: `1px solid ${pickPathEnabled ? 'var(--odoo-teal)' : 'var(--odoo-border)'}`,
+                                        backgroundColor: pickMode === 'off' ? 'var(--odoo-surface)' : pickMode === 'path' ? 'var(--odoo-teal)' : 'var(--odoo-purple)',
+                                        color: pickMode === 'off' ? 'var(--odoo-text-secondary)' : '#fff',
+                                        border: `1px solid ${pickMode === 'off' ? 'var(--odoo-border)' : pickMode === 'path' ? 'var(--odoo-teal)' : 'var(--odoo-purple)'}`,
                                     }}
-                                    title="Pick Path: sort items by shortest walking route (serpentine)">
-                                    <Route className="w-3.5 h-3.5" /> Path
-                                </button>
-                                <button onClick={handleAutoWave}
-                                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded shadow-sm uppercase transition-colors"
-                                    style={{
-                                        backgroundColor: 'var(--odoo-surface)',
-                                        color: 'var(--odoo-purple)',
-                                        border: '1px solid var(--odoo-purple)',
-                                    }}
-                                    title="Auto Wave: group orders by SKU overlap + courier cutoff">
-                                    <Zap className="w-3.5 h-3.5" /> Auto Wave
+                                    title="Cycle: Off → Path (sort by walk route) → Auto Wave (group + path)">
+                                    {pickMode === 'wave' ? <Zap className="w-3.5 h-3.5" /> : <Route className="w-3.5 h-3.5" />}
+                                    {pickMode === 'off' ? 'Off' : pickMode === 'path' ? 'Path' : 'Wave'}
                                 </button>
                                 <button onClick={() => setWaveSorted(!waveSorted)}
                                     className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold rounded shadow-sm uppercase transition-colors"
@@ -635,7 +669,7 @@ window.onload=function(){
                                         setTimeout(() => e.target.removeAttribute('readonly'), 200);
                                     }
                                 }}
-                                onBlur={() => setTimeout(() => focusScanInput(listScanRef), 300)}
+                                onBlur={(e) => { if (!e.relatedTarget || e.relatedTarget.closest?.('[data-scan-area]')) setTimeout(() => focusScanInput(listScanRef), 300); }}
                                 onPaste={e => e.preventDefault()}
                                 onChange={e => {
                                     const val = e.target.value;
@@ -644,7 +678,7 @@ window.onload=function(){
                                     }
                                 }}
                                 placeholder="Search or scan barcode..."
-                                className="w-full pl-9 pr-10 py-2 text-xs font-mono outline-none transition-all"
+                                className="w-full pl-9 pr-10 py-2 text-sm font-mono outline-none transition-all"
                                 style={{
                                     border: `1px solid ${scanFlash === 'notfound' ? 'var(--odoo-danger)' : 'var(--odoo-border)'}`,
                                     borderRadius: 'var(--odoo-radius)',
@@ -889,7 +923,7 @@ window.onload=function(){
                                                 <div className="flex-1 p-2 space-y-2 overflow-y-auto" style={{ maxHeight: '500px' }}>
                                                     {colOrders.map(order => {
                                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
-                                                        const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
+                                                        const itemCount = (order.items || []).reduce((s, i) => s + i.expected, 0);
                                                         const stockStatus = getOrderStockStatus(order);
                                                         return (
                                                             <div key={order.id} onClick={() => setSelectedPickOrder(order)}
@@ -936,8 +970,8 @@ window.onload=function(){
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
                                     {paginatedOrders.map(order => {
                                         const pl = PLATFORM_LABELS[order.courier] || PLATFORM_LABELS[order.platform];
-                                        const itemCount = order.items.reduce((s, i) => s + i.expected, 0);
-                                        const picked = order.items.reduce((s, i) => s + (i.picked || 0), 0);
+                                        const itemCount = (order.items || []).reduce((s, i) => s + i.expected, 0);
+                                        const picked = (order.items || []).reduce((s, i) => s + (i.picked || 0), 0);
                                         const progress = itemCount > 0 ? Math.round((picked / itemCount) * 100) : 0;
                                         const statusColors = { pending: 'var(--odoo-warning)', picking: 'var(--odoo-info)', picked: 'var(--odoo-purple)' };
                                         return (
@@ -1344,6 +1378,14 @@ window.onload=function(){
                                 }));
                                 const totalPcs = Object.values(waveSkus).reduce((s, v) => s + v, 0);
                                 const waveUniqueSkus = Object.keys(waveSkus).length;
+                                // Collect zones for this wave
+                                const waveZoneSet = new Set();
+                                wave.forEach(o => (o.items || []).forEach(i => {
+                                    const loc = getLocation(i.sku, i.location);
+                                    const p = parseLocation(loc);
+                                    if (p.zone !== 'ZZZ') waveZoneSet.add(p.zone);
+                                }));
+                                const waveZoneList = [...waveZoneSet].sort();
                                 const isExpanded = expandedWave === wIdx;
                                 return (
                                     <div key={wIdx} className="rounded overflow-hidden" style={{ border: '1px solid var(--odoo-border)' }}>
@@ -1356,7 +1398,10 @@ window.onload=function(){
                                                 </div>
                                                 <div>
                                                     <div className="text-sm font-semibold" style={{ color: 'var(--odoo-text)' }}>Wave {wIdx + 1}</div>
-                                                    <div className="text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>{wave.length} orders &middot; {waveUniqueSkus} SKUs &middot; {totalPcs} pcs</div>
+                                                    <div className="text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>
+                                                        {wave.length} orders &middot; {waveUniqueSkus} SKUs &middot; {totalPcs} pcs
+                                                        {waveZoneList.length > 0 && <span style={{ color: 'var(--odoo-teal)' }}> &middot; Zone {waveZoneList.join(', ')}</span>}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -1391,7 +1436,7 @@ window.onload=function(){
                                                                 <span className="text-[11px]" style={{ color: 'var(--odoo-text-secondary)' }}>{order.customer}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-mono" style={{ color: 'var(--odoo-text-secondary)' }}>{order.items.length} SKU &middot; {pcs} pcs</span>
+                                                                <span className="text-xs font-mono" style={{ color: 'var(--odoo-text-secondary)' }}>{(order.items || []).length} SKU &middot; {pcs} pcs</span>
                                                             </div>
                                                         </div>
                                                     );
@@ -1404,7 +1449,7 @@ window.onload=function(){
                         </div>
                         <div className="px-5 py-3 flex justify-between items-center" style={{ borderTop: '1px solid var(--odoo-border)', backgroundColor: 'var(--odoo-surface-low)' }}>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setPickPathEnabled(!pickPathEnabled)}
+                                <button onClick={() => setPickMode(pickMode === 'wave' ? 'off' : 'wave')}
                                     className="odoo-btn flex items-center gap-1.5 text-xs"
                                     style={{
                                         backgroundColor: pickPathEnabled ? 'var(--odoo-teal)' : 'var(--odoo-surface)',

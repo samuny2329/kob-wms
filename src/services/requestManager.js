@@ -71,12 +71,19 @@ const cancelByPrefix = (prefix) => {
 
 // ── Throttle: returns a wrapper that skips calls within `ms` of last call ──
 const _lastCall = new Map();
+const MAX_THROTTLE_KEYS = 200;
 const throttle = (key, fn, ms = 2000) => {
   return async (...args) => {
     const now = Date.now();
     const last = _lastCall.get(key) || 0;
     if (now - last < ms) return null; // skip, too soon
     _lastCall.set(key, now);
+    // Prune stale entries to prevent unbounded growth
+    if (_lastCall.size > MAX_THROTTLE_KEYS) {
+      for (const [k, t] of _lastCall) {
+        if (now - t > 60000) _lastCall.delete(k);
+      }
+    }
     return fn(...args);
   };
 };

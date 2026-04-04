@@ -226,7 +226,13 @@ const App = () => {
     // Refresh session on user activity
     useEffect(() => {
         if (!user) return;
-        const refresh = () => refreshSession();
+        let lastRefresh = 0;
+        const refresh = () => {
+            const now = Date.now();
+            if (now - lastRefresh < 5000) return; // throttle: max once per 5s
+            lastRefresh = now;
+            refreshSession();
+        };
         window.addEventListener('click', refresh);
         window.addEventListener('keydown', refresh);
         return () => {
@@ -290,6 +296,7 @@ const App = () => {
     };
 
     const logActivity = (action, details) => {
+        if (!user) return;
         const entry = { timestamp: new Date().getTime(), username: user.username, name: user.name, action, details };
         setActivityLogs(prev => [entry, ...prev].slice(0, 1000));
         // Persist to IndexedDB with flat fields for querying
@@ -310,9 +317,13 @@ const App = () => {
         });
     };
 
+    const _audioCtxRef = React.useRef(null);
     const playSound = (type) => {
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (!_audioCtxRef.current || _audioCtxRef.current.state === 'closed') {
+                _audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const ctx = _audioCtxRef.current;
             const t = ctx.currentTime;
 
             if (type === 'success') {
@@ -353,7 +364,7 @@ const App = () => {
                 o.connect(g); o.start(t); o.stop(t + 0.06);
             }
 
-            setTimeout(() => ctx.close(), 1500);
+            // AudioContext is reused via _audioCtxRef — no close needed
         } catch (e) { }
     };
 
@@ -439,7 +450,7 @@ const App = () => {
         const archives = safeParse('wms_eod_archives', []);
         if (archives.some(a => a.date === today)) return;
         const snapshot = { salesOrders, activityLogs, inventory, invoices };
-        const updated = [{ date: today, data: snapshot }, ...archives].slice(0, 7); // Keep only 7 days
+        const updated = [{ date: today, data: snapshot }, ...archives].slice(0, 30);
         try {
             localStorage.setItem('wms_eod_archives', JSON.stringify(updated));
         } catch (e) {
@@ -546,7 +557,8 @@ const App = () => {
         {
             const input = raw;
             const inputUpper = input.toUpperCase();
-            const items = selectedPickOrder.items.map(i => ({ ...i }));
+            if (!selectedPickOrder) return;
+            const items = (selectedPickOrder.items || []).map(i => ({ ...i }));
             const item = items.find(i => {
                 const sku = (i.sku || '').toUpperCase();
                 const catalog = PRODUCT_CATALOG[i.sku];
@@ -593,7 +605,8 @@ const App = () => {
         {
             const input = raw;
             const inputUpper = input.toUpperCase();
-            const items = selectedPackOrder.items.map(i => ({ ...i }));
+            if (!selectedPackOrder) return;
+            const items = (selectedPackOrder.items || []).map(i => ({ ...i }));
             const item = items.find(i => {
                 const sku = (i.sku || '').toUpperCase();
                 const catalog = PRODUCT_CATALOG[i.sku];
@@ -626,6 +639,7 @@ const App = () => {
     const handleAwbConfirmScan = (e) => {
         if (e.key === 'Enter' && packAwbInput) {
             const input = packAwbInput.trim().toUpperCase();
+            if (!selectedPackOrder) return;
             const orderAwb = selectedPackOrder.awb?.toUpperCase();
             if (input === orderAwb) {
                 const updatedOrder = { ...selectedPackOrder, status: 'locked' };
@@ -743,17 +757,17 @@ const App = () => {
     <hr class="divider">
     <div class="addr-block">
       <div class="addr-label">▼ SHIP TO</div>
-      <div class="addr-name">${recipient}</div>
+      <div class="addr-name">${esc(recipient)}</div>
     </div>
     <div class="addr-block">
       <div class="addr-label">▲ FROM</div>
-      <div class="addr-sub">${sender}</div>
+      <div class="addr-sub">${esc(sender)}</div>
     </div>
     <hr class="divider-dash">
-    <div class="info-row"><span class="il">Order</span><span class="iv">${ref}</span></div>
+    <div class="info-row"><span class="il">Order</span><span class="iv">${esc(ref)}</span></div>
     <div class="info-row"><span class="il">Date</span><span class="iv">${today}</span></div>
     <div class="info-row"><span class="il">Items</span><span class="iv">${totalQty} pcs</span></div>
-    ${(order.items || []).map(i => `<div class="item-row"><span>${i.name || i.sku}</span><span style="font-weight:700">×${i.picked || i.expected || 0}</span></div>`).join('')}
+    ${(order.items || []).map(i => `<div class="item-row"><span>${esc(i.name || i.sku)}</span><span style="font-weight:700">×${i.picked || i.expected || 0}</span></div>`).join('')}
   </div>
   <div class="footer">${theme.name} • ${awbCode}</div>
 </div>
@@ -911,12 +925,14 @@ window.onload=function(){
     // Dispatch & Signature
     const clearSignature = () => {
         const c = canvasRef.current;
+        if (!c) return;
         const ctx = c.getContext('2d');
         ctx.clearRect(0, 0, c.width, c.height);
         setSignatureEmpty(true);
     };
 
     const startDrawing = (e) => {
+        if (!canvasRef.current) return;
         isDrawing.current = true;
         setSignatureEmpty(false);
         const { offsetX, offsetY } = e.nativeEvent.touches ? { offsetX: e.nativeEvent.touches[0].clientX - canvasRef.current.getBoundingClientRect().left, offsetY: e.nativeEvent.touches[0].clientY - canvasRef.current.getBoundingClientRect().top } : e.nativeEvent;
@@ -926,7 +942,7 @@ window.onload=function(){
     };
 
     const draw = (e) => {
-        if (!isDrawing.current) return;
+        if (!isDrawing.current || !canvasRef.current) return;
         const { offsetX, offsetY } = e.nativeEvent.touches ? { offsetX: e.nativeEvent.touches[0].clientX - canvasRef.current.getBoundingClientRect().left, offsetY: e.nativeEvent.touches[0].clientY - canvasRef.current.getBoundingClientRect().top } : e.nativeEvent;
         const ctx = canvasRef.current.getContext('2d');
         ctx.lineTo(offsetX, offsetY);
